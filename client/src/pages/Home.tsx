@@ -2,8 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MiniCalculator } from "@/components/MiniCalculator";
-import GTMTimeline from "@/components/GTMTimeline";
-import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-react";
+import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote, Brain, Target, Headphones, Users, Wrench, Trophy } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
@@ -24,6 +23,39 @@ export default function Home() {
       icon: <UserX className="w-12 h-12" />,
       title: "The Lone Wolf Fallacy",
       description: "Betting your growth on the heroics of an individual, knowing that 1 in 3 new BDR hires will fail completely within the first year, forcing you to start the painful cycle all over again.",
+    },
+  ];
+
+  const podComponents = [
+    {
+      icon: <Brain className="w-8 h-8" />,
+      title: "AI Architect",
+      color: "text-purple-dark"
+    },
+    {
+      icon: <Target className="w-8 h-8" />,
+      title: "GTM Strategist",
+      color: "text-primary"
+    },
+    {
+      icon: <Headphones className="w-8 h-8" />,
+      title: "Support",
+      color: "text-community"
+    },
+    {
+      icon: <Users className="w-8 h-8" />,
+      title: "Coach",
+      color: "text-indigo"
+    },
+    {
+      icon: <Wrench className="w-8 h-8" />,
+      title: "Tools",
+      color: "text-primary"
+    },
+    {
+      icon: <Trophy className="w-8 h-8" />,
+      title: "Community & Competition",
+      color: "text-community"
     },
   ];
 
@@ -125,7 +157,36 @@ export default function Home() {
             </p>
           </div>
 
-          <GTMTimeline />
+          {/* Pod Components Layout */}
+          <div className="relative max-w-5xl mx-auto">
+            {/* Central Pod */}
+            <div className="flex items-center justify-center mb-16">
+              <div className="relative">
+                <div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-primary/20 via-community/20 to-purple-dark/20 border-4 border-primary/30 flex items-center justify-center shadow-2xl">
+                  <div className="text-center px-6">
+                    <h3 className="text-2xl md:text-3xl font-bold mb-2">Fully Loaded</h3>
+                    <p className="text-xl md:text-2xl font-bold text-primary">BDR Pod</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Pod Components Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+              {podComponents.map((component, index) => (
+                <Card 
+                  key={index} 
+                  className="p-6 text-center hover-elevate transition-all"
+                  data-testid={`card-pod-${index}`}
+                >
+                  <div className={`${component.color} mb-4 flex justify-center`}>
+                    {component.icon}
+                  </div>
+                  <h3 className="font-bold text-lg">{component.title}</h3>
+                </Card>
+              ))}
+            </div>
+          </div>
 
           <div className="text-center mt-16">
             <Button size="lg" variant="outline" className="gap-2" data-testid="button-explore-pod" asChild>
