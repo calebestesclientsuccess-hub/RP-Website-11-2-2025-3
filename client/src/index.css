@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Animation delay utilities */
+@layer utilities {
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
+}
+
 /* LIGHT MODE - Feather Greys with Warm/Cool Tints */
 :root {
   --button-outline: rgba(0,0,0, .10);
