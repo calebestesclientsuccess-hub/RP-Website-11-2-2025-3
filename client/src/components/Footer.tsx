@@ -11,7 +11,7 @@ export function Footer() {
           {/* Logo & Mission */}
           <div className="md:col-span-2">
             <Link href="/" className="inline-block mb-4" data-testid="footer-link-home">
-              <img src={logoWhite} alt="Revenue Party Logo" className="h-8 w-auto" />
+              <img src={logoWhite} alt="Revenue Party Logo" className="h-20 md:h-24 lg:h-32 w-auto" />
             </Link>
             <p className="text-muted-foreground text-sm max-w-md">
               We architect GTM systems that deliver predictable revenue. Your next sales hire shouldn't be a person—it should be a complete revenue generation system.
