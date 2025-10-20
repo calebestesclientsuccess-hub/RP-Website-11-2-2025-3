@@ -17,11 +17,11 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 - **Brand Color Philosophy**: Semantic color system based on "Culture = Community + Competition" with specific colors for competition (Red), collaboration (Purple), technology (Indigo), and strategy (Dark Purple). All colors meet WCAG AA accessibility standards.
 - **Typography**: Inter for headings and body, JetBrains Mono for monospace.
 - **Design System**: Semantic color tokens, badge variants, and consistent typography for a unified aesthetic.
-- **Animations**: Extensive use of GSAP, particularly ScrollTrigger for advanced scroll-scrubbed timelines, energy flow, and interactive gear rotations. Fade-up scroll animations, glow effects, and glassmorphic elements enhance interactivity. Supports `prefers-reduced-motion`.
+- **Animations**: GSAP with ScrollTrigger for scroll-triggered timeline reveals. Fade-in and slide-up animations on timeline steps, sequential line drawing, and bounce effect on result card. Glassmorphic floating calculator CTA. Supports `prefers-reduced-motion`.
 
 **Technical Implementations & Feature Specifications:**
 - **Interactive ROI Calculator**: Compares in-house vs. RevParty Pod based on user inputs (ACV, close rate, sales cycle, quota) with real-time calculations and email capture.
-- **Sentient Blueprint Visualization**: An advanced, scroll-driven GSAP ScrollTrigger gear system with a multi-scene narrative. It features animated particles, energy flow conduits, and interactive "Focus Mode" on individual gears representing Elite Talent, Strategic Framework, AI-Powered by Humans, and Tech Stack.
+- **GTM Timeline Visualization**: A cinematic vertical timeline showcasing the complete GTM system with scroll-triggered GSAP animations. Features 4 key components (Elite Talent, Strategic Framework, AI-Powered, Tech Stack) connected by animated lines, culminating in a "20+ Qualified Appointments" result card. Each step fades in and slides up on scroll with brand-specific colors (purple, red, indigo). Mobile-responsive and supports prefers-reduced-motion.
 - **Content Management**: Database-driven blog ("Blueprints") with Markdown rendering (DOMPurify for XSS protection), testimonial display, and career listings with application forms (React Hook Form + Zod for validation).
 - **Site Structure**: Comprehensive navigation with dropdown menus for Solutions, Methodology, Results, and Company.
 - **Accessibility**: ARIA labels, keyboard navigation, and data-testid attributes for testing.
