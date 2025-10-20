@@ -5,7 +5,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { BlogPost } from "@shared/schema";
 
-export default function Blog() {
+export default function BlueprintsPage() {
   const { data: posts, isLoading } = useQuery<BlogPost[]>({
     queryKey: ["/api/blog-posts"],
   });
@@ -14,11 +14,11 @@ export default function Blog() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-16 max-w-6xl">
         <div className="mb-12">
-          <h1 className="text-5xl font-bold mb-4" data-testid="text-blog-title">
-            GTM Insights & Strategies
+          <h1 className="text-5xl font-bold mb-4" data-testid="text-blueprints-title">
+            Revenue Party Blueprints
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl" data-testid="text-blog-subtitle">
-            Real-world tactics for building revenue engines that scale. No fluff, no platitudes—just what actually works.
+          <p className="text-lg text-muted-foreground max-w-2xl" data-testid="text-blueprints-subtitle">
+            Battle-tested GTM playbooks and frameworks. Each blueprint is a complete system you can deploy in your business.
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export default function Blog() {
         ) : posts && posts.length > 0 ? (
           <div className="grid md:grid-cols-2 gap-6">
             {posts.map((post) => (
-              <Link key={post.id} href={`/blog/${post.slug}`} data-testid={`link-blog-${post.slug}`}>
+              <Link key={post.id} href={`/blueprints/${post.slug}`} data-testid={`link-blueprint-${post.slug}`}>
                 <Card className="h-full hover-elevate cursor-pointer transition-all duration-300 group">
                   <CardHeader>
                     <div className="flex items-center gap-2 mb-3">

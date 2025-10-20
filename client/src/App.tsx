@@ -7,28 +7,55 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import Home from "@/pages/Home";
-import Services from "@/pages/Services";
+import GTMEnginePage from "@/pages/GTMEnginePage";
+import FullyLoadedBDRPage from "@/pages/FullyLoadedBDRPage";
 import Methodology from "@/pages/Methodology";
-import About from "@/pages/About";
+import FullStackSalespersonPage from "@/pages/FullStackSalespersonPage";
+import AIPoweredPage from "@/pages/AIPoweredPage";
+import ResultsPage from "@/pages/ResultsPage";
 import ROICalculator from "@/pages/ROICalculator";
-import Blog from "@/pages/Blog";
-import BlogPost from "@/pages/BlogPost";
+import SuccessStoriesPage from "@/pages/SuccessStoriesPage";
+import BlueprintsPage from "@/pages/BlueprintsPage";
+import BlueprintPost from "@/pages/BlueprintPost";
+import ComparisonPage from "@/pages/ComparisonPage";
+import About from "@/pages/About";
 import Careers from "@/pages/Careers";
 import CareerDetail from "@/pages/CareerDetail";
+import ContactPage from "@/pages/ContactPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
+      {/* Core Pages */}
       <Route path="/" component={Home} />
-      <Route path="/services" component={Services} />
+      <Route path="/gtm-engine" component={GTMEnginePage} />
+
+      {/* Solutions Section */}
+      <Route path="/solutions/fully-loaded-bdr-pod" component={FullyLoadedBDRPage} />
+
+      {/* Methodology Section */}
       <Route path="/methodology" component={Methodology} />
-      <Route path="/about" component={About} />
-      <Route path="/roi-calculator" component={ROICalculator} />
-      <Route path="/blog" component={Blog} />
-      <Route path="/blog/:slug" component={BlogPost} />
-      <Route path="/careers" component={Careers} />
-      <Route path="/careers/:id" component={CareerDetail} />
+      <Route path="/methodology/full-stack-salesperson" component={FullStackSalespersonPage} />
+      <Route path="/methodology/ai-powered-by-humans" component={AIPoweredPage} />
+
+      {/* Results Section */}
+      <Route path="/results" component={ResultsPage} />
+      <Route path="/results/roi-calculator" component={ROICalculator} />
+      <Route path="/results/success-stories" component={SuccessStoriesPage} />
+
+      {/* Resources */}
+      <Route path="/blueprints" component={BlueprintsPage} />
+      <Route path="/blueprints/:slug" component={BlueprintPost} />
+      <Route path="/comparison" component={ComparisonPage} />
+
+      {/* Company */}
+      <Route path="/why-party" component={About} />
+      <Route path="/join-the-party" component={Careers} />
+      <Route path="/join-the-party/:id" component={CareerDetail} />
+      <Route path="/contact-us" component={ContactPage} />
+
+      {/* Fallback */}
       <Route component={NotFound} />
     </Switch>
   );

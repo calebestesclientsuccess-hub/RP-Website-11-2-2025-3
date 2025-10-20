@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Brain, Settings, Zap, FileText, Check } from "lucide-react";
 
-export default function Services() {
+export default function FullyLoadedBDRPage() {
   const components = [
     {
       icon: <Settings className="w-12 h-12" />,

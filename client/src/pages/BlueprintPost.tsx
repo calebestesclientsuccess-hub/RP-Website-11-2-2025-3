@@ -7,8 +7,8 @@ import type { BlogPost } from "@shared/schema";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
-export default function BlogPostPage() {
-  const [, params] = useRoute("/blog/:slug");
+export default function BlueprintPost() {
+  const [, params] = useRoute("/blueprints/:slug");
   const slug = params?.slug;
 
   const { data: post, isLoading } = useQuery<BlogPost>({
@@ -44,10 +44,10 @@ export default function BlogPostPage() {
               <p className="text-muted-foreground mb-6" data-testid="text-not-found">
                 Blog post not found.
               </p>
-              <Link href="/blog" data-testid="link-back-to-blog">
+              <Link href="/blueprints" data-testid="link-back-to-blueprints">
                 <Button variant="outline">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Blog
+                  Back to Blueprints
                 </Button>
               </Link>
             </CardContent>
