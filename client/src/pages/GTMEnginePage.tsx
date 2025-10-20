@@ -156,11 +156,11 @@ export default function GTMEnginePage() {
             </Card>
           </div>
 
-          <Link href="/solutions/fully-loaded-bdr-pod">
-            <Button size="lg" data-testid="button-learn-more">
+          <Button size="lg" data-testid="button-learn-more" asChild>
+            <Link href="/solutions/fully-loaded-bdr-pod">
               See the Full Solution
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </section>
     </div>

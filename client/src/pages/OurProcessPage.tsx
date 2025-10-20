@@ -167,11 +167,11 @@ export default function OurProcessPage() {
             <Button size="lg" className="text-lg px-8 py-6" data-testid="button-schedule-audit">
               Schedule My GTM Audit
             </Button>
-            <Link href="/results/roi-calculator">
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 gap-2" data-testid="button-calculator">
+            <Button size="lg" variant="outline" className="text-lg px-8 py-6 gap-2" data-testid="button-calculator" asChild>
+              <Link href="/results/roi-calculator">
                 Calculate Your ROI <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </section>

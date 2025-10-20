@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Calculator, X } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useState } from "react";
 
 export function FloatingCalculatorCTA() {
+  const [location] = useLocation();
   const [isDismissed, setIsDismissed] = useState(false);
 
-  if (isDismissed) {
+  // Hide on ROI calculator page to avoid redundancy
+  if (location === "/results/roi-calculator" || isDismissed) {
     return null;
   }
 
@@ -33,17 +35,18 @@ export function FloatingCalculatorCTA() {
       </div>
 
       {/* Main CTA Button */}
-      <Link href="/results/roi-calculator">
-        <Button
-          size="lg"
-          className="shadow-2xl h-14 w-14 lg:h-auto lg:w-auto gap-2 rounded-full lg:rounded-md"
-          data-testid="button-floating-calculator"
-          aria-label="Open ROI Calculator"
-        >
+      <Button
+        size="lg"
+        className="shadow-2xl h-14 w-14 lg:h-auto lg:w-auto gap-2 rounded-full lg:rounded-md"
+        data-testid="button-floating-calculator"
+        aria-label="Open ROI Calculator"
+        asChild
+      >
+        <Link href="/results/roi-calculator">
           <Calculator className="h-5 w-5" />
           <span className="hidden lg:inline">ROI Calculator</span>
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }

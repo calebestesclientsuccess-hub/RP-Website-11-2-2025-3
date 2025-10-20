@@ -44,12 +44,12 @@ export default function BlueprintPost() {
               <p className="text-muted-foreground mb-6" data-testid="text-not-found">
                 Blog post not found.
               </p>
-              <Link href="/blueprints" data-testid="link-back-to-blueprints">
-                <Button variant="outline">
+              <Button variant="outline" data-testid="link-back-to-blueprints" asChild>
+                <Link href="/blueprints">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Blueprints
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -60,12 +60,12 @@ export default function BlueprintPost() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-16 max-w-4xl">
-        <Link href="/blueprints" data-testid="link-back">
-          <Button variant="ghost" className="mb-8">
+        <Button variant="ghost" className="mb-8" data-testid="link-back" asChild>
+          <Link href="/blueprints">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Blueprints
-          </Button>
-        </Link>
+          </Link>
+        </Button>
 
         <article>
           <header className="mb-12">

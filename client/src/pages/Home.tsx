@@ -129,11 +129,11 @@ export default function Home() {
           <GearSystem />
 
           <div className="text-center mt-16">
-            <Link href="/solutions/fully-loaded-bdr-pod">
-              <Button size="lg" variant="outline" className="gap-2" data-testid="button-explore-pod">
+            <Button size="lg" variant="outline" className="gap-2" data-testid="button-explore-pod" asChild>
+              <Link href="/solutions/fully-loaded-bdr-pod">
                 Explore the BDR Pod <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -174,11 +174,11 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-16">
-            <Link href="/our-process">
-              <Button size="lg" variant="outline" className="gap-2" data-testid="button-learn-process">
+            <Button size="lg" variant="outline" className="gap-2" data-testid="button-learn-process" asChild>
+              <Link href="/our-process">
                 Learn About Our Process <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -231,11 +231,11 @@ export default function Home() {
           </div>
 
           <div className="text-center">
-            <Link href="/results/success-stories">
-              <Button size="lg" variant="outline" className="gap-2" data-testid="button-success-stories">
+            <Button size="lg" variant="outline" className="gap-2" data-testid="button-success-stories" asChild>
+              <Link href="/results/success-stories">
                 Read Success Stories <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -342,11 +342,11 @@ export default function Home() {
           </div>
 
           <div className="text-center">
-            <Link href="/comparison">
-              <Button size="lg" variant="outline" className="gap-2" data-testid="button-full-comparison">
+            <Button size="lg" variant="outline" className="gap-2" data-testid="button-full-comparison" asChild>
+              <Link href="/comparison">
                 See Full Comparison <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
