@@ -186,6 +186,114 @@ export default function Home() {
       {/* Testimonials Section */}
       <TestimonialsSection />
 
+      {/* Comparison Section */}
+      <section className="py-20 px-4 md:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <Badge variant="default" className="mb-4">Competitive Edge</Badge>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+              Traditional Hire? Lead Gen Agency?{" "}
+              <span className="text-primary">Or a Complete GTM System?</span>
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Not all sales solutions are created equal. Here's how a Fully Loaded BDR Pod stacks up against your alternatives.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* Traditional Hire */}
+            <Card className="p-8 hover-elevate transition-all" data-testid="card-traditional">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold mb-2">Traditional Hire</h3>
+                <p className="text-4xl font-bold text-destructive mb-2">~$198k</p>
+                <p className="text-sm text-muted-foreground">First Year Cost</p>
+              </div>
+              <ul className="space-y-3 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="text-destructive mt-1">✗</span>
+                  <span>3-6 months to first meeting</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-destructive mt-1">✗</span>
+                  <span>20 hours/week management required</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-destructive mt-1">✗</span>
+                  <span>You build playbook from scratch</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-destructive mt-1">✗</span>
+                  <span>No performance guarantee</span>
+                </li>
+              </ul>
+            </Card>
+
+            {/* Lead Gen Agency */}
+            <Card className="p-8 hover-elevate transition-all" data-testid="card-agency">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold mb-2">Lead Gen Agency</h3>
+                <p className="text-4xl font-bold text-muted-foreground mb-2">$120k+</p>
+                <p className="text-sm text-muted-foreground">Annual Cost</p>
+              </div>
+              <ul className="space-y-3 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="text-muted-foreground mt-1">~</span>
+                  <span>4-8 weeks to first meeting</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-destructive mt-1">✗</span>
+                  <span>Shared resource pool (not dedicated)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-destructive mt-1">✗</span>
+                  <span>Agency keeps the playbook</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-muted-foreground mt-1">~</span>
+                  <span>Volume promises, not quality</span>
+                </li>
+              </ul>
+            </Card>
+
+            {/* Revenue Party */}
+            <Card className="p-8 hover-elevate transition-all border-2 border-primary" data-testid="card-revparty">
+              <div className="text-center mb-6">
+                <Badge variant="default" className="mb-3">Recommended</Badge>
+                <h3 className="text-2xl font-bold mb-2">Revenue Party Pod</h3>
+                <p className="text-4xl font-bold text-primary mb-2">ROI+</p>
+                <p className="text-sm text-muted-foreground">Contact for Pricing</p>
+              </div>
+              <ul className="space-y-3 text-sm">
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-primary mt-1" />
+                  <span className="font-medium">2-3 weeks to first meeting</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-primary mt-1" />
+                  <span className="font-medium">2 hours/week management</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-primary mt-1" />
+                  <span className="font-medium">Custom playbook you own</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-primary mt-1" />
+                  <span className="font-medium">20+ qualified meetings/month SLA</span>
+                </li>
+              </ul>
+            </Card>
+          </div>
+
+          <div className="text-center">
+            <Link href="/comparison">
+              <Button size="lg" variant="outline" className="gap-2" data-testid="button-full-comparison">
+                See Full Comparison <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA Section */}
       <section className="py-20 px-4 md:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
