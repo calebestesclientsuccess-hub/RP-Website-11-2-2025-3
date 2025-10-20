@@ -60,10 +60,10 @@ export default function BlueprintPost() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-16 max-w-4xl">
-        <Link href="/blog" data-testid="link-back">
+        <Link href="/blueprints" data-testid="link-back">
           <Button variant="ghost" className="mb-8">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Blog
+            Back to Blueprints
           </Button>
         </Link>
 
@@ -112,7 +112,7 @@ export default function BlueprintPost() {
           </Card>
 
           <div className="mt-12 text-center">
-            <Link href="/blog" data-testid="link-more-posts">
+            <Link href="/blueprints" data-testid="link-more-posts">
               <Button variant="outline">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 More Articles

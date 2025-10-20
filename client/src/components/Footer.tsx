@@ -20,42 +20,49 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Company Links */}
+          {/* Solutions */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Company</h3>
+            <h3 className="font-semibold text-foreground mb-4">Solutions</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/about">
-                  <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-about">
-                    About
+                <Link href="/gtm-engine">
+                  <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-gtm-engine">
+                    The GTM Engine
                   </a>
                 </Link>
               </li>
               <li>
-                <Link href="/methodology">
-                  <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-methodology">
-                    Methodology
-                  </a>
-                </Link>
-              </li>
-              <li>
-                <Link href="/services">
+                <Link href="/solutions/fully-loaded-bdr-pod">
                   <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-services">
-                    Services
+                    Fully Loaded BDR Pod
                   </a>
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Resources Links */}
+          {/* Company */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Resources</h3>
+            <h3 className="font-semibold text-foreground mb-4">Company</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/roi-calculator">
-                  <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-calculator">
-                    ROI Calculator
+                <Link href="/why-party">
+                  <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-about">
+                    Why Party
+                  </a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/join-the-party">
+                  <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-careers">
+                    Careers
+                  </a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact-us">
+                  <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-contact">
+                    Contact Us
                   </a>
                 </Link>
               </li>

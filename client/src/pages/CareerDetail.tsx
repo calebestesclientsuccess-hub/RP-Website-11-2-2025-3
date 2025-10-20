@@ -99,7 +99,7 @@ export default function CareerDetail() {
               <p className="text-muted-foreground mb-6" data-testid="text-not-found">
                 Job posting not found.
               </p>
-              <Link href="/careers" data-testid="link-back-to-careers">
+              <Link href="/join-the-party" data-testid="link-back-to-careers">
                 <Button variant="outline">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Careers
@@ -115,7 +115,7 @@ export default function CareerDetail() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-16 max-w-4xl">
-        <Link href="/careers" data-testid="link-back">
+        <Link href="/join-the-party" data-testid="link-back">
           <Button variant="ghost" className="mb-8">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to All Jobs
@@ -187,7 +187,7 @@ export default function CareerDetail() {
                 <p className="text-muted-foreground mb-6">
                   We've received your application and will review it shortly. You'll hear from us soon!
                 </p>
-                <Link href="/careers">
+                <Link href="/join-the-party">
                   <Button variant="outline">
                     View Other Positions
                   </Button>

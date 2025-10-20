@@ -124,7 +124,7 @@ export default function Home() {
           <GearSystem />
 
           <div className="text-center mt-16">
-            <Link href="/services">
+            <Link href="/solutions/fully-loaded-bdr-pod">
               <Button size="lg" variant="outline" className="gap-2" data-testid="button-explore-pod">
                 Explore the BDR Pod <ArrowRight className="w-4 h-4" />
               </Button>
