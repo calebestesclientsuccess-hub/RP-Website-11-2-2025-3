@@ -1,7 +1,13 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertEmailCaptureSchema } from "@shared/schema";
+import { 
+  insertEmailCaptureSchema, 
+  insertBlogPostSchema,
+  insertTestimonialSchema,
+  insertJobPostingSchema,
+  insertJobApplicationSchema
+} from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -48,6 +54,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({
         error: "Internal server error",
       });
+    }
+  });
+
+  // Blog posts endpoints
+  app.get("/api/blog-posts", async (req, res) => {
+    try {
+      const posts = await storage.getAllBlogPosts(true);
+      return res.json(posts);
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/blog-posts/:slug", async (req, res) => {
+    try {
+      const post = await storage.getBlogPostBySlug(req.params.slug);
+      if (!post) {
+        return res.status(404).json({ error: "Blog post not found" });
+      }
+      return res.json(post);
+    } catch (error) {
+      console.error("Error fetching blog post:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/blog-posts", async (req, res) => {
+    try {
+      const result = insertBlogPostSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      const post = await storage.createBlogPost(result.data);
+      return res.status(201).json(post);
+    } catch (error) {
+      console.error("Error creating blog post:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Testimonials endpoints
+  app.get("/api/testimonials", async (req, res) => {
+    try {
+      const featured = req.query.featured === 'true';
+      const testimonials = await storage.getAllTestimonials(featured);
+      return res.json(testimonials);
+    } catch (error) {
+      console.error("Error fetching testimonials:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/testimonials", async (req, res) => {
+    try {
+      const result = insertTestimonialSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      const testimonial = await storage.createTestimonial(result.data);
+      return res.status(201).json(testimonial);
+    } catch (error) {
+      console.error("Error creating testimonial:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Job postings endpoints
+  app.get("/api/job-postings", async (req, res) => {
+    try {
+      const active = req.query.active !== 'false';
+      const jobs = await storage.getAllJobPostings(active);
+      return res.json(jobs);
+    } catch (error) {
+      console.error("Error fetching job postings:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/job-postings/:id", async (req, res) => {
+    try {
+      const job = await storage.getJobPosting(req.params.id);
+      if (!job) {
+        return res.status(404).json({ error: "Job posting not found" });
+      }
+      return res.json(job);
+    } catch (error) {
+      console.error("Error fetching job posting:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/job-postings", async (req, res) => {
+    try {
+      const result = insertJobPostingSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      const job = await storage.createJobPosting(result.data);
+      return res.status(201).json(job);
+    } catch (error) {
+      console.error("Error creating job posting:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Job applications endpoint
+  app.post("/api/job-applications", async (req, res) => {
+    try {
+      const result = insertJobApplicationSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      const application = await storage.createJobApplication(result.data);
+      return res.status(201).json({
+        success: true,
+        message: "Application submitted successfully! We'll be in touch soon.",
+        id: application.id,
+      });
+    } catch (error) {
+      console.error("Error creating job application:", error);
+      return res.status(500).json({ error: "Internal server error" });
     }
   });
 
