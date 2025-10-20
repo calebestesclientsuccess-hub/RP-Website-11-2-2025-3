@@ -1,7 +1,7 @@
 # Revenue Party - GTM Systems Website
 
 ## Overview
-Revenue Party is a marketing website for a Go-to-Market (GTM) consultancy, specializing in deploying comprehensive revenue generation systems. The site showcases services like the "Fully Loaded BDR Pod" through a dark-mode design, interactive calculators, GSAP animations, and gear visualizations. It targets a B2B SaaS audience, focusing on founders and GTM leaders with an emphasis on data-driven decision-making.
+Revenue Party is a marketing website for a Go-to-Market (GTM) consultancy, specializing in deploying comprehensive revenue generation systems. The site showcases services like the "Fully Loaded BDR Pod" through a dark-mode design, interactive calculators, GSAP animations, and a cinematic timeline visualization. It targets a B2B SaaS audience, focusing on founders and GTM leaders with an emphasis on data-driven decision-making.
 
 ## User Preferences
 - Dark mode is the default theme
