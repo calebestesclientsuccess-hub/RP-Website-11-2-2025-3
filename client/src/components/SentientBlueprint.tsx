@@ -238,7 +238,8 @@ export function SentientBlueprint() {
           ref={svgRef}
           viewBox="0 0 1200 900"
           preserveAspectRatio="xMidYMid meet"
-          className="w-full h-auto"
+          className="w-full h-auto overflow-visible"
+          style={{ overflow: 'visible' }}
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
@@ -299,10 +300,11 @@ export function SentientBlueprint() {
             fill="rgba(239, 35, 60, 0.2)"
             stroke="#ef233c"
             strokeWidth="3"
+            data-testid="central-hub-circle"
           />
-          <text x="600" y="390" textAnchor="middle" fill="#ef233c" fontSize="24" fontWeight="bold">20+</text>
-          <text x="600" y="410" textAnchor="middle" fill="#fff" fontSize="14">Qualified</text>
-          <text x="600" y="425" textAnchor="middle" fill="#fff" fontSize="14">Appointments</text>
+          <text x="600" y="390" textAnchor="middle" fill="#ef233c" fontSize="24" fontWeight="bold" data-testid="hub-text-number">20+</text>
+          <text x="600" y="410" textAnchor="middle" fill="#fff" fontSize="14" data-testid="hub-text-qualified">Qualified</text>
+          <text x="600" y="425" textAnchor="middle" fill="#fff" fontSize="14" data-testid="hub-text-appointments">Appointments</text>
 
           <path
             id="energy-flow-talent"
