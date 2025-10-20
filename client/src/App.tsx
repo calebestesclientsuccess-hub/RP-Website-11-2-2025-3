@@ -11,6 +11,8 @@ import Services from "@/pages/Services";
 import Methodology from "@/pages/Methodology";
 import About from "@/pages/About";
 import ROICalculator from "@/pages/ROICalculator";
+import Blog from "@/pages/Blog";
+import BlogPost from "@/pages/BlogPost";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,6 +23,8 @@ function Router() {
       <Route path="/methodology" component={Methodology} />
       <Route path="/about" component={About} />
       <Route path="/roi-calculator" component={ROICalculator} />
+      <Route path="/blog" component={Blog} />
+      <Route path="/blog/:slug" component={BlogPost} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -14,6 +14,7 @@ export function Navbar() {
     { label: "Home", path: "/" },
     { label: "Services", path: "/services" },
     { label: "Methodology", path: "/methodology" },
+    { label: "Blog", path: "/blog" },
     { label: "About", path: "/about" },
     { label: "ROI Calculator", path: "/roi-calculator" },
   ];
