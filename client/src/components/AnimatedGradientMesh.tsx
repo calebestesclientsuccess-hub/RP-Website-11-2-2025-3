@@ -31,9 +31,9 @@ export function AnimatedGradientMesh({
     }
   }, []);
 
-  const intensityClass = intensity === 'subtle' ? 'opacity-30' :
-                         intensity === 'medium' ? 'opacity-50' :
-                         'opacity-70';
+  const intensityClass = intensity === 'subtle' ? 'opacity-60' :
+                         intensity === 'medium' ? 'opacity-80' :
+                         'opacity-100';
 
   if (!isClient) return null;
 
