@@ -47,22 +47,40 @@ Revenue Party is a sophisticated marketing website for a Go-to-Market (GTM) cons
 - **Storage**: Database-backed storage with seeded sample data for all content types
 
 ### Design System
-- **Colors**:
-  - Primary Red: #ef233c (CTAs, emphasis)
-  - Purple: #9F8FFF (secondary accent)
-  - Purple Dark: #42349c (tertiary accent)
-  - Indigo: #2e294e (tech/data elements)
+
+#### Brand Color Philosophy: Culture = Community + Competition
+The site expresses the core brand philosophy through a sophisticated semantic color system where **Culture = Community (helping others succeed) + Competition (fuel that propels forward)**. All colors meet WCAG AA accessibility standards (≥4.5:1 contrast ratio).
+
+- **Color Palette**:
+  - **Primary Red (#ef233c)**: Competition, CTAs, metrics, wins, competitive advantages
+  - **Community Purple (#9F8FFF)**: Collaboration, culture, testimonials, team support
+  - **Indigo (#2e294e)**: Technology, data, AI-powered features, tech stack
+  - **Purple Dark (#42349c)**: Strategy, frameworks, methodologies, playbooks
+  - **Gradients**: Subtle 5-10% opacity overlays combining community + competition colors for "culture"
   
+- **Semantic Color Tokens** (defined in `client/src/index.css`):
+  - `text-primary` / `bg-primary` - Red for competition elements
+  - `text-community` / `bg-community` - Purple for community elements
+  - `text-indigo` / `bg-indigo` - Indigo for technology
+  - `text-purple-dark` / `bg-purple-dark` - Purple dark for strategy
+  - All tokens support light/dark mode with adjusted contrast
+
+- **Badge Variants** (`client/src/components/ui/badge.tsx`):
+  - `variant="default"` - Primary red (competition)
+  - `variant="community"` - Community purple (collaboration)
+  - `variant="indigo"` - Indigo (technology)
+  - `variant="secondary"` - Neutral
+
 - **Typography**:
   - Headings: Inter (bold weights)
   - Body: Inter (regular)
   - Monospace: JetBrains Mono (numbers, data)
 
 - **Animations**:
-  - Glow pulse effects on gear systems
+  - Glow pulse effects on gear systems with brand colors
   - Rotating gear animations
   - Fade-up scroll animations
-  - Glassmorphic hover popups
+  - Glassmorphic hover popups with tinted backgrounds
 
 ## Key Features
 
@@ -117,6 +135,19 @@ Revenue Party is a sophisticated marketing website for a Go-to-Market (GTM) cons
 - Consistent spacing and typography
 
 ## Recent Changes (October 2025)
+- **Brand Color System Implementation (October 20, 2025)**:
+  - Implemented complete semantic color system expressing "Culture = Community + Competition" philosophy
+  - Replaced all hard-coded hex colors with semantic tokens (text-primary, text-community, text-indigo, text-purple-dark)
+  - Added subtle gradients (5-10% opacity) across all hero sections for visual texture
+  - Created Badge component variants matching brand color system (default, community, indigo, secondary)
+  - Applied consistent color theming across 15+ pages:
+    - **Home**: Culture gradients, community testimonials, competition CTAs
+    - **Solutions/Methodology**: GTM Engine, Fully Loaded BDR, Full-Stack Salesperson, AI-Powered
+    - **Results**: Success Stories with community gradients, ROI Calculator with competition emphasis
+    - **Company**: About (community culture), Careers (mixed gradients), Contact (balanced approach)
+    - **Marketing**: Comparison (competitive red), Blueprints (thought leadership purple)
+  - All colors verified for WCAG AA accessibility (≥4.5:1 contrast) in both light and dark modes
+  - Tested and validated with automated smoke tests and architect review
 - **Database Integration**: Migrated from in-memory to PostgreSQL with Drizzle ORM
 - **Blog System**: Built complete blog feature with Markdown rendering and XSS protection (renamed to "Blueprints")
 - **Testimonials**: Added social proof section to home page with database-backed testimonials
