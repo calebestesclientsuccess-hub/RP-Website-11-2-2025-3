@@ -2,8 +2,91 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Brain, Settings, Zap, FileText, Check } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import podVideo from "@assets/Maintain_the_geometric_202510201050_1760987688804.mp4";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function FullyLoadedBDRPage() {
+  const videoSectionRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+  const [videoProgress, setVideoProgress] = useState(0);
+  const [textVisible, setTextVisible] = useState(false);
+
+  useEffect(() => {
+    const videoSection = videoSectionRef.current;
+    const video = videoRef.current;
+    const text = textRef.current;
+    
+    if (!videoSection || !video || !text) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    if (prefersReducedMotion) {
+      setTextVisible(true);
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      // Create scroll trigger for video playback
+      ScrollTrigger.create({
+        trigger: videoSection,
+        start: "top 80%",
+        end: "bottom 20%",
+        onEnter: () => {
+          video.play().catch((error) => {
+            console.log("Video playback failed:", error);
+          });
+        },
+        onLeave: () => {
+          video.pause();
+        },
+        onEnterBack: () => {
+          video.play().catch((error) => {
+            console.log("Video playback failed:", error);
+          });
+        },
+        onLeaveBack: () => {
+          video.pause();
+          video.currentTime = 0;
+        }
+      });
+
+      // Track video progress
+      const handleTimeUpdate = () => {
+        if (video.duration) {
+          const progress = (video.currentTime / video.duration) * 100;
+          setVideoProgress(progress);
+          
+          // Fade in text when video is more than 50% complete
+          if (progress > 50 && !textVisible) {
+            setTextVisible(true);
+            gsap.fromTo(text, 
+              { opacity: 0, y: 20 },
+              { 
+                opacity: 1, 
+                y: 0, 
+                duration: 1.5, 
+                ease: "power2.out" 
+              }
+            );
+          }
+        }
+      };
+
+      video.addEventListener('timeupdate', handleTimeUpdate);
+
+      return () => {
+        video.removeEventListener('timeupdate', handleTimeUpdate);
+      };
+    }, videoSection);
+
+    return () => ctx.revert();
+  }, [textVisible]);
+
   const components = [
     {
       icon: <Settings className="w-12 h-12" />,
@@ -96,6 +179,62 @@ export default function FullyLoadedBDRPage() {
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
             The Fully Loaded BDR Pod is a complete Go-to-Market engine, delivered as a service. It's the strategic operator, the AI-powered tech stack, the GTM playbook, and the performance analytics—all integrated into a single, turnkey system designed to generate a predictable pipeline.
           </p>
+        </div>
+      </section>
+
+      {/* Video Section - The Fully Loaded BDR Pod */}
+      <section 
+        ref={videoSectionRef}
+        className="relative py-20 px-4 md:px-6 lg:px-8 min-h-screen flex items-center justify-center bg-black"
+        data-testid="section-pod-video"
+      >
+        <div className="relative w-full max-w-7xl mx-auto">
+          {/* Video Container */}
+          <div className="relative aspect-video rounded-lg overflow-hidden">
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              src={podVideo}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              data-testid="video-pod"
+            >
+              Your browser does not support the video tag.
+            </video>
+            
+            {/* Overlay gradient for text visibility */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
+            
+            {/* Text overlay that fades in */}
+            <div 
+              ref={textRef}
+              className="absolute bottom-0 left-0 right-0 p-8 md:p-12 lg:p-16"
+              style={{ opacity: textVisible ? 1 : 0 }}
+              data-testid="text-pod-overlay"
+            >
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+                The Fully Loaded <span className="text-primary">BDR Pod:</span>
+              </h2>
+              <p className="text-lg md:text-xl text-gray-200 max-w-3xl">
+                A complete Go-to-Market engine that combines elite operators, AI-powered technology, 
+                and strategic playbooks into a single, performance-driven system designed to generate 
+                predictable pipeline at scale.
+              </p>
+            </div>
+          </div>
+          
+          {/* Progress indicator */}
+          <div className="mt-4">
+            <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-300 ease-out"
+                style={{ width: `${videoProgress}%` }}
+                data-testid="progress-video"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
