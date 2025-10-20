@@ -443,6 +443,164 @@
   animation: slider-pulse-glow 2s ease-in-out infinite;
 }
 
+/* Animated Gradient Mesh - CSS-based for better performance */
+
+/* Primary gradient mesh layer */
+.gradient-mesh-layer {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(
+      ellipse 800px 400px at 20% 30%,
+      hsl(var(--primary) / 0.15),
+      transparent 40%
+    ),
+    radial-gradient(
+      ellipse 600px 300px at 80% 70%,
+      hsl(var(--community) / 0.15),
+      transparent 40%
+    ),
+    radial-gradient(
+      ellipse 700px 500px at 50% 50%,
+      hsl(var(--purple-dark) / 0.1),
+      transparent 50%
+    );
+  background-size: 200% 200%;
+  will-change: transform, background-position;
+  transform: translateZ(0);
+}
+
+/* Secondary gradient layer */
+.gradient-mesh-layer-secondary {
+  position: absolute;
+  inset: 0;
+  background: 
+    linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.1) 0%,
+      transparent 25%,
+      transparent 75%,
+      hsl(var(--community) / 0.1) 100%
+    );
+  background-size: 300% 300%;
+  will-change: transform, background-position;
+  transform: translateZ(0);
+}
+
+/* Aurora overlay */
+.gradient-mesh-aurora {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+  background: 
+    radial-gradient(
+      circle at 25% 25%,
+      hsl(var(--primary) / 0.05) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 75% 75%,
+      hsl(var(--community) / 0.05) 0%,
+      transparent 50%
+    );
+  filter: blur(40px);
+  transform: translateZ(0);
+}
+
+/* Animation keyframes */
+@keyframes gradient-flow {
+  0%, 100% {
+    background-position: 0% 50%;
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    background-position: 100% 50%;
+    transform: translate(1%, -1%) scale(1.02);
+  }
+  66% {
+    background-position: 50% 100%;
+    transform: translate(-1%, 1%) scale(0.98);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+}
+
+/* Speed variants */
+.gradient-mesh-slow {
+  animation: gradient-flow 45s ease-in-out infinite;
+}
+
+.gradient-mesh-medium {
+  animation: gradient-flow 30s ease-in-out infinite;
+}
+
+.gradient-mesh-fast {
+  animation: gradient-flow 20s ease-in-out infinite;
+}
+
+.gradient-mesh-slow-secondary {
+  animation: gradient-shift 40s ease-in-out infinite;
+}
+
+.gradient-mesh-medium-secondary {
+  animation: gradient-shift 25s ease-in-out infinite;
+}
+
+.gradient-mesh-fast-secondary {
+  animation: gradient-shift 15s ease-in-out infinite;
+}
+
+/* Aurora-style gradient animation */
+@keyframes aurora-flow {
+  0% {
+    opacity: 0.3;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+  33% {
+    opacity: 0.6;
+    transform: translateY(-20px) translateX(10px) scale(1.05);
+  }
+  66% {
+    opacity: 0.4;
+    transform: translateY(10px) translateX(-15px) scale(0.95);
+  }
+  100% {
+    opacity: 0.3;
+    transform: translateY(0) translateX(0) scale(1);
+  }
+}
+
+.animate-aurora {
+  animation: aurora-flow 20s ease-in-out infinite;
+}
+
+/* Mesh gradient layers with GPU acceleration */
+.gradient-mesh-layer {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: normal;
+  pointer-events: none;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Performance optimization for gradient animations */
+.gradient-mesh-container {
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
 /* Respect user's preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -452,5 +610,22 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  
+  /* Disable gradient mesh animations */
+  .gradient-mesh-slow,
+  .gradient-mesh-medium,
+  .gradient-mesh-fast,
+  .gradient-mesh-slow-secondary,
+  .gradient-mesh-medium-secondary,
+  .gradient-mesh-fast-secondary {
+    animation: none !important;
+  }
+  
+  /* Show static gradients instead */
+  .gradient-mesh-layer,
+  .gradient-mesh-layer-secondary {
+    background-position: 50% 50% !important;
+    transform: none !important;
   }
 }

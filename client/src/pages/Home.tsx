@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MiniCalculator } from "@/components/MiniCalculator";
 import GTMTimeline from "@/components/GTMTimeline";
+import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote, Brain, Target, Headphones, Users, Wrench, Trophy } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -85,9 +86,9 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-community/5 via-background to-primary/5 pointer-events-none" />
+      <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
+        {/* Animated gradient mesh background */}
+        <AnimatedGradientMesh intensity="subtle" speed="slow" />
         
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -380,8 +381,10 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30 overflow-hidden gradient-mesh-container">
+        {/* Animated gradient mesh with medium intensity for process section */}
+        <AnimatedGradientMesh intensity="medium" speed="slow" className="opacity-30" />
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
               Our Blueprint for <span className="text-primary">Predictable Pipeline.</span>
@@ -425,8 +428,10 @@ export default function Home() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 px-4 md:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
+        {/* Vibrant gradient mesh for CTA section */}
+        <AnimatedGradientMesh intensity="vibrant" speed="medium" className="opacity-20" />
+        <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8">
             The Blueprint is Clear. <span className="text-primary">The Engine is Built.</span>
           </h2>
