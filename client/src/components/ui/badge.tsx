@@ -15,7 +15,12 @@ const badgeVariants = cva(
         secondary: "border-transparent bg-secondary text-secondary-foreground",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow-xs",
-
+        community:
+          "border-transparent bg-community text-community-foreground shadow-xs",
+        indigo:
+          "border-transparent bg-indigo text-indigo-foreground shadow-xs",
+        "purple-dark":
+          "border-transparent bg-purple-dark text-purple-dark-foreground shadow-xs",
         outline: " border [border-color:var(--badge-outline)] shadow-xs",
       },
     },

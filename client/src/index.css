@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* LIGHT MODE */
+/* LIGHT MODE - Feather Greys with Warm/Cool Tints */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -14,71 +14,89 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 0 0% 98%;
+  /* Feather greys - subtle warm tint for texture */
+  --background: 20 8% 97%;
 
-  --foreground: 0 0% 9%;
+  --foreground: 240 4% 12%;
 
-  --border: 0 0% 89%;
+  --border: 20 6% 88%;
 
   --card: 0 0% 100%;
 
-  --card-foreground: 0 0% 9%;
+  --card-foreground: 240 4% 12%;
 
-  --card-border: 0 0% 93%;
+  --card-border: 20 4% 92%;
 
-  --sidebar: 0 0% 96%;
+  --sidebar: 20 6% 96%;
 
-  --sidebar-foreground: 0 0% 9%;
+  --sidebar-foreground: 240 4% 12%;
 
-  --sidebar-border: 0 0% 91%;
+  --sidebar-border: 20 5% 90%;
 
-  --sidebar-primary: 354 81% 56%;
+  --sidebar-primary: 0 85% 42%;
 
-  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-primary-foreground: 0 0% 100%;
 
-  --sidebar-accent: 0 0% 92%;
+  --sidebar-accent: 20 5% 91%;
 
-  --sidebar-accent-foreground: 0 0% 9%;
+  --sidebar-accent-foreground: 240 4% 12%;
 
-  --sidebar-ring: 354 81% 56%;
+  --sidebar-ring: 0 85% 42%;
 
-  --popover: 0 0% 94%;
+  --popover: 20 6% 93%;
 
-  --popover-foreground: 0 0% 9%;
+  --popover-foreground: 240 4% 12%;
 
-  --popover-border: 0 0% 88%;
+  --popover-border: 20 5% 87%;
 
-  --primary: 354 81% 56%;
+  /* Competition: Red - darkened for accessibility (4.5:1 contrast) */
+  --primary: 0 85% 42%;
 
-  --primary-foreground: 0 0% 98%;
+  --primary-foreground: 0 0% 100%;
   
-  --secondary-purple: 257 100% 78%;
+  /* Community: Light Purple - darkened for accessibility (4.5:1 contrast) */
+  --community: 252 67% 40%;
   
-  --secondary-purple-foreground: 0 0% 98%;
+  --community-foreground: 0 0% 100%;
+  
+  /* Community: Deep Indigo #2e294e */
+  --indigo: 249 29% 24%;
+  
+  --indigo-foreground: 0 0% 98%;
+  
+  /* Community: Purple Dark #42349c */
+  --purple-dark: 251 49% 40%;
+  
+  --purple-dark-foreground: 0 0% 98%;
 
-  --secondary: 0 0% 90%;
+  /* Warm grey secondary */
+  --secondary: 20 6% 89%;
 
-  --secondary-foreground: 0 0% 9%;
+  --secondary-foreground: 240 4% 12%;
 
-  --muted: 0 2% 88%;
+  /* Cool grey muted */
+  --muted: 220 8% 87%;
 
-  --muted-foreground: 0 0% 40%;
+  --muted-foreground: 240 3% 42%;
 
-  --accent: 0 3% 86%;
+  /* Subtle purple-tinted accent */
+  --accent: 250 15% 88%;
 
-  --accent-foreground: 0 0% 9%;
+  --accent-foreground: 240 4% 12%;
 
   --destructive: 0 84% 60%;
 
   --destructive-foreground: 0 0% 98%;
 
-  --input: 0 0% 65%;
-  --ring: 354 81% 56%;
-  --chart-1: 354 81% 35%;
-  --chart-2: 257 100% 78%;
-  --chart-3: 254 34% 35%;
-  --chart-4: 0 84% 45%;
-  --chart-5: 220 70% 45%;
+  --input: 220 6% 65%;
+  --ring: 0 85% 42%;
+  
+  /* Chart colors using brand palette */
+  --chart-1: 0 100% 50%;        /* Competition red */
+  --chart-2: 252 67% 53%;       /* Community purple */
+  --chart-3: 249 29% 24%;       /* Indigo */
+  --chart-4: 251 49% 40%;       /* Purple dark */
+  --chart-5: 354 70% 55%;       /* Coral variation */
 
   --font-sans: Inter, system-ui, sans-serif;
   --font-serif: Georgia, serif;
@@ -124,6 +142,16 @@
   /* Fallback for older browsers */
   --destructive-border: hsl(var(--destructive));
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  
+  /* Community color borders */
+  --community-border: hsl(var(--community));
+  --community-border: hsl(from hsl(var(--community)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  
+  --indigo-border: hsl(var(--indigo));
+  --indigo-border: hsl(from hsl(var(--indigo)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  
+  --purple-dark-border: hsl(var(--purple-dark));
+  --purple-dark-border: hsl(from hsl(var(--purple-dark)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
 .dark {
@@ -136,53 +164,73 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 0 0% 4%;
+  /* Dark backgrounds with subtle purple undertones */
+  --background: 249 12% 6%;
 
   --foreground: 0 0% 98%;
 
-  --border: 0 0% 15%;
+  --border: 249 8% 16%;
 
-  --card: 0 0% 10%;
+  --card: 249 10% 11%;
 
   --card-foreground: 0 0% 98%;
 
-  --card-border: 0 0% 14%;
+  --card-border: 249 8% 15%;
 
-  --sidebar: 0 0% 6%;
+  --sidebar: 249 12% 7%;
 
   --sidebar-foreground: 0 0% 98%;
 
-  --sidebar-border: 0 0% 11%;
+  --sidebar-border: 249 10% 12%;
 
-  --sidebar-primary: 354 81% 56%;
+  --sidebar-primary: 0 85% 45%;
 
-  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-primary-foreground: 0 0% 100%;
 
-  --sidebar-accent: 0 0% 13%;
+  --sidebar-accent: 249 8% 14%;
 
   --sidebar-accent-foreground: 0 0% 98%;
 
-  --sidebar-ring: 354 81% 56%;
+  --sidebar-ring: 0 85% 45%;
 
-  --popover: 0 0% 12%;
+  --popover: 249 10% 13%;
 
   --popover-foreground: 0 0% 98%;
 
-  --popover-border: 0 0% 16%;
+  --popover-border: 249 8% 17%;
 
-  --primary: 354 81% 56%;
+  /* Competition: Accessible red for dark mode (4.5:1+ contrast) */
+  --primary: 0 85% 45%;
 
-  --primary-foreground: 0 0% 98%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Community: Light Purple - accessible for dark mode */
+  --community: 252 67% 70%;
+  
+  --community-foreground: 249 12% 6%;
+  
+  /* Community: Deep Indigo - good contrast maintained */
+  --indigo: 249 40% 45%;
+  
+  --indigo-foreground: 0 0% 98%;
+  
+  /* Community: Purple Dark - darkened for accessibility */
+  --purple-dark: 251 55% 45%;
+  
+  --purple-dark-foreground: 0 0% 98%;
 
-  --secondary: 0 0% 15%;
+  /* Purple-tinted secondary */
+  --secondary: 249 8% 16%;
 
   --secondary-foreground: 0 0% 98%;
 
-  --muted: 0 2% 14%;
+  /* Purple-tinted muted */
+  --muted: 249 6% 15%;
 
   --muted-foreground: 0 0% 65%;
 
-  --accent: 0 3% 16%;
+  /* Purple-tinted accent */
+  --accent: 250 12% 18%;
 
   --accent-foreground: 0 0% 98%;
 
@@ -190,13 +238,15 @@
 
   --destructive-foreground: 0 0% 98%;
 
-  --input: 0 0% 35%;
-  --ring: 354 81% 56%;
-  --chart-1: 354 81% 65%;
-  --chart-2: 257 100% 78%;
-  --chart-3: 254 34% 65%;
-  --chart-4: 0 84% 70%;
-  --chart-5: 220 70% 65%;
+  --input: 249 6% 35%;
+  --ring: 0 85% 45%;
+  
+  /* Chart colors using brand palette - brighter for dark mode */
+  --chart-1: 0 100% 55%;        /* Competition red */
+  --chart-2: 252 67% 65%;       /* Community purple */
+  --chart-3: 249 40% 45%;       /* Indigo */
+  --chart-4: 251 55% 55%;       /* Purple dark */
+  --chart-5: 354 75% 60%;       /* Coral variation */
 
   --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 100% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(0 0% 100% / 0.00);
@@ -236,6 +286,16 @@
   /* Fallback for older browsers */
   --destructive-border: hsl(var(--destructive));
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  
+  /* Community color borders */
+  --community-border: hsl(var(--community));
+  --community-border: hsl(from hsl(var(--community)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  
+  --indigo-border: hsl(var(--indigo));
+  --indigo-border: hsl(from hsl(var(--indigo)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  
+  --purple-dark-border: hsl(var(--purple-dark));
+  --purple-dark-border: hsl(from hsl(var(--purple-dark)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
 @layer base {

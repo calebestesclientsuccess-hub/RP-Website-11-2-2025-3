@@ -16,11 +16,27 @@ export default {
         foreground: "hsl(var(--foreground) / <alpha-value>)",
         border: "hsl(var(--border) / <alpha-value>)",
         input: "hsl(var(--input) / <alpha-value>)",
-        // Revenue Party Brand Colors
-        'rp-red': '#ef233c',
-        'rp-purple': '#9F8FFF',
-        'rp-purple-dark': '#42349c',
-        'rp-indigo': '#2e294e',
+        // Revenue Party Brand Colors - Culture = Community + Competition
+        'rp-red': '#ef233c',           // Legacy coral red
+        'rp-purple': '#9F8FFF',        // Legacy purple
+        'rp-purple-dark': '#42349c',   // Legacy purple dark
+        'rp-indigo': '#2e294e',        // Legacy indigo
+        // New brand palette with semantic tokens
+        community: {
+          DEFAULT: "hsl(var(--community) / <alpha-value>)",
+          foreground: "hsl(var(--community-foreground) / <alpha-value>)",
+          border: "var(--community-border)",
+        },
+        indigo: {
+          DEFAULT: "hsl(var(--indigo) / <alpha-value>)",
+          foreground: "hsl(var(--indigo-foreground) / <alpha-value>)",
+          border: "var(--indigo-border)",
+        },
+        "purple-dark": {
+          DEFAULT: "hsl(var(--purple-dark) / <alpha-value>)",
+          foreground: "hsl(var(--purple-dark-foreground) / <alpha-value>)",
+          border: "var(--purple-dark-border)",
+        },
         card: {
           DEFAULT: "hsl(var(--card) / <alpha-value>)",
           foreground: "hsl(var(--card-foreground) / <alpha-value>)",
