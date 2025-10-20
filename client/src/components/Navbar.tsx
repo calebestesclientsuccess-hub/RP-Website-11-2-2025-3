@@ -48,11 +48,11 @@ export function Navbar() {
                   Solutions
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="w-56 p-2">
+                  <ul className="w-56 p-3 bg-background border border-border rounded-md shadow-lg">
                     <li>
                       <Link 
                         href="/solutions/gtm-engine"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-gtm-engine"
                       >
                         GTM Engine
@@ -61,7 +61,7 @@ export function Navbar() {
                     <li>
                       <Link 
                         href="/solutions/fully-loaded-bdr-pod"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-fully-loaded-bdr-pod"
                       >
                         Fully Loaded BDR Pod
@@ -84,11 +84,11 @@ export function Navbar() {
                   Methodology
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="w-56 p-2">
+                  <ul className="w-56 p-3 bg-background border border-border rounded-md shadow-lg">
                     <li>
                       <Link 
                         href="/methodology"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-methodology-overview"
                       >
                         Overview
@@ -97,7 +97,7 @@ export function Navbar() {
                     <li>
                       <Link 
                         href="/methodology/full-stack-salesperson"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-full-stack-salesperson"
                       >
                         Full-Stack Salesperson
@@ -106,7 +106,7 @@ export function Navbar() {
                     <li>
                       <Link 
                         href="/methodology/ai-powered-by-humans"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-ai-powered"
                       >
                         AI-Powered by Humans
@@ -129,11 +129,11 @@ export function Navbar() {
                   Results
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="w-48 p-2">
+                  <ul className="w-56 p-3 bg-background border border-border rounded-md shadow-lg">
                     <li>
                       <Link 
                         href="/results"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-results-overview"
                       >
                         Overview
@@ -142,7 +142,7 @@ export function Navbar() {
                     <li>
                       <Link 
                         href="/results/roi-calculator"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-roi-calculator"
                       >
                         ROI Calculator
@@ -151,7 +151,7 @@ export function Navbar() {
                     <li>
                       <Link 
                         href="/results/success-stories"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-success-stories"
                       >
                         Success Stories
@@ -174,11 +174,11 @@ export function Navbar() {
                   Blueprints
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="w-48 p-2">
+                  <ul className="w-56 p-3 bg-background border border-border rounded-md shadow-lg">
                     <li>
                       <Link 
                         href="/blueprints"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-blueprints-overview"
                       >
                         All Blueprints
@@ -187,7 +187,7 @@ export function Navbar() {
                     <li>
                       <Link 
                         href="/comparison"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-comparison"
                       >
                         Comparison White Paper
@@ -210,11 +210,11 @@ export function Navbar() {
                   Why Party?
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="w-48 p-2">
+                  <ul className="w-56 p-3 bg-background border border-border rounded-md shadow-lg">
                     <li>
                       <Link 
                         href="/why-party"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-why-party"
                       >
                         Why Party
@@ -223,7 +223,7 @@ export function Navbar() {
                     <li>
                       <Link 
                         href="/join-the-party"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-join-the-party"
                       >
                         Join the Party
@@ -232,7 +232,7 @@ export function Navbar() {
                     <li>
                       <Link 
                         href="/contact-us"
-                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-contact-us"
                       >
                         Contact Us
