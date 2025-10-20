@@ -46,6 +46,8 @@ const gearData: GearData[] = [
 export function SentientBlueprint() {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const blueprintRef = useRef<HTMLDivElement>(null); // Added ref for blueprint container
+  const titleRef = useRef<HTMLDivElement>(null); // Added ref for title
   const [hoveredGear, setHoveredGear] = useState<string | null>(null);
   const rotationTweensRef = useRef<Record<string, gsap.core.Tween>>({});
 
@@ -66,6 +68,15 @@ export function SentientBlueprint() {
           pin: false,
         }
       });
+
+      // Title animation
+      if (titleRef.current) {
+        tl.from(titleRef.current, {
+          opacity: 0,
+          y: 50,
+          duration: 0.5,
+        });
+      }
 
       tl.from("#blueprint-grid", {
         opacity: 0,
@@ -149,7 +160,7 @@ export function SentientBlueprint() {
 
       function startContinuousRotation() {
         if (Object.keys(rotationTweensRef.current).length > 0) return;
-        
+
         rotationTweensRef.current.talent = gsap.to("#gear-talent", {
           rotation: "+=360",
           duration: 20,
@@ -157,7 +168,7 @@ export function SentientBlueprint() {
           repeat: -1,
           transformOrigin: "50% 50%",
         });
-        
+
         rotationTweensRef.current.strategy = gsap.to("#gear-strategy", {
           rotation: "-=360",
           duration: 20,
@@ -194,14 +205,14 @@ export function SentientBlueprint() {
 
   const handleGearHover = (gearId: string | null) => {
     if (!svgRef.current) return;
-    
+
     setHoveredGear(gearId);
 
     gearData.forEach(gear => {
       const gearGroup = svgRef.current?.querySelector(`#gear-${gear.id}-group`);
       const gearElement = svgRef.current?.querySelector(`#gear-${gear.id}`);
       const rotationTween = rotationTweensRef.current[gear.id];
-      
+
       if (!gearGroup || !gearElement) return;
 
       if (gearId === null) {
@@ -232,246 +243,291 @@ export function SentientBlueprint() {
   };
 
   return (
-    <div ref={containerRef} className="relative py-16 min-h-[900px] overflow-visible" data-testid="sentient-blueprint">
-      <div className="max-w-7xl mx-auto px-4">
-        <svg
-          ref={svgRef}
-          viewBox="0 0 1200 900"
-          preserveAspectRatio="xMidYMid meet"
-          className="w-full h-auto overflow-visible"
-          style={{ overflow: 'visible' }}
-          xmlns="http://www.w3.org/2000/svg"
+    <section className="relative bg-background overflow-hidden py-20">
+      {/* Blueprint Container - Pinned during scroll */}
+      <div ref={containerRef} className="h-[600vh]">
+        <div
+          ref={blueprintRef}
+          className="sticky top-0 h-screen w-full flex items-center justify-center pb-32"
         >
-          <defs>
-            <pattern id="blueprint-grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#9F8FFF" strokeWidth="0.5" opacity="0.2"/>
-            </pattern>
-            
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
-
-          <rect id="blueprint-grid" width="100%" height="100%" fill="url(#blueprint-grid-pattern)" />
-
-          {[...Array(20)].map((_, i) => (
-            <circle
-              key={`particle-${i}`}
-              className="culture-particle"
-              cx={100 + (i * 50)}
-              cy={100 + (Math.sin(i) * 200)}
-              r="2"
-              fill={i % 2 === 0 ? "#9F8FFF" : "#ef233c"}
-              opacity="0.6"
-            >
-              <animateTransform
-                attributeName="transform"
-                type="translate"
-                values={`0,0; ${Math.random() * 100 - 50},${Math.random() * 100 - 50}; 0,0`}
-                dur={`${10 + Math.random() * 10}s`}
-                repeatCount="indefinite"
-              />
-            </circle>
-          ))}
-
-          <rect
-            id="housing-outline"
-            x="300"
-            y="200"
-            width="600"
-            height="400"
-            fill="none"
-            stroke="#9F8FFF"
-            strokeWidth="2"
-            strokeDasharray="1000"
-            strokeDashoffset="0"
-            opacity="0.4"
-            rx="10"
-          />
-
-          <circle
-            cx="600"
-            cy="400"
-            r="60"
-            fill="rgba(239, 35, 60, 0.2)"
-            stroke="#ef233c"
-            strokeWidth="3"
-            data-testid="central-hub-circle"
-          />
-          <text x="600" y="390" textAnchor="middle" fill="#ef233c" fontSize="24" fontWeight="bold" data-testid="hub-text-number">20+</text>
-          <text x="600" y="410" textAnchor="middle" fill="#fff" fontSize="14" data-testid="hub-text-qualified">Qualified</text>
-          <text x="600" y="425" textAnchor="middle" fill="#fff" fontSize="14" data-testid="hub-text-appointments">Appointments</text>
-
-          <path
-            id="energy-flow-talent"
-            d="M 300,100 Q 450,150 600,250"
-            fill="none"
-            stroke="#9F8FFF"
-            strokeWidth="2"
-            strokeDasharray="500"
-            strokeDashoffset="500"
-            filter="url(#glow)"
-          />
-
-          <g 
-            id="gear-talent-group" 
-            data-testid="gear-talent"
-            opacity="0" 
-            style={{ cursor: 'pointer' }}
-            onMouseEnter={() => handleGearHover('talent')}
-            onMouseLeave={() => handleGearHover(null)}
+          {/* SVG Blueprint Background */}
+          <svg
+            className="absolute inset-0 w-full h-full opacity-10"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            <circle
-              id="gear-talent"
-              cx="600"
-              cy="250"
-              r="50"
-              fill="rgba(159, 143, 255, 0.15)"
+            <defs>
+              <pattern
+                id="blueprint-grid"
+                width="50"
+                height="50"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 50 0 L 0 0 0 50"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="0.5"
+                />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#blueprint-grid)" />
+          </svg>
+
+          {/* Main Content */}
+          <div className="relative z-10 max-w-7xl mx-auto px-4 text-center flex flex-col items-center justify-center min-h-[80vh]">
+            {/* Title */}
+            <div ref={titleRef} className="mb-12 opacity-0">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+                Our Blueprint for{" "}
+                <span className="text-primary">Predictable Pipeline</span>
+              </h2>
+              <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto">
+                The Revenue Party GTM Engine is powered by three interconnected
+                systems, all unified by our culture of relentless execution.
+              </p>
+            </div>
+          </div>
+
+          {/* SVG Blueprint */}
+          <svg
+            ref={svgRef}
+            viewBox="0 0 1200 900"
+            preserveAspectRatio="xMidYMid meet"
+            className="absolute inset-0 w-full h-full overflow-visible"
+            style={{ overflow: 'visible' }}
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <pattern id="blueprint-grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#9F8FFF" strokeWidth="0.5" opacity="0.2"/>
+              </pattern>
+
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+
+            <rect id="blueprint-grid" width="100%" height="100%" fill="url(#blueprint-grid-pattern)" />
+
+            {[...Array(20)].map((_, i) => (
+              <circle
+                key={`particle-${i}`}
+                className="culture-particle"
+                cx={100 + (i * 50)}
+                cy={100 + (Math.sin(i) * 200)}
+                r="2"
+                fill={i % 2 === 0 ? "#9F8FFF" : "#ef233c"}
+                opacity="0.6"
+              >
+                <animateTransform
+                  attributeName="transform"
+                  type="translate"
+                  values={`0,0; ${Math.random() * 100 - 50},${Math.random() * 100 - 50}; 0,0`}
+                  dur={`${10 + Math.random() * 10}s`}
+                  repeatCount="indefinite"
+                />
+              </circle>
+            ))}
+
+            <rect
+              id="housing-outline"
+              x="300"
+              y="200"
+              width="600"
+              height="400"
+              fill="none"
               stroke="#9F8FFF"
-              strokeWidth="3"
-              filter="drop-shadow(0 0 10px #9F8FFF)"
+              strokeWidth="2"
+              strokeDasharray="1000"
+              strokeDashoffset="0"
+              opacity="0.4"
+              rx="10"
             />
-            <path
-              d="M 600,210 L 610,230 L 600,250 L 590,230 Z M 600,350 L 610,370 L 600,390 L 590,370 Z"
-              fill="#9F8FFF"
-              transform="rotate(0 600 250)"
-            />
-            <text x="600" y="255" textAnchor="middle" fill="#9F8FFF" fontSize="12" fontWeight="bold">ET</text>
-          </g>
 
-          <path
-            id="energy-flow-strategy"
-            d="M 900,100 Q 750,150 600,250"
-            fill="none"
-            stroke="#ef233c"
-            strokeWidth="2"
-            strokeDasharray="500"
-            strokeDashoffset="500"
-            filter="url(#glow)"
-          />
-
-          <g 
-            id="gear-strategy-group" 
-            data-testid="gear-strategy"
-            opacity="0"
-            style={{ cursor: 'pointer' }}
-            onMouseEnter={() => handleGearHover('strategy')}
-            onMouseLeave={() => handleGearHover(null)}
-          >
             <circle
-              id="gear-strategy"
-              cx="750"
+              cx="600"
               cy="400"
-              r="50"
-              fill="rgba(239, 35, 60, 0.15)"
+              r="60"
+              fill="rgba(239, 35, 60, 0.2)"
               stroke="#ef233c"
               strokeWidth="3"
-              filter="drop-shadow(0 0 10px #ef233c)"
+              data-testid="central-hub-circle"
             />
+            <text x="600" y="390" textAnchor="middle" fill="#ef233c" fontSize="24" fontWeight="bold" data-testid="hub-text-number">20+</text>
+            <text x="600" y="410" textAnchor="middle" fill="#fff" fontSize="14" data-testid="hub-text-qualified">Qualified</text>
+            <text x="600" y="425" textAnchor="middle" fill="#fff" fontSize="14" data-testid="hub-text-appointments">Appointments</text>
+
             <path
-              d="M 750,360 L 760,380 L 750,400 L 740,380 Z M 750,400 L 760,420 L 750,440 L 740,420 Z"
-              fill="#ef233c"
+              id="energy-flow-talent"
+              d="M 300,100 Q 450,150 600,250"
+              fill="none"
+              stroke="#9F8FFF"
+              strokeWidth="2"
+              strokeDasharray="500"
+              strokeDashoffset="500"
+              filter="url(#glow)"
             />
-            <text x="750" y="405" textAnchor="middle" fill="#ef233c" fontSize="12" fontWeight="bold">SF</text>
-          </g>
 
-          <path
-            id="energy-flow-ai"
-            d="M 300,700 Q 450,650 600,550"
-            fill="none"
-            stroke="#42349c"
-            strokeWidth="2"
-            strokeDasharray="500"
-            strokeDashoffset="500"
-            filter="url(#glow)"
-          />
-
-          <g 
-            id="gear-ai-group" 
-            data-testid="gear-ai"
-            opacity="0"
-            style={{ cursor: 'pointer' }}
-            onMouseEnter={() => handleGearHover('ai')}
-            onMouseLeave={() => handleGearHover(null)}
-          >
-            <circle
-              id="gear-ai"
-              cx="600"
-              cy="550"
-              r="50"
-              fill="rgba(66, 52, 156, 0.15)"
-              stroke="#42349c"
-              strokeWidth="3"
-              filter="drop-shadow(0 0 10px #42349c)"
-            />
-            <path
-              d="M 600,510 L 610,530 L 600,550 L 590,530 Z"
-              fill="#42349c"
-            />
-            <text x="600" y="555" textAnchor="middle" fill="#42349c" fontSize="12" fontWeight="bold">AI</text>
-          </g>
-
-          <path
-            id="energy-flow-stack"
-            d="M 900,700 Q 750,650 600,550"
-            fill="none"
-            stroke="#2e294e"
-            strokeWidth="2"
-            strokeDasharray="500"
-            strokeDashoffset="500"
-            filter="url(#glow)"
-          />
-
-          <g 
-            id="gear-stack-group" 
-            data-testid="gear-stack"
-            opacity="0"
-            style={{ cursor: 'pointer' }}
-            onMouseEnter={() => handleGearHover('stack')}
-            onMouseLeave={() => handleGearHover(null)}
-          >
-            <circle
-              id="gear-stack"
-              cx="450"
-              cy="400"
-              r="50"
-              fill="rgba(46, 41, 78, 0.15)"
-              stroke="#2e294e"
-              strokeWidth="3"
-              filter="drop-shadow(0 0 10px #2e294e)"
-            />
-            <path
-              d="M 450,360 L 460,380 L 450,400 L 440,380 Z"
-              fill="#2e294e"
-            />
-            <text x="450" y="405" textAnchor="middle" fill="#2e294e" fontSize="12" fontWeight="bold">TS</text>
-          </g>
-        </svg>
-
-        {hoveredGear && (
-          <div 
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 p-6 rounded-lg backdrop-blur-lg border pointer-events-none z-50"
-            style={{
-              backgroundColor: "rgba(0, 0, 0, 0.85)",
-              borderColor: gearData.find(g => g.id === hoveredGear)?.color + "50",
-            }}
-          >
-            <h4 
-              className="font-bold mb-3 text-lg"
-              style={{ color: gearData.find(g => g.id === hoveredGear)?.color }}
+            <g 
+              id="gear-talent-group" 
+              data-testid="gear-talent"
+              opacity="0" 
+              style={{ cursor: 'pointer' }}
+              onMouseEnter={() => handleGearHover('talent')}
+              onMouseLeave={() => handleGearHover(null)}
             >
-              {gearData.find(g => g.id === hoveredGear)?.title}
-            </h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {gearData.find(g => g.id === hoveredGear)?.description}
-            </p>
-          </div>
-        )}
+              <circle
+                id="gear-talent"
+                cx="600"
+                cy="250"
+                r="50"
+                fill="rgba(159, 143, 255, 0.15)"
+                stroke="#9F8FFF"
+                strokeWidth="3"
+                filter="drop-shadow(0 0 10px #9F8FFF)"
+              />
+              <path
+                d="M 600,210 L 610,230 L 600,250 L 590,230 Z M 600,350 L 610,370 L 600,390 L 590,370 Z"
+                fill="#9F8FFF"
+                transform="rotate(0 600 250)"
+              />
+              <text x="600" y="255" textAnchor="middle" fill="#9F8FFF" fontSize="12" fontWeight="bold">ET</text>
+            </g>
+
+            <path
+              id="energy-flow-strategy"
+              d="M 900,100 Q 750,150 600,250"
+              fill="none"
+              stroke="#ef233c"
+              strokeWidth="2"
+              strokeDasharray="500"
+              strokeDashoffset="500"
+              filter="url(#glow)"
+            />
+
+            <g 
+              id="gear-strategy-group" 
+              data-testid="gear-strategy"
+              opacity="0"
+              style={{ cursor: 'pointer' }}
+              onMouseEnter={() => handleGearHover('strategy')}
+              onMouseLeave={() => handleGearHover(null)}
+            >
+              <circle
+                id="gear-strategy"
+                cx="750"
+                cy="400"
+                r="50"
+                fill="rgba(239, 35, 60, 0.15)"
+                stroke="#ef233c"
+                strokeWidth="3"
+                filter="drop-shadow(0 0 10px #ef233c)"
+              />
+              <path
+                d="M 750,360 L 760,380 L 750,400 L 740,380 Z M 750,400 L 760,420 L 750,440 L 740,420 Z"
+                fill="#ef233c"
+              />
+              <text x="750" y="405" textAnchor="middle" fill="#ef233c" fontSize="12" fontWeight="bold">SF</text>
+            </g>
+
+            <path
+              id="energy-flow-ai"
+              d="M 300,700 Q 450,650 600,550"
+              fill="none"
+              stroke="#42349c"
+              strokeWidth="2"
+              strokeDasharray="500"
+              strokeDashoffset="500"
+              filter="url(#glow)"
+            />
+
+            <g 
+              id="gear-ai-group" 
+              data-testid="gear-ai"
+              opacity="0"
+              style={{ cursor: 'pointer' }}
+              onMouseEnter={() => handleGearHover('ai')}
+              onMouseLeave={() => handleGearHover(null)}
+            >
+              <circle
+                id="gear-ai"
+                cx="600"
+                cy="550"
+                r="50"
+                fill="rgba(66, 52, 156, 0.15)"
+                stroke="#42349c"
+                strokeWidth="3"
+                filter="drop-shadow(0 0 10px #42349c)"
+              />
+              <path
+                d="M 600,510 L 610,530 L 600,550 L 590,530 Z"
+                fill="#42349c"
+              />
+              <text x="600" y="555" textAnchor="middle" fill="#42349c" fontSize="12" fontWeight="bold">AI</text>
+            </g>
+
+            <path
+              id="energy-flow-stack"
+              d="M 900,700 Q 750,650 600,550"
+              fill="none"
+              stroke="#2e294e"
+              strokeWidth="2"
+              strokeDasharray="500"
+              strokeDashoffset="500"
+              filter="url(#glow)"
+            />
+
+            <g 
+              id="gear-stack-group" 
+              data-testid="gear-stack"
+              opacity="0"
+              style={{ cursor: 'pointer' }}
+              onMouseEnter={() => handleGearHover('stack')}
+              onMouseLeave={() => handleGearHover(null)}
+            >
+              <circle
+                id="gear-stack"
+                cx="450"
+                cy="400"
+                r="50"
+                fill="rgba(46, 41, 78, 0.15)"
+                stroke="#2e294e"
+                strokeWidth="3"
+                filter="drop-shadow(0 0 10px #2e294e)"
+              />
+              <path
+                d="M 450,360 L 460,380 L 450,400 L 440,380 Z"
+                fill="#2e294e"
+              />
+              <text x="450" y="405" textAnchor="middle" fill="#2e294e" fontSize="12" fontWeight="bold">TS</text>
+            </g>
+          </svg>
+        </div>
       </div>
+
+      {hoveredGear && (
+        <div 
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 p-6 rounded-lg backdrop-blur-lg border pointer-events-none z-50"
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.85)",
+            borderColor: gearData.find(g => g.id === hoveredGear)?.color + "50",
+          }}
+        >
+          <h4 
+            className="font-bold mb-3 text-lg"
+            style={{ color: gearData.find(g => g.id === hoveredGear)?.color }}
+          >
+            {gearData.find(g => g.id === hoveredGear)?.title}
+          </h4>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {gearData.find(g => g.id === hoveredGear)?.description}
+          </p>
+        </div>
+      )}
 
       <div className="md:hidden max-w-md mx-auto mt-8 space-y-6 px-4">
         {gearData.map((gear) => (
@@ -481,6 +537,6 @@ export function SentientBlueprint() {
           </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 }
