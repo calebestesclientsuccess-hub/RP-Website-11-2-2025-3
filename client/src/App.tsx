@@ -13,6 +13,8 @@ import About from "@/pages/About";
 import ROICalculator from "@/pages/ROICalculator";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
+import Careers from "@/pages/Careers";
+import CareerDetail from "@/pages/CareerDetail";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,6 +27,8 @@ function Router() {
       <Route path="/roi-calculator" component={ROICalculator} />
       <Route path="/blog" component={Blog} />
       <Route path="/blog/:slug" component={BlogPost} />
+      <Route path="/careers" component={Careers} />
+      <Route path="/careers/:id" component={CareerDetail} />
       <Route component={NotFound} />
     </Switch>
   );
