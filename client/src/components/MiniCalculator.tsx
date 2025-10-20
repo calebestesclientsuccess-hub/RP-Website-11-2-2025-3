@@ -5,17 +5,20 @@ import { Card } from "@/components/ui/card";
 export function MiniCalculator() {
   const [acv, setAcv] = useState([50000]);
   const [closeRate, setCloseRate] = useState([30]);
-  const [displayedText, setDisplayedText] = useState("");
+  const [displayedLine1, setDisplayedLine1] = useState("");
+  const [displayedLine2, setDisplayedLine2] = useState("");
   const [isGlowing, setIsGlowing] = useState(false);
   
-  const fullText = "240 Qualified Meetings (and they actually show up)";
+  const line1Text = "240 Qualified Meetings";
+  const line2Text = "(and they actually show up)";
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
     if (prefersReducedMotion) {
       // Show final text immediately for users who prefer reduced motion
-      setDisplayedText(fullText);
+      setDisplayedLine1(line1Text);
+      setDisplayedLine2(line2Text);
       setIsGlowing(true);
       return;
     }
@@ -23,9 +26,16 @@ export function MiniCalculator() {
     let typingInterval: NodeJS.Timeout | null = null;
     const startDelay = setTimeout(() => {
       let currentIndex = 0;
+      const totalLength = line1Text.length + line2Text.length;
+      
       typingInterval = setInterval(() => {
-        if (currentIndex <= fullText.length) {
-          setDisplayedText(fullText.slice(0, currentIndex));
+        if (currentIndex <= totalLength) {
+          if (currentIndex <= line1Text.length) {
+            setDisplayedLine1(line1Text.slice(0, currentIndex));
+          } else {
+            setDisplayedLine1(line1Text);
+            setDisplayedLine2(line2Text.slice(0, currentIndex - line1Text.length));
+          }
           currentIndex++;
         } else {
           if (typingInterval) clearInterval(typingInterval);
@@ -57,8 +67,13 @@ export function MiniCalculator() {
   return (
     <div className="space-y-4">
       <h3 className="text-xl md:text-2xl font-semibold text-center tracking-wide" data-testid="text-calculator-title">
-        {displayedText}
-        <span className="animate-pulse">|</span>
+        <div>{displayedLine1}</div>
+        <div>
+          {displayedLine2}
+          {(!displayedLine2 || displayedLine2.length < line2Text.length) && (
+            <span className="animate-pulse">|</span>
+          )}
+        </div>
       </h3>
       <Card className={`p-6 md:p-8 bg-card/50 backdrop-blur-sm border-2 shadow-lg transition-all duration-1000 ${
         isGlowing 
@@ -82,7 +97,7 @@ export function MiniCalculator() {
               min={10000}
               max={500000}
               step={5000}
-              className="w-full"
+              className="w-full slider-glow"
               data-testid="input-acv-slider"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
@@ -107,7 +122,7 @@ export function MiniCalculator() {
               min={5}
               max={100}
               step={5}
-              className="w-full"
+              className="w-full slider-glow"
               data-testid="input-close-rate-slider"
             />
             <div className="flex justify-between text-xs text-muted-foreground">

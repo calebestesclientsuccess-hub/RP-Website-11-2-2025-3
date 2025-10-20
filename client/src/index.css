@@ -430,6 +430,19 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+@keyframes slider-pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(239, 35, 60, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px rgba(239, 35, 60, 0.8));
+  }
+}
+
+.slider-glow {
+  animation: slider-pulse-glow 2s ease-in-out infinite;
+}
+
 /* Respect user's preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
