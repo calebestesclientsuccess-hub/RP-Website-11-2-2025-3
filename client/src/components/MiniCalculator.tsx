@@ -1,10 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Slider } from "@/components/ui/slider";
 import { Card } from "@/components/ui/card";
 
 export function MiniCalculator() {
   const [acv, setAcv] = useState([50000]);
   const [closeRate, setCloseRate] = useState([30]);
+  const [displayedText, setDisplayedText] = useState("");
+  const [isGlowing, setIsGlowing] = useState(false);
+  
+  const fullText = "240 Qualified Meetings (and they actually show up)";
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    if (prefersReducedMotion) {
+      // Show final text immediately for users who prefer reduced motion
+      setDisplayedText(fullText);
+      setIsGlowing(true);
+      return;
+    }
+
+    let typingInterval: NodeJS.Timeout | null = null;
+    const startDelay = setTimeout(() => {
+      let currentIndex = 0;
+      typingInterval = setInterval(() => {
+        if (currentIndex <= fullText.length) {
+          setDisplayedText(fullText.slice(0, currentIndex));
+          currentIndex++;
+        } else {
+          if (typingInterval) clearInterval(typingInterval);
+          setIsGlowing(true);
+        }
+      }, 50);
+    }, 800);
+
+    return () => {
+      clearTimeout(startDelay);
+      if (typingInterval) clearInterval(typingInterval);
+    };
+  }, []);
 
   const appointmentsPerYear = 20 * 12; // 20 per month * 12 months
   const potentialRevenue = Math.round(
@@ -22,16 +56,21 @@ export function MiniCalculator() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-2xl md:text-3xl font-bold text-center" data-testid="text-calculator-title">
-        What's Your Potential New Revenue This Year?
+      <h3 className="text-xl md:text-2xl font-semibold text-center tracking-wide" data-testid="text-calculator-title">
+        {displayedText}
+        <span className="animate-pulse">|</span>
       </h3>
-      <Card className="p-6 md:p-8 bg-card/50 backdrop-blur-sm border-2 border-primary/20 shadow-lg">
+      <Card className={`p-6 md:p-8 bg-card/50 backdrop-blur-sm border-2 shadow-lg transition-all duration-1000 ${
+        isGlowing 
+          ? 'border-primary shadow-[0_0_30px_rgba(239,35,60,0.5)] animate-pulse-glow' 
+          : 'border-primary/20'
+      }`}>
         <div className="space-y-6">
           {/* ACV Slider */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <label className="text-sm font-medium text-foreground">
-                Average Revenue Per New Client
+                Average Revenue Per New Client (annually)
               </label>
               <span className="text-lg font-bold text-primary font-mono" data-testid="text-acv-value">
                 {formatCurrency(acv[0])}

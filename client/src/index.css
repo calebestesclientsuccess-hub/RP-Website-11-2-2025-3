@@ -416,6 +416,20 @@
   }
 }
 
+/* Custom animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(239, 35, 60, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(239, 35, 60, 0.6);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
 /* Respect user's preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,

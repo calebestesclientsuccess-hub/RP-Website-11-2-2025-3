@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MiniCalculator } from "@/components/MiniCalculator";
+import GTMTimeline from "@/components/GTMTimeline";
 import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote, Brain, Target, Headphones, Users, Wrench, Trophy } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -23,6 +24,7 @@ export default function Home() {
       icon: <UserX className="w-12 h-12" />,
       title: "The Lone Wolf Fallacy",
       description: "Betting your growth on the heroics of an individual, knowing that 1 in 3 new BDR hires will fail completely within the first year, forcing you to start the painful cycle all over again.",
+      footer: "You don't need another salesperson. You need leverage."
     },
   ];
 
@@ -137,7 +139,12 @@ export default function Home() {
               <Card key={index} className="p-8 hover-elevate transition-all" data-testid={`card-problem-${index}`}>
                 <div className="text-primary mb-4">{problem.icon}</div>
                 <h3 className="text-xl font-bold mb-3">{problem.title}</h3>
-                <p className="text-muted-foreground">{problem.description}</p>
+                <p className="text-muted-foreground mb-4">{problem.description}</p>
+                {problem.footer && (
+                  <p className="text-sm font-semibold text-foreground mt-6 pt-4 border-t border-border">
+                    {problem.footer}
+                  </p>
+                )}
               </Card>
             ))}
           </div>
@@ -198,50 +205,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-              Our Blueprint for <span className="text-primary">Predictable Pipeline.</span>
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              We don't just add headcount; we deploy a complete operational blueprint. Our process is designed for speed, precision, and relentless optimization, ensuring your GTM engine is running at peak performance from day one.
-            </p>
-          </div>
-
-          <div className="space-y-8">
-            {processSteps.map((step, index) => (
-              <Card key={index} className="p-8 hover-elevate transition-all" data-testid={`card-step-${index}`}>
-                <div className="grid md:grid-cols-[auto,1fr] gap-6 items-start">
-                  <div className="text-6xl font-bold text-primary/20 font-mono">
-                    {step.number}
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="text-2xl font-bold">{step.title}</h3>
-                      <span className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium">
-                        {step.duration}
-                      </span>
-                    </div>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          <div className="text-center mt-16">
-            <Button size="lg" variant="outline" className="gap-2" data-testid="button-learn-process" asChild>
-              <Link href="/our-process">
-                Learn About Our Process <ArrowRight className="w-4 h-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      {/* Complete GTM Machine Timeline */}
+      <GTMTimeline />
 
       {/* Success Stories / Results Preview Section */}
       <section className="py-20 px-4 md:px-6 lg:px-8">
@@ -405,6 +370,51 @@ export default function Home() {
             <Button size="lg" variant="outline" className="gap-2" data-testid="button-full-comparison" asChild>
               <Link href="/comparison">
                 See Full Comparison <ArrowRight className="w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+              Our Blueprint for <span className="text-primary">Predictable Pipeline.</span>
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              We don't just add headcount; we deploy a complete operational blueprint. Our process is designed for speed, precision, and relentless optimization, ensuring your GTM engine is running at peak performance from day one.
+            </p>
+          </div>
+
+          <div className="space-y-8">
+            {processSteps.map((step, index) => (
+              <Card key={index} className="p-8 hover-elevate transition-all" data-testid={`card-step-${index}`}>
+                <div className="grid md:grid-cols-[auto,1fr] gap-6 items-start">
+                  <div className="text-6xl font-bold text-primary/20 font-mono">
+                    {step.number}
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h3 className="text-2xl font-bold">{step.title}</h3>
+                      <span className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium">
+                        {step.duration}
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {step.description}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center mt-16">
+            <Button size="lg" variant="outline" className="gap-2" data-testid="button-learn-process" asChild>
+              <Link href="/our-process">
+                Learn About Our Process <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
           </div>
