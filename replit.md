@@ -8,17 +8,28 @@ Revenue Party is a sophisticated marketing website for a Go-to-Market (GTM) cons
 ### Frontend (React + Vite + Tailwind CSS)
 - **Pages**:
   - `/` - Home page with hero, problems, solutions, gear system, process, and testimonials
-  - `/services` - Services page detailing the BDR Pod components and comparison
-  - `/methodology` - Methodology page explaining the GTM approach
-  - `/about` - About page with company mission and values
-  - `/roi-calculator` - Comprehensive ROI calculator with email capture
-  - `/blog` - Blog list page with all published posts
-  - `/blog/:slug` - Individual blog post with Markdown rendering
-  - `/careers` - Careers page with active job listings
-  - `/careers/:id` - Job detail page with application form
+  - `/gtm-engine` - GTM Engine overview page
+  - **Solutions**:
+    - `/solutions/fully-loaded-bdr-pod` - Fully Loaded BDR Pod service details
+  - **Methodology**:
+    - `/methodology` - Methodology overview
+    - `/methodology/full-stack-salesperson` - Full-Stack Salesperson approach
+    - `/methodology/ai-powered-by-humans` - AI-Powered by Humans philosophy
+  - **Results**:
+    - `/results` - Results overview page
+    - `/results/roi-calculator` - Comprehensive ROI calculator with email capture
+    - `/results/success-stories` - Success stories showcasing client testimonials
+  - `/blueprints` - Blog/Blueprints list page with all published posts
+  - `/blueprints/:slug` - Individual blog post with Markdown rendering
+  - `/comparison` - Comparison page (in-house vs RevParty)
+  - **Company**:
+    - `/why-party` - About page with company mission and values
+    - `/join-the-party` - Careers page with active job listings
+    - `/join-the-party/:id` - Job detail page with application form
+    - `/contact-us` - Contact page with schedule meeting CTA
 
 - **Components**:
-  - `Navbar.tsx` - Fixed navigation with theme toggle (includes Blog and Careers links)
+  - `Navbar.tsx` - Fixed navigation with dropdown menus (Solutions, Methodology, Results, Company) and theme toggle
   - `Footer.tsx` - Site footer with links
   - `ThemeProvider.tsx` - Dark/light theme management
   - `MiniCalculator.tsx` - Hero section calculator widget
@@ -107,10 +118,14 @@ Revenue Party is a sophisticated marketing website for a Go-to-Market (GTM) cons
 
 ## Recent Changes (October 2025)
 - **Database Integration**: Migrated from in-memory to PostgreSQL with Drizzle ORM
-- **Blog System**: Built complete blog feature with Markdown rendering and XSS protection
+- **Blog System**: Built complete blog feature with Markdown rendering and XSS protection (renamed to "Blueprints")
 - **Testimonials**: Added social proof section to home page with database-backed testimonials
 - **Careers**: Created job listings and application system with form validation
-- **Navigation**: Updated navbar with Blog and Careers links
+- **Navigation Reorganization**: Major site structure update with dropdown navigation menus
+  - Added dropdown menus: Solutions, Methodology, Results, Company
+  - Created new pages: GTM Engine, Full-Stack Salesperson, AI-Powered, Results Overview, Success Stories, Comparison, Contact Us
+  - Updated all routes to new URL structure (e.g., `/services` → `/solutions/fully-loaded-bdr-pod`, `/blog` → `/blueprints`)
+  - Fixed nested anchor tag errors in Navbar and Footer components
 - **Data Seeding**: Created seed data for blog posts, testimonials, and job postings
 - **API Routes**: Implemented RESTful API endpoints for all content types
 - **Testing**: Added comprehensive data-testid attributes for e2e testing

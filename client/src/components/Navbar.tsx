@@ -38,17 +38,16 @@ export function Navbar() {
               {/* GTM Engine - Standalone */}
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
-                  <Link href="/gtm-engine">
-                    <a
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                        isActivePath("/gtm-engine")
-                          ? "text-primary"
-                          : "text-muted-foreground"
-                      }`}
-                      data-testid="link-gtm-engine"
-                    >
-                      GTM Engine
-                    </a>
+                  <Link 
+                    href="/gtm-engine"
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
+                      isActivePath("/gtm-engine")
+                        ? "text-primary"
+                        : "text-muted-foreground"
+                    }`}
+                    data-testid="link-gtm-engine"
+                  >
+                    GTM Engine
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
@@ -68,16 +67,13 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-48 p-2">
                     <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/solutions/fully-loaded-bdr-pod">
-                          <a
-                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                            data-testid="link-fully-loaded-bdr-pod"
-                          >
-                            Fully Loaded BDR Pod
-                          </a>
-                        </Link>
-                      </NavigationMenuLink>
+                      <Link 
+                        href="/solutions/fully-loaded-bdr-pod"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-fully-loaded-bdr-pod"
+                      >
+                        Fully Loaded BDR Pod
+                      </Link>
                     </li>
                   </ul>
                 </NavigationMenuContent>
@@ -98,40 +94,31 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-56 p-2">
                     <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/methodology">
-                          <a
-                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                            data-testid="link-methodology-overview"
-                          >
-                            Overview
-                          </a>
-                        </Link>
-                      </NavigationMenuLink>
+                      <Link 
+                        href="/methodology"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-methodology-overview"
+                      >
+                        Overview
+                      </Link>
                     </li>
                     <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/methodology/full-stack-salesperson">
-                          <a
-                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                            data-testid="link-full-stack-salesperson"
-                          >
-                            Full-Stack Salesperson
-                          </a>
-                        </Link>
-                      </NavigationMenuLink>
+                      <Link 
+                        href="/methodology/full-stack-salesperson"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-full-stack-salesperson"
+                      >
+                        Full-Stack Salesperson
+                      </Link>
                     </li>
                     <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/methodology/ai-powered-by-humans">
-                          <a
-                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                            data-testid="link-ai-powered"
-                          >
-                            AI-Powered by Humans
-                          </a>
-                        </Link>
-                      </NavigationMenuLink>
+                      <Link 
+                        href="/methodology/ai-powered-by-humans"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-ai-powered"
+                      >
+                        AI-Powered by Humans
+                      </Link>
                     </li>
                   </ul>
                 </NavigationMenuContent>
@@ -152,40 +139,31 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-48 p-2">
                     <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/results">
-                          <a
-                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                            data-testid="link-results-overview"
-                          >
-                            Overview
-                          </a>
-                        </Link>
-                      </NavigationMenuLink>
+                      <Link 
+                        href="/results"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-results-overview"
+                      >
+                        Overview
+                      </Link>
                     </li>
                     <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/results/roi-calculator">
-                          <a
-                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                            data-testid="link-roi-calculator"
-                          >
-                            ROI Calculator
-                          </a>
-                        </Link>
-                      </NavigationMenuLink>
+                      <Link 
+                        href="/results/roi-calculator"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-roi-calculator"
+                      >
+                        ROI Calculator
+                      </Link>
                     </li>
                     <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/results/success-stories">
-                          <a
-                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                            data-testid="link-success-stories"
-                          >
-                            Success Stories
-                          </a>
-                        </Link>
-                      </NavigationMenuLink>
+                      <Link 
+                        href="/results/success-stories"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-success-stories"
+                      >
+                        Success Stories
+                      </Link>
                     </li>
                   </ul>
                 </NavigationMenuContent>
@@ -194,17 +172,16 @@ export function Navbar() {
               {/* Blueprints - Standalone */}
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
-                  <Link href="/blueprints">
-                    <a
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                        isActivePath("/blueprints")
-                          ? "text-primary"
-                          : "text-muted-foreground"
-                      }`}
-                      data-testid="link-blueprints"
-                    >
-                      Blueprints
-                    </a>
+                  <Link 
+                    href="/blueprints"
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
+                      isActivePath("/blueprints")
+                        ? "text-primary"
+                        : "text-muted-foreground"
+                    }`}
+                    data-testid="link-blueprints"
+                  >
+                    Blueprints
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
@@ -212,17 +189,16 @@ export function Navbar() {
               {/* Comparison - Standalone */}
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
-                  <Link href="/comparison">
-                    <a
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                        isActivePath("/comparison")
-                          ? "text-primary"
-                          : "text-muted-foreground"
-                      }`}
-                      data-testid="link-comparison"
-                    >
-                      Comparison
-                    </a>
+                  <Link 
+                    href="/comparison"
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
+                      isActivePath("/comparison")
+                        ? "text-primary"
+                        : "text-muted-foreground"
+                    }`}
+                    data-testid="link-comparison"
+                  >
+                    Comparison
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
@@ -242,40 +218,31 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-48 p-2">
                     <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/why-party">
-                          <a
-                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                            data-testid="link-why-party"
-                          >
-                            Why Party
-                          </a>
-                        </Link>
-                      </NavigationMenuLink>
+                      <Link 
+                        href="/why-party"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-why-party"
+                      >
+                        Why Party
+                      </Link>
                     </li>
                     <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/join-the-party">
-                          <a
-                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                            data-testid="link-join-the-party"
-                          >
-                            Join the Party
-                          </a>
-                        </Link>
-                      </NavigationMenuLink>
+                      <Link 
+                        href="/join-the-party"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-join-the-party"
+                      >
+                        Join the Party
+                      </Link>
                     </li>
                     <li>
-                      <NavigationMenuLink asChild>
-                        <Link href="/contact-us">
-                          <a
-                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                            data-testid="link-contact-us"
-                          >
-                            Contact Us
-                          </a>
-                        </Link>
-                      </NavigationMenuLink>
+                      <Link 
+                        href="/contact-us"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-contact-us"
+                      >
+                        Contact Us
+                      </Link>
                     </li>
                   </ul>
                 </NavigationMenuContent>
