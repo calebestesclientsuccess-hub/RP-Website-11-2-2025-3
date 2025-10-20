@@ -7,8 +7,6 @@ import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-rea
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
-import heroImage1 from "@assets/Gemini_Generated_Image_4ztam04ztam04zta_1760977784184.png";
-import heroImage2 from "@assets/Gemini_Generated_Image_40ehtl40ehtl40eh_1760977784184.png";
 
 export default function Home() {
   const problems = [
@@ -52,24 +50,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section - Geometric Background */}
+      {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
-        {/* Background gradient and geometric figures */}
+        {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-community/5 via-background to-primary/5 pointer-events-none" />
-        <div className="absolute inset-0 pointer-events-none opacity-20">
-          <img 
-            src={heroImage1} 
-            alt=""
-            className="absolute left-0 top-1/2 -translate-y-1/2 h-[600px] w-auto object-contain mix-blend-screen"
-            aria-hidden="true"
-          />
-          <img 
-            src={heroImage2} 
-            alt=""
-            className="absolute right-0 top-1/2 -translate-y-1/2 h-[600px] w-auto object-contain mix-blend-screen"
-            aria-hidden="true"
-          />
-        </div>
         
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
