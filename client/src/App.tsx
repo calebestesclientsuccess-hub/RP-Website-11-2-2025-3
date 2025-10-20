@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
+import { FloatingCalculatorCTA } from "./components/FloatingCalculatorCTA";
 import Home from "@/pages/Home";
 import GTMEnginePage from "@/pages/GTMEnginePage";
 import FullyLoadedBDRPage from "@/pages/FullyLoadedBDRPage";
@@ -74,6 +75,7 @@ function App() {
               <Router />
             </main>
             <Footer />
+            <FloatingCalculatorCTA />
           </div>
           <Toaster />
         </TooltipProvider>

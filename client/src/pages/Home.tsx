@@ -183,6 +183,63 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Success Stories / Results Preview Section */}
+      <section className="py-20 px-4 md:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <Badge variant="community" className="mb-4">Proven Results</Badge>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+              The Numbers Don't Lie. <span className="text-primary">The Results Speak.</span>
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              When you deploy a complete GTM system instead of just hiring another rep, here's what actually happens.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <Card className="p-8 text-center hover-elevate transition-all" data-testid="metric-faster">
+              <div className="text-5xl font-bold text-primary mb-3">3-5x</div>
+              <h3 className="text-xl font-bold mb-3">Faster Time-to-Market</h3>
+              <p className="text-sm text-muted-foreground">
+                Start getting qualified meetings in 2-3 weeks instead of 3-6 months
+              </p>
+            </Card>
+
+            <Card className="p-8 text-center hover-elevate transition-all" data-testid="metric-savings">
+              <div className="text-5xl font-bold text-community mb-3">60%+</div>
+              <h3 className="text-xl font-bold mb-3">Cost Savings</h3>
+              <p className="text-sm text-muted-foreground">
+                Same output at a fraction of the cost when you factor in everything
+              </p>
+            </Card>
+
+            <Card className="p-8 text-center hover-elevate transition-all" data-testid="metric-ownership">
+              <div className="text-5xl font-bold text-purple-dark mb-3">100%</div>
+              <h3 className="text-xl font-bold mb-3">Playbook Ownership</h3>
+              <p className="text-sm text-muted-foreground">
+                You own your complete GTM playbook—a strategic asset you can scale
+              </p>
+            </Card>
+
+            <Card className="p-8 text-center hover-elevate transition-all" data-testid="metric-risk">
+              <div className="text-5xl font-bold text-primary mb-3">Zero</div>
+              <h3 className="text-xl font-bold mb-3">Hiring Risk</h3>
+              <p className="text-sm text-muted-foreground">
+                Performance-driven model means you only pay for results that matter
+              </p>
+            </Card>
+          </div>
+
+          <div className="text-center">
+            <Link href="/results/success-stories">
+              <Button size="lg" variant="outline" className="gap-2" data-testid="button-success-stories">
+                Read Success Stories <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
       <TestimonialsSection />
 
