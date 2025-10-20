@@ -10,10 +10,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
           {/* Logo & Mission */}
           <div className="md:col-span-2">
-            <Link href="/">
-              <a className="inline-block mb-4" data-testid="footer-link-home">
-                <img src={logoWhite} alt="Revenue Party Logo" className="h-8 w-auto" />
-              </a>
+            <Link href="/" className="inline-block mb-4" data-testid="footer-link-home">
+              <img src={logoWhite} alt="Revenue Party Logo" className="h-8 w-auto" />
             </Link>
             <p className="text-muted-foreground text-sm max-w-md">
               We architect GTM systems that deliver predictable revenue. Your next sales hire shouldn't be a person—it should be a complete revenue generation system.
@@ -25,17 +23,13 @@ export function Footer() {
             <h3 className="font-semibold text-foreground mb-4">Solutions</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/gtm-engine">
-                  <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-gtm-engine">
-                    The GTM Engine
-                  </a>
+                <Link href="/gtm-engine" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-gtm-engine">
+                  The GTM Engine
                 </Link>
               </li>
               <li>
-                <Link href="/solutions/fully-loaded-bdr-pod">
-                  <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-services">
-                    Fully Loaded BDR Pod
-                  </a>
+                <Link href="/solutions/fully-loaded-bdr-pod" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-services">
+                  Fully Loaded BDR Pod
                 </Link>
               </li>
             </ul>
@@ -46,24 +40,18 @@ export function Footer() {
             <h3 className="font-semibold text-foreground mb-4">Company</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/why-party">
-                  <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-about">
-                    Why Party
-                  </a>
+                <Link href="/why-party" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-about">
+                  Why Party
                 </Link>
               </li>
               <li>
-                <Link href="/join-the-party">
-                  <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-careers">
-                    Careers
-                  </a>
+                <Link href="/join-the-party" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-careers">
+                  Careers
                 </Link>
               </li>
               <li>
-                <Link href="/contact-us">
-                  <a className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-contact">
-                    Contact Us
-                  </a>
+                <Link href="/contact-us" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-contact">
+                  Contact Us
                 </Link>
               </li>
             </ul>

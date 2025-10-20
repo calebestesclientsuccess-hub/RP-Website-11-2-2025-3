@@ -28,10 +28,8 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/">
-            <a className="flex items-center gap-2 hover-elevate rounded-md px-2 py-1 transition-all" data-testid="link-home">
-              <img src={logoWhite} alt="Revenue Party Logo" className="h-8 w-auto" />
-            </a>
+          <Link href="/" className="flex items-center gap-2 hover-elevate rounded-md px-2 py-1 transition-all" data-testid="link-home">
+            <img src={logoWhite} alt="Revenue Party Logo" className="h-8 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -39,18 +37,20 @@ export function Navbar() {
             <NavigationMenuList className="gap-1">
               {/* GTM Engine - Standalone */}
               <NavigationMenuItem>
-                <Link href="/gtm-engine">
-                  <NavigationMenuLink
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                      isActivePath("/gtm-engine")
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                    }`}
-                    data-testid="link-gtm-engine"
-                  >
-                    GTM Engine
-                  </NavigationMenuLink>
-                </Link>
+                <NavigationMenuLink asChild>
+                  <Link href="/gtm-engine">
+                    <a
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
+                        isActivePath("/gtm-engine")
+                          ? "text-primary"
+                          : "text-muted-foreground"
+                      }`}
+                      data-testid="link-gtm-engine"
+                    >
+                      GTM Engine
+                    </a>
+                  </Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
 
               {/* Solutions Dropdown */}
@@ -68,14 +68,16 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-48 p-2">
                     <li>
-                      <Link href="/solutions/fully-loaded-bdr-pod">
-                        <NavigationMenuLink
-                          className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                          data-testid="link-fully-loaded-bdr-pod"
-                        >
-                          Fully Loaded BDR Pod
-                        </NavigationMenuLink>
-                      </Link>
+                      <NavigationMenuLink asChild>
+                        <Link href="/solutions/fully-loaded-bdr-pod">
+                          <a
+                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                            data-testid="link-fully-loaded-bdr-pod"
+                          >
+                            Fully Loaded BDR Pod
+                          </a>
+                        </Link>
+                      </NavigationMenuLink>
                     </li>
                   </ul>
                 </NavigationMenuContent>
@@ -96,34 +98,40 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-56 p-2">
                     <li>
-                      <Link href="/methodology">
-                        <NavigationMenuLink
-                          className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                          data-testid="link-methodology-overview"
-                        >
-                          Overview
-                        </NavigationMenuLink>
-                      </Link>
+                      <NavigationMenuLink asChild>
+                        <Link href="/methodology">
+                          <a
+                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                            data-testid="link-methodology-overview"
+                          >
+                            Overview
+                          </a>
+                        </Link>
+                      </NavigationMenuLink>
                     </li>
                     <li>
-                      <Link href="/methodology/full-stack-salesperson">
-                        <NavigationMenuLink
-                          className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                          data-testid="link-full-stack-salesperson"
-                        >
-                          Full-Stack Salesperson
-                        </NavigationMenuLink>
-                      </Link>
+                      <NavigationMenuLink asChild>
+                        <Link href="/methodology/full-stack-salesperson">
+                          <a
+                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                            data-testid="link-full-stack-salesperson"
+                          >
+                            Full-Stack Salesperson
+                          </a>
+                        </Link>
+                      </NavigationMenuLink>
                     </li>
                     <li>
-                      <Link href="/methodology/ai-powered-by-humans">
-                        <NavigationMenuLink
-                          className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                          data-testid="link-ai-powered"
-                        >
-                          AI-Powered by Humans
-                        </NavigationMenuLink>
-                      </Link>
+                      <NavigationMenuLink asChild>
+                        <Link href="/methodology/ai-powered-by-humans">
+                          <a
+                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                            data-testid="link-ai-powered"
+                          >
+                            AI-Powered by Humans
+                          </a>
+                        </Link>
+                      </NavigationMenuLink>
                     </li>
                   </ul>
                 </NavigationMenuContent>
@@ -144,34 +152,40 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-48 p-2">
                     <li>
-                      <Link href="/results">
-                        <NavigationMenuLink
-                          className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                          data-testid="link-results-overview"
-                        >
-                          Overview
-                        </NavigationMenuLink>
-                      </Link>
+                      <NavigationMenuLink asChild>
+                        <Link href="/results">
+                          <a
+                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                            data-testid="link-results-overview"
+                          >
+                            Overview
+                          </a>
+                        </Link>
+                      </NavigationMenuLink>
                     </li>
                     <li>
-                      <Link href="/results/roi-calculator">
-                        <NavigationMenuLink
-                          className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                          data-testid="link-roi-calculator"
-                        >
-                          ROI Calculator
-                        </NavigationMenuLink>
-                      </Link>
+                      <NavigationMenuLink asChild>
+                        <Link href="/results/roi-calculator">
+                          <a
+                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                            data-testid="link-roi-calculator"
+                          >
+                            ROI Calculator
+                          </a>
+                        </Link>
+                      </NavigationMenuLink>
                     </li>
                     <li>
-                      <Link href="/results/success-stories">
-                        <NavigationMenuLink
-                          className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                          data-testid="link-success-stories"
-                        >
-                          Success Stories
-                        </NavigationMenuLink>
-                      </Link>
+                      <NavigationMenuLink asChild>
+                        <Link href="/results/success-stories">
+                          <a
+                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                            data-testid="link-success-stories"
+                          >
+                            Success Stories
+                          </a>
+                        </Link>
+                      </NavigationMenuLink>
                     </li>
                   </ul>
                 </NavigationMenuContent>
@@ -179,34 +193,38 @@ export function Navbar() {
 
               {/* Blueprints - Standalone */}
               <NavigationMenuItem>
-                <Link href="/blueprints">
-                  <NavigationMenuLink
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                      isActivePath("/blueprints")
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                    }`}
-                    data-testid="link-blueprints"
-                  >
-                    Blueprints
-                  </NavigationMenuLink>
-                </Link>
+                <NavigationMenuLink asChild>
+                  <Link href="/blueprints">
+                    <a
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
+                        isActivePath("/blueprints")
+                          ? "text-primary"
+                          : "text-muted-foreground"
+                      }`}
+                      data-testid="link-blueprints"
+                    >
+                      Blueprints
+                    </a>
+                  </Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
 
               {/* Comparison - Standalone */}
               <NavigationMenuItem>
-                <Link href="/comparison">
-                  <NavigationMenuLink
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                      isActivePath("/comparison")
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                    }`}
-                    data-testid="link-comparison"
-                  >
-                    Comparison
-                  </NavigationMenuLink>
-                </Link>
+                <NavigationMenuLink asChild>
+                  <Link href="/comparison">
+                    <a
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
+                        isActivePath("/comparison")
+                          ? "text-primary"
+                          : "text-muted-foreground"
+                      }`}
+                      data-testid="link-comparison"
+                    >
+                      Comparison
+                    </a>
+                  </Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
 
               {/* Company Dropdown */}
@@ -224,34 +242,40 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-48 p-2">
                     <li>
-                      <Link href="/why-party">
-                        <NavigationMenuLink
-                          className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                          data-testid="link-why-party"
-                        >
-                          Why Party
-                        </NavigationMenuLink>
-                      </Link>
+                      <NavigationMenuLink asChild>
+                        <Link href="/why-party">
+                          <a
+                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                            data-testid="link-why-party"
+                          >
+                            Why Party
+                          </a>
+                        </Link>
+                      </NavigationMenuLink>
                     </li>
                     <li>
-                      <Link href="/join-the-party">
-                        <NavigationMenuLink
-                          className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                          data-testid="link-join-the-party"
-                        >
-                          Join the Party
-                        </NavigationMenuLink>
-                      </Link>
+                      <NavigationMenuLink asChild>
+                        <Link href="/join-the-party">
+                          <a
+                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                            data-testid="link-join-the-party"
+                          >
+                            Join the Party
+                          </a>
+                        </Link>
+                      </NavigationMenuLink>
                     </li>
                     <li>
-                      <Link href="/contact-us">
-                        <NavigationMenuLink
-                          className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
-                          data-testid="link-contact-us"
-                        >
-                          Contact Us
-                        </NavigationMenuLink>
-                      </Link>
+                      <NavigationMenuLink asChild>
+                        <Link href="/contact-us">
+                          <a
+                            className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                            data-testid="link-contact-us"
+                          >
+                            Contact Us
+                          </a>
+                        </Link>
+                      </NavigationMenuLink>
                     </li>
                   </ul>
                 </NavigationMenuContent>
@@ -305,157 +329,144 @@ export function Navbar() {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 space-y-2 border-t border-border">
             {/* GTM Engine */}
-            <Link href="/gtm-engine">
-              <a
-                className={`block px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                  isActivePath("/gtm-engine")
-                    ? "text-primary bg-primary/10"
-                    : "text-foreground"
-                }`}
-                onClick={() => setMobileMenuOpen(false)}
-                data-testid="mobile-link-gtm-engine"
-              >
-                GTM Engine
-              </a>
+            <Link 
+              href="/gtm-engine"
+              className={`block px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
+                isActivePath("/gtm-engine")
+                  ? "text-primary bg-primary/10"
+                  : "text-foreground"
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+              data-testid="mobile-link-gtm-engine"
+            >
+              GTM Engine
             </Link>
 
             {/* Solutions Section */}
             <div className="space-y-1">
               <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Solutions</div>
-              <Link href="/solutions/fully-loaded-bdr-pod">
-                <a
-                  className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                  data-testid="mobile-link-fully-loaded-bdr-pod"
-                >
-                  Fully Loaded BDR Pod
-                </a>
+              <Link 
+                href="/solutions/fully-loaded-bdr-pod"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-fully-loaded-bdr-pod"
+              >
+                Fully Loaded BDR Pod
               </Link>
             </div>
 
             {/* Methodology Section */}
             <div className="space-y-1">
               <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Methodology</div>
-              <Link href="/methodology">
-                <a
-                  className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                  data-testid="mobile-link-methodology"
-                >
-                  Overview
-                </a>
+              <Link 
+                href="/methodology"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-methodology"
+              >
+                Overview
               </Link>
-              <Link href="/methodology/full-stack-salesperson">
-                <a
-                  className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                  data-testid="mobile-link-full-stack-salesperson"
-                >
-                  Full-Stack Salesperson
-                </a>
+              <Link 
+                href="/methodology/full-stack-salesperson"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-full-stack-salesperson"
+              >
+                Full-Stack Salesperson
               </Link>
-              <Link href="/methodology/ai-powered-by-humans">
-                <a
-                  className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                  data-testid="mobile-link-ai-powered"
-                >
-                  AI-Powered by Humans
-                </a>
+              <Link 
+                href="/methodology/ai-powered-by-humans"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-ai-powered"
+              >
+                AI-Powered by Humans
               </Link>
             </div>
 
             {/* Results Section */}
             <div className="space-y-1">
               <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Results</div>
-              <Link href="/results">
-                <a
-                  className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                  data-testid="mobile-link-results"
-                >
-                  Overview
-                </a>
+              <Link 
+                href="/results"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-results"
+              >
+                Overview
               </Link>
-              <Link href="/results/roi-calculator">
-                <a
-                  className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                  data-testid="mobile-link-roi-calculator"
-                >
-                  ROI Calculator
-                </a>
+              <Link 
+                href="/results/roi-calculator"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-roi-calculator"
+              >
+                ROI Calculator
               </Link>
-              <Link href="/results/success-stories">
-                <a
-                  className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                  data-testid="mobile-link-success-stories"
-                >
-                  Success Stories
-                </a>
+              <Link 
+                href="/results/success-stories"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-success-stories"
+              >
+                Success Stories
               </Link>
             </div>
 
             {/* Blueprints */}
-            <Link href="/blueprints">
-              <a
-                className={`block px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                  isActivePath("/blueprints")
-                    ? "text-primary bg-primary/10"
-                    : "text-foreground"
-                }`}
-                onClick={() => setMobileMenuOpen(false)}
-                data-testid="mobile-link-blueprints"
-              >
-                Blueprints
-              </a>
+            <Link 
+              href="/blueprints"
+              className={`block px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
+                isActivePath("/blueprints")
+                  ? "text-primary bg-primary/10"
+                  : "text-foreground"
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+              data-testid="mobile-link-blueprints"
+            >
+              Blueprints
             </Link>
 
             {/* Comparison */}
-            <Link href="/comparison">
-              <a
-                className={`block px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                  isActivePath("/comparison")
-                    ? "text-primary bg-primary/10"
-                    : "text-foreground"
-                }`}
-                onClick={() => setMobileMenuOpen(false)}
-                data-testid="mobile-link-comparison"
-              >
-                Comparison
-              </a>
+            <Link 
+              href="/comparison"
+              className={`block px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
+                isActivePath("/comparison")
+                  ? "text-primary bg-primary/10"
+                  : "text-foreground"
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
+              data-testid="mobile-link-comparison"
+            >
+              Comparison
             </Link>
 
             {/* Company Section */}
             <div className="space-y-1">
               <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Company</div>
-              <Link href="/why-party">
-                <a
-                  className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                  data-testid="mobile-link-why-party"
-                >
-                  Why Party
-                </a>
+              <Link 
+                href="/why-party"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-why-party"
+              >
+                Why Party
               </Link>
-              <Link href="/join-the-party">
-                <a
-                  className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                  data-testid="mobile-link-join-the-party"
-                >
-                  Join the Party
-                </a>
+              <Link 
+                href="/join-the-party"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-join-the-party"
+              >
+                Join the Party
               </Link>
-              <Link href="/contact-us">
-                <a
-                  className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
-                  onClick={() => setMobileMenuOpen(false)}
-                  data-testid="mobile-link-contact-us"
-                >
-                  Contact Us
-                </a>
+              <Link 
+                href="/contact-us"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-contact-us"
+              >
+                Contact Us
               </Link>
             </div>
 
