@@ -7,22 +7,33 @@ Revenue Party is a sophisticated marketing website for a Go-to-Market (GTM) cons
 
 ### Frontend (React + Vite + Tailwind CSS)
 - **Pages**:
-  - `/` - Home page with hero, problems, solutions, gear system, and process
+  - `/` - Home page with hero, problems, solutions, gear system, process, and testimonials
   - `/services` - Services page detailing the BDR Pod components and comparison
   - `/methodology` - Methodology page explaining the GTM approach
   - `/about` - About page with company mission and values
   - `/roi-calculator` - Comprehensive ROI calculator with email capture
+  - `/blog` - Blog list page with all published posts
+  - `/blog/:slug` - Individual blog post with Markdown rendering
+  - `/careers` - Careers page with active job listings
+  - `/careers/:id` - Job detail page with application form
 
 - **Components**:
-  - `Navbar.tsx` - Fixed navigation with theme toggle
+  - `Navbar.tsx` - Fixed navigation with theme toggle (includes Blog and Careers links)
   - `Footer.tsx` - Site footer with links
   - `ThemeProvider.tsx` - Dark/light theme management
   - `MiniCalculator.tsx` - Hero section calculator widget
   - `GearSystem.tsx` - Interactive gear visualization with hover popups
 
-### Backend (Express.js + In-Memory Storage)
-- Email capture for ROI calculator results
-- In-memory storage for initial setup (can be extended to PostgreSQL)
+### Backend (Express.js + PostgreSQL)
+- **Database**: Full PostgreSQL integration with Drizzle ORM
+- **API Routes**:
+  - `/api/blog-posts` - GET list of published posts, GET by slug
+  - `/api/testimonials` - GET all testimonials (with optional featured filter)
+  - `/api/job-postings` - GET active job listings, GET by ID
+  - `/api/job-applications` - POST new job applications
+  - `/api/roi-submissions` - POST ROI calculator email captures
+  
+- **Storage**: Database-backed storage with seeded sample data for all content types
 
 ### Design System
 - **Colors**:
@@ -47,7 +58,7 @@ Revenue Party is a sophisticated marketing website for a Go-to-Market (GTM) cons
 ### Interactive ROI Calculator
 - User inputs: ACV, close rate, sales cycle, quota
 - Real-time calculations comparing in-house hire vs. RevParty Pod
-- Email capture functionality for lead generation
+- Email capture functionality for lead generation (stored in PostgreSQL)
 - Collapsible methodology section explaining assumptions
 - Tooltips on all inputs with detailed explanations
 
@@ -61,30 +72,62 @@ Revenue Party is a sophisticated marketing website for a Go-to-Market (GTM) cons
 - Glassmorphic popups on hover with descriptions
 - Responsive mobile layout with vertical stacking
 
+### Blog & Content Management
+- Database-driven blog with PostgreSQL storage
+- Markdown content rendering with DOMPurify sanitization (XSS protection)
+- Published/draft post status management
+- SEO-friendly URLs with slug-based routing
+- Responsive card grid layout on list page
+- Full-width article layout on detail pages
+- Featured image support
+
+### Social Proof (Testimonials)
+- Client testimonials displayed on home page
+- Database-backed testimonial management
+- Featured testimonials filtering
+- Client company names and roles
+- Elegant card grid layout with subtle animations
+
+### Careers & Job Applications
+- Active job listings page with department, location, and type filters
+- Individual job detail pages with full descriptions and requirements
+- Application form with validation (react-hook-form + Zod)
+- Required fields: name, email, phone
+- Optional fields: LinkedIn, resume link, cover letter
+- Success toast notifications
+- Database persistence for all applications
+
 ### Design Excellence
 - Dark mode first with light mode toggle
 - Subtle glow effects using CSS animations
 - Smooth transitions and hover states
-- Proper accessibility (ARIA labels, keyboard navigation)
+- Proper accessibility (ARIA labels, keyboard navigation, data-testid attributes)
 - Prefers-reduced-motion support
+- Consistent spacing and typography
 
-## Recent Changes
-- Configured dark mode design system with Revenue Party brand colors
-- Created comprehensive page layouts for all routes
-- Implemented interactive calculators with real-time calculations
-- Added theme provider for dark/light mode toggle
-- Set up proper routing with wouter
-- Added glassmorphic popups and glow animations
-- Implemented accessibility features
+## Recent Changes (October 2025)
+- **Database Integration**: Migrated from in-memory to PostgreSQL with Drizzle ORM
+- **Blog System**: Built complete blog feature with Markdown rendering and XSS protection
+- **Testimonials**: Added social proof section to home page with database-backed testimonials
+- **Careers**: Created job listings and application system with form validation
+- **Navigation**: Updated navbar with Blog and Careers links
+- **Data Seeding**: Created seed data for blog posts, testimonials, and job postings
+- **API Routes**: Implemented RESTful API endpoints for all content types
+- **Testing**: Added comprehensive data-testid attributes for e2e testing
 
 ## Tech Stack
 - React 18 with Vite
 - Tailwind CSS for styling
 - Wouter for routing
-- React Query for data fetching (future backend integration)
+- React Query (TanStack Query v5) for data fetching
 - Shadcn UI components
 - GSAP for advanced animations (ready for ScrollTrigger)
 - Express.js backend
+- PostgreSQL database (Neon-backed via Replit)
+- Drizzle ORM for database management
+- Zod for schema validation
+- React Hook Form for form handling
+- Marked + DOMPurify for secure Markdown rendering
 
 ## User Preferences
 - Dark mode is the default theme
@@ -93,9 +136,20 @@ Revenue Party is a sophisticated marketing website for a Go-to-Market (GTM) cons
 - Emphasis on data-driven decision making
 - Clean, modern typography with strong hierarchy
 
-## Next Steps
-1. Connect email capture form to backend API
-2. Implement GSAP ScrollTrigger for advanced gear animations
-3. Add email delivery functionality for ROI calculator results
-4. Consider PostgreSQL integration for data persistence
-5. Add analytics tracking for calculator usage
+## Database Schema
+All tables use PostgreSQL with Drizzle ORM:
+
+- **blog_posts**: id, title, slug, excerpt, content (Markdown), featuredImage, published, createdAt
+- **testimonials**: id, clientName, company, role, content, featured, createdAt
+- **job_postings**: id, title, department, location, type, description, requirements, active, createdAt
+- **job_applications**: id, jobId, name, email, phone, linkedin, resume, coverLetter, createdAt
+- **roi_submissions**: id, email, acv, closeRate, salesCycle, quota, calculations, createdAt
+
+## Next Steps (Future Enhancements)
+1. Implement GSAP ScrollTrigger for advanced gear animations with multi-scene narrative
+2. Add email delivery functionality (Resend/SendGrid) for ROI calculator results
+3. Add admin dashboard for content management (blog posts, testimonials, job postings)
+4. Implement pagination for blog and careers pages
+5. Add search and filtering for blog posts
+6. Add analytics tracking for calculator and application submissions
+7. Consider adding CMS integration (Sanity/Contentful) for non-technical content editing
