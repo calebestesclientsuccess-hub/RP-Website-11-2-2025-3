@@ -135,6 +135,20 @@ The site expresses the core brand philosophy through a sophisticated semantic co
 - Consistent spacing and typography
 
 ## Recent Changes (October 2025)
+- **Site Navigation Restructure & Home Page Enhancements (October 20, 2025)**:
+  - Moved GTM Engine to Solutions dropdown menu (/gtm-engine → /solutions/gtm-engine)
+  - Renamed "Company" navigation to "Why Party?" across all menus and mobile navigation
+  - Created new Our Process page (/our-process) with 3-step deployment process (Deploy, Optimize, Scale)
+  - Added "Learn About Our Process" CTA button on home page linking to /our-process
+  - Added Success Stories metrics preview section to home page with 4 key metrics:
+    - 3-5x Faster Time-to-Market
+    - 60%+ Cost Savings
+    - 100% Playbook Ownership
+    - Zero Hiring Risk
+  - Added Comparison preview section to home page with side-by-side comparison cards (Traditional Hire, Lead Gen Agency, Revenue Party)
+  - Created FloatingCalculatorCTA component - appears site-wide in bottom-right corner, hidden on /results/roi-calculator page
+  - Fixed all Link/Button nesting accessibility issues across 7 files using proper Button asChild pattern
+  - All changes tested and architect-approved for production readiness
 - **Brand Color System Implementation (October 20, 2025)**:
   - Implemented complete semantic color system expressing "Culture = Community + Competition" philosophy
   - Replaced all hard-coded hex colors with semantic tokens (text-primary, text-community, text-indigo, text-purple-dark)
