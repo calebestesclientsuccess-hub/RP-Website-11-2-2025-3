@@ -15,17 +15,17 @@ export default function Home() {
     {
       icon: <Calendar className="w-12 h-12" />,
       title: "The Hiring Drag",
-      description: "Wasting 3-6 months recruiting and ramping single-threaded reps instead of deploying a complete, revenue-ready system on day one.",
+      description: "Wasting 3-6 months recruiting, hiring, and ramping a single-threaded rep instead of deploying a complete, revenue-ready system on day one.",
     },
     {
       icon: <PiggyBank className="w-12 h-12" />,
       title: "The Management Tax",
-      description: "Losing over $100k of your leadership's time to train, manage, and build a playbook for one BDR, instead of leveraging a system that's already built.",
+      description: "Losing over $104,000 of your leadership's time to train, manage, and build a playbook for one BDR, instead of leveraging a system that's already built to perform.",
     },
     {
       icon: <UserX className="w-12 h-12" />,
       title: "The Lone Wolf Fallacy",
-      description: "Betting your growth on the heroics of an individual, knowing that 1 in 3 new BDR hires will fail completely within the first year.",
+      description: "Betting your growth on the heroics of an individual, knowing that 1 in 3 new BDR hires will fail completely within the first year, forcing you to start the painful cycle all over again.",
     },
   ];
 
