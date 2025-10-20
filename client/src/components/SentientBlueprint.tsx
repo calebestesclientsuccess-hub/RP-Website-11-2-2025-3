@@ -318,7 +318,7 @@ export function SentientBlueprint() {
               </filter>
             </defs>
 
-            <rect id="blueprint-grid" width="100%" height="100%" fill="url(#blueprint-grid-pattern)" />
+            <rect id="blueprint-grid" width="100%" height="100%" fill="url(#blueprint-grid-pattern)" opacity="0.3" />
 
             {[...Array(20)].map((_, i) => (
               <circle
@@ -326,9 +326,9 @@ export function SentientBlueprint() {
                 className="culture-particle"
                 cx={100 + (i * 50)}
                 cy={100 + (Math.sin(i) * 200)}
-                r="2"
+                r="3"
                 fill={i % 2 === 0 ? "#9F8FFF" : "#ef233c"}
-                opacity="0.6"
+                opacity="0.8"
               >
                 <animateTransform
                   attributeName="transform"
@@ -348,10 +348,10 @@ export function SentientBlueprint() {
               height="400"
               fill="none"
               stroke="#9F8FFF"
-              strokeWidth="2"
+              strokeWidth="3"
               strokeDasharray="1000"
               strokeDashoffset="0"
-              opacity="0.4"
+              opacity="0.6"
               rx="10"
             />
 
@@ -373,9 +373,10 @@ export function SentientBlueprint() {
               d="M 300,100 Q 450,150 600,250"
               fill="none"
               stroke="#9F8FFF"
-              strokeWidth="2"
+              strokeWidth="3"
               strokeDasharray="500"
               strokeDashoffset="500"
+              opacity="0.8"
               filter="url(#glow)"
             />
 
@@ -410,9 +411,10 @@ export function SentientBlueprint() {
               d="M 900,100 Q 750,150 600,250"
               fill="none"
               stroke="#ef233c"
-              strokeWidth="2"
+              strokeWidth="3"
               strokeDasharray="500"
               strokeDashoffset="500"
+              opacity="0.8"
               filter="url(#glow)"
             />
 
@@ -446,9 +448,10 @@ export function SentientBlueprint() {
               d="M 300,700 Q 450,650 600,550"
               fill="none"
               stroke="#42349c"
-              strokeWidth="2"
+              strokeWidth="3"
               strokeDasharray="500"
               strokeDashoffset="500"
+              opacity="0.8"
               filter="url(#glow)"
             />
 
@@ -482,9 +485,10 @@ export function SentientBlueprint() {
               d="M 900,700 Q 750,650 600,550"
               fill="none"
               stroke="#2e294e"
-              strokeWidth="2"
+              strokeWidth="3"
               strokeDasharray="500"
               strokeDashoffset="500"
+              opacity="0.8"
               filter="url(#glow)"
             />
 
