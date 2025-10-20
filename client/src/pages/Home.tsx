@@ -96,11 +96,11 @@ export default function Home() {
                 <Badge variant="community" className="mb-4" data-testid="badge-culture">
                   Community + Competition = Culture
                 </Badge>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
                   Your Next Sales Hire Shouldn't Be a Person.{" "}
                   <span className="text-primary">It Should Be a Revenue Generation System.</span>
                 </h1>
-                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+                <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
                   Adding salespeople is a linear game. We deploy a complete Go-to-Market system, arming elite talent with the AI, tech, and strategy required to multiply your pipeline.
                 </p>
               </div>
@@ -126,10 +126,10 @@ export default function Home() {
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
               Linear Growth is a <span className="text-primary">Death Sentence.</span>
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-xl text-muted-foreground leading-relaxed">
               Scaling your Go-to-Market one hire and one tool at a time is a trap. It burns capital, creates friction, and delivers diminishing returns. It's the high cost of low leverage. If you're serious about scaling, you can't afford these hidden leverage killers:
             </p>
           </div>
@@ -137,9 +137,9 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8">
             {problems.map((problem, index) => (
               <Card key={index} className="p-8 hover-elevate transition-all" data-testid={`card-problem-${index}`}>
-                <div className="text-primary mb-4">{problem.icon}</div>
-                <h3 className="text-xl font-bold mb-3">{problem.title}</h3>
-                <p className="text-muted-foreground mb-4">{problem.description}</p>
+                <div className="text-primary mb-6">{problem.icon}</div>
+                <h3 className="text-2xl font-bold mb-4">{problem.title}</h3>
+                <p className="text-muted-foreground leading-relaxed mb-4">{problem.description}</p>
                 {problem.footer && (
                   <p className="text-sm font-semibold text-foreground mt-6 pt-4 border-t border-border">
                     {problem.footer}
@@ -155,10 +155,12 @@ export default function Home() {
       <section className="py-20 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-              The Fully Loaded BDR Pod:{" "}
-              <span className="text-primary">A Complete Engine, Not Just a Person.</span>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+              The Fully Loaded BDR Pod:
             </h2>
+            <p className="text-2xl md:text-3xl font-semibold text-primary mb-8">
+              More than one salesperson. A complete Revenue Engine.
+            </p>
             <p className="text-lg text-muted-foreground mb-8">
               Stop gambling on hires. Start deploying a system. We've engineered the complete GTM engine your business needs to generate a predictable pipeline. It's a turnkey system of elite talent, intelligent technology, and a proven strategic framework, ready for activation.
             </p>
@@ -169,10 +171,10 @@ export default function Home() {
             {/* Central Pod */}
             <div className="flex items-center justify-center mb-16">
               <div className="relative">
-                <div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-primary/20 via-community/20 to-purple-dark/20 border-4 border-primary/30 flex items-center justify-center shadow-2xl">
+                <div className="w-56 h-56 md:w-72 md:h-72 rounded-full bg-gradient-to-br from-primary/20 via-community/20 to-purple-dark/20 border-4 border-primary/30 flex items-center justify-center shadow-2xl">
                   <div className="text-center px-6">
-                    <h3 className="text-2xl md:text-3xl font-bold mb-2">Fully Loaded</h3>
-                    <p className="text-xl md:text-2xl font-bold text-primary">BDR Pod</p>
+                    <h3 className="text-2xl md:text-4xl font-bold mb-2">Fully Loaded</h3>
+                    <p className="text-xl md:text-3xl font-bold text-primary">BDR Pod</p>
                   </div>
                 </div>
               </div>
@@ -213,43 +215,43 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <Badge variant="community" className="mb-4">Proven Results</Badge>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
               The Numbers Don't Lie. <span className="text-primary">The Results Speak.</span>
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-xl text-muted-foreground leading-relaxed">
               When you deploy a complete GTM system instead of just hiring another rep, here's what actually happens.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <Card className="p-8 text-center hover-elevate transition-all" data-testid="metric-faster">
-              <div className="text-5xl font-bold text-primary mb-3">3-5x</div>
-              <h3 className="text-xl font-bold mb-3">Faster Time-to-Market</h3>
-              <p className="text-sm text-muted-foreground">
+              <div className="text-6xl font-bold text-primary mb-4">3-5x</div>
+              <h3 className="text-xl font-bold mb-4">Faster Time-to-Market</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 Start getting qualified meetings in 2-3 weeks instead of 3-6 months
               </p>
             </Card>
 
             <Card className="p-8 text-center hover-elevate transition-all" data-testid="metric-savings">
-              <div className="text-5xl font-bold text-community mb-3">60%+</div>
-              <h3 className="text-xl font-bold mb-3">Cost Savings</h3>
-              <p className="text-sm text-muted-foreground">
+              <div className="text-6xl font-bold text-community mb-4">60%+</div>
+              <h3 className="text-xl font-bold mb-4">Cost Savings</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 Same output at a fraction of the cost when you factor in everything
               </p>
             </Card>
 
             <Card className="p-8 text-center hover-elevate transition-all" data-testid="metric-ownership">
-              <div className="text-5xl font-bold text-purple-dark mb-3">100%</div>
-              <h3 className="text-xl font-bold mb-3">Playbook Ownership</h3>
-              <p className="text-sm text-muted-foreground">
+              <div className="text-6xl font-bold text-purple-dark mb-4">100%</div>
+              <h3 className="text-xl font-bold mb-4">Playbook Ownership</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 You own your complete GTM playbook—a strategic asset you can scale
               </p>
             </Card>
 
             <Card className="p-8 text-center hover-elevate transition-all" data-testid="metric-risk">
-              <div className="text-5xl font-bold text-primary mb-3">Zero</div>
-              <h3 className="text-xl font-bold mb-3">Hiring Risk</h3>
-              <p className="text-sm text-muted-foreground">
+              <div className="text-6xl font-bold text-primary mb-4">Zero</div>
+              <h3 className="text-xl font-bold mb-4">Hiring Risk</h3>
+              <p className="text-base text-muted-foreground leading-relaxed">
                 Performance-driven model means you only pay for results that matter
               </p>
             </Card>
@@ -273,11 +275,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <Badge variant="default" className="mb-4">Competitive Edge</Badge>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-              Traditional Hire? Lead Gen Agency?{" "}
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+              Traditional Hire? <br />
+              Lead Gen Agency? <br />
               <span className="text-primary">Or a Complete GTM System?</span>
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-xl text-muted-foreground leading-relaxed">
               Not all sales solutions are created equal. Here's how a Fully Loaded BDR Pod stacks up against your alternatives.
             </p>
           </div>
@@ -380,10 +383,10 @@ export default function Home() {
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
               Our Blueprint for <span className="text-primary">Predictable Pipeline.</span>
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-xl text-muted-foreground leading-relaxed">
               We don't just add headcount; we deploy a complete operational blueprint. Our process is designed for speed, precision, and relentless optimization, ensuring your GTM engine is running at peak performance from day one.
             </p>
           </div>
@@ -391,18 +394,18 @@ export default function Home() {
           <div className="space-y-8">
             {processSteps.map((step, index) => (
               <Card key={index} className="p-8 hover-elevate transition-all" data-testid={`card-step-${index}`}>
-                <div className="grid md:grid-cols-[auto,1fr] gap-6 items-start">
-                  <div className="text-6xl font-bold text-primary/20 font-mono">
+                <div className="grid md:grid-cols-[auto,1fr] gap-8 items-start">
+                  <div className="text-7xl font-bold text-primary/20 font-mono">
                     {step.number}
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="text-2xl font-bold">{step.title}</h3>
-                      <span className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium">
+                      <h3 className="text-2xl md:text-3xl font-bold">{step.title}</h3>
+                      <span className="px-4 py-1.5 bg-primary/20 text-primary rounded-full text-sm font-semibold">
                         {step.duration}
                       </span>
                     </div>
-                    <p className="text-muted-foreground leading-relaxed">
+                    <p className="text-lg text-muted-foreground leading-relaxed">
                       {step.description}
                     </p>
                   </div>
@@ -424,10 +427,10 @@ export default function Home() {
       {/* Final CTA Section */}
       <section className="py-20 px-4 md:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8">
             The Blueprint is Clear. <span className="text-primary">The Engine is Built.</span>
           </h2>
-          <p className="text-lg text-muted-foreground mb-8">
+          <p className="text-xl text-muted-foreground leading-relaxed mb-10">
             You've seen the model and the process. The potential for systematic, predictable growth is locked inside your business. The next step is to design the key. A GTM Leverage Audit validates the strategy and initiates the activation of your dedicated pipeline engine.
           </p>
           <Button size="lg" className="text-lg px-8 py-6 shadow-lg" data-testid="button-final-schedule">
@@ -486,30 +489,30 @@ function TestimonialsSection() {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <Badge variant="community" className="mb-4">Community Wins</Badge>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
             Real Results. <span className="text-primary">Real Revenue.</span>
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-xl text-muted-foreground leading-relaxed">
             Don't take our word for it. Here's what GTM leaders are saying about their Fully Loaded BDR Pod.
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((testimonial, index) => (
-            <Card key={testimonial.id} className="p-6 hover-elevate transition-all bg-gradient-to-br from-community/5 to-transparent" data-testid={`card-testimonial-${index}`}>
-              <div className="space-y-4">
-                <Quote className="w-10 h-10 text-community/40" />
-                <p className="text-foreground leading-relaxed italic" data-testid={`text-quote-${index}`}>
+            <Card key={testimonial.id} className="p-8 hover-elevate transition-all bg-gradient-to-br from-community/5 to-transparent" data-testid={`card-testimonial-${index}`}>
+              <div className="space-y-5">
+                <Quote className="w-12 h-12 text-community/40" />
+                <p className="text-lg text-foreground leading-relaxed italic" data-testid={`text-quote-${index}`}>
                   "{testimonial.quote}"
                 </p>
                 <div className="pt-4 border-t border-community/20">
-                  <p className="font-bold" data-testid={`text-name-${index}`}>
+                  <p className="text-lg font-bold mb-1" data-testid={`text-name-${index}`}>
                     {testimonial.name}
                   </p>
-                  <p className="text-sm text-muted-foreground" data-testid={`text-title-${index}`}>
+                  <p className="text-base text-muted-foreground mb-1" data-testid={`text-title-${index}`}>
                     {testimonial.title}
                   </p>
-                  <p className="text-sm text-community font-medium" data-testid={`text-company-${index}`}>
+                  <p className="text-base text-community font-semibold" data-testid={`text-company-${index}`}>
                     {testimonial.company}
                   </p>
                 </div>
