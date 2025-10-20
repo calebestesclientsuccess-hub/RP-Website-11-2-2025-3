@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { MiniCalculator } from "@/components/MiniCalculator";
 import { GearSystem } from "@/components/GearSystem";
 import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-react";
@@ -49,12 +50,16 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 md:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      {/* Hero Section - Culture Gradient Background */}
+      <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-community/5 via-background to-primary/5 pointer-events-none" />
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <div className="space-y-6">
+                <Badge variant="community" className="mb-4" data-testid="badge-culture">
+                  Community + Competition = Culture
+                </Badge>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
                   Your Next Sales Hire Shouldn't Be a Person.{" "}
                   <span className="text-primary">It Should Be a Revenue Generation System.</span>
@@ -84,12 +89,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Problem Section */}
+      {/* Problem Section - Red Accent for Competition/Problems */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-              Linear Growth is a <span className="text-destructive">Death Sentence.</span>
+              Linear Growth is a <span className="text-primary">Death Sentence.</span>
             </h2>
             <p className="text-lg text-muted-foreground">
               Scaling your Go-to-Market one hire and one tool at a time is a trap. It burns capital, creates friction, and delivers diminishing returns. It's the high cost of low leverage. If you're serious about scaling, you can't afford these hidden leverage killers:
@@ -233,9 +238,11 @@ function TestimonialsSection() {
   }
 
   return (
-    <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
-      <div className="max-w-7xl mx-auto">
+    <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-community/10 via-transparent to-transparent pointer-events-none" />
+      <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
+          <Badge variant="community" className="mb-4">Community Wins</Badge>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
             Real Results. <span className="text-primary">Real Revenue.</span>
           </h2>
@@ -246,20 +253,20 @@ function TestimonialsSection() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((testimonial, index) => (
-            <Card key={testimonial.id} className="p-6 hover-elevate transition-all" data-testid={`card-testimonial-${index}`}>
+            <Card key={testimonial.id} className="p-6 hover-elevate transition-all bg-gradient-to-br from-community/5 to-transparent" data-testid={`card-testimonial-${index}`}>
               <div className="space-y-4">
-                <Quote className="w-10 h-10 text-primary/30" />
+                <Quote className="w-10 h-10 text-community/40" />
                 <p className="text-foreground leading-relaxed italic" data-testid={`text-quote-${index}`}>
                   "{testimonial.quote}"
                 </p>
-                <div className="pt-4 border-t border-border">
+                <div className="pt-4 border-t border-community/20">
                   <p className="font-bold" data-testid={`text-name-${index}`}>
                     {testimonial.name}
                   </p>
                   <p className="text-sm text-muted-foreground" data-testid={`text-title-${index}`}>
                     {testimonial.title}
                   </p>
-                  <p className="text-sm text-primary font-medium" data-testid={`text-company-${index}`}>
+                  <p className="text-sm text-community font-medium" data-testid={`text-company-${index}`}>
                     {testimonial.company}
                   </p>
                 </div>

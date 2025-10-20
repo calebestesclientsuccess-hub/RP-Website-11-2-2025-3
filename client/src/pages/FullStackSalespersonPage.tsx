@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Target, Zap, Users } from "lucide-react";
 
 export default function FullStackSalespersonPage() {
@@ -8,29 +9,35 @@ export default function FullStackSalespersonPage() {
       title: "Research & Targeting",
       description: "Deep account research, ICP alignment, and strategic account selection",
       icon: <Target className="w-8 h-8" />,
+      color: "text-primary",
     },
     {
       title: "Multi-Channel Execution",
       description: "Email sequencing, LinkedIn outreach, phone prospecting—all coordinated",
       icon: <Zap className="w-8 h-8" />,
+      color: "text-indigo",
     },
     {
       title: "Qualification Mastery",
       description: "BANT framework expertise with consultative discovery skills",
       icon: <Users className="w-8 h-8" />,
+      color: "text-community",
     },
     {
       title: "Strategic Thinking",
       description: "Not just executing tasks—understanding the why behind the work",
       icon: <CheckCircle className="w-8 h-8" />,
+      color: "text-purple-dark",
     },
   ];
 
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-6 max-w-4xl text-center">
+      <section className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-community/5 to-transparent pointer-events-none" />
+        <div className="container mx-auto px-6 max-w-4xl text-center relative z-10">
+          <Badge variant="community" className="mb-4">Methodology</Badge>
           <h1 className="text-6xl font-bold mb-6" data-testid="text-hero-title">
             The Full-Stack Salesperson
           </h1>
@@ -72,7 +79,7 @@ export default function FullStackSalespersonPage() {
             {skills.map((skill, index) => (
               <Card key={index} className="p-8 hover-elevate transition-all">
                 <div className="flex items-start gap-4">
-                  <div className="text-primary">{skill.icon}</div>
+                  <div className={skill.color}>{skill.icon}</div>
                   <div>
                     <h3 className="text-xl font-bold mb-2">{skill.title}</h3>
                     <p className="text-muted-foreground">{skill.description}</p>

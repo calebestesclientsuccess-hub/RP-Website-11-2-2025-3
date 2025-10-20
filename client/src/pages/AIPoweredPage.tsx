@@ -1,13 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Brain, Zap, TrendingUp, Shield } from "lucide-react";
 
 export default function AIPoweredPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-6 max-w-4xl text-center">
+      <section className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo/10 via-community/5 to-transparent pointer-events-none" />
+        <div className="container mx-auto px-6 max-w-4xl text-center relative z-10">
+          <Badge variant="indigo" className="mb-4">AI + Human Intelligence</Badge>
           <h1 className="text-6xl font-bold mb-6" data-testid="text-hero-title">
             AI-Powered, Human-Perfected
           </h1>
@@ -59,7 +62,7 @@ export default function AIPoweredPage() {
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             <Card className="p-8">
               <div className="flex items-start gap-4 mb-4">
-                <Brain className="w-10 h-10 text-primary" />
+                <Brain className="w-10 h-10 text-indigo" />
                 <div>
                   <h3 className="text-xl font-bold mb-2">Conversation Intelligence</h3>
                   <p className="text-muted-foreground">
@@ -72,7 +75,7 @@ export default function AIPoweredPage() {
 
             <Card className="p-8">
               <div className="flex items-start gap-4 mb-4">
-                <Zap className="w-10 h-10 text-purple" />
+                <Zap className="w-10 h-10 text-community" />
                 <div>
                   <h3 className="text-xl font-bold mb-2">Intent Signal Aggregation</h3>
                   <p className="text-muted-foreground">
@@ -98,7 +101,7 @@ export default function AIPoweredPage() {
 
             <Card className="p-8">
               <div className="flex items-start gap-4 mb-4">
-                <Shield className="w-10 h-10 text-indigo" />
+                <Shield className="w-10 h-10 text-community" />
                 <div>
                   <h3 className="text-xl font-bold mb-2">Quality Assurance</h3>
                   <p className="text-muted-foreground">

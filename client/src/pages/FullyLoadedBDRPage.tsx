@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Brain, Settings, Zap, FileText, Check } from "lucide-react";
 
 export default function FullyLoadedBDRPage() {
@@ -9,28 +10,32 @@ export default function FullyLoadedBDRPage() {
       title: "1x Full-Stack BDR",
       subtitle: "The Elite Operator",
       description: "A dedicated, US-based BDR trained in our advanced Impact Selling methodology. They operate not as a rep, but as a GTM strategist, managing the full execution of your playbook.",
-      color: "#ef233c",
+      colorClass: "text-primary",
+      badgeVariant: "default" as const,
     },
     {
       icon: <Brain className="w-12 h-12" />,
       title: "Fractional GTM Strategist",
       subtitle: "The GTM Brain",
       description: "A senior GTM leader who serves as your strategic counsel. They lead the weekly performance sprints, analyze data, and ensure your engine is constantly being optimized for better results.",
-      color: "#9F8FFF",
+      colorClass: "text-community",
+      badgeVariant: "community" as const,
     },
     {
       icon: <Zap className="w-12 h-12" />,
       title: "Integrated Sales & AI Stack",
       subtitle: "The Tech Stack",
       description: "We provide and manage the complete, enterprise-grade technology stack, including sales engagement platforms, data enrichment tools, and our proprietary AI Signal Factory. No integration headaches, no extra license fees.",
-      color: "#2e294e",
+      colorClass: "text-indigo",
+      badgeVariant: "indigo" as const,
     },
     {
       icon: <FileText className="w-12 h-12" />,
       title: "The GTM Playbook",
       subtitle: "The Strategic Framework",
       description: "We build and maintain your central GTM operating document—from ICP and messaging to objection handling and performance benchmarks. It's the living brain of your sales motion.",
-      color: "#42349c",
+      colorClass: "text-purple-dark",
+      badgeVariant: "purple-dark" as const,
     },
   ];
 
@@ -109,10 +114,10 @@ export default function FullyLoadedBDRPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {components.map((component, index) => (
               <Card key={index} className="p-6 hover-elevate transition-all" data-testid={`card-component-${index}`}>
-                <div className="mb-4" style={{ color: component.color }}>
+                <div className={`mb-4 ${component.colorClass}`}>
                   {component.icon}
                 </div>
-                <p className="text-sm text-primary font-semibold mb-1">{component.subtitle}</p>
+                <Badge variant={component.badgeVariant} className="mb-2">{component.subtitle}</Badge>
                 <h3 className="text-xl font-bold mb-3">{component.title}</h3>
                 <p className="text-sm text-muted-foreground">{component.description}</p>
               </Card>

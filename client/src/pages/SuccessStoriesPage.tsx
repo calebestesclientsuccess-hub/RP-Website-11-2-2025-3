@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Quote } from "lucide-react";
 import type { Testimonial } from "@shared/schema";
 
@@ -11,8 +12,10 @@ export default function SuccessStoriesPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-6 max-w-4xl text-center">
+      <section className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-community/10 via-transparent to-transparent pointer-events-none" />
+        <div className="container mx-auto px-6 max-w-4xl text-center relative z-10">
+          <Badge variant="community" className="mb-4">Community Success</Badge>
           <h1 className="text-6xl font-bold mb-6" data-testid="text-hero-title">
             Success Stories
           </h1>
@@ -42,13 +45,13 @@ export default function SuccessStoriesPage() {
           ) : testimonials && testimonials.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {testimonials.map((testimonial) => (
-                <Card key={testimonial.id} className="hover-elevate transition-all" data-testid={`card-testimonial-${testimonial.id}`}>
+                <Card key={testimonial.id} className="hover-elevate transition-all bg-gradient-to-br from-community/5 to-transparent" data-testid={`card-testimonial-${testimonial.id}`}>
                   <CardContent className="p-8">
-                    <Quote className="w-8 h-8 text-primary mb-4" />
+                    <Quote className="w-8 h-8 text-community/40 mb-4" />
                     <p className="text-foreground mb-6 leading-relaxed" data-testid={`text-content-${testimonial.id}`}>
                       "{testimonial.quote}"
                     </p>
-                    <div className="border-t border-border pt-4">
+                    <div className="border-t border-community/20 pt-4">
                       <p className="font-bold text-foreground" data-testid={`text-client-${testimonial.id}`}>
                         {testimonial.name}
                       </p>
@@ -57,7 +60,7 @@ export default function SuccessStoriesPage() {
                           {testimonial.title}
                         </p>
                       )}
-                      <p className="text-sm font-semibold text-primary mt-1" data-testid={`text-company-${testimonial.id}`}>
+                      <p className="text-sm font-semibold text-community mt-1" data-testid={`text-company-${testimonial.id}`}>
                         {testimonial.company}
                       </p>
                     </div>
@@ -89,7 +92,7 @@ export default function SuccessStoriesPage() {
             </Card>
 
             <Card className="p-8">
-              <div className="text-4xl font-bold text-purple mb-2">60%+</div>
+              <div className="text-4xl font-bold text-community mb-2">60%+</div>
               <h3 className="text-xl font-bold mb-3">Cost Savings</h3>
               <p className="text-muted-foreground">
                 When you factor in salary, benefits, tech stack, and management time, 
@@ -107,7 +110,7 @@ export default function SuccessStoriesPage() {
             </Card>
 
             <Card className="p-8">
-              <div className="text-4xl font-bold text-indigo mb-2">Zero</div>
+              <div className="text-4xl font-bold text-community mb-2">Zero</div>
               <h3 className="text-xl font-bold mb-3">Hiring Risk</h3>
               <p className="text-muted-foreground">
                 No more gambling on individual hires that might not work out. 
