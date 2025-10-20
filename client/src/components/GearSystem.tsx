@@ -124,6 +124,7 @@ export function GearSystem() {
     if (prefersReducedMotion) return;
 
     let rotationStarted = false;
+    let rotationTweens: gsap.core.Tween[] = [];
 
     const ctx = gsap.context(() => {
       // Create a timeline for the scroll animation (Scenes 1-5)
@@ -141,8 +142,9 @@ export function GearSystem() {
             }
           },
           onLeaveBack: () => {
-            // Reset if user scrolls back up before completion
+            // Reset if user scrolls back up - kill all continuous rotation tweens
             rotationStarted = false;
+            stopFullOperation();
           },
         },
       });
@@ -184,18 +186,36 @@ export function GearSystem() {
       function startFullOperation() {
         if (prefersReducedMotion) return; // Extra safety check
         
-        gsap.to([gear1Ref.current, gear3Ref.current], {
-          rotation: "+=360",
-          duration: 20,
-          ease: "none",
-          repeat: -1,
-        });
-        gsap.to([gear2Ref.current, gear4Ref.current], {
-          rotation: "-=360",
-          duration: 15,
-          ease: "none",
-          repeat: -1,
-        });
+        // Store tweens so we can kill them later
+        rotationTweens.push(
+          gsap.to([gear1Ref.current, gear3Ref.current], {
+            rotation: "+=360",
+            duration: 20,
+            ease: "none",
+            repeat: -1,
+          })
+        );
+        rotationTweens.push(
+          gsap.to([gear2Ref.current, gear4Ref.current], {
+            rotation: "-=360",
+            duration: 15,
+            ease: "none",
+            repeat: -1,
+          })
+        );
+      }
+
+      function stopFullOperation() {
+        // Kill all continuous rotation tweens
+        rotationTweens.forEach((tween) => tween.kill());
+        rotationTweens = [];
+        
+        // Reset rotation to 0
+        if (gear1Ref.current && gear2Ref.current && gear3Ref.current && gear4Ref.current) {
+          gsap.set([gear1Ref.current, gear2Ref.current, gear3Ref.current, gear4Ref.current], {
+            rotation: 0,
+          });
+        }
       }
     }, containerRef);
 
