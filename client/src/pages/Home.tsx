@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MiniCalculator } from "@/components/MiniCalculator";
-import { GearSystem } from "@/components/GearSystem";
+import { SentientBlueprint } from "@/components/SentientBlueprint";
 import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -126,7 +126,7 @@ export default function Home() {
             </p>
           </div>
 
-          <GearSystem />
+          <SentientBlueprint />
 
           <div className="text-center mt-16">
             <Button size="lg" variant="outline" className="gap-2" data-testid="button-explore-pod" asChild>
