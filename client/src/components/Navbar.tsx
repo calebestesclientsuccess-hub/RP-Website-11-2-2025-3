@@ -26,10 +26,10 @@ export function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-24 md:h-26">
+        <div className="flex items-center justify-between h-20 md:h-22">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 hover-elevate rounded-md px-2 py-1 transition-all" data-testid="link-home">
-            <img src={logoWhite} alt="Revenue Party Logo" className="h-20 md:h-22 w-auto" />
+            <img src={logoWhite} alt="Revenue Party Logo" className="h-16 md:h-18 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}
