@@ -232,11 +232,12 @@ export function SentientBlueprint() {
   };
 
   return (
-    <div ref={containerRef} className="relative py-16 min-h-[800px] overflow-hidden" data-testid="sentient-blueprint">
+    <div ref={containerRef} className="relative py-16 min-h-[900px] overflow-visible" data-testid="sentient-blueprint">
       <div className="max-w-7xl mx-auto px-4">
         <svg
           ref={svgRef}
-          viewBox="0 0 1200 800"
+          viewBox="0 0 1200 900"
+          preserveAspectRatio="xMidYMid meet"
           className="w-full h-auto"
           xmlns="http://www.w3.org/2000/svg"
         >
