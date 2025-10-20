@@ -248,7 +248,8 @@ export function SentientBlueprint() {
       <div ref={containerRef} className="h-[600vh]">
         <div
           ref={blueprintRef}
-          className="sticky top-0 h-screen w-full flex items-center justify-center pb-32"
+          className="sticky top-0 h-screen w-full flex items-center justify-center pb-32 overflow-visible"
+          style={{ overflow: 'visible' }}
         >
           {/* SVG Blueprint Background */}
           <svg
@@ -293,8 +294,14 @@ export function SentientBlueprint() {
             ref={svgRef}
             viewBox="0 0 1200 900"
             preserveAspectRatio="xMidYMid meet"
-            className="absolute inset-0 w-full h-full overflow-visible"
-            style={{ overflow: 'visible' }}
+            className="absolute w-full h-full"
+            style={{ 
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              maxWidth: '1400px',
+              maxHeight: '1000px'
+            }}
             xmlns="http://www.w3.org/2000/svg"
           >
             <defs>
