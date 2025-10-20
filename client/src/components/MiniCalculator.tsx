@@ -21,73 +21,78 @@ export function MiniCalculator() {
   };
 
   return (
-    <Card className="p-6 md:p-8 bg-card/50 backdrop-blur-sm border-2 border-primary/20 shadow-lg">
-      <div className="space-y-6">
-        {/* ACV Slider */}
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm font-medium text-foreground">
-              Average Revenue Per New Client
-            </label>
-            <span className="text-lg font-bold text-primary font-mono" data-testid="text-acv-value">
-              {formatCurrency(acv[0])}
-            </span>
+    <div className="space-y-4">
+      <h3 className="text-2xl md:text-3xl font-bold text-center" data-testid="text-calculator-title">
+        What's Your Potential New Revenue This Year?
+      </h3>
+      <Card className="p-6 md:p-8 bg-card/50 backdrop-blur-sm border-2 border-primary/20 shadow-lg">
+        <div className="space-y-6">
+          {/* ACV Slider */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <label className="text-sm font-medium text-foreground">
+                Average Revenue Per New Client
+              </label>
+              <span className="text-lg font-bold text-primary font-mono" data-testid="text-acv-value">
+                {formatCurrency(acv[0])}
+              </span>
+            </div>
+            <Slider
+              value={acv}
+              onValueChange={setAcv}
+              min={10000}
+              max={500000}
+              step={5000}
+              className="w-full"
+              data-testid="input-acv-slider"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>$10k</span>
+              <span>$500k</span>
+            </div>
           </div>
-          <Slider
-            value={acv}
-            onValueChange={setAcv}
-            min={10000}
-            max={500000}
-            step={5000}
-            className="w-full"
-            data-testid="input-acv-slider"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>$10k</span>
-            <span>$500k</span>
-          </div>
-        </div>
 
-        {/* Close Rate Slider */}
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <label className="text-sm font-medium text-foreground">
-              Average Close Rate from Qualified Appointment
-            </label>
-            <span className="text-lg font-bold text-primary font-mono" data-testid="text-close-rate-value">
-              {closeRate[0]}%
-            </span>
+          {/* Close Rate Slider */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <label className="text-sm font-medium text-foreground">
+                Average Close Rate from Qualified Appointment
+              </label>
+              <span className="text-lg font-bold text-primary font-mono" data-testid="text-close-rate-value">
+                {closeRate[0]}%
+              </span>
+            </div>
+            <Slider
+              value={closeRate}
+              onValueChange={setCloseRate}
+              min={5}
+              max={100}
+              step={5}
+              className="w-full"
+              data-testid="input-close-rate-slider"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>5%</span>
+              <span>100%</span>
+            </div>
           </div>
-          <Slider
-            value={closeRate}
-            onValueChange={setCloseRate}
-            min={5}
-            max={100}
-            step={5}
-            className="w-full"
-            data-testid="input-close-rate-slider"
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>5%</span>
-            <span>100%</span>
-          </div>
-        </div>
 
-        {/* Output */}
-        <div className="pt-6 border-t border-border">
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Potential New Revenue This Year
-            </p>
-            <p className="text-4xl md:text-5xl font-bold text-primary font-mono tracking-tight" data-testid="text-potential-revenue">
-              {formatCurrency(potentialRevenue)}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Based on 20 qualified appointments per month
-            </p>
+          {/* Output */}
+          <div className="pt-6 border-t border-border">
+            <div className="text-center space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Potential New Revenue This Year
+              </p>
+              <p className="text-4xl md:text-5xl font-bold text-primary font-mono tracking-tight" data-testid="text-potential-revenue">
+                {formatCurrency(potentialRevenue)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Based on 20 qualified appointments per month
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }
