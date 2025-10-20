@@ -1,0 +1,141 @@
+Revenue Party Website Prompt
+# Role and Goal
+
+You are an expert full-stack developer specializing in creating visually stunning, interactive, and high-performance websites using React. Your goal is to build a complete, multi-page website for a Go-to-Market (GTM) consultancy called "Revenue Party."
+
+The website must be built as a React application using Vite and styled with Tailwind CSS. You will use react-router-dom for routing and GSAP (GreenSock Animation Platform), particularly ScrollTrigger, for all complex animations.
+
+You will use the exact copy, structure, and component details provided below. Adhere strictly to the design intentions and the new performance and accessibility standards.
+
+# Core Technology Stack
+
+Framework: React.js with Vite
+
+Styling: Tailwind CSS
+
+Routing: react-router-dom
+
+Animation: GSAP (especially ScrollTrigger)
+
+Deployment: Replit environment
+
+# Web Performance Standards
+
+The final site must achieve a Google Lighthouse performance score of 90+ on desktop. All animations must be smooth (60fps) and GPU-accelerated. Pay close attention to the bundle size and optimize all assets (images, fonts).
+
+# Accessibility (a11y) Standards
+
+All interactive elements must be fully keyboard-navigable. All images must have descriptive alt tags. Use appropriate ARIA attributes, especially for the interactive gear system, to ensure it is understandable to screen readers.
+
+Implement a prefers-reduced-motion media query to disable non-essential animations for users who require it.
+
+# Design System & Aesthetics
+
+Overall Theme: A dark, professional, and sophisticated "blueprint" aesthetic. The primary theme is dark mode, but you should implement a simple light/dark mode toggle in the navbar. The background should be a very dark gray or black (e.g., #0A0A0A).
+
+Color Palette:
+
+Primary Accent (Red): #ef233c
+
+Secondary Accent (Purple/Violet): #9F8FFF and #42349c
+
+Tertiary Accent (Indigo): #2e294e
+
+Text (Light): Use #FFFFFF for headings and #d4d4d8 for body text to create hierarchy.
+
+Glow Effects: Use the accent colors to create subtle neon glows on interactive elements and within the gear visualization.
+
+Typography:
+
+Headings (H1, H2, etc.): Use a bold, modern sans-serif font like "Manrope" or "Inter".
+
+Body Text: Use a clean, readable sans-serif font like "Inter".
+
+# File Structure
+
+Create a logical file structure within the src directory:
+
+/src
+|-- /assets       // Images, SVGs, fonts
+|-- /components   // Reusable components (Navbar, Footer, Buttons, Gears, Calculators)
+|-- /pages        // Each page of the site (Home, About, Services, etc.)
+|-- App.jsx       // Main app component with router setup
+|-- main.jsx      // Entry point
+|-- index.css     // Tailwind CSS imports and base styles
+# Sitemap and Page Content
+
+(The page content remains the same as previously defined, with the exception of the updated ROI Calculator section below.)
+
+... (Homepage, Services, Methodology, About, Blog, Careers, etc.) ...
+
+7.2 ROI Calculator (/results/roi-calculator)
+
+Page Title: The Revenue Engine ROI Calculator
+
+H1: Model Your Multiplication Factor.
+
+H2: Don't build a budget based on hope. Use this tool to build a financial model for systematic pipeline generation. Adjust the variables to match your business and see the direct, quantifiable impact of deploying a Fully Loaded BDR Pod.
+
+[Full-Page Interactive Calculator Module - Refined Instructions]
+
+Note for Dev: This is a critical conversion tool. It must feel like a serious, strategic financial modeling tool for founders and CFOs.
+
+Credibility Features:
+
+Tooltips: Each user input field must have an info-icon tooltip that explains why we're asking for this number and the assumptions we're making (e.g., For 'Average Annual Contract Value (ACV),' the tooltip might say: 'Use your average ACV to help us project the total pipeline value we can generate for you.').
+
+Methodology Section: Below the final 'Verdict' comparison, add a small, expandable section titled 'Methodology & Assumptions'. This section should briefly explain the math, for instance: 'Our 'In-House Hire' model calculates a fully-loaded cost of ~$198k, which includes base salary, taxes, benefits, tech stack licenses, and the hidden cost of management time based on industry data.'
+
+Shareability:
+
+The "Email Results" function is crucial. It must capture the user's email, send a well-formatted HTML email containing a summary of their results, and reinforce the Revenue Party brand. The email should be designed to be easily forwarded to other team members.
+
+Calculator Structure:
+
+Section 1: Your Business Inputs (ACV, Sales Cycle, Close Rate, etc.)
+
+Section 2: The "In-House Hire" Model (Automatically calculates the ~$198k all-in cost, ramp time, and potential output)
+
+Section 3: The "RevParty Pod" Model (Calculates pipeline generated, time-to-value, and ROI)
+
+Section 4: The Verdict (A clear, visual comparison of the two models, highlighting the difference in net revenue, risk, and speed.)
+
+CTA Below Calculator:
+
+Headline: Ready to Make the Model a Reality?
+
+Body: The numbers are clear. The next step is to build the strategic blueprint. Schedule a GTM Audit to begin designing your custom revenue engine.
+
+CTA Button: Schedule My GTM Audit
+
+# GTM Engine Visualization (/gtm-engine and on Homepage)
+
+This is the most critical interactive feature. It must be implemented with GSAP and ScrollTrigger.
+
+Architecture:
+
+Create a central "Culture" element that acts as the power source.
+
+Create three primary gear systems for "People" (Red), "Strategy" (Purple), and "Technology" (Indigo) with orbiting satellite gears.
+
+Scroll-Driven Narrative (GSAP ScrollTrigger):
+
+Pin the main container and orchestrate the 6-scene narrative as previously described (Assembly, Ignition, Activation of each pillar, Full Operation).
+
+Interactivity (Desktop):
+
+On hover, a gear should glow, and a glassmorphic popup containing its title and description should appear.
+
+Mobile Experience Refinement:
+
+For mobile viewports (under 768px), the scroll-driven animation must transition to a more linear, vertical 'stacking' or 'reveal' animation. The complex horizontal orbit is not suitable for small screens.
+
+As the user scrolls on mobile, each of the three gear systems should fade in and animate into place one after the other, culminating in the final 'Full Operation' view. This ensures the narrative is just as clear and impactful without sacrificing usability.
+
+# Global Components & SEO
+
+(These sections remain the same as previously defined.)
+
+Global Components: Navbar, Footer, Floating CTA.
+
+SEO & Metadata: Generate relevant titles and descriptions, incorporate target keywords, and use semantic HTML5 tags.
