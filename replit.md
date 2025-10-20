@@ -33,7 +33,7 @@ Revenue Party is a sophisticated marketing website for a Go-to-Market (GTM) cons
   - `Footer.tsx` - Site footer with links
   - `ThemeProvider.tsx` - Dark/light theme management
   - `MiniCalculator.tsx` - Hero section calculator widget
-  - `GearSystem.tsx` - Interactive gear visualization with hover popups
+  - `SentientBlueprint.tsx` - Advanced GSAP ScrollTrigger-driven gear visualization with energy flow animations and interactive Focus Mode
 
 ### Backend (Express.js + PostgreSQL)
 - **Database**: Full PostgreSQL integration with Drizzle ORM
@@ -77,10 +77,13 @@ The site expresses the core brand philosophy through a sophisticated semantic co
   - Monospace: JetBrains Mono (numbers, data)
 
 - **Animations**:
-  - Glow pulse effects on gear systems with brand colors
-  - Rotating gear animations
-  - Fade-up scroll animations
-  - Glassmorphic hover popups with tinted backgrounds
+  - GSAP ScrollTrigger-driven scroll-scrubbed timelines
+  - Sequential energy flow conduit reveals (500→0 strokeDashoffset)
+  - Synchronized continuous gear rotations with dynamic timeScale control
+  - Glow effects with SVG filters (feGaussianBlur + feMerge)
+  - Rack-focus hover interactions with scale, opacity, and rotation speed
+  - Fade-up scroll animations for page content
+  - Glassmorphic floating calculator CTA
 
 ## Key Features
 
@@ -91,15 +94,50 @@ The site expresses the core brand philosophy through a sophisticated semantic co
 - Collapsible methodology section explaining assumptions
 - Tooltips on all inputs with detailed explanations
 
-### Gear System Visualization
-- Central hub showing "20+ Qualified Appointments/Month"
-- Four orbiting gears representing:
-  1. Elite Talent (Red)
-  2. Tech Stack (Indigo)
-  3. Strategic Framework (Purple)
-  4. Signal Factory (Purple Dark)
-- Glassmorphic popups on hover with descriptions
-- Responsive mobile layout with vertical stacking
+### Sentient Blueprint Visualization
+Advanced scroll-driven gear system powered by GSAP ScrollTrigger with multi-scene narrative:
+
+**Core Components:**
+- Blueprint grid background with glowing purple lines
+- Animated particle system representing "culture field"
+- Housing outline that draws on-screen
+- Central hub displaying "20+ Qualified Appointments/Month"
+- Four gears representing the complete GTM system:
+  1. **Elite Talent (Community Purple #9F8FFF)** - Top-tier BDRs and SDRs
+  2. **Strategic Framework (Competition Red #ef233c)** - Proven playbooks and methodologies
+  3. **AI-Powered by Humans (Purple Dark #42349c)** - Intelligence-augmented workflows
+  4. **Tech Stack (Indigo #2e294e)** - Complete martech infrastructure
+
+**5-Scene Scroll Timeline:**
+1. Grid and particle system fade-in (0-15%)
+2. Energy flow to Elite Talent gear + activation (15-40%)
+3. Energy flow to Strategic Framework gear + activation (40-60%)
+4. Energy flow to AI-Powered gear + activation (60-75%)
+5. Energy flow to Tech Stack gear + activation (75-100%)
+6. Continuous synchronized rotation begins after scroll completes
+
+**Interactive Features:**
+- **Focus Mode**: Hover any gear to trigger rack-focus effect
+  - Hovered gear: scales to 1.05x, enhanced glow (30px)
+  - Other gears: dim to 50% opacity, rotation slows to 25% speed
+  - Smooth transitions (300ms) between states
+- Energy conduits draw on-screen sequentially (strokeDashoffset 500→0 animation)
+- Gears receive initial rotation "kick" on activation then spin continuously
+- prefers-reduced-motion support disables all animations
+
+**Technical Implementation:**
+- GSAP 3.12+ with ScrollTrigger plugin
+- Scroll-scrubbed timeline (start: "top 80%", end: "bottom 20%")
+- Rotation tweens stored in ref for timeScale manipulation during hover
+- Guard against duplicate tween stacking on repeated scroll passes
+- Desktop-only animations (≥768px breakpoint)
+- Mobile fallback: static gear cards with descriptions
+
+**Performance Optimizations:**
+- Single ScrollTrigger context per component lifecycle
+- Tween cleanup in useEffect return
+- Continuous rotations gated behind timeline completion
+- No rotation conflicts (rotation tweens separate from scroll timeline)
 
 ### Blog & Content Management
 - Database-driven blog with PostgreSQL storage

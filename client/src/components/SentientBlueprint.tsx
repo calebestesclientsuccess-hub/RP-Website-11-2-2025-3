@@ -17,14 +17,14 @@ const gearData: GearData[] = [
     id: "talent",
     title: "Elite Talent",
     description: "A full-stack BDR, trained in our Impact Selling methodology, who operates as a strategic extension of your team.",
-    color: "#ef233c",
+    color: "#9F8FFF",
     energyType: "community"
   },
   {
     id: "strategy",
     title: "Strategic Framework",
     description: "A dedicated GTM strategist who designs your playbook, manages execution, and optimizes performance weekly.",
-    color: "#9F8FFF",
+    color: "#ef233c",
     energyType: "competition"
   },
   {
@@ -316,6 +316,7 @@ export function SentientBlueprint() {
 
           <g 
             id="gear-talent-group" 
+            data-testid="gear-talent"
             opacity="0" 
             style={{ cursor: 'pointer' }}
             onMouseEnter={() => handleGearHover('talent')}
@@ -326,17 +327,17 @@ export function SentientBlueprint() {
               cx="600"
               cy="250"
               r="50"
-              fill="rgba(239, 35, 60, 0.15)"
-              stroke="#ef233c"
+              fill="rgba(159, 143, 255, 0.15)"
+              stroke="#9F8FFF"
               strokeWidth="3"
-              filter="drop-shadow(0 0 10px #ef233c)"
+              filter="drop-shadow(0 0 10px #9F8FFF)"
             />
             <path
               d="M 600,210 L 610,230 L 600,250 L 590,230 Z M 600,350 L 610,370 L 600,390 L 590,370 Z"
-              fill="#ef233c"
+              fill="#9F8FFF"
               transform="rotate(0 600 250)"
             />
-            <text x="600" y="255" textAnchor="middle" fill="#ef233c" fontSize="12" fontWeight="bold">ET</text>
+            <text x="600" y="255" textAnchor="middle" fill="#9F8FFF" fontSize="12" fontWeight="bold">ET</text>
           </g>
 
           <path
@@ -352,6 +353,7 @@ export function SentientBlueprint() {
 
           <g 
             id="gear-strategy-group" 
+            data-testid="gear-strategy"
             opacity="0"
             style={{ cursor: 'pointer' }}
             onMouseEnter={() => handleGearHover('strategy')}
@@ -362,16 +364,16 @@ export function SentientBlueprint() {
               cx="750"
               cy="400"
               r="50"
-              fill="rgba(159, 143, 255, 0.15)"
-              stroke="#9F8FFF"
+              fill="rgba(239, 35, 60, 0.15)"
+              stroke="#ef233c"
               strokeWidth="3"
-              filter="drop-shadow(0 0 10px #9F8FFF)"
+              filter="drop-shadow(0 0 10px #ef233c)"
             />
             <path
               d="M 750,360 L 760,380 L 750,400 L 740,380 Z M 750,400 L 760,420 L 750,440 L 740,420 Z"
-              fill="#9F8FFF"
+              fill="#ef233c"
             />
-            <text x="750" y="405" textAnchor="middle" fill="#9F8FFF" fontSize="12" fontWeight="bold">SF</text>
+            <text x="750" y="405" textAnchor="middle" fill="#ef233c" fontSize="12" fontWeight="bold">SF</text>
           </g>
 
           <path
@@ -387,6 +389,7 @@ export function SentientBlueprint() {
 
           <g 
             id="gear-ai-group" 
+            data-testid="gear-ai"
             opacity="0"
             style={{ cursor: 'pointer' }}
             onMouseEnter={() => handleGearHover('ai')}
@@ -422,6 +425,7 @@ export function SentientBlueprint() {
 
           <g 
             id="gear-stack-group" 
+            data-testid="gear-stack"
             opacity="0"
             style={{ cursor: 'pointer' }}
             onMouseEnter={() => handleGearHover('stack')}
