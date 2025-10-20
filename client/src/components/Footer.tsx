@@ -23,8 +23,8 @@ export function Footer() {
             <h3 className="font-semibold text-foreground mb-4">Solutions</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/gtm-engine" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-gtm-engine">
-                  The GTM Engine
+                <Link href="/solutions/gtm-engine" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-gtm-engine">
+                  GTM Engine
                 </Link>
               </li>
               <li>
@@ -35,9 +35,9 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Why Party? */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Company</h3>
+            <h3 className="font-semibold text-foreground mb-4">Why Party?</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/why-party" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-about">

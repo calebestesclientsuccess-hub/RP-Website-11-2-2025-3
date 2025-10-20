@@ -12,6 +12,7 @@ import FullyLoadedBDRPage from "@/pages/FullyLoadedBDRPage";
 import Methodology from "@/pages/Methodology";
 import FullStackSalespersonPage from "@/pages/FullStackSalespersonPage";
 import AIPoweredPage from "@/pages/AIPoweredPage";
+import OurProcessPage from "@/pages/OurProcessPage";
 import ResultsPage from "@/pages/ResultsPage";
 import ROICalculator from "@/pages/ROICalculator";
 import SuccessStoriesPage from "@/pages/SuccessStoriesPage";
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/methodology" component={Methodology} />
       <Route path="/methodology/full-stack-salesperson" component={FullStackSalespersonPage} />
       <Route path="/methodology/ai-powered-by-humans" component={AIPoweredPage} />
+      <Route path="/our-process" component={OurProcessPage} />
 
       {/* Results Section */}
       <Route path="/results" component={ResultsPage} />

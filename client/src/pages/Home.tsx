@@ -172,6 +172,14 @@ export default function Home() {
               </Card>
             ))}
           </div>
+
+          <div className="text-center mt-16">
+            <Link href="/our-process">
+              <Button size="lg" variant="outline" className="gap-2" data-testid="button-learn-process">
+                Learn About Our Process <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
