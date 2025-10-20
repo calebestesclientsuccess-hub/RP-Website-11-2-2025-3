@@ -13,13 +13,17 @@ export default function BlueprintsPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-16 max-w-6xl">
-        <div className="mb-12">
-          <h1 className="text-5xl font-bold mb-4" data-testid="text-blueprints-title">
-            Revenue Party Blueprints
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl" data-testid="text-blueprints-subtitle">
-            Battle-tested GTM playbooks and frameworks. Each blueprint is a complete system you can deploy in your business.
-          </p>
+        <div className="relative mb-12 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-dark/10 via-community/5 to-transparent pointer-events-none" />
+          <div className="relative z-10">
+            <Badge variant="community" className="mb-4">Thought Leadership</Badge>
+            <h1 className="text-5xl font-bold mb-4" data-testid="text-blueprints-title">
+              Revenue Party Blueprints
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl" data-testid="text-blueprints-subtitle">
+              Battle-tested GTM playbooks and frameworks. Each blueprint is a complete system you can deploy in your business.
+            </p>
+          </div>
         </div>
 
         {isLoading ? (

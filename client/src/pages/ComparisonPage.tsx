@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Check, X } from "lucide-react";
 
 export default function ComparisonPage() {
@@ -81,8 +82,10 @@ export default function ComparisonPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-6 max-w-4xl text-center">
+      <section className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
+        <div className="container mx-auto px-6 max-w-4xl text-center relative z-10">
+          <Badge variant="default" className="mb-4">Competitive Analysis</Badge>
           <h1 className="text-6xl font-bold mb-6" data-testid="text-hero-title">
             The Real Comparison
           </h1>

@@ -13,13 +13,17 @@ export default function Careers() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-16 max-w-6xl">
-        <div className="mb-12">
-          <h1 className="text-5xl font-bold mb-4" data-testid="text-careers-title">
-            Join the Revenue Party
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl" data-testid="text-careers-subtitle">
-            We're building the future of B2B go-to-market. If you're obsessed with systems, scale, and results—let's talk.
-          </p>
+        <div className="relative mb-12 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-community/10 via-primary/5 to-transparent pointer-events-none" />
+          <div className="relative z-10">
+            <Badge variant="community" className="mb-4">Join Our Team</Badge>
+            <h1 className="text-5xl font-bold mb-4" data-testid="text-careers-title">
+              Join the Revenue <span className="text-community">Party</span>
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl" data-testid="text-careers-subtitle">
+              We're building the future of B2B go-to-market. If you're obsessed with systems, scale, and results—let's talk.
+            </p>
+          </div>
         </div>
 
         {isLoading ? (

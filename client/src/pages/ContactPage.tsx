@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Mail, Phone, MessageSquare, Linkedin, Twitter, Calendar } from "lucide-react";
 
@@ -6,8 +7,10 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-6 max-w-4xl text-center">
+      <section className="relative py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-community/5 to-transparent pointer-events-none" />
+        <div className="container mx-auto px-6 max-w-4xl text-center relative z-10">
+          <Badge variant="default" className="mb-4">Get In Touch</Badge>
           <h1 className="text-6xl font-bold mb-6" data-testid="text-hero-title">
             Let's Talk GTM
           </h1>
@@ -19,7 +22,7 @@ export default function ContactPage() {
       </section>
 
       {/* Schedule Meeting Hero */}
-      <section className="py-16 bg-gradient-to-br from-primary/10 via-purple/10 to-purple-dark/10">
+      <section className="py-16 bg-gradient-to-br from-primary/10 via-community/10 to-purple-dark/10">
         <div className="container mx-auto px-6 max-w-3xl">
           <Card className="p-12 text-center">
             <Calendar className="w-16 h-16 text-primary mx-auto mb-6" />
@@ -71,8 +74,8 @@ export default function ContactPage() {
             {/* Phone */}
             <Card className="p-6 hover-elevate transition-all">
               <div className="flex items-start gap-4">
-                <div className="p-3 bg-purple/10 rounded-lg">
-                  <Phone className="w-6 h-6 text-purple" />
+                <div className="p-3 bg-community/10 rounded-lg">
+                  <Phone className="w-6 h-6 text-community" />
                 </div>
                 <div>
                   <h3 className="font-bold mb-2">Phone</h3>

@@ -1,12 +1,15 @@
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { DollarSign, PartyPopper } from "lucide-react";
 
 export default function About() {
   return (
     <div className="min-h-screen pt-24">
       {/* Hero */}
-      <section className="py-20 px-4 md:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-community/10 via-primary/5 to-transparent pointer-events-none" />
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <Badge variant="community" className="mb-4">Company Mission</Badge>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
             Performance is Fueled by <span className="text-primary">People.</span>
           </h1>
@@ -69,10 +72,10 @@ export default function About() {
 
             <Card className="p-8 hover-elevate transition-all" data-testid="card-party">
               <div className="mb-4">
-                <PartyPopper className="w-12 h-12 text-rp-purple" />
+                <PartyPopper className="w-12 h-12 text-community" />
               </div>
               <h3 className="text-2xl font-bold mb-4">
-                To Do That, We Build a <span className="text-rp-purple">PARTY.</span>
+                To Do That, We Build a <span className="text-community">PARTY.</span>
               </h3>
               <p className="text-muted-foreground leading-relaxed">
                 A culture that attracts, energizes, and celebrates the top 1% of sales talent. A "party" is a high-energy, collaborative environment where success is a team sport. By creating the best place for sales professionals to win, we ensure the person executing your campaign is not only skilled, but is in an environment built for peak performance.
@@ -81,8 +84,8 @@ export default function About() {
           </div>
 
           <div className="mt-12 text-center">
-            <p className="text-2xl font-bold text-primary">
-              Our internal culture is your competitive advantage.
+            <p className="text-2xl font-bold">
+              Our internal <span className="text-community">culture</span> is your <span className="text-primary">competitive advantage.</span>
             </p>
           </div>
         </div>
