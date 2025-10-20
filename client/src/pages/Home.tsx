@@ -2,8 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { MiniCalculator } from "@/components/MiniCalculator";
 import { GearSystem } from "@/components/GearSystem";
-import { Calendar, PiggyBank, UserX, ArrowRight, Check } from "lucide-react";
+import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-react";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import type { Testimonial } from "@shared/schema";
 
 export default function Home() {
   const problems = [
@@ -168,6 +170,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <TestimonialsSection />
+
       {/* Final CTA Section */}
       <section className="py-20 px-4 md:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
@@ -183,5 +188,86 @@ export default function Home() {
         </div>
       </section>
     </div>
+  );
+}
+
+function TestimonialsSection() {
+  const { data: testimonials, isLoading, isError } = useQuery<Testimonial[]>({
+    queryKey: ["/api/testimonials?featured=true"],
+  });
+
+  if (isLoading) {
+    return (
+      <section className="py-20 px-4 md:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 animate-pulse">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="p-6">
+                <div className="h-4 bg-muted rounded w-3/4 mb-4" />
+                <div className="h-4 bg-muted rounded w-full mb-2" />
+                <div className="h-4 bg-muted rounded w-5/6" />
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (isError) {
+    return (
+      <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
+        <div className="max-w-7xl mx-auto">
+          <Card className="p-6 text-center">
+            <p className="text-muted-foreground">
+              Unable to load testimonials at this time. Please try again later.
+            </p>
+          </Card>
+        </div>
+      </section>
+    );
+  }
+
+  if (!testimonials || testimonials.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+            Real Results. <span className="text-primary">Real Revenue.</span>
+          </h2>
+          <p className="text-lg text-muted-foreground">
+            Don't take our word for it. Here's what GTM leaders are saying about their Fully Loaded BDR Pod.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {testimonials.map((testimonial, index) => (
+            <Card key={testimonial.id} className="p-6 hover-elevate transition-all" data-testid={`card-testimonial-${index}`}>
+              <div className="space-y-4">
+                <Quote className="w-10 h-10 text-primary/30" />
+                <p className="text-foreground leading-relaxed italic" data-testid={`text-quote-${index}`}>
+                  "{testimonial.quote}"
+                </p>
+                <div className="pt-4 border-t border-border">
+                  <p className="font-bold" data-testid={`text-name-${index}`}>
+                    {testimonial.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground" data-testid={`text-title-${index}`}>
+                    {testimonial.title}
+                  </p>
+                  <p className="text-sm text-primary font-medium" data-testid={`text-company-${index}`}>
+                    {testimonial.company}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
