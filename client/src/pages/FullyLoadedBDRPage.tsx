@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import podVideo from "@assets/Maintain_the_geometric_202510201050_1760987688804.mp4";
-import charactersImage from "@assets/Gemini_Generated_Image_ue7uheue7uheue7u_1761002669954.png";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,8 +13,6 @@ export default function FullyLoadedBDRPage() {
   const videoSectionRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const charactersSectionRef = useRef<HTMLDivElement>(null);
-  const charactersTextRef = useRef<HTMLDivElement>(null);
   const [videoProgress, setVideoProgress] = useState(0);
   const [textVisible, setTextVisible] = useState(false);
 
@@ -89,53 +86,6 @@ export default function FullyLoadedBDRPage() {
 
     return () => ctx.revert();
   }, [textVisible]);
-
-  // Animation for character section
-  useEffect(() => {
-    const charactersSection = charactersSectionRef.current;
-    const charactersText = charactersTextRef.current;
-    
-    if (!charactersSection || !charactersText) return;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
-    if (prefersReducedMotion) return;
-
-    const ctx = gsap.context(() => {
-      // Create timeline for character section animation
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: charactersSection,
-          start: "top 80%",
-          end: "bottom 20%",
-          toggleActions: "play none none reverse",
-        }
-      });
-
-      // Animate text elements
-      tl.fromTo(".hero-text-top", 
-        { opacity: 0, x: -50 },
-        { opacity: 1, x: 0, duration: 0.8, ease: "power3.out" }
-      )
-      .fromTo(".hero-text-bottom", 
-        { opacity: 0, x: 50 },
-        { opacity: 1, x: 0, duration: 0.8, ease: "power3.out" },
-        "-=0.4"
-      )
-      .fromTo(".character-image", 
-        { opacity: 0, scale: 0.9 },
-        { opacity: 1, scale: 1, duration: 1, ease: "power2.out" },
-        "-=0.6"
-      )
-      .fromTo(".particle-effect", 
-        { opacity: 0, scale: 0.8, rotation: -10 },
-        { opacity: 1, scale: 1, rotation: 0, duration: 1.2, ease: "elastic.out(1, 0.5)" },
-        "-=0.8"
-      );
-    }, charactersSection);
-
-    return () => ctx.revert();
-  }, []);
 
   const components = [
     {
@@ -229,65 +179,6 @@ export default function FullyLoadedBDRPage() {
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
             The Fully Loaded BDR Pod is a complete Go-to-Market engine, delivered as a service. It's the strategic operator, the AI-powered tech stack, the GTM playbook, and the performance analytics—all integrated into a single, turnkey system designed to generate a predictable pipeline.
           </p>
-        </div>
-      </section>
-
-      {/* Character Illustration Section */}
-      <section 
-        ref={charactersSectionRef}
-        className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden bg-gradient-to-br from-background via-background to-primary/5"
-        data-testid="section-characters"
-      >
-        <div ref={charactersTextRef} className="max-w-7xl mx-auto">
-          <div className="relative flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
-            
-            {/* Left side text - "Fully Loaded" */}
-            <div className="hero-text-top text-center lg:text-right lg:flex-1 order-2 lg:order-1">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold">
-                <span className="block text-foreground">Fully</span>
-                <span className="block text-foreground mt-2">Loaded</span>
-              </h2>
-            </div>
-            
-            {/* Center - Character Illustration */}
-            <div className="character-image relative order-1 lg:order-2 w-full max-w-md lg:max-w-lg xl:max-w-xl">
-              <div className="relative">
-                <img 
-                  src={charactersImage} 
-                  alt="Elite BDR Team - Back to Back"
-                  className="w-full h-auto object-contain drop-shadow-2xl"
-                  data-testid="image-characters"
-                />
-                {/* Animated particle overlay effect */}
-                <div className="particle-effect absolute inset-0 pointer-events-none">
-                  <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-primary rounded-full animate-pulse" />
-                  <div className="absolute top-1/3 right-1/4 w-3 h-3 bg-community rounded-full animate-pulse animation-delay-200" />
-                  <div className="absolute bottom-1/4 left-1/3 w-2 h-2 bg-indigo rounded-full animate-pulse animation-delay-400" />
-                  <div className="absolute bottom-1/3 right-1/3 w-4 h-4 bg-purple-dark rounded-full animate-pulse animation-delay-600" />
-                </div>
-              </div>
-            </div>
-            
-            {/* Right side text - "BDR Pod" */}
-            <div className="hero-text-bottom text-center lg:text-left lg:flex-1 order-3">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold">
-                <span className="block text-primary">BDR</span>
-                <span className="block text-primary mt-2">Pod</span>
-              </h2>
-              <p className="mt-6 text-lg text-muted-foreground max-w-md mx-auto lg:mx-0">
-                Elite operators armed with AI-powered precision, 
-                shooting for predictable pipeline at scale.
-              </p>
-            </div>
-          </div>
-
-          {/* Subtitle */}
-          <div className="text-center mt-12 md:mt-16">
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-              Where human expertise meets artificial intelligence to create 
-              <span className="text-foreground font-semibold"> unstoppable revenue growth</span>.
-            </p>
-          </div>
         </div>
       </section>
 

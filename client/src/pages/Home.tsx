@@ -5,6 +5,7 @@ import { MiniCalculator } from "@/components/MiniCalculator";
 import GTMTimeline from "@/components/GTMTimeline";
 import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote, Brain, Target, Headphones, Users, Wrench, Trophy } from "lucide-react";
+import charactersImage from "@assets/Gemini_Generated_Image_ue7uheue7uheue7u_1761002669954.png";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
@@ -169,13 +170,34 @@ export default function Home() {
 
           {/* Pod Components Layout */}
           <div className="relative max-w-5xl mx-auto">
-            {/* Central Pod */}
+            {/* Central Pod with Character Illustration */}
             <div className="flex items-center justify-center mb-16">
               <div className="relative">
-                <div className="w-56 h-56 md:w-72 md:h-72 rounded-full bg-gradient-to-br from-primary/20 via-community/20 to-purple-dark/20 border-4 border-primary/30 flex items-center justify-center shadow-2xl">
-                  <div className="text-center px-6">
-                    <h3 className="text-2xl md:text-4xl font-bold mb-2">Fully Loaded</h3>
-                    <p className="text-xl md:text-3xl font-bold text-primary">BDR Pod</p>
+                {/* Container with gradient background for visibility in both modes */}
+                <div className="relative w-80 h-80 md:w-96 md:h-96 flex items-center justify-center">
+                  {/* Gradient background - dark in light mode, light in dark mode */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 dark:from-slate-200 dark:via-slate-100 dark:to-white opacity-90" />
+                  
+                  {/* Character image */}
+                  <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
+                    <img 
+                      src={charactersImage}
+                      alt="Elite BDR Team"
+                      className="w-full h-full object-contain drop-shadow-2xl"
+                      data-testid="image-bdr-characters"
+                    />
+                  </div>
+                  
+                  {/* Typography positioned elegantly */}
+                  <div className="absolute inset-x-0 top-4 text-center z-20">
+                    <h3 className="text-2xl md:text-3xl font-bold text-white dark:text-slate-900 drop-shadow-lg">
+                      Fully Loaded
+                    </h3>
+                  </div>
+                  <div className="absolute inset-x-0 bottom-4 text-center z-20">
+                    <p className="text-2xl md:text-3xl font-bold text-primary drop-shadow-lg">
+                      BDR Pod
+                    </p>
                   </div>
                 </div>
               </div>
