@@ -35,23 +35,6 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList className="gap-1">
-              {/* GTM Engine - Standalone */}
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild>
-                  <Link 
-                    href="/gtm-engine"
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                      isActivePath("/gtm-engine")
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                    }`}
-                    data-testid="link-gtm-engine"
-                  >
-                    GTM Engine
-                  </Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
               {/* Solutions Dropdown */}
               <NavigationMenuItem>
                 <NavigationMenuTrigger
@@ -65,7 +48,16 @@ export function Navbar() {
                   Solutions
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="w-48 p-2">
+                  <ul className="w-56 p-2">
+                    <li>
+                      <Link 
+                        href="/solutions/gtm-engine"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-gtm-engine"
+                      >
+                        GTM Engine
+                      </Link>
+                    </li>
                     <li>
                       <Link 
                         href="/solutions/fully-loaded-bdr-pod"
@@ -169,41 +161,43 @@ export function Navbar() {
                 </NavigationMenuContent>
               </NavigationMenuItem>
 
-              {/* Blueprints - Standalone */}
+              {/* Blueprints Dropdown */}
               <NavigationMenuItem>
-                <NavigationMenuLink asChild>
-                  <Link 
-                    href="/blueprints"
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                      isActivePath("/blueprints")
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                    }`}
-                    data-testid="link-blueprints"
-                  >
-                    Blueprints
-                  </Link>
-                </NavigationMenuLink>
+                <NavigationMenuTrigger
+                  className={`px-4 py-2 text-sm font-medium ${
+                    isActivePath("/blueprints") || isActivePath("/comparison")
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  }`}
+                  data-testid="dropdown-blueprints"
+                >
+                  Blueprints
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="w-48 p-2">
+                    <li>
+                      <Link 
+                        href="/blueprints"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-blueprints-overview"
+                      >
+                        All Blueprints
+                      </Link>
+                    </li>
+                    <li>
+                      <Link 
+                        href="/comparison"
+                        className="block px-3 py-2 rounded-md text-sm hover-elevate transition-all"
+                        data-testid="link-comparison"
+                      >
+                        Comparison White Paper
+                      </Link>
+                    </li>
+                  </ul>
+                </NavigationMenuContent>
               </NavigationMenuItem>
 
-              {/* Comparison - Standalone */}
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild>
-                  <Link 
-                    href="/comparison"
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                      isActivePath("/comparison")
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                    }`}
-                    data-testid="link-comparison"
-                  >
-                    Comparison
-                  </Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-
-              {/* Company Dropdown */}
+              {/* Why Party? Dropdown */}
               <NavigationMenuItem>
                 <NavigationMenuTrigger
                   className={`px-4 py-2 text-sm font-medium ${
@@ -211,9 +205,9 @@ export function Navbar() {
                       ? "text-primary"
                       : "text-muted-foreground"
                   }`}
-                  data-testid="dropdown-company"
+                  data-testid="dropdown-why-party"
                 >
-                  Company
+                  Why Party?
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="w-48 p-2">
@@ -295,23 +289,17 @@ export function Navbar() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 space-y-2 border-t border-border">
-            {/* GTM Engine */}
-            <Link 
-              href="/gtm-engine"
-              className={`block px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                isActivePath("/gtm-engine")
-                  ? "text-primary bg-primary/10"
-                  : "text-foreground"
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
-              data-testid="mobile-link-gtm-engine"
-            >
-              GTM Engine
-            </Link>
-
             {/* Solutions Section */}
             <div className="space-y-1">
               <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Solutions</div>
+              <Link 
+                href="/solutions/gtm-engine"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-gtm-engine"
+              >
+                GTM Engine
+              </Link>
               <Link 
                 href="/solutions/fully-loaded-bdr-pod"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
@@ -380,37 +368,30 @@ export function Navbar() {
               </Link>
             </div>
 
-            {/* Blueprints */}
-            <Link 
-              href="/blueprints"
-              className={`block px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                isActivePath("/blueprints")
-                  ? "text-primary bg-primary/10"
-                  : "text-foreground"
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
-              data-testid="mobile-link-blueprints"
-            >
-              Blueprints
-            </Link>
-
-            {/* Comparison */}
-            <Link 
-              href="/comparison"
-              className={`block px-4 py-2 rounded-md text-sm font-medium transition-all hover-elevate ${
-                isActivePath("/comparison")
-                  ? "text-primary bg-primary/10"
-                  : "text-foreground"
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
-              data-testid="mobile-link-comparison"
-            >
-              Comparison
-            </Link>
-
-            {/* Company Section */}
+            {/* Blueprints Section */}
             <div className="space-y-1">
-              <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Company</div>
+              <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Blueprints</div>
+              <Link 
+                href="/blueprints"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-blueprints"
+              >
+                All Blueprints
+              </Link>
+              <Link 
+                href="/comparison"
+                className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-link-comparison"
+              >
+                Comparison White Paper
+              </Link>
+            </div>
+
+            {/* Why Party? Section */}
+            <div className="space-y-1">
+              <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Why Party?</div>
               <Link 
                 href="/why-party"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"

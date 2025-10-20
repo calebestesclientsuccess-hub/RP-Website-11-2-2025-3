@@ -29,9 +29,9 @@ function Router() {
     <Switch>
       {/* Core Pages */}
       <Route path="/" component={Home} />
-      <Route path="/gtm-engine" component={GTMEnginePage} />
 
       {/* Solutions Section */}
+      <Route path="/solutions/gtm-engine" component={GTMEnginePage} />
       <Route path="/solutions/fully-loaded-bdr-pod" component={FullyLoadedBDRPage} />
 
       {/* Methodology Section */}
