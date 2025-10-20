@@ -1,0 +1,62 @@
+GTM Engine Visualization - "The Sentient Blueprint"
+# Core Concept
+
+The visualization is a cinematic, scroll-driven animation titled "The Sentient Blueprint." It must be built as a 2D animation using SVG and the GSAP library to ensure high performance and a sharp, technical aesthetic. The goal is to create the feeling of a living, intelligent machine being assembled and powered up on a digital drafting grid.
+
+The narrative is simple but critical: Culture is the ambient energy field that powers the entire GTM machine.
+
+# Visual Breakdown & Assets
+
+Background: The canvas is a dark blueprint grid (e.g., dark navy #2e294e with faint, glowing grid lines). This grid is not static; it should have slowly drifting particles of light in the brand's community blues/purples and competition reds/magentas. This represents the ever-present "Culture Field."
+
+Machine Components: All gears and housings should be designed as clean, precise SVGs. They should have a modern, geometric, or even a subtle "low-poly" style rather than traditional, rounded gear teeth. Their initial state is dark and inert, just outlines on the blueprint.
+
+# The Scroll-Driven Cinematic Journey (GSAP ScrollTrigger)
+
+The entire animation will be pinned and controlled by the user's scroll position. The user must be able to scroll up and down to scrub through the timeline smoothly.
+
+Scene 1: The Blueprint Activates (0-15% Scroll)
+
+The blueprint grid fades into view.
+
+The "Culture Field" particles begin to drift across the screen, establishing the energy source.
+
+The main, empty housing for the GTM engine is "drawn" onto the grid with animated SVG lines.
+
+Scene 2: Elite Talent - Powered by Community (15-40% Scroll)
+
+Energy Flow: Thin, glowing lines of blue and purple light are drawn from the edges of the grid. They converge and flow directly into the "Elite Talent" gear.
+
+Activation: As the energy is absorbed, the gear ignites with a blue/purple glow and begins to slowly rotate. Its satellite components (Coaching, Training, etc.) are drawn around it.
+
+Scene 3: Strategy - Powered by Competition (40-65% Scroll)
+
+Energy Flow: Thin, glowing lines of red and magenta light are drawn from the grid and flow into the "Strategy" gear, which is positioned to mesh with the Talent gear.
+
+Activation: The Strategy gear ignites with a red/magenta glow and begins to rotate in the opposite direction. Its satellite components are drawn.
+
+Scene 4: The System Comes Online (65-85% Scroll)
+
+The "AI" and "Sales Stack" gears are activated in quick succession, each drawing a mix of purple and indigo energy from the grid.
+
+The entire machine is now fully assembled and operational, with all parts rotating in synchronized harmony.
+
+Scene 5: Exploration (85-100% Scroll)
+
+The full GTM Engine is presented. The scroll now allows the user to trigger the "Focus Mode" on the different components.
+
+# Interactivity: "Focus Mode"
+
+This is a critical feature for creating a premium user experience. It must be implemented precisely.
+
+Trigger: On hover over any of the four primary gear systems (Talent, Strategy, AI, Stack).
+
+Action:
+
+The hovered gear system (the primary gear and its satellites) instantly glows brighter and can optionally scale up by 5%. Its rotation continues. A tooltip or text box with its detailed description fades in nearby.
+
+Simultaneously, all other parts of the GTM machine fade to 50% opacity and their rotation slows down significantly (e.g., to 25% of its normal speed).
+
+Reversal: On mouse-out, the machine immediately and smoothly returns to its fully illuminated, synchronized operational state.
+
+This "rack focus" effect is non-negotiable as it directs user attention and makes exploring the machine feel tactical and responsive.
