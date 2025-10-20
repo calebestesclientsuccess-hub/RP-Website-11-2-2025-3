@@ -88,28 +88,24 @@ export function GearSystem() {
       description: "A full-stack BDR, trained in our Impact Selling methodology, who operates as a strategic extension of your team.",
       icon: <Users className="w-full h-full" />,
       color: "#ef233c",
-      ref: gear1Ref,
     },
     {
       title: "Tech Stack",
       description: "A complete, integrated technology stack for data, outreach, and analytics. We cover the licenses and the integration.",
       icon: <Zap className="w-full h-full" />,
       color: "#2e294e",
-      ref: gear2Ref,
     },
     {
       title: "Strategic Framework",
       description: "A dedicated GTM strategist who designs your playbook, manages execution, and optimizes performance weekly.",
       icon: <Settings className="w-full h-full" />,
       color: "#9F8FFF",
-      ref: gear3Ref,
     },
     {
       title: "The Signal Factory",
       description: "Our proprietary AI and data engine that uncovers private buying signals, ensuring your team is always talking to the right people at the right time.",
       icon: <Lightbulb className="w-full h-full" />,
       color: "#42349c",
-      ref: gear4Ref,
     },
   ];
 
@@ -207,13 +203,22 @@ export function GearSystem() {
 
       function stopFullOperation() {
         // Kill all continuous rotation tweens
-        rotationTweens.forEach((tween) => tween.kill());
+        rotationTweens.forEach((tween) => {
+          tween.kill();
+        });
         rotationTweens = [];
         
-        // Reset rotation to 0
+        // Reset rotation to 0 - use clearProps to fully clear the transforms
         if (gear1Ref.current && gear2Ref.current && gear3Ref.current && gear4Ref.current) {
-          gsap.set([gear1Ref.current, gear2Ref.current, gear3Ref.current, gear4Ref.current], {
+          gsap.to([gear1Ref.current, gear2Ref.current, gear3Ref.current, gear4Ref.current], {
             rotation: 0,
+            duration: 0.3,
+            onComplete: () => {
+              // Clear all transform properties after animation completes
+              gsap.set([gear1Ref.current, gear2Ref.current, gear3Ref.current, gear4Ref.current], {
+                clearProps: "rotation,transform",
+              });
+            },
           });
         }
       }
@@ -245,19 +250,19 @@ export function GearSystem() {
           {/* Orbiting Gears - Desktop Layout */}
           <div className="hidden md:block">
             {/* Top */}
-            <div ref={gear1Ref} className="absolute -top-20 left-1/2 -translate-x-1/2">
+            <div ref={gear1Ref} className="absolute -top-20 left-1/2 -translate-x-1/2" data-testid="gear-wrapper-1">
               <Gear {...gears[0]} />
             </div>
             {/* Right */}
-            <div ref={gear2Ref} className="absolute top-1/2 -right-40 -translate-y-1/2">
+            <div ref={gear2Ref} className="absolute top-1/2 -right-40 -translate-y-1/2" data-testid="gear-wrapper-2">
               <Gear {...gears[1]} />
             </div>
             {/* Bottom */}
-            <div ref={gear3Ref} className="absolute -bottom-20 left-1/2 -translate-x-1/2">
+            <div ref={gear3Ref} className="absolute -bottom-20 left-1/2 -translate-x-1/2" data-testid="gear-wrapper-3">
               <Gear {...gears[2]} />
             </div>
             {/* Left */}
-            <div ref={gear4Ref} className="absolute top-1/2 -left-40 -translate-y-1/2">
+            <div ref={gear4Ref} className="absolute top-1/2 -left-40 -translate-y-1/2" data-testid="gear-wrapper-4">
               <Gear {...gears[3]} />
             </div>
           </div>
