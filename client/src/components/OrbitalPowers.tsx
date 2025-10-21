@@ -174,7 +174,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [cyclingEnabled, setCyclingEnabled] = useState(false);
   const targetRotationRef = useRef(0);
-  const isRotatingRef = useRef(false);
+  const isRotatingRef = useRef(false); // Controls button disabled state during rotation
   const forceInteractiveRef = useRef(false); // Fallback for when video fails
   const [hasInteracted, setHasInteracted] = useState(false); // Track if user has interacted
 
@@ -408,6 +408,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
       const timer = setTimeout(() => {
         setCyclingEnabled(true);
         setShowInfoBox(true);
+        isRotatingRef.current = false; // Ensure buttons are enabled
       }, 300); // Faster response
       return () => clearTimeout(timer);
     }
