@@ -5,6 +5,7 @@ import GTMTimeline from "@/components/GTMTimeline";
 import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { OrbitalPowers } from "@/components/OrbitalPowers";
 import { HeroROICalculator } from "@/components/HeroROICalculator";
+import CinematicBridge from "@/components/CinematicBridge";
 import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-react";
 // Video is served from public directory
 const podVideo = "/bdr-pod-video.mp4";
@@ -199,20 +200,11 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Bridge Statement - Problem to Solution */}
-          <motion.div 
-            className="text-center mt-16"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
-              You need more than another salesperson. You need a system
-            </h2>
-          </motion.div>
         </div>
       </section>
+
+      {/* Cinematic Bridge Statement */}
+      <CinematicBridge />
 
       {/* Solution Section */}
       <section className="py-20 px-4 md:px-6 lg:px-8">
