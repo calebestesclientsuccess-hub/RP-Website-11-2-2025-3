@@ -9,8 +9,51 @@ import podVideo from "@assets/Change_the_background_202510200715_1761004160815.m
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
+import { useEffect, useRef, useState } from "react";
+
+// Confetti particle class
+class ConfettiParticle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  color: string;
+  size: number;
+  gravity: number = 0.1;
+  opacity: number = 1;
+
+  constructor(x: number, y: number, color: string) {
+    this.x = x;
+    this.y = y;
+    this.vx = (Math.random() - 0.5) * 8;
+    this.vy = Math.random() * -10 - 5;
+    this.color = color;
+    this.size = Math.random() * 3 + 2;
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vy += this.gravity;
+    this.opacity -= 0.01;
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.save();
+    ctx.globalAlpha = this.opacity;
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, this.size, this.size * 1.5);
+    ctx.restore();
+  }
+}
 
 export default function Home() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const leftCanvasRef = useRef<HTMLCanvasElement>(null);
+  const rightCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const animationRef = useRef<number>();
   const problems = [
     {
       icon: <Calendar className="w-12 h-12" />,
@@ -83,6 +126,89 @@ export default function Home() {
       description: "Through weekly strategy sessions, we analyze performance data, refine messaging, and optimize targeting. Your GTM engine doesn't just run; it learns and improves, becoming more efficient and effective every single week.",
     },
   ];
+
+  // Confetti animation
+  useEffect(() => {
+    if (!showConfetti) return;
+    
+    const leftCanvas = leftCanvasRef.current;
+    const rightCanvas = rightCanvasRef.current;
+    if (!leftCanvas || !rightCanvas) return;
+    
+    const leftCtx = leftCanvas.getContext('2d');
+    const rightCtx = rightCanvas.getContext('2d');
+    if (!leftCtx || !rightCtx) return;
+    
+    // Set canvas size
+    leftCanvas.width = 200;
+    leftCanvas.height = 400;
+    rightCanvas.width = 200;
+    rightCanvas.height = 400;
+    
+    const particles: ConfettiParticle[] = [];
+    const colors = ['#ef233c', '#C0C0C0', '#FFD700', '#ef233c', '#C0C0C0']; // Red, Silver, Gold
+    
+    // Create initial particles
+    for (let i = 0; i < 50; i++) {
+      // Left side particles
+      particles.push(new ConfettiParticle(
+        leftCanvas.width / 2,
+        leftCanvas.height / 2,
+        colors[Math.floor(Math.random() * colors.length)]
+      ));
+      // Right side particles
+      particles.push(new ConfettiParticle(
+        rightCanvas.width / 2 + 1000, // Offset for right canvas
+        rightCanvas.height / 2,
+        colors[Math.floor(Math.random() * colors.length)]
+      ));
+    }
+    
+    const animate = () => {
+      leftCtx.clearRect(0, 0, leftCanvas.width, leftCanvas.height);
+      rightCtx.clearRect(0, 0, rightCanvas.width, rightCanvas.height);
+      
+      particles.forEach((particle) => {
+        particle.update();
+        if (particle.x < 1000) {
+          particle.draw(leftCtx);
+        } else {
+          // Draw on right canvas with adjusted x position
+          const originalX = particle.x;
+          particle.x = particle.x - 1000;
+          particle.draw(rightCtx);
+          particle.x = originalX; // Restore original x for next frame
+        }
+      });
+      
+      // Remove dead particles
+      const aliveParticles = particles.filter(p => p.opacity > 0);
+      
+      if (aliveParticles.length > 0) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        setShowConfetti(false);
+      }
+    };
+    
+    animate();
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [showConfetti]);
+
+  // Handle video end
+  const handleVideoEnd = () => {
+    if (!hasPlayedOnce && videoRef.current) {
+      setHasPlayedOnce(true);
+      setShowConfetti(true);
+      // Don't restart the video
+      videoRef.current.pause();
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -170,24 +296,39 @@ export default function Home() {
 
           {/* Pod Components Layout */}
           <div className="relative max-w-5xl mx-auto">
-            {/* Central Pod with Video */}
+            {/* Central Pod with Video and Confetti */}
             <div className="flex items-center justify-center mb-16">
               <div className="relative">
-                {/* Container with gradient background for visibility in both modes */}
+                {/* Confetti Canvases */}
+                <canvas
+                  ref={leftCanvasRef}
+                  className="absolute -left-48 top-0 z-30 pointer-events-none"
+                  style={{ width: 200, height: 400 }}
+                  data-testid="canvas-confetti-left"
+                />
+                <canvas
+                  ref={rightCanvasRef}
+                  className="absolute -right-48 top-0 z-30 pointer-events-none"
+                  style={{ width: 200, height: 400 }}
+                  data-testid="canvas-confetti-right"
+                />
+                
+                {/* Container with Apple-style aesthetics */}
                 <div className="relative w-80 h-80 md:w-96 md:h-96 flex items-center justify-center">
-                  {/* Gradient background - dark in light mode, light in dark mode */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 dark:from-slate-200 dark:via-slate-100 dark:to-white opacity-90" />
+                  {/* Apple-style border and background */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-900" />
                   
-                  {/* Video element */}
-                  <div className="relative z-10 w-full h-full flex items-center justify-center p-4 rounded-2xl overflow-hidden">
+                  {/* Video container with thin border */}
+                  <div className="relative z-10 w-[calc(100%-16px)] h-[calc(100%-16px)] m-2 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-600 shadow-xl">
                     <video 
+                      ref={videoRef}
                       src={podVideo}
-                      className="w-full h-full object-cover rounded-xl"
+                      className="w-full h-full object-cover"
                       autoPlay
                       muted
-                      loop
                       playsInline
                       preload="auto"
+                      onEnded={handleVideoEnd}
                       data-testid="video-bdr-pod"
                     >
                       Your browser does not support the video tag.
@@ -197,12 +338,12 @@ export default function Home() {
                   {/* Typography positioned elegantly over the video */}
                   <div className="absolute inset-0 flex flex-col justify-between p-8 z-20 pointer-events-none">
                     <div className="text-center">
-                      <h3 className="text-2xl md:text-3xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                      <h3 className="text-2xl md:text-3xl font-bold text-white drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
                         Fully Loaded
                       </h3>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl md:text-3xl font-bold text-primary drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                      <p className="text-2xl md:text-3xl font-bold text-primary drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
                         BDR Pod
                       </p>
                     </div>
