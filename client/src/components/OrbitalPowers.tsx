@@ -126,11 +126,14 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   const [isVisible, setIsVisible] = useState(false);
   const isPausedRef = useRef(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [videoEnded, setVideoEnded] = useState(false);
+  const [animationStopped, setAnimationStopped] = useState(false);
   const [showLabels, setShowLabels] = useState(false);
   const [showLearnMore, setShowLearnMore] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const speedRef = useRef(0.5); // Starting speed
   const slowdownRef = useRef(false);
+  const videoDurationRef = useRef<number>(0);
+  const radiusRef = useRef({ x: 280, y: 200 });
 
   useEffect(() => {
     const container = containerRef.current;
@@ -161,27 +164,63 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Listen for video end event
+  // Listen for video metadata and handle timing
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    const handleVideoEnd = () => {
-      setVideoEnded(true);
-      slowdownRef.current = true;
+    const handleLoadedMetadata = () => {
+      videoDurationRef.current = video.duration;
       
-      // After 3 seconds of slowdown, show labels
-      setTimeout(() => {
-        setShowLabels(true);
-        // After labels appear, show Learn More button
+      // Calculate when to start slowdown (2.5 seconds before end)
+      const slowdownTime = (video.duration - 2.5) * 1000; // Convert to milliseconds
+      
+      // Start the slowdown timer
+      const slowdownTimer = setTimeout(() => {
+        slowdownRef.current = true;
+        
+        // After 2 seconds of slowdown, stop completely and expand
         setTimeout(() => {
-          setShowLearnMore(true);
-        }, 600);
-      }, 3000);
+          speedRef.current = 0;
+          setAnimationStopped(true);
+          setIsExpanded(true);
+          
+          // After expansion animation (1 second), show labels
+          setTimeout(() => {
+            setShowLabels(true);
+            // After labels appear, show Learn More button
+            setTimeout(() => {
+              setShowLearnMore(true);
+            }, 800);
+          }, 1000);
+        }, 2000);
+      }, slowdownTime);
+      
+      return () => clearTimeout(slowdownTimer);
     };
 
-    video.addEventListener('ended', handleVideoEnd);
-    return () => video.removeEventListener('ended', handleVideoEnd);
+    const handleVideoPlay = () => {
+      // Reset animation state when video restarts
+      speedRef.current = 0.5;
+      slowdownRef.current = false;
+      setAnimationStopped(false);
+      setIsExpanded(false);
+      setShowLabels(false);
+      setShowLearnMore(false);
+    };
+
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('play', handleVideoPlay);
+    
+    // If metadata is already loaded
+    if (video.duration && !isNaN(video.duration)) {
+      handleLoadedMetadata();
+    }
+
+    return () => {
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('play', handleVideoPlay);
+    };
   }, [videoRef]);
 
   useEffect(() => {
@@ -206,14 +245,26 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
     };
 
     let { radiusX, radiusY } = getOrbitSize();
+    radiusRef.current = { x: radiusX, y: radiusY };
+    
+    // Target radius for expansion
+    const targetRadiusX = radiusX + 100;
+    const targetRadiusY = radiusY + 80;
 
     const animate = () => {
-      // Gradually slow down when video ends
+      // Gradually slow down when triggered
       if (slowdownRef.current && speedRef.current > 0.01) {
-        speedRef.current *= 0.98; // Exponential decay
+        speedRef.current *= 0.96; // Exponential decay
         if (speedRef.current < 0.01) {
           speedRef.current = 0; // Stop completely
         }
+      }
+
+      // Handle expansion animation
+      if (isExpanded && radiusRef.current.x < targetRadiusX) {
+        const expansionSpeed = 3;
+        radiusRef.current.x = Math.min(radiusRef.current.x + expansionSpeed, targetRadiusX);
+        radiusRef.current.y = Math.min(radiusRef.current.y + expansionSpeed * 0.8, targetRadiusY);
       }
 
       if (!isPausedRef.current && speedRef.current > 0) {
@@ -229,13 +280,13 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
 
         const angle = power.angle + rotationRef.current;
         const rad = (angle * Math.PI) / 180;
-        const x = Math.cos(rad) * radiusX;
-        const y = Math.sin(rad) * radiusY;
+        const x = Math.cos(rad) * radiusRef.current.x;
+        const y = Math.sin(rad) * radiusRef.current.y;
 
         badge.style.transform = `translate(${x}px, ${y}px)`;
       });
 
-      if (speedRef.current > 0 || !showLabels) {
+      if (speedRef.current > 0 || !showLabels || (isExpanded && radiusRef.current.x < targetRadiusX)) {
         animationRef.current = requestAnimationFrame(animate);
       }
     };
@@ -256,7 +307,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
       }
       window.removeEventListener('resize', handleResize);
     };
-  }, [isVisible, showLabels]);
+  }, [isVisible, showLabels, isExpanded]);
 
   // Simple hover effect for badges
   const handlePowerHover = (powerId: string) => {
@@ -317,13 +368,13 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
     <div ref={containerRef} className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] flex items-center justify-center overflow-hidden">
       {/* Central Video */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-        <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96">
+        <div className="relative w-72 h-72 md:w-[22rem] md:h-[22rem] lg:w-[26rem] lg:h-[26rem]">
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-900" />
           <div className="relative z-10 w-[calc(100%-16px)] h-[calc(100%-16px)] m-2 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-600 shadow-xl pointer-events-auto">
             <video 
               ref={videoRef}
               src={videoSrc}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               muted
               playsInline
               preload="auto"
@@ -351,8 +402,8 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
             data-testid={`orbital-power-${power.id}`}
           >
             <AnimatePresence mode="wait">
-              {showLabels && speedRef.current === 0 ? (
-                // Show labels after video ends and animation stops
+              {showLabels && animationStopped ? (
+                // Show labels after expansion completes
                 <motion.div
                   key="label"
                   initial={{ scale: 0.8, opacity: 0 }}
@@ -365,31 +416,42 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                     damping: 20 
                   }}
                   className={`
-                    px-4 py-2 rounded-lg
+                    px-4 py-3 rounded-xl
                     backdrop-blur-md bg-background/95
-                    border border-background/20
-                    flex items-center gap-2
+                    border-2 border-background/30
+                    flex items-center gap-3
                     transition-all
-                    ${hoveredPower === power.id ? 'shadow-lg' : ''}
+                    ${hoveredPower === power.id ? 'shadow-2xl' : 'shadow-lg'}
                   `}
                   style={{ 
-                    boxShadow: hoveredPower === power.id ? `0 0 30px ${power.glowColor}` : `0 0 15px ${power.glowColor}`,
+                    boxShadow: hoveredPower === power.id 
+                      ? `0 0 80px ${power.glowColor}, 0 0 40px ${power.glowColor}` 
+                      : `0 0 60px ${power.glowColor}, 0 0 30px ${power.glowColor}`,
                   }}
                   data-testid={`label-${power.id}`}
                 >
-                  <div className={`${power.color} flex-shrink-0`}>
+                  <div className={`${power.color} flex-shrink-0 scale-125`}>
                     {power.icon}
                   </div>
-                  <span className="font-semibold text-sm whitespace-nowrap">{power.title}</span>
+                  <span className="font-bold text-base whitespace-nowrap">{power.title}</span>
                 </motion.div>
               ) : (
-                // Compact badge during orbital animation
+                // Badge during orbital animation (with expansion effect)
                 <motion.div
                   key="compact"
                   initial={{ scale: 1 }}
-                  whileHover={{ scale: 1.1 }}
+                  animate={{ 
+                    scale: isExpanded ? 1.3 : 1,
+                  }}
+                  whileHover={{ scale: isExpanded ? 1.35 : 1.1 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 200, 
+                    damping: 20 
+                  }}
                   className={`
-                    w-16 h-16 md:w-20 md:h-20 rounded-full 
+                    ${isExpanded ? 'w-20 h-20 md:w-24 md:h-24' : 'w-16 h-16 md:w-20 md:h-20'} 
+                    rounded-full 
                     backdrop-blur-md bg-background/80 
                     border-2 border-background/20
                     flex items-center justify-center
@@ -397,11 +459,13 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                     ${hoveredPower && hoveredPower !== power.id ? 'opacity-30 blur-sm' : 'opacity-100'}
                   `}
                   style={{ 
-                    boxShadow: `0 0 30px ${power.glowColor}`,
+                    boxShadow: isExpanded 
+                      ? `0 0 60px ${power.glowColor}, 0 0 30px ${power.glowColor}` 
+                      : `0 0 30px ${power.glowColor}`,
                   }}
                   data-testid={`badge-compact-${power.id}`}
                 >
-                  <div className={power.color}>
+                  <div className={`${power.color} ${isExpanded ? 'scale-125' : ''}`}>
                     {power.icon}
                   </div>
                 </motion.div>
