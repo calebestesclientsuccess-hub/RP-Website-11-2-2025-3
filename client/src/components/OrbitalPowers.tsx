@@ -2,7 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Target, Headphones, Users, Wrench, Trophy } from "lucide-react";
+import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronUp, ChevronDown } from "lucide-react";
+
+interface PowerContent {
+  whatItIs: string;
+  value: string;
+  inHouseCost: string;
+}
 
 interface Power {
   id: string;
@@ -15,6 +21,7 @@ interface Power {
   details: string[];
   cta: string;
   link?: string;
+  content: PowerContent;
 }
 
 const powers: Power[] = [
@@ -31,7 +38,12 @@ const powers: Power[] = [
       "Automated personalization engine",
       "Message optimization & A/B testing"
     ],
-    cta: "Explore AI Tools"
+    cta: "Explore AI Tools",
+    content: {
+      whatItIs: "An advanced AI-powered system that automates prospect research, message personalization, and campaign optimization using machine learning algorithms.",
+      value: "Increases response rates by 3x through hyper-personalization at scale, saving 15+ hours per week on manual research and writing.",
+      inHouseCost: "$180,000/yr (AI engineer) + $50,000/yr (tools & infrastructure)"
+    }
   },
   {
     id: "gtm-strategist",
@@ -46,22 +58,32 @@ const powers: Power[] = [
       "Messaging & positioning strategy",
       "Multi-channel campaign design"
     ],
-    cta: "Meet the Team"
+    cta: "Meet the Team",
+    content: {
+      whatItIs: "Senior GTM experts with 10+ years experience designing and executing revenue strategies for B2B SaaS companies from Series A to IPO.",
+      value: "Reduces time to product-market fit by 6-12 months. Increases pipeline velocity by 40% through proven frameworks.",
+      inHouseCost: "$250,000/yr (VP of Marketing) + $150,000/yr (Strategy Consultant)"
+    }
   },
   {
-    id: "support",
-    title: "24/7 Support",
-    icon: <Headphones className="w-6 h-6" />,
+    id: "revops",
+    title: "RevOps",
+    icon: <Settings className="w-6 h-6" />,
     color: "text-community",
     glowColor: "rgba(168, 85, 247, 0.4)",
     angle: 120,
-    description: "Round-the-clock support ensuring your system runs without friction.",
+    description: "Full revenue operations management ensuring seamless system performance.",
     details: [
-      "Real-time system monitoring",
-      "Instant issue resolution",
-      "Proactive optimization alerts"
+      "CRM & tool optimization",
+      "Data hygiene & reporting",
+      "Process automation & workflows"
     ],
-    cta: "Learn More"
+    cta: "Learn More",
+    content: {
+      whatItIs: "Complete revenue operations management including CRM optimization, data orchestration, and process automation across all GTM systems.",
+      value: "Eliminates 20+ hours/week of manual tasks, improves data accuracy to 99%, and provides real-time performance visibility.",
+      inHouseCost: "$140,000/yr (RevOps Manager) + $30,000/yr (tools & integrations)"
+    }
   },
   {
     id: "coach",
@@ -76,7 +98,12 @@ const powers: Power[] = [
       "Real-time call coaching",
       "Performance analytics & feedback"
     ],
-    cta: "See Coaching"
+    cta: "See Coaching",
+    content: {
+      whatItIs: "Elite sales coaches who've trained top 1% BDRs at companies like Salesforce, MongoDB, and Snowflake, providing daily 1:1 and group coaching.",
+      value: "Accelerates ramp time from 3 months to 3 weeks. Increases meeting conversion rates by 2.5x through proven methodologies.",
+      inHouseCost: "$175,000/yr (Sales Enablement Manager) + $60,000/yr (training programs)"
+    }
   },
   {
     id: "tools",
@@ -91,7 +118,12 @@ const powers: Power[] = [
       "Intent data & enrichment",
       "Advanced analytics dashboard"
     ],
-    cta: "View Stack"
+    cta: "View Stack",
+    content: {
+      whatItIs: "Pre-integrated stack of 15+ enterprise tools including Outreach, ZoomInfo, 6sense, Gong, and custom automation platforms.",
+      value: "Saves $200,000+ in annual tool costs through volume licensing. Eliminates 3-month implementation timeline.",
+      inHouseCost: "$120,000/yr (tools) + $50,000 (implementation) + $30,000/yr (maintenance)"
+    }
   },
   {
     id: "community",
@@ -106,7 +138,12 @@ const powers: Power[] = [
       "Gamified performance tracking",
       "Team challenges & rewards"
     ],
-    cta: "Join Community"
+    cta: "Join Community",
+    content: {
+      whatItIs: "Private community of 500+ elite BDRs sharing tactics, templates, and strategies with gamified challenges and monthly competitions.",
+      value: "Increases team performance by 35% through peer learning. Reduces turnover by 50% through engagement and culture.",
+      inHouseCost: "$100,000/yr (Community Manager) + $50,000/yr (platform & rewards)"
+    }
   }
 ];
 
