@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ChevronDown } from 'lucide-react';
@@ -10,7 +10,7 @@ export default function CinematicBridge() {
   const firstTextRef = useRef<HTMLHeadingElement>(null);
   const secondTextRef = useRef<HTMLDivElement>(null);
   const arrowRef = useRef<HTMLDivElement>(null);
-  const [hasTriggered, setHasTriggered] = useState(false);
+  const hasTriggeredRef = useRef(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -49,8 +49,8 @@ export default function CinematicBridge() {
           anticipatePin: 1,
           markers: false,
           onEnter: () => {
-            if (!hasTriggered) {
-              setHasTriggered(true);
+            if (!hasTriggeredRef.current) {
+              hasTriggeredRef.current = true;
               
               // Timer-based animations - directly in callback
               // Wait 1.5 seconds then reveal "You need a system"
@@ -100,7 +100,7 @@ export default function CinematicBridge() {
       // Hide arrow when user scrolls
       let scrollTimeout: NodeJS.Timeout;
       const handleScroll = () => {
-        if (arrow && hasTriggered) {
+        if (arrow && hasTriggeredRef.current) {
           clearTimeout(scrollTimeout);
           gsap.to(arrow, {
             opacity: 0,
@@ -120,7 +120,7 @@ export default function CinematicBridge() {
     });
 
     return () => ctx.revert();
-  }, [hasTriggered]);
+  }, []);
 
   return (
     <section
