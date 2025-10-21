@@ -28,7 +28,7 @@ export default function CinematicBridge() {
 
     const ctx = gsap.context(() => {
       // Initial states
-      gsap.set(secondText, { opacity: 0, y: 40, scale: 0.9 });
+      gsap.set(secondText, { opacity: 0, y: 60, scale: 0.8 });
       gsap.set(firstText, { opacity: 1, scale: 1 });
       gsap.set(container, { backgroundColor: "rgba(0, 0, 0, 0)" });
 
@@ -52,9 +52,9 @@ export default function CinematicBridge() {
         ease: "power2.in",
       }, 0);
 
-      // Phase 1: Scale up first text dramatically (0% to 35% of scroll)
+      // Phase 1: Scale up first text elegantly (0% to 35% of scroll)
       tl.to(firstText, {
-        scale: 3,
+        scale: 1.6,
         duration: 0.35,
         ease: "power3.inOut",
       }, 0);
@@ -63,7 +63,7 @@ export default function CinematicBridge() {
       tl.to(secondText, {
         opacity: 1,
         y: 0,
-        scale: 1,
+        scale: 1.6,
         duration: 0.15,
         ease: "back.out(1.7)",
       }, 0.35);
@@ -99,16 +99,16 @@ export default function CinematicBridge() {
       className="relative min-h-screen flex items-center justify-center overflow-hidden transition-colors duration-1000"
       data-testid="section-cinematic-bridge"
     >
-      <div className="text-center max-w-6xl mx-auto px-4">
+      <div className="text-center max-w-5xl mx-auto px-4">
         <h2
           ref={firstTextRef}
-          className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-12 leading-tight"
+          className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-16 leading-tight"
         >
           You need more than another salesperson.
         </h2>
         <h2
           ref={secondTextRef}
-          className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-primary leading-tight"
+          className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-primary leading-tight"
         >
           You need a system
         </h2>
