@@ -36,12 +36,12 @@ export default function CinematicBridge() {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
-          start: "top 80%",
-          end: "+=400%", // Animation spans 4x viewport height for more cinematic feel
+          start: "top top",
+          end: "+=300%", // Animation spans 3x viewport height for cinematic feel
           pin: true,
           scrub: 1, // Smoother scrubbing
           anticipatePin: 1,
-          // markers: true, // Uncomment for debugging
+          markers: true, // Debug markers enabled
         },
       });
 
