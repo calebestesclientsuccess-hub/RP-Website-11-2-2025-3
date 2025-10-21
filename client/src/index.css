@@ -745,6 +745,24 @@
   filter: drop-shadow(0 0 10px rgba(212, 17, 17, 0.5));
 }
 
+/* Gentle CTA pulse animation */
+@keyframes gentle-cta-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+.animate-gentle-pulse {
+  animation: gentle-cta-pulse 2s ease-in-out infinite;
+}
+
+.animate-gentle-pulse:hover {
+  animation-play-state: paused;
+}
+
 /* Respect user's preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -771,5 +789,10 @@
   .gradient-mesh-layer-secondary {
     background-position: 50% 50% !important;
     transform: none !important;
+  }
+  
+  /* Disable gentle pulse animation */
+  .animate-gentle-pulse {
+    animation: none !important;
   }
 }

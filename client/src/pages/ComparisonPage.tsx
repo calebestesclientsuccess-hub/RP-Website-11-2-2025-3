@@ -105,7 +105,7 @@ export default function ComparisonPage() {
                 <tr className="border-b border-border">
                   <th className="text-left p-4 font-bold text-foreground">Category</th>
                   <th className="text-center p-4 font-bold text-muted-foreground">Traditional Hire</th>
-                  <th className="text-center p-4 font-bold text-muted-foreground">Lead Gen Agency</th>
+                  <th className="text-center p-4 font-bold text-muted-foreground whitespace-nowrap">Lead Gen Agency</th>
                   <th className="text-center p-4 font-bold text-primary">Revenue Party</th>
                 </tr>
               </thead>

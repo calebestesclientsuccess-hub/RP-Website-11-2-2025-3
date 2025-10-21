@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -133,10 +134,15 @@ export default function Home() {
                 <Badge variant="community" className="mb-4" data-testid="badge-culture">
                   Community + Competition = Culture
                 </Badge>
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
+                <motion.h1 
+                  className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                >
                   Your Next Sales Hire Shouldn't Be a Person.{" "}
                   <span className="text-primary">It Should Be a Revenue Generation System.</span>
-                </h1>
+                </motion.h1>
                 <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
                   Adding salespeople is a linear game. We deploy a complete Go-to-Market system, arming elite talent with the AI, tech, and strategy required to multiply your pipeline.
                 </p>
@@ -173,11 +179,23 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {problems.map((problem, index) => (
-              <Card key={index} className="p-8 hover-elevate transition-all" data-testid={`card-problem-${index}`}>
-                <div className="text-primary mb-6">{problem.icon}</div>
-                <h3 className="text-2xl font-bold mb-4">{problem.title}</h3>
-                <p className="text-muted-foreground leading-relaxed mb-4">{problem.description}</p>
-              </Card>
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ 
+                  duration: 0.6, 
+                  delay: index * 0.1,
+                  ease: "easeOut"
+                }}
+              >
+                <Card className="p-8 hover-elevate transition-all h-full" data-testid={`card-problem-${index}`}>
+                  <div className="text-primary mb-6">{problem.icon}</div>
+                  <h3 className="text-2xl font-bold mb-4">{problem.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed mb-4">{problem.description}</p>
+                </Card>
+              </motion.div>
             ))}
           </div>
 
@@ -189,20 +207,9 @@ export default function Home() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <div className="relative inline-block">
-              {/* Animated background glow */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-3xl"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: [0, 1, 0.7] }}
-                viewport={{ once: true }}
-                transition={{ duration: 1.5, delay: 0.3 }}
-              />
-              
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold relative">
-                You need more than another salesperson. You need a system
-              </h2>
-            </div>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
+              You need more than another salesperson. You need a system
+            </h2>
           </motion.div>
         </div>
       </section>
@@ -263,7 +270,11 @@ export default function Home() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <Card className="p-8 text-center hover-elevate transition-all" data-testid="metric-faster">
-              <div className="text-6xl font-bold text-primary mb-4">3-5x</div>
+              <AnimatedCounter 
+                value="3-5x" 
+                className="text-6xl font-bold text-primary mb-4" 
+                duration={1.5}
+              />
               <h3 className="text-xl font-bold mb-4">Faster Time-to-Market</h3>
               <p className="text-base text-muted-foreground leading-relaxed">
                 Start getting qualified meetings in 2-3 weeks instead of 3-6 months
@@ -271,7 +282,11 @@ export default function Home() {
             </Card>
 
             <Card className="p-8 text-center hover-elevate transition-all" data-testid="metric-savings">
-              <div className="text-6xl font-bold text-community mb-4">60%+</div>
+              <AnimatedCounter 
+                value="60%+" 
+                className="text-6xl font-bold text-community mb-4" 
+                duration={1.5}
+              />
               <h3 className="text-xl font-bold mb-4">Cost Savings</h3>
               <p className="text-base text-muted-foreground leading-relaxed">
                 Same output at a fraction of the cost when you factor in everything
@@ -279,7 +294,11 @@ export default function Home() {
             </Card>
 
             <Card className="p-8 text-center hover-elevate transition-all" data-testid="metric-ownership">
-              <div className="text-6xl font-bold text-purple-dark mb-4">100%</div>
+              <AnimatedCounter 
+                value="100%" 
+                className="text-6xl font-bold text-purple-dark mb-4" 
+                duration={1.5}
+              />
               <h3 className="text-xl font-bold mb-4">Playbook Ownership</h3>
               <p className="text-base text-muted-foreground leading-relaxed">
                 You own your complete GTM playbook—a strategic asset you can scale
@@ -287,7 +306,11 @@ export default function Home() {
             </Card>
 
             <Card className="p-8 text-center hover-elevate transition-all" data-testid="metric-risk">
-              <div className="text-6xl font-bold text-primary mb-4">Zero</div>
+              <AnimatedCounter 
+                value="Zero" 
+                className="text-6xl font-bold text-primary mb-4" 
+                duration={1.5}
+              />
               <h3 className="text-xl font-bold mb-4">Hiring Risk</h3>
               <p className="text-base text-muted-foreground leading-relaxed">
                 Performance-driven model means you only pay for results that matter
@@ -477,7 +500,7 @@ export default function Home() {
           <p className="text-xl text-muted-foreground leading-relaxed mb-10">
             You've seen the model and the process. The potential for systematic, predictable growth is locked inside your business. The next step is to design the key. A GTM Leverage Audit validates the strategy and initiates the activation of your dedicated pipeline engine.
           </p>
-          <Button size="lg" className="text-lg px-8 py-6 shadow-lg" data-testid="button-final-schedule">
+          <Button size="lg" className="text-lg px-8 py-6 shadow-lg animate-gentle-pulse" data-testid="button-final-schedule">
             Schedule My GTM Audit
           </Button>
         </div>
