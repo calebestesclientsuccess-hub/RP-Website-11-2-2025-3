@@ -200,31 +200,7 @@ export default function Home() {
               />
               
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold relative">
-                {/* First line - staggered reveal */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="text-primary"
-                >
-                  You don't need another salesperson.
-                </motion.div>
-                
-                {/* Second line - delayed reveal with emphasis */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ 
-                    duration: 0.7, 
-                    delay: 0.6,
-                    scale: { type: "spring", stiffness: 200, damping: 15 }
-                  }}
-                  className="text-foreground mt-2"
-                >
-                  You need <span className="text-primary font-extrabold">leverage.</span>
-                </motion.div>
+                You need more than another salesperson. You need a system
               </h2>
             </div>
           </motion.div>
@@ -235,14 +211,11 @@ export default function Home() {
       <section className="py-20 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              The Fully Loaded BDR Pod:
-            </h2>
-            <p className="text-2xl md:text-3xl font-semibold text-primary mb-8">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8">
+              The Fully Loaded BDR Pod
+            </h1>
+            <p className="text-2xl md:text-3xl font-semibold text-primary">
               More than one salesperson. A complete Revenue Engine.
-            </p>
-            <p className="text-lg text-muted-foreground mb-8">
-              Stop gambling on hires. Start deploying a system. We've engineered the complete GTM engine your business needs to generate a predictable pipeline. It's a turnkey system of elite talent, intelligent technology, and a proven strategic framework, ready for activation.
             </p>
           </div>
 
