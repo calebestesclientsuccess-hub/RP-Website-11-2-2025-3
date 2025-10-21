@@ -743,8 +743,8 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                   data-testid="button-cycle-left"
                   aria-label="Previous Power"
                 >
-                  {/* Subtle glow */}
-                  <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl scale-110 opacity-60 group-hover:opacity-100 transition-opacity" />
+                  {/* Subtle glow - pointer-events-none so clicks pass through */}
+                  <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl scale-110 opacity-60 group-hover:opacity-100 transition-opacity pointer-events-none" />
                   
                   {/* Main button - 56px visual size */}
                   <div className="relative w-14 h-14 rounded-full bg-background/80 backdrop-blur-md border border-primary/30 flex items-center justify-center transition-all duration-200 group-hover:bg-background/90 group-hover:border-primary/50 group-active:scale-95 shadow-xl">
@@ -775,8 +775,8 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                   data-testid="button-cycle-right"
                   aria-label="Next Power"
                 >
-                  {/* Subtle glow */}
-                  <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl scale-110 opacity-60 group-hover:opacity-100 transition-opacity" />
+                  {/* Subtle glow - pointer-events-none so clicks pass through */}
+                  <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl scale-110 opacity-60 group-hover:opacity-100 transition-opacity pointer-events-none" />
                   
                   {/* Main button - 56px visual size */}
                   <div className="relative w-14 h-14 rounded-full bg-background/80 backdrop-blur-md border border-primary/30 flex items-center justify-center transition-all duration-200 group-hover:bg-background/90 group-hover:border-primary/50 group-active:scale-95 shadow-xl">
