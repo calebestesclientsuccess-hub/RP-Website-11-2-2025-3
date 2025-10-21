@@ -9,6 +9,7 @@ import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-rea
 // Video is served from public directory
 const podVideo = "/bdr-pod-video.mp4";
 import spaceBackground from "@assets/space-background.png";
+import orbitalSpaceBackground from "@assets/orbital-space-bg.png";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
@@ -244,7 +245,7 @@ export default function Home() {
       <section 
         className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden"
         style={{
-          backgroundImage: `url(${spaceBackground})`,
+          backgroundImage: `url(${orbitalSpaceBackground})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed'
