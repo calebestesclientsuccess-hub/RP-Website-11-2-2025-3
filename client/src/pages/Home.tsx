@@ -8,6 +8,7 @@ import { HeroROICalculator } from "@/components/HeroROICalculator";
 import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-react";
 // Video is served from public directory
 const podVideo = "/bdr-pod-video.mp4";
+import spaceBackground from "@assets/space-background.png";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
@@ -158,8 +159,18 @@ export default function Home() {
       </section>
 
       {/* Problem Section - Red Accent for Competition/Problems */}
-      <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
-        <div className="max-w-7xl mx-auto">
+      <section 
+        className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden"
+        style={{
+          backgroundImage: `url(${spaceBackground})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+        <div className="relative max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
               Linear Growth is a <span className="text-primary">Death Sentence.</span>
@@ -230,8 +241,18 @@ export default function Home() {
       </section>
 
       {/* Solution Section */}
-      <section className="py-20 px-4 md:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <section 
+        className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden"
+        style={{
+          backgroundImage: `url(${spaceBackground})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+        <div className="relative max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
               The Fully Loaded BDR Pod:

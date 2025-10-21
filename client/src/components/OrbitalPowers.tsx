@@ -558,12 +558,11 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <div className="relative h-[500px] md:h-[600px] lg:h-[750px] flex items-center justify-center overflow-visible">
-        {/* Central Video */}
+      <div className="relative h-[600px] md:h-[700px] lg:h-[900px] flex items-center justify-center overflow-visible">
+        {/* Central Video - Maximized */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <div className="relative w-96 h-96 md:w-[32rem] md:h-[32rem] lg:w-[40rem] lg:h-[40rem]">
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-900" />
-            <div className="relative z-10 w-[calc(100%-16px)] h-[calc(100%-16px)] m-2 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-600 shadow-xl pointer-events-auto">
+          <div className="relative w-[28rem] h-[28rem] md:w-[40rem] md:h-[40rem] lg:w-[56rem] lg:h-[56rem]">
+            <div className="relative z-10 w-full h-full overflow-hidden pointer-events-auto">
               <video 
                 ref={videoRef}
                 src={videoSrc}
