@@ -140,9 +140,9 @@ export default function CinematicBridge() {
           className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-primary leading-tight"
           style={{ transformStyle: 'preserve-3d' }}
         >
-          <span ref={word1Ref} className="inline-block">You</span>{' '}
-          <span ref={word2Ref} className="inline-block">need</span>{' '}
-          <span ref={word3Ref} className="inline-block">a</span>{' '}
+          <span ref={word1Ref} className="inline-block mr-2 md:mr-3 lg:mr-4">You</span>
+          <span ref={word2Ref} className="inline-block mr-2 md:mr-3 lg:mr-4">need</span>
+          <span ref={word3Ref} className="inline-block mr-2 md:mr-3 lg:mr-4">a</span>
           <span ref={word4Ref} className="inline-block">system</span>
         </h2>
       </div>
