@@ -176,6 +176,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   const targetRotationRef = useRef(0);
   const isRotatingRef = useRef(false);
   const forceInteractiveRef = useRef(false); // Fallback for when video fails
+  const [hasInteracted, setHasInteracted] = useState(false); // Track if user has interacted
 
   useEffect(() => {
     const container = containerRef.current;
@@ -427,6 +428,8 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   // Cycling functions
   const cyclePower = (direction: 'left' | 'right') => {
     if (!cyclingEnabled || isRotatingRef.current) return;
+    
+    setHasInteracted(true); // Mark that user has interacted
     
     const newIndex = direction === 'left' 
       ? (selectedIndex - 1 + powers.length) % powers.length
@@ -705,34 +708,43 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.3 }}
-              className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-3 z-30"
+              className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-3 z-30 ${!hasInteracted ? 'animate-pulse' : ''}`}
             >
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={() => cyclePower('left')}
-                className="w-12 h-12 rounded-full backdrop-blur-md bg-background/80 border border-background/20 hover-elevate group"
+                className="w-12 h-12 rounded-full backdrop-blur-md bg-background/80 border border-background/20 hover-elevate group relative"
                 disabled={isRotatingRef.current}
                 data-testid="button-cycle-left"
                 aria-label="Previous Power"
               >
                 <ChevronLeft className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
+                {!hasInteracted && (
+                  <span className="absolute -left-2 -top-2 w-4 h-4 bg-primary rounded-full animate-ping" />
+                )}
               </Button>
               
-              <div className="text-xs text-muted-foreground font-medium px-3">
-                Explore Powers
+              <div className="text-xs text-muted-foreground font-medium px-3 flex flex-col items-center">
+                <span>Explore Powers</span>
+                {!hasInteracted && (
+                  <span className="text-[10px] mt-0.5 opacity-70">Use arrows or click badges</span>
+                )}
               </div>
               
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={() => cyclePower('right')}
-                className="w-12 h-12 rounded-full backdrop-blur-md bg-background/80 border border-background/20 hover-elevate group"
+                className="w-12 h-12 rounded-full backdrop-blur-md bg-background/80 border border-background/20 hover-elevate group relative"
                 disabled={isRotatingRef.current}
                 data-testid="button-cycle-right"
                 aria-label="Next Power"
               >
                 <ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform" />
+                {!hasInteracted && (
+                  <span className="absolute -right-2 -top-2 w-4 h-4 bg-primary rounded-full animate-ping" />
+                )}
               </Button>
             </motion.div>
           )}
