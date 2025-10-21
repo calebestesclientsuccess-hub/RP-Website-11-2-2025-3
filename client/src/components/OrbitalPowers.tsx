@@ -531,8 +531,11 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                 <motion.div
                   key="label"
                   initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  whileHover={{ scale: 1.05 }}
+                  animate={{ 
+                    scale: selectedIndex === index ? 1.1 : 1,
+                    opacity: 1
+                  }}
+                  whileHover={{ scale: selectedIndex === index ? 1.15 : 1.05 }}
                   transition={{ 
                     delay: index * 0.1, // Staggered appearance
                     type: "spring", 
@@ -541,17 +544,22 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                   }}
                   className={`
                     px-4 py-3 rounded-xl
-                    backdrop-blur-md bg-background/95
-                    border-2 border-background/30
+                    backdrop-blur-md 
+                    ${selectedIndex === index ? 'bg-background' : 'bg-background/95'}
+                    ${selectedIndex === index ? 'border-4' : 'border-2'} 
+                    ${selectedIndex === index ? 'border-primary/50' : 'border-background/30'}
                     flex items-center gap-3
-                    transition-all
+                    transition-all cursor-pointer
                     ${hoveredPower === power.id ? 'shadow-2xl' : 'shadow-lg'}
                   `}
                   style={{ 
-                    boxShadow: hoveredPower === power.id 
-                      ? `0 0 80px ${power.glowColor}, 0 0 40px ${power.glowColor}` 
-                      : `0 0 60px ${power.glowColor}, 0 0 30px ${power.glowColor}`,
+                    boxShadow: selectedIndex === index 
+                      ? `0 0 120px ${power.glowColor}, 0 0 60px ${power.glowColor}` 
+                      : hoveredPower === power.id 
+                        ? `0 0 80px ${power.glowColor}, 0 0 40px ${power.glowColor}` 
+                        : `0 0 60px ${power.glowColor}, 0 0 30px ${power.glowColor}`,
                   }}
+                  onClick={() => handleBadgeClick(index)}
                   data-testid={`label-${power.id}`}
                 >
                   <div className={`${power.color} flex-shrink-0 scale-125`}>
@@ -587,6 +595,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                       ? `0 0 60px ${power.glowColor}, 0 0 30px ${power.glowColor}` 
                       : `0 0 30px ${power.glowColor}`,
                   }}
+                  onClick={() => cyclingEnabled && handleBadgeClick(index)}
                   data-testid={`badge-compact-${power.id}`}
                 >
                   <div className={`${power.color} ${isExpanded ? 'scale-125' : ''}`}>
