@@ -212,7 +212,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8">
-              Your Sales Org
+              Your Fullstack Sales Unit
             </h1>
             <p className="text-2xl md:text-3xl font-semibold text-primary">
               starring two BDRs, dedicated to finding, and selling your customers.
@@ -319,7 +319,7 @@ export default function Home() {
               <span className="text-primary">Or a Complete GTM System?</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              Not all sales solutions are created equal. Here's how Your Sales Org stacks up against your alternatives.
+              Not all sales solutions are created equal. Here's how Your Fullstack Sales Unit stacks up against your alternatives.
             </p>
           </div>
 
