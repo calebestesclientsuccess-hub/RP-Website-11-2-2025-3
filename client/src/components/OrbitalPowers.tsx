@@ -354,6 +354,91 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
     setHoveredPower(null);
   };
 
+  // Enable cycling after labels are shown
+  useEffect(() => {
+    if (showLabels) {
+      const timer = setTimeout(() => {
+        setCyclingEnabled(true);
+        setShowInfoBox(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [showLabels]);
+
+  // Cycling functions
+  const cyclePower = (direction: 'up' | 'down') => {
+    if (!cyclingEnabled || isRotatingRef.current) return;
+    
+    const newIndex = direction === 'up' 
+      ? (selectedIndex - 1 + powers.length) % powers.length
+      : (selectedIndex + 1) % powers.length;
+    
+    setSelectedIndex(newIndex);
+    
+    // Calculate rotation to bring selected power to 3 o'clock position
+    const selectedPower = powers[newIndex];
+    const targetAngle = 360 - selectedPower.angle; // Reverse rotation to bring to 0° (3 o'clock)
+    targetRotationRef.current = targetAngle;
+    isRotatingRef.current = true;
+  };
+
+  const handleBadgeClick = (clickedIndex: number) => {
+    if (!cyclingEnabled || isRotatingRef.current || clickedIndex === selectedIndex) return;
+    
+    // Calculate shortest path to clicked badge
+    const distance = clickedIndex - selectedIndex;
+    const stepsClockwise = (distance + powers.length) % powers.length;
+    const stepsCounterclockwise = powers.length - stepsClockwise;
+    
+    // Choose shortest path
+    if (stepsClockwise <= stepsCounterclockwise) {
+      // Cycle clockwise
+      for (let i = 0; i < stepsClockwise; i++) {
+        setTimeout(() => cyclePower('down'), i * 200);
+      }
+    } else {
+      // Cycle counterclockwise
+      for (let i = 0; i < stepsCounterclockwise; i++) {
+        setTimeout(() => cyclePower('up'), i * 200);
+      }
+    }
+  };
+
+  // Smooth rotation animation for cycling
+  useEffect(() => {
+    if (!isRotatingRef.current) return;
+    
+    const animate = () => {
+      const diff = targetRotationRef.current - rotationRef.current;
+      const normalizedDiff = ((diff % 360) + 540) % 360 - 180;
+      
+      if (Math.abs(normalizedDiff) > 0.5) {
+        rotationRef.current += normalizedDiff * 0.15; // Smooth interpolation
+        
+        // Update badge positions
+        const badges = orbitalRefs.current.filter(Boolean) as HTMLDivElement[];
+        powers.forEach((power, index) => {
+          const badge = badges[index];
+          if (!badge) return;
+          
+          const angle = power.angle + rotationRef.current;
+          const rad = (angle * Math.PI) / 180;
+          const x = Math.cos(rad) * radiusRef.current.x;
+          const y = Math.sin(rad) * radiusRef.current.y;
+          
+          badge.style.transform = `translate(${x}px, ${y}px)`;
+        });
+        
+        requestAnimationFrame(animate);
+      } else {
+        rotationRef.current = targetRotationRef.current;
+        isRotatingRef.current = false;
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }, [selectedIndex]);
+
   // Reduced motion: show static grid instead of orbital animation
   if (prefersReducedMotion) {
     return (
@@ -401,31 +486,32 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   }
 
   return (
-    <div ref={containerRef} className="relative w-full h-[500px] md:h-[600px] lg:h-[750px] flex items-center justify-center overflow-hidden">
-      {/* Central Video */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-        <div className="relative w-96 h-96 md:w-[32rem] md:h-[32rem] lg:w-[40rem] lg:h-[40rem]">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-900" />
-          <div className="relative z-10 w-[calc(100%-16px)] h-[calc(100%-16px)] m-2 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-600 shadow-xl pointer-events-auto">
-            <video 
-              ref={videoRef}
-              src={videoSrc}
-              className="w-full h-full object-contain"
-              muted
-              playsInline
-              preload="auto"
-              data-testid="video-bdr-pod"
-              onError={(e) => console.error("Video error:", e)}
-              onCanPlay={() => console.log("Video can play:", videoSrc)}
-            >
-              Your browser does not support the video tag.
-            </video>
+    <div ref={containerRef} className="relative w-full">
+      <div className="relative h-[500px] md:h-[600px] lg:h-[750px] flex items-center justify-center overflow-visible">
+        {/* Central Video */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+          <div className="relative w-96 h-96 md:w-[32rem] md:h-[32rem] lg:w-[40rem] lg:h-[40rem]">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-900" />
+            <div className="relative z-10 w-[calc(100%-16px)] h-[calc(100%-16px)] m-2 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-600 shadow-xl pointer-events-auto">
+              <video 
+                ref={videoRef}
+                src={videoSrc}
+                className="w-full h-full object-contain"
+                muted
+                playsInline
+                preload="auto"
+                data-testid="video-bdr-pod"
+                onError={(e) => console.error("Video error:", e)}
+                onCanPlay={() => console.log("Video can play:", videoSrc)}
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Orbiting Powers */}
-      <div className="absolute inset-0 flex items-center justify-center" role="region" aria-label="Interactive GTM System Powers">
+        {/* Orbiting Powers */}
+        <div className="absolute inset-0 flex items-center justify-center" role="region" aria-label="Interactive GTM System Powers">
         {powers.map((power, index) => (
           <div
             key={power.id}
@@ -511,8 +597,150 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
             </AnimatePresence>
           </div>
         ))}
+        </div>
+
+        {/* Arrow Controls for Cycling */}
+        <AnimatePresence>
+          {cyclingEnabled && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.5 }}
+              className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 z-30"
+            >
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => cyclePower('up')}
+                className="w-10 h-10 rounded-full backdrop-blur-md bg-background/80 border border-background/20 hover-elevate"
+                disabled={isRotatingRef.current}
+                data-testid="button-cycle-up"
+              >
+                <ChevronUp className="w-5 h-5" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => cyclePower('down')}
+                className="w-10 h-10 rounded-full backdrop-blur-md bg-background/80 border border-background/20 hover-elevate"
+                disabled={isRotatingRef.current}
+                data-testid="button-cycle-down"
+              >
+                <ChevronDown className="w-5 h-5" />
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Info Box for Selected Power */}
+        <AnimatePresence>
+          {showInfoBox && (
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              transition={{ duration: 0.5 }}
+              className="absolute right-8 top-1/2 transform -translate-y-1/2 max-w-md hidden lg:block z-30"
+            >
+              <div className="backdrop-blur-md bg-background/90 rounded-2xl border border-background/20 p-8 shadow-2xl">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={selectedIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {/* Power Title with Icon */}
+                    <div className="flex items-center gap-4 mb-6">
+                      <div 
+                        className={`${powers[selectedIndex].color} scale-150`}
+                        style={{ filter: `drop-shadow(0 0 20px ${powers[selectedIndex].glowColor})` }}
+                      >
+                        {powers[selectedIndex].icon}
+                      </div>
+                      <h3 className="text-2xl font-bold">{powers[selectedIndex].title}</h3>
+                    </div>
+
+                    {/* What It Is */}
+                    <div className="mb-6">
+                      <h4 className="text-sm font-semibold text-muted-foreground mb-2">What It Is</h4>
+                      <p className="text-sm leading-relaxed">{powers[selectedIndex].content.whatItIs}</p>
+                    </div>
+
+                    {/* Value */}
+                    <div className="mb-6">
+                      <h4 className="text-sm font-semibold text-muted-foreground mb-2">Value</h4>
+                      <p className="text-sm leading-relaxed">{powers[selectedIndex].content.value}</p>
+                    </div>
+
+                    {/* In-House Cost */}
+                    <div className="p-4 rounded-lg bg-background/50 border border-primary/20">
+                      <h4 className="text-sm font-semibold text-muted-foreground mb-2">If You Built It In-House</h4>
+                      <p className="text-lg font-bold text-primary">{powers[selectedIndex].content.inHouseCost}</p>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
+      {/* Mobile Info Box - Below Orbital Display */}
+      <AnimatePresence>
+        {showInfoBox && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.5 }}
+            className="mt-8 px-4 lg:hidden"
+          >
+            <div className="backdrop-blur-md bg-background/90 rounded-2xl border border-background/20 p-6 shadow-2xl max-w-lg mx-auto">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedIndex}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {/* Power Title with Icon */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div 
+                      className={`${powers[selectedIndex].color} scale-125`}
+                      style={{ filter: `drop-shadow(0 0 15px ${powers[selectedIndex].glowColor})` }}
+                    >
+                      {powers[selectedIndex].icon}
+                    </div>
+                    <h3 className="text-xl font-bold">{powers[selectedIndex].title}</h3>
+                  </div>
+
+                  {/* What It Is */}
+                  <div className="mb-4">
+                    <h4 className="text-xs font-semibold text-muted-foreground mb-1">What It Is</h4>
+                    <p className="text-xs leading-relaxed">{powers[selectedIndex].content.whatItIs}</p>
+                  </div>
+
+                  {/* Value */}
+                  <div className="mb-4">
+                    <h4 className="text-xs font-semibold text-muted-foreground mb-1">Value</h4>
+                    <p className="text-xs leading-relaxed">{powers[selectedIndex].content.value}</p>
+                  </div>
+
+                  {/* In-House Cost */}
+                  <div className="p-3 rounded-lg bg-background/50 border border-primary/20">
+                    <h4 className="text-xs font-semibold text-muted-foreground mb-1">If You Built It In-House</h4>
+                    <p className="text-sm font-bold text-primary">{powers[selectedIndex].content.inHouseCost}</p>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
