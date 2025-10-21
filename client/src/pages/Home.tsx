@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import GTMTimeline from "@/components/GTMTimeline";
 import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { OrbitalPowers } from "@/components/OrbitalPowers";
+import { HeroROICalculator } from "@/components/HeroROICalculator";
 import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-react";
 // Video is served from public directory
 const podVideo = "/bdr-pod-video.mp4";
@@ -150,17 +151,7 @@ export default function Home() {
             </div>
 
             <div className="flex justify-center lg:justify-end">
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="text-lg px-8 py-6 border-2 border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 backdrop-blur-sm shadow-lg hover:shadow-blue-500/25 transition-all"
-                data-testid="button-lets-chat"
-                asChild
-              >
-                <Link href="/contact">
-                  Let's Chat
-                </Link>
-              </Button>
+              <HeroROICalculator />
             </div>
           </div>
         </div>
