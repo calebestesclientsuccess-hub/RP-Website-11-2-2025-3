@@ -125,6 +125,8 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   const rotationRef = useRef(0);
   const [isVisible, setIsVisible] = useState(false);
   const isPausedRef = useRef(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [focusedPowerIndex, setFocusedPowerIndex] = useState<number>(-1);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -142,14 +144,41 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
     return () => observer.disconnect();
   }, []);
 
+  // Check for prefers-reduced-motion
   useEffect(() => {
-    if (!isVisible) return;
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible || prefersReducedMotion) return;
     
     const badges = orbitalRefs.current.filter(Boolean) as HTMLDivElement[];
     if (badges.length === 0) return;
 
-    const radiusX = 280;
-    const radiusY = 200;
+    // Responsive orbit sizing
+    const getOrbitSize = () => {
+      const width = window.innerWidth;
+      if (width >= 1024) {
+        // Desktop: full orbit
+        return { radiusX: 280, radiusY: 200 };
+      } else if (width >= 768) {
+        // Tablet: smaller orbit
+        return { radiusX: 220, radiusY: 160 };
+      } else {
+        // Mobile: very small orbit or static
+        return { radiusX: 150, radiusY: 110 };
+      }
+    };
+
+    let { radiusX, radiusY } = getOrbitSize();
     const speed = 0.5; // degrees per frame at 60fps
 
     const animate = () => {
@@ -175,12 +204,21 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
       animationRef.current = requestAnimationFrame(animate);
     };
 
+    // Update orbit size on resize
+    const handleResize = () => {
+      const newSize = getOrbitSize();
+      radiusX = newSize.radiusX;
+      radiusY = newSize.radiusY;
+    };
+
+    window.addEventListener('resize', handleResize);
     animationRef.current = requestAnimationFrame(animate);
 
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
+      window.removeEventListener('resize', handleResize);
     };
   }, [isVisible]);
 
@@ -206,11 +244,76 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
     }, 300);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handlePowerHover(powers[index].id);
+    } else if (e.key === 'Escape') {
+      handlePowerLeave();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const nextIndex = (index + 1) % powers.length;
+      setFocusedPowerIndex(nextIndex);
+      orbitalRefs.current[nextIndex]?.focus();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const prevIndex = (index - 1 + powers.length) % powers.length;
+      setFocusedPowerIndex(prevIndex);
+      orbitalRefs.current[prevIndex]?.focus();
+    }
+  };
+
+  // Reduced motion: show static grid instead of orbital animation
+  if (prefersReducedMotion) {
+    return (
+      <div ref={containerRef} className="relative w-full">
+        {/* Video */}
+        <div className="flex justify-center mb-12">
+          <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-900" />
+            <div className="relative z-10 w-[calc(100%-16px)] h-[calc(100%-16px)] m-2 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-600 shadow-xl">
+              <video 
+                ref={videoRef}
+                src={videoSrc}
+                className="w-full h-full object-cover"
+                muted
+                playsInline
+                preload="auto"
+                data-testid="video-bdr-pod"
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        </div>
+
+        {/* Static Grid of Powers */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto" role="region" aria-label="GTM System Powers">
+          {powers.map((power) => (
+            <Card key={power.id} className="p-6 text-center hover-elevate" data-testid={`card-power-${power.id}`}>
+              <div 
+                className={`${power.color} mb-4 flex justify-center`}
+                style={{ filter: `drop-shadow(0 0 10px ${power.glowColor})` }}
+              >
+                {power.icon}
+              </div>
+              <h3 className="font-bold text-lg mb-2">{power.title}</h3>
+              <p className="text-sm text-muted-foreground mb-4">{power.description}</p>
+              <Button size="sm" variant="outline" className="w-full" data-testid={`button-cta-${power.id}`}>
+                {power.cta}
+              </Button>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div ref={containerRef} className="relative w-full h-[600px] md:h-[700px] flex items-center justify-center">
+    <div ref={containerRef} className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] flex items-center justify-center overflow-hidden">
       {/* Central Video */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-        <div className="relative w-80 h-80 md:w-96 md:h-96">
+        <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96">
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-900" />
           <div className="relative z-10 w-[calc(100%-16px)] h-[calc(100%-16px)] m-2 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-600 shadow-xl pointer-events-auto">
             <video 
@@ -229,15 +332,20 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
       </div>
 
       {/* Orbiting Powers */}
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center" role="region" aria-label="Interactive GTM System Powers">
         {powers.map((power, index) => (
           <div
             key={power.id}
             ref={el => orbitalRefs.current[index] = el}
-            className="absolute"
+            className="absolute focus:outline-none focus:ring-2 focus:ring-primary rounded-full"
             style={{ zIndex: expandedPower === power.id ? 50 : 20 }}
             onMouseEnter={() => handlePowerHover(power.id)}
             onMouseLeave={handlePowerLeave}
+            onKeyDown={(e) => handleKeyDown(e, index)}
+            tabIndex={0}
+            role="button"
+            aria-label={`${power.title}: ${power.description}`}
+            aria-expanded={expandedPower === power.id}
             data-testid={`orbital-power-${power.id}`}
           >
             <AnimatePresence mode="wait">
@@ -253,9 +361,9 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                   }}
                   exit={{ scale: 0.5, opacity: 0 }}
                   transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                  className="fixed top-24 right-8"
+                  className="fixed top-20 right-4 md:top-24 md:right-8 z-50"
                 >
-                  <Card className="w-96 p-6 shadow-2xl backdrop-blur-lg bg-card/95 border-2" data-testid={`card-expanded-${power.id}`}>
+                  <Card className="w-80 md:w-96 p-4 md:p-6 shadow-2xl backdrop-blur-lg bg-card/95 border-2" data-testid={`card-expanded-${power.id}`}>
                     <div className="flex items-start gap-4 mb-4">
                       <div 
                         className={`${power.color} p-3 rounded-lg bg-background/50`}
@@ -293,7 +401,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                   initial={{ scale: 1 }}
                   whileHover={{ scale: 1.1 }}
                   className={`
-                    w-20 h-20 rounded-full 
+                    w-16 h-16 md:w-20 md:h-20 rounded-full 
                     backdrop-blur-md bg-background/80 
                     border-2 border-background/20
                     flex items-center justify-center
