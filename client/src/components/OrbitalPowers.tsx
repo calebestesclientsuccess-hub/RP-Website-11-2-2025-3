@@ -221,18 +221,18 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
     const badges = orbitalRefs.current.filter(Boolean) as HTMLDivElement[];
     if (badges.length === 0) return;
 
-    // Responsive orbit sizing
+    // Responsive orbit sizing - increased to match larger video
     const getOrbitSize = () => {
       const width = window.innerWidth;
       if (width >= 1024) {
-        // Desktop: full orbit
-        return { radiusX: 280, radiusY: 200 };
+        // Desktop: full orbit around larger video
+        return { radiusX: 400, radiusY: 280 };
       } else if (width >= 768) {
-        // Tablet: smaller orbit
-        return { radiusX: 220, radiusY: 160 };
+        // Tablet: orbit around medium video
+        return { radiusX: 336, radiusY: 240 };
       } else {
-        // Mobile: very small orbit or static
-        return { radiusX: 150, radiusY: 110 };
+        // Mobile: orbit around smaller video
+        return { radiusX: 252, radiusY: 180 };
       }
     };
 
@@ -357,10 +357,10 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   }
 
   return (
-    <div ref={containerRef} className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] flex items-center justify-center overflow-hidden">
+    <div ref={containerRef} className="relative w-full h-[500px] md:h-[600px] lg:h-[750px] flex items-center justify-center overflow-hidden">
       {/* Central Video */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-        <div className="relative w-72 h-72 md:w-[22rem] md:h-[22rem] lg:w-[26rem] lg:h-[26rem]">
+        <div className="relative w-96 h-96 md:w-[32rem] md:h-[32rem] lg:w-[40rem] lg:h-[40rem]">
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-900" />
           <div className="relative z-10 w-[calc(100%-16px)] h-[calc(100%-16px)] m-2 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-600 shadow-xl pointer-events-auto">
             <video 
