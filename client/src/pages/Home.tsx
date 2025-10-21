@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MiniCalculator } from "@/components/MiniCalculator";
 import GTMTimeline from "@/components/GTMTimeline";
 import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { OrbitalPowers } from "@/components/OrbitalPowers";
@@ -150,8 +149,18 @@ export default function Home() {
               </div>
             </div>
 
-            <div>
-              <MiniCalculator />
+            <div className="flex justify-center lg:justify-end">
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="text-lg px-8 py-6 border-2 border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 backdrop-blur-sm shadow-lg hover:shadow-blue-500/25 transition-all"
+                data-testid="button-lets-chat"
+                asChild
+              >
+                <Link href="/contact">
+                  Let's Chat
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -247,10 +256,16 @@ export default function Home() {
           {/* Interactive Orbital Powers */}
           <OrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
 
-          <div className="text-center mt-16">
-            <Button size="lg" variant="outline" className="gap-2" data-testid="button-explore-pod" asChild>
+          {/* Apple-style centered Learn More button */}
+          <div className="flex justify-center mt-12">
+            <Button 
+              size="lg" 
+              className="gap-2 shadow-lg hover:shadow-xl transition-all"
+              data-testid="button-learn-more"
+              asChild
+            >
               <Link href="/solutions/fully-loaded-bdr-pod">
-                Explore the BDR Pod <ArrowRight className="w-4 h-4" />
+                Learn More <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
           </div>

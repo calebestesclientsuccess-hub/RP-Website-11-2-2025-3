@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
-import { Brain, Target, Headphones, Users, Wrench, Trophy, ArrowRight } from "lucide-react";
-import gsap from "gsap";
+import { Brain, Target, Headphones, Users, Wrench, Trophy } from "lucide-react";
 
 interface Power {
   id: string;
@@ -128,7 +126,6 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [animationStopped, setAnimationStopped] = useState(false);
   const [showLabels, setShowLabels] = useState(false);
-  const [showLearnMore, setShowLearnMore] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const speedRef = useRef(0.5); // Starting speed
   const slowdownRef = useRef(false);
@@ -188,10 +185,6 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
           // After expansion animation (1 second), show labels
           setTimeout(() => {
             setShowLabels(true);
-            // After labels appear, show Learn More button
-            setTimeout(() => {
-              setShowLearnMore(true);
-            }, 800);
           }, 1000);
         }, 2000);
       }, slowdownTime);
@@ -206,7 +199,6 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
       setAnimationStopped(false);
       setIsExpanded(false);
       setShowLabels(false);
-      setShowLearnMore(false);
     };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
@@ -477,25 +469,6 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
         ))}
       </div>
 
-      {/* Learn More Button */}
-      {showLearnMore && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30"
-        >
-          <Link href="/solutions/fully-loaded-bdr-pod">
-            <Button 
-              size="lg" 
-              className="gap-2 shadow-xl"
-              data-testid="button-learn-more"
-            >
-              Learn More <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
-        </motion.div>
-      )}
     </div>
   );
 }
