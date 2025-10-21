@@ -85,6 +85,9 @@ export default function CinematicBridge() {
         duration: 0.15,
         ease: "power2.out",
       }, "-=0.15");
+
+      // Refresh ScrollTrigger to ensure proper initialization
+      ScrollTrigger.refresh();
     });
 
     return () => ctx.revert();
