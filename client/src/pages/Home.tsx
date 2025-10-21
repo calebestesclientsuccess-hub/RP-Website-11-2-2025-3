@@ -11,38 +11,79 @@ import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
 import { useEffect, useRef, useState } from "react";
 
-// Confetti particle class
+// Realistic confetti particle class
 class ConfettiParticle {
   x: number;
   y: number;
   vx: number;
   vy: number;
   color: string;
-  size: number;
-  gravity: number = 0.1;
-  opacity: number = 1;
+  width: number;
+  height: number;
+  rotation: number;
+  rotationSpeed: number;
+  gravity: number = 0.15;
+  drag: number = 0.98;
+  opacity: number;
 
   constructor(x: number, y: number, color: string) {
     this.x = x;
     this.y = y;
-    this.vx = (Math.random() - 0.5) * 8;
-    this.vy = Math.random() * -10 - 5;
+    // More varied initial velocities for realistic spread
+    const angle = (Math.random() * Math.PI / 3) - Math.PI / 6; // -30 to 30 degrees
+    const speed = Math.random() * 12 + 8;
+    this.vx = Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1);
+    this.vy = Math.sin(angle) * speed - (Math.random() * 8 + 5);
     this.color = color;
-    this.size = Math.random() * 3 + 2;
+    // Varied sizes for realism
+    this.width = Math.random() * 8 + 4;
+    this.height = Math.random() * 6 + 3;
+    // Random rotation and spin
+    this.rotation = Math.random() * Math.PI * 2;
+    this.rotationSpeed = (Math.random() - 0.5) * 0.3;
+    // Varied initial opacity
+    this.opacity = Math.random() * 0.3 + 0.7;
   }
 
   update() {
+    // Apply drag for realistic air resistance
+    this.vx *= this.drag;
+    this.vy *= this.drag;
+    
+    // Apply gravity
+    this.vy += this.gravity;
+    
+    // Add slight horizontal drift (wind effect)
+    this.vx += (Math.random() - 0.5) * 0.1;
+    
+    // Update position
     this.x += this.vx;
     this.y += this.vy;
-    this.vy += this.gravity;
-    this.opacity -= 0.01;
+    
+    // Rotate
+    this.rotation += this.rotationSpeed;
+    
+    // Fade out gradually
+    this.opacity -= 0.008;
   }
 
   draw(ctx: CanvasRenderingContext2D) {
     ctx.save();
     ctx.globalAlpha = this.opacity;
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rotation);
+    
+    // Draw rectangle confetti piece
     ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.size, this.size * 1.5);
+    ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    
+    // Add subtle shine/gradient for metallic effect
+    const gradient = ctx.createLinearGradient(-this.width / 2, -this.height / 2, this.width / 2, this.height / 2);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.1)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+    
     ctx.restore();
   }
 }
