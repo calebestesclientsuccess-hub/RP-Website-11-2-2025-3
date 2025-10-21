@@ -559,14 +559,28 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   return (
     <div ref={containerRef} className="relative w-full">
       <div className="relative h-[600px] md:h-[700px] lg:h-[900px] flex items-center justify-center overflow-visible">
-        {/* Central Video - Maximized */}
+        {/* Central Video - Maximized with Futuristic Frame */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-          <div className="relative w-[28rem] h-[28rem] md:w-[40rem] md:h-[40rem] lg:w-[56rem] lg:h-[56rem]">
-            <div className="relative z-10 w-full h-full overflow-hidden pointer-events-auto">
+          <div className="relative w-[28rem] h-[28rem] md:w-[40rem] md:h-[40rem] lg:w-[56rem] lg:h-[56rem] p-4">
+            <div 
+              className="relative z-10 w-full h-full pointer-events-auto rounded-sm"
+              style={{
+                border: '2px solid #b8b8b8',
+                background: 'linear-gradient(135deg, rgba(192, 192, 192, 0.05), rgba(232, 232, 232, 0.02))',
+                boxShadow: `
+                  0 0 40px rgba(59, 130, 246, 0.5),
+                  0 0 60px rgba(139, 92, 246, 0.4),
+                  0 0 80px rgba(236, 72, 153, 0.3),
+                  0 0 100px rgba(99, 102, 241, 0.25),
+                  inset 0 1px 2px rgba(255, 255, 255, 0.2),
+                  inset 0 -1px 2px rgba(0, 0, 0, 0.3)
+                `
+              }}
+            >
               <video 
                 ref={videoRef}
                 src={videoSrc}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain rounded-sm"
                 muted
                 playsInline
                 preload="auto"
