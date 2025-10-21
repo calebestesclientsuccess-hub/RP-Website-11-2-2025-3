@@ -247,19 +247,26 @@ export default function Home() {
           {/* Interactive Orbital Powers */}
           <OrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
 
-          {/* Apple-style centered Learn More button */}
-          <div className="flex justify-center mt-12">
+          {/* Subtle Learn More button - right aligned, delayed fade */}
+          <motion.div 
+            className="flex justify-end mt-12 max-w-7xl mx-auto"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 1.5 }}
+          >
             <Button 
-              size="lg" 
-              className="gap-2 shadow-lg hover:shadow-xl transition-all"
+              size="sm" 
+              variant="ghost"
+              className="gap-2 text-muted-foreground hover:text-foreground transition-colors"
               data-testid="button-learn-more"
               asChild
             >
               <Link href="/solutions/fully-loaded-bdr-pod">
-                Learn More <ArrowRight className="w-4 h-4" />
+                Learn More <ArrowRight className="w-3 h-3" />
               </Link>
             </Button>
-          </div>
+          </motion.div>
         </div>
       </section>
 
