@@ -712,53 +712,81 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
           )}
         </AnimatePresence>
 
-        {/* Arrow Controls for Cycling */}
+        {/* Large Glowing Arrow Controls */}
         <AnimatePresence>
           {cyclingEnabled && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.3 }}
-              className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-3 z-30 ${!hasInteracted ? 'animate-pulse' : ''}`}
-            >
-              <Button
-                size="icon"
-                variant="ghost"
+            <>
+              {/* Left Arrow - Large and Glowing */}
+              <motion.button
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.3 }}
                 onClick={() => cyclePower('left')}
-                className="w-12 h-12 rounded-full backdrop-blur-md bg-background/80 border border-background/20 hover-elevate group relative"
                 disabled={isRotatingRef.current}
+                className="absolute left-4 md:left-8 lg:left-16 top-1/2 transform -translate-y-1/2 z-30 p-6 md:p-8 group"
                 data-testid="button-cycle-left"
                 aria-label="Previous Power"
               >
-                <ChevronLeft className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
-                {!hasInteracted && (
-                  <span className="absolute -left-2 -top-2 w-4 h-4 bg-primary rounded-full animate-ping" />
-                )}
-              </Button>
-              
-              <div className="text-xs text-muted-foreground font-medium px-3 flex flex-col items-center">
-                <span>Explore Powers</span>
-                {!hasInteracted && (
-                  <span className="text-[10px] mt-0.5 opacity-70">Use arrows or click badges</span>
-                )}
-              </div>
-              
-              <Button
-                size="icon"
-                variant="ghost"
+                <div className="relative">
+                  {/* Glow effect background */}
+                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-2xl animate-pulse scale-150" />
+                  
+                  {/* Main button */}
+                  <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full bg-background/90 backdrop-blur-md border-2 border-primary/50 flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:bg-background group-hover:border-primary shadow-2xl"
+                       style={{ boxShadow: '0 0 40px rgba(239, 68, 68, 0.5), 0 0 80px rgba(239, 68, 68, 0.3)' }}>
+                    <ChevronLeft className="w-8 h-8 md:w-10 md:h-10 text-foreground group-hover:-translate-x-1 transition-transform" />
+                  </div>
+                  
+                  {/* Extra glow on hover */}
+                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                       style={{ boxShadow: '0 0 60px rgba(239, 68, 68, 0.6)' }} />
+                </div>
+              </motion.button>
+
+              {/* Right Arrow - Large and Glowing */}
+              <motion.button
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 30 }}
+                transition={{ duration: 0.3 }}
                 onClick={() => cyclePower('right')}
-                className="w-12 h-12 rounded-full backdrop-blur-md bg-background/80 border border-background/20 hover-elevate group relative"
                 disabled={isRotatingRef.current}
+                className="absolute right-4 md:right-8 lg:right-16 top-1/2 transform -translate-y-1/2 z-30 p-6 md:p-8 group"
                 data-testid="button-cycle-right"
                 aria-label="Next Power"
               >
-                <ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform" />
-                {!hasInteracted && (
-                  <span className="absolute -right-2 -top-2 w-4 h-4 bg-primary rounded-full animate-ping" />
-                )}
-              </Button>
-            </motion.div>
+                <div className="relative">
+                  {/* Glow effect background */}
+                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-2xl animate-pulse scale-150" />
+                  
+                  {/* Main button */}
+                  <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full bg-background/90 backdrop-blur-md border-2 border-primary/50 flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:bg-background group-hover:border-primary shadow-2xl"
+                       style={{ boxShadow: '0 0 40px rgba(239, 68, 68, 0.5), 0 0 80px rgba(239, 68, 68, 0.3)' }}>
+                    <ChevronRight className="w-8 h-8 md:w-10 md:h-10 text-foreground group-hover:translate-x-1 transition-transform" />
+                  </div>
+                  
+                  {/* Extra glow on hover */}
+                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                       style={{ boxShadow: '0 0 60px rgba(239, 68, 68, 0.6)' }} />
+                </div>
+              </motion.button>
+
+              {/* Optional helper text at bottom */}
+              {!hasInteracted && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.3, delay: 0.5 }}
+                  className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30"
+                >
+                  <div className="text-sm text-muted-foreground font-medium px-4 py-2 rounded-lg bg-background/80 backdrop-blur-sm border border-background/20">
+                    Use arrows to explore all powers
+                  </div>
+                </motion.div>
+              )}
+            </>
           )}
         </AnimatePresence>
 
@@ -766,11 +794,11 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
         <AnimatePresence>
           {showInfoBox && (
             <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 50 }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 30 }}
               transition={{ duration: 0.2 }}
-              className="absolute right-8 top-1/2 transform -translate-y-1/2 max-w-md hidden lg:block z-30"
+              className="absolute bottom-20 left-1/2 transform -translate-x-1/2 max-w-xl hidden lg:block z-25"
             >
               <div className="backdrop-blur-md bg-background/90 rounded-2xl border border-background/20 p-8 shadow-2xl">
                 <AnimatePresence mode="wait">
