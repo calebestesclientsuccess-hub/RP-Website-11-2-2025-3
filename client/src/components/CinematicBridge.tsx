@@ -41,7 +41,7 @@ export default function CinematicBridge() {
           pin: true,
           scrub: 1, // Smoother scrubbing
           anticipatePin: 1,
-          markers: true, // Debug markers enabled
+          markers: false, // Debug markers disabled
         },
       });
 
