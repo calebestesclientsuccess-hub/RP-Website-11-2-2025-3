@@ -447,6 +447,8 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   const handleBadgeClick = (clickedIndex: number) => {
     if (!cyclingEnabled || isRotatingRef.current || clickedIndex === selectedIndex) return;
     
+    setHasInteracted(true); // Mark interaction
+    
     // Calculate shortest path to clicked badge
     const distance = clickedIndex - selectedIndex;
     const stepsClockwise = (distance + powers.length) % powers.length;
@@ -623,6 +625,16 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                   }}
                   onClick={() => handleBadgeClick(index)}
                   data-testid={`label-${power.id}`}
+                  role="button"
+                  aria-pressed={selectedIndex === index}
+                  aria-label={`${power.title} - ${selectedIndex === index ? 'Selected' : 'Click to select'}`}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleBadgeClick(index);
+                    }
+                  }}
                 >
                   <div className={`${power.color} flex-shrink-0 scale-125`}>
                     {power.icon}
