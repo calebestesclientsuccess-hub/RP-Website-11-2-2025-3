@@ -9,8 +9,14 @@ import podVideo from "@assets/Change_the_background_202510200715_1761004160815.m
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasPlayed, setHasPlayed] = useState(false);
+  const scrollAwayTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollAwayStartRef = useRef<number | null>(null);
+
   const problems = [
     {
       icon: <Calendar className="w-12 h-12" />,
@@ -82,6 +88,59 @@ export default function Home() {
       description: "Through weekly strategy sessions, we analyze performance data, refine messaging, and optimize targeting. Your GTM engine doesn't just run; it learns and improves, becoming more efficient and effective every single week.",
     },
   ];
+
+  // Handle video playback and scroll behavior
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleVideoEnd = () => {
+      setHasPlayed(true);
+    };
+
+    // Intersection Observer to detect when video leaves/enters viewport
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            // Video has left the viewport - start tracking time
+            scrollAwayStartRef.current = Date.now();
+          } else {
+            // Video has entered the viewport
+            if (scrollAwayStartRef.current) {
+              const timeAway = Date.now() - scrollAwayStartRef.current;
+              // If user was away for 6+ seconds, reset hasPlayed
+              if (timeAway >= 6000) {
+                setHasPlayed(false);
+              }
+              scrollAwayStartRef.current = null;
+            }
+
+            // Play video if it hasn't played yet
+            if (!hasPlayed && video.paused) {
+              video.play().catch(() => {
+                // Handle autoplay restrictions
+              });
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.5, // Video is considered visible when 50% is in view
+      }
+    );
+
+    observer.observe(video);
+    video.addEventListener('ended', handleVideoEnd);
+
+    return () => {
+      observer.disconnect();
+      video.removeEventListener('ended', handleVideoEnd);
+      if (scrollAwayTimerRef.current) {
+        clearTimeout(scrollAwayTimerRef.current);
+      }
+    };
+  }, [hasPlayed]);
 
   return (
     <div className="min-h-screen">
@@ -183,13 +242,12 @@ export default function Home() {
                   {/* Video container with thin border */}
                   <div className="relative z-10 w-[calc(100%-16px)] h-[calc(100%-16px)] m-2 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-600 shadow-xl">
                     <video 
+                      ref={videoRef}
                       src={podVideo}
                       className="w-full h-full object-cover"
-                      autoPlay
                       muted
                       playsInline
                       preload="auto"
-                      loop
                       data-testid="video-bdr-pod"
                     >
                       Your browser does not support the video tag.
