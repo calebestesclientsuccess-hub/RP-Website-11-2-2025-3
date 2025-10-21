@@ -168,6 +168,13 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   const slowdownRef = useRef(false);
   const videoDurationRef = useRef<number>(0);
   const radiusRef = useRef({ x: 280, y: 200 });
+  
+  // Cycling state management
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [showInfoBox, setShowInfoBox] = useState(false);
+  const [cyclingEnabled, setCyclingEnabled] = useState(false);
+  const targetRotationRef = useRef(0);
+  const isRotatingRef = useRef(false);
 
   useEffect(() => {
     const container = containerRef.current;
