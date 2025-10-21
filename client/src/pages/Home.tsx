@@ -119,48 +119,39 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section - Apple Aesthetic */}
-      <section className="relative pt-40 pb-32 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
         {/* Animated gradient mesh background */}
         <AnimatedGradientMesh intensity="subtle" speed="slow" />
         
-        <div className="max-w-5xl mx-auto relative z-10 text-center">
-          <div className="space-y-10">
-            {/* Headline - Clean and Bold */}
-            <div className="space-y-6">
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tight">
-                Beyond hiring.
-              </h1>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-muted-foreground leading-tight">
-                Deploy a complete revenue system.
-              </h2>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="space-y-6">
+                <Badge variant="community" className="mb-4" data-testid="badge-culture">
+                  Community + Competition = Culture
+                </Badge>
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
+                  Your Next Sales Hire Shouldn't Be a Person.{" "}
+                  <span className="text-primary">It Should Be a Revenue Generation System.</span>
+                </h1>
+                <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
+                  Adding salespeople is a linear game. We deploy a complete Go-to-Market system, arming elite talent with the AI, tech, and strategy required to multiply your pipeline.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <Button size="lg" className="text-lg px-8 py-6 shadow-lg" data-testid="button-hero-schedule">
+                  Schedule My GTM Audit
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-semibold">What's a GTM Audit?</span> In 60 minutes, we'll build a complete blueprint to scale your pipeline—a plan you can execute with or without us.
+                </p>
+              </div>
             </div>
 
-            {/* Subheadline - Simple and Clear */}
-            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-              Elite talent, AI strategy, and proven tech—working as one system to multiply your pipeline.
-            </p>
-
-            {/* CTAs - Clean and Minimal */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-              <Button 
-                size="lg" 
-                className="text-base px-10 py-6 rounded-full shadow-sm hover:shadow-md transition-shadow" 
-                data-testid="button-hero-schedule"
-              >
-                Get Started
-              </Button>
-              <Button 
-                size="lg" 
-                variant="ghost"
-                className="text-base px-10 py-6 rounded-full" 
-                data-testid="button-hero-learn"
-                asChild
-              >
-                <Link href="/results/roi-calculator">
-                  Calculate ROI
-                </Link>
-              </Button>
+            <div className="flex justify-center lg:justify-end">
+              <HeroROICalculator />
             </div>
           </div>
         </div>
