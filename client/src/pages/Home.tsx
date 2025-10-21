@@ -9,92 +9,8 @@ import podVideo from "@assets/Change_the_background_202510200715_1761004160815.m
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
-import { useEffect, useRef, useState } from "react";
-
-// Realistic confetti particle class
-class ConfettiParticle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  color: string;
-  width: number;
-  height: number;
-  rotation: number;
-  rotationSpeed: number;
-  gravity: number = 0.15;
-  drag: number = 0.98;
-  opacity: number;
-
-  constructor(x: number, y: number, color: string) {
-    this.x = x;
-    this.y = y;
-    // More varied initial velocities for realistic spread
-    const angle = (Math.random() * Math.PI / 3) - Math.PI / 6; // -30 to 30 degrees
-    const speed = Math.random() * 12 + 8;
-    this.vx = Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1);
-    this.vy = Math.sin(angle) * speed - (Math.random() * 8 + 5);
-    this.color = color;
-    // Varied sizes for realism
-    this.width = Math.random() * 8 + 4;
-    this.height = Math.random() * 6 + 3;
-    // Random rotation and spin
-    this.rotation = Math.random() * Math.PI * 2;
-    this.rotationSpeed = (Math.random() - 0.5) * 0.3;
-    // Varied initial opacity
-    this.opacity = Math.random() * 0.3 + 0.7;
-  }
-
-  update() {
-    // Apply drag for realistic air resistance
-    this.vx *= this.drag;
-    this.vy *= this.drag;
-    
-    // Apply gravity
-    this.vy += this.gravity;
-    
-    // Add slight horizontal drift (wind effect)
-    this.vx += (Math.random() - 0.5) * 0.1;
-    
-    // Update position
-    this.x += this.vx;
-    this.y += this.vy;
-    
-    // Rotate
-    this.rotation += this.rotationSpeed;
-    
-    // Fade out gradually
-    this.opacity -= 0.008;
-  }
-
-  draw(ctx: CanvasRenderingContext2D) {
-    ctx.save();
-    ctx.globalAlpha = this.opacity;
-    ctx.translate(this.x, this.y);
-    ctx.rotate(this.rotation);
-    
-    // Draw rectangle confetti piece
-    ctx.fillStyle = this.color;
-    ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-    
-    // Add subtle shine/gradient for metallic effect
-    const gradient = ctx.createLinearGradient(-this.width / 2, -this.height / 2, this.width / 2, this.height / 2);
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.1)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-    
-    ctx.restore();
-  }
-}
 
 export default function Home() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const leftCanvasRef = useRef<HTMLCanvasElement>(null);
-  const rightCanvasRef = useRef<HTMLCanvasElement>(null);
-  const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const animationRef = useRef<number>();
   const problems = [
     {
       icon: <Calendar className="w-12 h-12" />,
@@ -166,89 +82,6 @@ export default function Home() {
       description: "Through weekly strategy sessions, we analyze performance data, refine messaging, and optimize targeting. Your GTM engine doesn't just run; it learns and improves, becoming more efficient and effective every single week.",
     },
   ];
-
-  // Confetti animation
-  useEffect(() => {
-    if (!showConfetti) return;
-    
-    const leftCanvas = leftCanvasRef.current;
-    const rightCanvas = rightCanvasRef.current;
-    if (!leftCanvas || !rightCanvas) return;
-    
-    const leftCtx = leftCanvas.getContext('2d');
-    const rightCtx = rightCanvas.getContext('2d');
-    if (!leftCtx || !rightCtx) return;
-    
-    // Set canvas size
-    leftCanvas.width = 200;
-    leftCanvas.height = 400;
-    rightCanvas.width = 200;
-    rightCanvas.height = 400;
-    
-    const particles: ConfettiParticle[] = [];
-    const colors = ['#ef233c', '#C0C0C0', '#FFD700', '#ef233c', '#C0C0C0']; // Red, Silver, Gold
-    
-    // Create initial particles
-    for (let i = 0; i < 50; i++) {
-      // Left side particles
-      particles.push(new ConfettiParticle(
-        leftCanvas.width / 2,
-        leftCanvas.height / 2,
-        colors[Math.floor(Math.random() * colors.length)]
-      ));
-      // Right side particles
-      particles.push(new ConfettiParticle(
-        rightCanvas.width / 2 + 1000, // Offset for right canvas
-        rightCanvas.height / 2,
-        colors[Math.floor(Math.random() * colors.length)]
-      ));
-    }
-    
-    const animate = () => {
-      leftCtx.clearRect(0, 0, leftCanvas.width, leftCanvas.height);
-      rightCtx.clearRect(0, 0, rightCanvas.width, rightCanvas.height);
-      
-      particles.forEach((particle) => {
-        particle.update();
-        if (particle.x < 1000) {
-          particle.draw(leftCtx);
-        } else {
-          // Draw on right canvas with adjusted x position
-          const originalX = particle.x;
-          particle.x = particle.x - 1000;
-          particle.draw(rightCtx);
-          particle.x = originalX; // Restore original x for next frame
-        }
-      });
-      
-      // Remove dead particles
-      const aliveParticles = particles.filter(p => p.opacity > 0);
-      
-      if (aliveParticles.length > 0) {
-        animationRef.current = requestAnimationFrame(animate);
-      } else {
-        setShowConfetti(false);
-      }
-    };
-    
-    animate();
-    
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [showConfetti]);
-
-  // Handle video end
-  const handleVideoEnd = () => {
-    if (!hasPlayedOnce && videoRef.current) {
-      setHasPlayedOnce(true);
-      setShowConfetti(true);
-      // Don't restart the video
-      videoRef.current.pause();
-    }
-  };
 
   return (
     <div className="min-h-screen">
@@ -339,23 +172,9 @@ export default function Home() {
 
           {/* Pod Components Layout */}
           <div className="relative max-w-5xl mx-auto">
-            {/* Central Pod with Video and Confetti */}
+            {/* Central Pod with Video */}
             <div className="flex items-center justify-center mb-16">
               <div className="relative">
-                {/* Confetti Canvases */}
-                <canvas
-                  ref={leftCanvasRef}
-                  className="absolute -left-48 top-0 z-30 pointer-events-none"
-                  style={{ width: 200, height: 400 }}
-                  data-testid="canvas-confetti-left"
-                />
-                <canvas
-                  ref={rightCanvasRef}
-                  className="absolute -right-48 top-0 z-30 pointer-events-none"
-                  style={{ width: 200, height: 400 }}
-                  data-testid="canvas-confetti-right"
-                />
-                
                 {/* Container with Apple-style aesthetics */}
                 <div className="relative w-80 h-80 md:w-96 md:h-96 flex items-center justify-center">
                   {/* Apple-style border and background */}
@@ -364,14 +183,13 @@ export default function Home() {
                   {/* Video container with thin border */}
                   <div className="relative z-10 w-[calc(100%-16px)] h-[calc(100%-16px)] m-2 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-600 shadow-xl">
                     <video 
-                      ref={videoRef}
                       src={podVideo}
                       className="w-full h-full object-cover"
                       autoPlay
                       muted
                       playsInline
                       preload="auto"
-                      onEnded={handleVideoEnd}
+                      loop
                       data-testid="video-bdr-pod"
                     >
                       Your browser does not support the video tag.
