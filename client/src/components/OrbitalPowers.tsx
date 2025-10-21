@@ -689,120 +689,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
         ))}
         </div>
 
-        {/* Skip to Interactive Button - Shows when animation hasn't started */}
-        <AnimatePresence>
-          {!showLabels && isVisible && !prefersReducedMotion && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.3, delay: 2 }}
-              className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-30"
-            >
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  forceInteractiveRef.current = true;
-                  speedRef.current = 0;
-                  setAnimationStopped(true);
-                  setIsExpanded(true);
-                  setTimeout(() => setShowLabels(true), 500);
-                }}
-                className="backdrop-blur-md bg-background/80 border border-background/20 hover-elevate group"
-                data-testid="button-skip-intro"
-              >
-                <SkipForward className="w-4 h-4 mr-2 group-hover:translate-x-0.5 transition-transform" />
-                Skip to Interactive
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
-        {/* Large Glowing Arrow Controls */}
-        <AnimatePresence>
-          {cyclingEnabled && (
-            <>
-              {/* Navigation Controls - Bottom Center with Golden Ratio */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 30 }}
-                transition={{ duration: 0.3 }}
-                className="absolute bottom-8 flex items-center gap-6"
-                style={{ 
-                  zIndex: 40,
-                  left: '50%',
-                  transform: 'translateX(-50%)'
-                }}
-              >
-                {/* Left Arrow - Golden Ratio 56px base with 90px click area */}
-                <button
-                  onClick={() => cyclePower('left')}
-                  disabled={isRotatingRef.current}
-                  className="group relative w-[90px] h-[90px] flex items-center justify-center"
-                  data-testid="button-cycle-left"
-                  aria-label="Previous Power"
-                >
-                  {/* Subtle glow - pointer-events-none so clicks pass through */}
-                  <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl scale-110 opacity-60 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                  
-                  {/* Main button - 56px visual size */}
-                  <div className="relative w-14 h-14 rounded-full bg-background/80 backdrop-blur-md border border-primary/30 flex items-center justify-center transition-all duration-200 group-hover:bg-background/90 group-hover:border-primary/50 group-active:scale-95 shadow-xl">
-                    <ChevronLeft className="w-7 h-7 text-primary group-hover:-translate-x-0.5 transition-transform" />
-                  </div>
-                </button>
-
-                {/* Indicator dots - All 6 powers */}
-                <div className="flex gap-2 items-center" data-testid="indicator-dots">
-                  {powers.map((power, index) => (
-                    <div
-                      key={power.id}
-                      className={`rounded-full transition-all duration-300 ${
-                        index === selectedIndex 
-                          ? 'w-6 h-2 bg-primary' 
-                          : 'w-2 h-2 bg-primary/30 hover:bg-primary/50'
-                      }`}
-                      data-testid={`dot-${power.id}`}
-                    />
-                  ))}
-                </div>
-
-                {/* Right Arrow - Golden Ratio 56px base with 90px click area */}
-                <button
-                  onClick={() => cyclePower('right')}
-                  disabled={isRotatingRef.current}
-                  className="group relative w-[90px] h-[90px] flex items-center justify-center"
-                  data-testid="button-cycle-right"
-                  aria-label="Next Power"
-                >
-                  {/* Subtle glow - pointer-events-none so clicks pass through */}
-                  <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl scale-110 opacity-60 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                  
-                  {/* Main button - 56px visual size */}
-                  <div className="relative w-14 h-14 rounded-full bg-background/80 backdrop-blur-md border border-primary/30 flex items-center justify-center transition-all duration-200 group-hover:bg-background/90 group-hover:border-primary/50 group-active:scale-95 shadow-xl">
-                    <ChevronRight className="w-7 h-7 text-primary group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                </button>
-              </motion.div>
-
-              {/* Optional helper text at bottom */}
-              {!hasInteracted && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.3, delay: 0.5 }}
-                  className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30"
-                >
-                  <div className="text-sm text-muted-foreground font-medium px-4 py-2 rounded-lg bg-background/80 backdrop-blur-sm border border-background/20">
-                    Use arrows to explore all powers
-                  </div>
-                </motion.div>
-              )}
-            </>
-          )}
-        </AnimatePresence>
 
         {/* Info Box for Selected Power - Positioned to avoid overlaps */}
         <AnimatePresence>
@@ -857,6 +744,44 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                     <div className="p-4 rounded-lg bg-background/50 border border-primary/20">
                       <h4 className="text-sm font-semibold text-muted-foreground mb-2">If You Built It In-House</h4>
                       <p className="text-lg font-bold text-primary">{powers[selectedIndex].content.inHouseCost}</p>
+                    </div>
+
+                    {/* Navigation Arrows in Info Box */}
+                    <div className="flex items-center justify-between gap-4 mt-6 pt-6 border-t border-border/50">
+                      <button
+                        onClick={() => cyclePower('left')}
+                        disabled={!cyclingEnabled}
+                        className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-background/50 border border-primary/30 hover:bg-background hover:border-primary/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        data-testid="button-prev-power"
+                        aria-label="Previous Power"
+                      >
+                        <ChevronLeft className="w-5 h-5 text-primary" />
+                        <span className="text-sm font-medium">Previous</span>
+                      </button>
+
+                      <div className="flex gap-1.5">
+                        {powers.map((_, index) => (
+                          <div
+                            key={index}
+                            className={`h-1.5 rounded-full transition-all duration-300 ${
+                              index === selectedIndex 
+                                ? 'w-8 bg-primary' 
+                                : 'w-1.5 bg-primary/30'
+                            }`}
+                          />
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={() => cyclePower('right')}
+                        disabled={!cyclingEnabled}
+                        className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-background/50 border border-primary/30 hover:bg-background hover:border-primary/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        data-testid="button-next-power"
+                        aria-label="Next Power"
+                      >
+                        <span className="text-sm font-medium">Next</span>
+                        <ChevronRight className="w-5 h-5 text-primary" />
+                      </button>
                     </div>
                   </motion.div>
                 </AnimatePresence>
