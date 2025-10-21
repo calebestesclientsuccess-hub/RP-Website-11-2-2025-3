@@ -164,7 +164,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Linear Growth is a <span className="text-primary">Death Sentence.</span>
+              Building a Sales Team <span className="text-primary">is expensive.</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed">
               Scaling your Go-to-Market one hire and one tool at a time is a trap. It burns capital, creates friction, and delivers diminishing returns. It's the high cost of low leverage. If you're serious about scaling, you can't afford these hidden leverage killers:
@@ -319,7 +319,7 @@ export default function Home() {
               <span className="text-primary">Or a Complete GTM System?</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              Not all sales solutions are created equal. Here's how a Fully Loaded BDR Pod stacks up against your alternatives.
+              Not all sales solutions are created equal. Here's how Your Sales Org stacks up against your alternatives.
             </p>
           </div>
 
