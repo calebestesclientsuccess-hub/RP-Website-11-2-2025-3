@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { MiniCalculator } from "@/components/MiniCalculator";
 import GTMTimeline from "@/components/GTMTimeline";
 import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
-import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote, Brain, Target, Headphones, Users, Wrench, Trophy } from "lucide-react";
+import { OrbitalPowers } from "@/components/OrbitalPowers";
+import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-react";
 import podVideo from "@assets/Change_the_background_202510200715_1761004160815.mp4";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -33,39 +34,6 @@ export default function Home() {
       icon: <UserX className="w-12 h-12" />,
       title: "The Lone Wolf Fallacy",
       description: "Betting your growth on the heroics of an individual, knowing that 1 in 3 new BDR hires will fail completely within the first year, forcing you to start the painful cycle all over again.",
-    },
-  ];
-
-  const podComponents = [
-    {
-      icon: <Brain className="w-8 h-8" />,
-      title: "AI Architect",
-      color: "text-purple-dark"
-    },
-    {
-      icon: <Target className="w-8 h-8" />,
-      title: "GTM Strategist",
-      color: "text-primary"
-    },
-    {
-      icon: <Headphones className="w-8 h-8" />,
-      title: "Support",
-      color: "text-community"
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: "Coach",
-      color: "text-indigo"
-    },
-    {
-      icon: <Wrench className="w-8 h-8" />,
-      title: "Tools",
-      color: "text-primary"
-    },
-    {
-      icon: <Trophy className="w-8 h-8" />,
-      title: "Community & Competition",
-      color: "text-community"
     },
   ];
 
@@ -270,50 +238,8 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Pod Components Layout */}
-          <div className="relative max-w-5xl mx-auto">
-            {/* Central Pod with Video */}
-            <div className="flex items-center justify-center mb-16">
-              <div className="relative">
-                {/* Container with Apple-style aesthetics */}
-                <div className="relative w-80 h-80 md:w-96 md:h-96 flex items-center justify-center">
-                  {/* Apple-style border and background */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-100 via-white to-slate-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-900" />
-                  
-                  {/* Video container with thin border */}
-                  <div className="relative z-10 w-[calc(100%-16px)] h-[calc(100%-16px)] m-2 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-600 shadow-xl">
-                    <video 
-                      ref={videoRef}
-                      src={podVideo}
-                      className="w-full h-full object-cover"
-                      muted
-                      playsInline
-                      preload="auto"
-                      data-testid="video-bdr-pod"
-                    >
-                      Your browser does not support the video tag.
-                    </video>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Pod Components Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
-              {podComponents.map((component, index) => (
-                <Card 
-                  key={index} 
-                  className="p-6 text-center hover-elevate transition-all"
-                  data-testid={`card-pod-${index}`}
-                >
-                  <div className={`${component.color} mb-4 flex justify-center`}>
-                    {component.icon}
-                  </div>
-                  <h3 className="font-bold text-lg">{component.title}</h3>
-                </Card>
-              ))}
-            </div>
-          </div>
+          {/* Interactive Orbital Powers */}
+          <OrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
 
           <div className="text-center mt-16">
             <Button size="lg" variant="outline" className="gap-2" data-testid="button-explore-pod" asChild>
