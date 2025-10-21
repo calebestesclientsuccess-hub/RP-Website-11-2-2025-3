@@ -17,10 +17,6 @@
 
 /* LIGHT MODE - Feather Greys with Warm/Cool Tints */
 :root {
-  /* Interpolation factor - set by ThemeProvider */
-  --theme-brightness: 35;
-  --theme-interpolation: 0.35;
-  
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
 
@@ -32,14 +28,9 @@
   --elevate-2: rgba(0,0,0, .08);
 
   /* Feather greys - subtle warm tint for texture */
-  /* These will be interpolated based on --theme-interpolation */
-  --background-light: 20 8% 97%;
-  --background-dark: 249 12% 6%;
-  --background: 20 8% calc(97% - (97% - 6%) * (1 - var(--theme-interpolation)));
+  --background: 20 8% 97%;
 
-  --foreground-light: 240 4% 12%;
-  --foreground-dark: 0 0% 98%;
-  --foreground: 240 4% calc(12% + (98% - 12%) * (1 - var(--theme-interpolation)));
+  --foreground: 240 4% 12%;
 
   --border: 20 6% 88%;
 

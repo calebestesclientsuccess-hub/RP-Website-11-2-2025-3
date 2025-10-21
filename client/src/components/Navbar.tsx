@@ -1,9 +1,7 @@
 import { Link, useLocation } from "wouter";
-import { SunMoon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Moon, Sun, Menu, X, ChevronDown } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import logoWhite from "@assets/rev-white_1760952720792.png";
 import {
@@ -16,7 +14,7 @@ import {
 } from "@/components/ui/navigation-menu";
 
 export function Navbar() {
-  const { brightness, setBrightness } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -52,7 +50,7 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-56 p-3 bg-background border border-border rounded-md shadow-lg">
                     <li>
-                      <Link
+                      <Link 
                         href="/solutions/gtm-engine"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-gtm-engine"
@@ -61,7 +59,7 @@ export function Navbar() {
                       </Link>
                     </li>
                     <li>
-                      <Link
+                      <Link 
                         href="/solutions/fully-loaded-bdr-pod"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-fully-loaded-bdr-pod"
@@ -88,7 +86,7 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-56 p-3 bg-background border border-border rounded-md shadow-lg">
                     <li>
-                      <Link
+                      <Link 
                         href="/methodology"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-methodology-overview"
@@ -97,7 +95,7 @@ export function Navbar() {
                       </Link>
                     </li>
                     <li>
-                      <Link
+                      <Link 
                         href="/methodology/full-stack-salesperson"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-full-stack-salesperson"
@@ -106,7 +104,7 @@ export function Navbar() {
                       </Link>
                     </li>
                     <li>
-                      <Link
+                      <Link 
                         href="/methodology/ai-powered-by-humans"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-ai-powered"
@@ -133,7 +131,7 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-56 p-3 bg-background border border-border rounded-md shadow-lg">
                     <li>
-                      <Link
+                      <Link 
                         href="/results"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-results-overview"
@@ -142,7 +140,7 @@ export function Navbar() {
                       </Link>
                     </li>
                     <li>
-                      <Link
+                      <Link 
                         href="/results/roi-calculator"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-roi-calculator"
@@ -151,7 +149,7 @@ export function Navbar() {
                       </Link>
                     </li>
                     <li>
-                      <Link
+                      <Link 
                         href="/results/success-stories"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-success-stories"
@@ -178,7 +176,7 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-56 p-3 bg-background border border-border rounded-md shadow-lg">
                     <li>
-                      <Link
+                      <Link 
                         href="/blueprints"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-blueprints-overview"
@@ -187,7 +185,7 @@ export function Navbar() {
                       </Link>
                     </li>
                     <li>
-                      <Link
+                      <Link 
                         href="/comparison"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-comparison"
@@ -214,7 +212,7 @@ export function Navbar() {
                 <NavigationMenuContent>
                   <ul className="w-56 p-3 bg-background border border-border rounded-md shadow-lg">
                     <li>
-                      <Link
+                      <Link 
                         href="/why-party"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-why-party"
@@ -223,7 +221,7 @@ export function Navbar() {
                       </Link>
                     </li>
                     <li>
-                      <Link
+                      <Link 
                         href="/join-the-party"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-join-the-party"
@@ -232,7 +230,7 @@ export function Navbar() {
                       </Link>
                     </li>
                     <li>
-                      <Link
+                      <Link 
                         href="/contact-us"
                         className="block px-4 py-2.5 rounded-md text-sm hover-elevate transition-all"
                         data-testid="link-contact-us"
@@ -255,41 +253,20 @@ export function Navbar() {
             >
               Schedule My GTM Audit
             </Button>
-
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full"
-                >
-                  <SunMoon className="h-5 w-5" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64" align="end">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium">Theme Brightness</label>
-                      <span className="text-xs text-muted-foreground">{brightness}%</span>
-                    </div>
-                    <Slider
-                      value={[brightness]}
-                      onValueChange={([value]) => setBrightness(value)}
-                      min={0}
-                      max={100}
-                      step={1}
-                      className="slider-glow"
-                    />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Dark</span>
-                      <span>Mixed</span>
-                      <span>Light</span>
-                    </div>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+            
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              data-testid="button-theme-toggle"
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </Button>
 
             {/* Mobile Menu Toggle */}
             <Button
@@ -315,7 +292,7 @@ export function Navbar() {
             {/* Solutions Section */}
             <div className="space-y-1">
               <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Solutions</div>
-              <Link
+              <Link 
                 href="/solutions/gtm-engine"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
@@ -323,7 +300,7 @@ export function Navbar() {
               >
                 GTM Engine
               </Link>
-              <Link
+              <Link 
                 href="/solutions/fully-loaded-bdr-pod"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
@@ -336,7 +313,7 @@ export function Navbar() {
             {/* Methodology Section */}
             <div className="space-y-1">
               <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Methodology</div>
-              <Link
+              <Link 
                 href="/methodology"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
@@ -344,7 +321,7 @@ export function Navbar() {
               >
                 Overview
               </Link>
-              <Link
+              <Link 
                 href="/methodology/full-stack-salesperson"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
@@ -352,7 +329,7 @@ export function Navbar() {
               >
                 Full-Stack Salesperson
               </Link>
-              <Link
+              <Link 
                 href="/methodology/ai-powered-by-humans"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
@@ -365,7 +342,7 @@ export function Navbar() {
             {/* Results Section */}
             <div className="space-y-1">
               <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Results</div>
-              <Link
+              <Link 
                 href="/results"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
@@ -373,7 +350,7 @@ export function Navbar() {
               >
                 Overview
               </Link>
-              <Link
+              <Link 
                 href="/results/roi-calculator"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
@@ -381,7 +358,7 @@ export function Navbar() {
               >
                 ROI Calculator
               </Link>
-              <Link
+              <Link 
                 href="/results/success-stories"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
@@ -394,7 +371,7 @@ export function Navbar() {
             {/* Blueprints Section */}
             <div className="space-y-1">
               <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Blueprints</div>
-              <Link
+              <Link 
                 href="/blueprints"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
@@ -402,7 +379,7 @@ export function Navbar() {
               >
                 All Blueprints
               </Link>
-              <Link
+              <Link 
                 href="/comparison"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
@@ -415,7 +392,7 @@ export function Navbar() {
             {/* Why Party? Section */}
             <div className="space-y-1">
               <div className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase">Why Party?</div>
-              <Link
+              <Link 
                 href="/why-party"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
@@ -423,7 +400,7 @@ export function Navbar() {
               >
                 Why Party
               </Link>
-              <Link
+              <Link 
                 href="/join-the-party"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
@@ -431,7 +408,7 @@ export function Navbar() {
               >
                 Join the Party
               </Link>
-              <Link
+              <Link 
                 href="/contact-us"
                 className="block px-4 py-2 pl-8 rounded-md text-sm hover-elevate transition-all"
                 onClick={() => setMobileMenuOpen(false)}
