@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
+import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PowerContent {
   whatItIs: string;
