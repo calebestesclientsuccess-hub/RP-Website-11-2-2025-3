@@ -238,15 +238,18 @@ export default function FullyLoadedBDRPage() {
         </div>
       </section>
 
-      {/* What's Included */}
+      {/* The Complete GTM Machine */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-              Everything You Need to Scale. <span className="text-primary">Nothing You Don't.</span>
+              The Complete <span className="text-primary">GTM Machine</span>
             </h2>
-            <p className="text-lg text-muted-foreground">
-              We've engineered the solution to the thousands of details that stall growth. Your pod is a complete ecosystem, pre-built and optimized for peak performance.
+            <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
+              Not just pieces. Not just tools. A complete system working together to generate qualified pipeline.
+            </p>
+            <p className="text-base text-muted-foreground">
+              The Fully Loaded BDR Pod integrates four essential components into a single, turnkey engine—each one amplifying the others to deliver predictable, scalable results.
             </p>
           </div>
 
