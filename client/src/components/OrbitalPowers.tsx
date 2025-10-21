@@ -308,27 +308,33 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
     const badges = orbitalRefs.current.filter(Boolean) as HTMLDivElement[];
     if (badges.length === 0) return;
 
-    // Responsive orbit sizing - increased to match larger video
+    // Responsive orbit sizing - using golden ratio (1.618)
     const getOrbitSize = () => {
       const width = window.innerWidth;
+      const goldenRatio = 1.618;
+      
       if (width >= 1024) {
-        // Desktop: full orbit around larger video
-        return { radiusX: 400, radiusY: 280 };
+        // Desktop: golden ratio proportions
+        const baseRadius = 280;
+        return { radiusX: Math.round(baseRadius * goldenRatio), radiusY: baseRadius }; // 453x280
       } else if (width >= 768) {
-        // Tablet: orbit around medium video
-        return { radiusX: 336, radiusY: 240 };
+        // Tablet: scaled golden ratio
+        const baseRadius = 220;
+        return { radiusX: Math.round(baseRadius * goldenRatio), radiusY: baseRadius }; // 356x220
       } else {
-        // Mobile: orbit around smaller video
-        return { radiusX: 252, radiusY: 180 };
+        // Mobile: compact golden ratio
+        const baseRadius = 160;
+        return { radiusX: Math.round(baseRadius * goldenRatio), radiusY: baseRadius }; // 259x160
       }
     };
 
     let { radiusX, radiusY } = getOrbitSize();
     radiusRef.current = { x: radiusX, y: radiusY };
     
-    // Target radius for expansion
-    const targetRadiusX = radiusX + 100;
-    const targetRadiusY = radiusY + 80;
+    // Target radius for expansion - also using golden ratio
+    const expansionFactor = 1.382; // Smaller golden ratio increment
+    const targetRadiusX = Math.round(radiusX * expansionFactor);
+    const targetRadiusY = Math.round(radiusY * expansionFactor);
 
     const animate = () => {
       // Gradually slow down when triggered
@@ -716,61 +722,68 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
         <AnimatePresence>
           {cyclingEnabled && (
             <>
-              {/* Left Arrow - Large and Glowing */}
-              <motion.button
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
+              {/* Navigation Controls - Bottom Center with Golden Ratio */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 30 }}
                 transition={{ duration: 0.3 }}
-                onClick={() => cyclePower('left')}
-                disabled={isRotatingRef.current}
-                className="absolute left-4 md:left-8 lg:left-16 top-1/2 transform -translate-y-1/2 z-30 p-6 md:p-8 group"
-                data-testid="button-cycle-left"
-                aria-label="Previous Power"
+                className="absolute bottom-8 flex items-center gap-6"
+                style={{ 
+                  zIndex: 40,
+                  left: '50%',
+                  transform: 'translateX(-50%)'
+                }}
               >
-                <div className="relative">
-                  {/* Glow effect background */}
-                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-2xl animate-pulse scale-150" />
+                {/* Left Arrow - Golden Ratio 56px base with 90px click area */}
+                <button
+                  onClick={() => cyclePower('left')}
+                  disabled={isRotatingRef.current}
+                  className="group relative w-[90px] h-[90px] flex items-center justify-center"
+                  data-testid="button-cycle-left"
+                  aria-label="Previous Power"
+                >
+                  {/* Subtle glow */}
+                  <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl scale-110 opacity-60 group-hover:opacity-100 transition-opacity" />
                   
-                  {/* Main button */}
-                  <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full bg-background/90 backdrop-blur-md border-2 border-primary/50 flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:bg-background group-hover:border-primary shadow-2xl"
-                       style={{ boxShadow: '0 0 40px rgba(239, 68, 68, 0.5), 0 0 80px rgba(239, 68, 68, 0.3)' }}>
-                    <ChevronLeft className="w-8 h-8 md:w-10 md:h-10 text-foreground group-hover:-translate-x-1 transition-transform" />
+                  {/* Main button - 56px visual size */}
+                  <div className="relative w-14 h-14 rounded-full bg-background/80 backdrop-blur-md border border-primary/30 flex items-center justify-center transition-all duration-200 group-hover:bg-background/90 group-hover:border-primary/50 group-active:scale-95 shadow-xl">
+                    <ChevronLeft className="w-7 h-7 text-primary group-hover:-translate-x-0.5 transition-transform" />
                   </div>
-                  
-                  {/* Extra glow on hover */}
-                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                       style={{ boxShadow: '0 0 60px rgba(239, 68, 68, 0.6)' }} />
-                </div>
-              </motion.button>
+                </button>
 
-              {/* Right Arrow - Large and Glowing */}
-              <motion.button
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 30 }}
-                transition={{ duration: 0.3 }}
-                onClick={() => cyclePower('right')}
-                disabled={isRotatingRef.current}
-                className="absolute right-4 md:right-8 lg:right-16 top-1/2 transform -translate-y-1/2 z-30 p-6 md:p-8 group"
-                data-testid="button-cycle-right"
-                aria-label="Next Power"
-              >
-                <div className="relative">
-                  {/* Glow effect background */}
-                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-2xl animate-pulse scale-150" />
-                  
-                  {/* Main button */}
-                  <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-full bg-background/90 backdrop-blur-md border-2 border-primary/50 flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:bg-background group-hover:border-primary shadow-2xl"
-                       style={{ boxShadow: '0 0 40px rgba(239, 68, 68, 0.5), 0 0 80px rgba(239, 68, 68, 0.3)' }}>
-                    <ChevronRight className="w-8 h-8 md:w-10 md:h-10 text-foreground group-hover:translate-x-1 transition-transform" />
-                  </div>
-                  
-                  {/* Extra glow on hover */}
-                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                       style={{ boxShadow: '0 0 60px rgba(239, 68, 68, 0.6)' }} />
+                {/* Indicator dots - All 6 powers */}
+                <div className="flex gap-2 items-center" data-testid="indicator-dots">
+                  {powers.map((power, index) => (
+                    <div
+                      key={power.id}
+                      className={`rounded-full transition-all duration-300 ${
+                        index === selectedIndex 
+                          ? 'w-6 h-2 bg-primary' 
+                          : 'w-2 h-2 bg-primary/30 hover:bg-primary/50'
+                      }`}
+                      data-testid={`dot-${power.id}`}
+                    />
+                  ))}
                 </div>
-              </motion.button>
+
+                {/* Right Arrow - Golden Ratio 56px base with 90px click area */}
+                <button
+                  onClick={() => cyclePower('right')}
+                  disabled={isRotatingRef.current}
+                  className="group relative w-[90px] h-[90px] flex items-center justify-center"
+                  data-testid="button-cycle-right"
+                  aria-label="Next Power"
+                >
+                  {/* Subtle glow */}
+                  <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl scale-110 opacity-60 group-hover:opacity-100 transition-opacity" />
+                  
+                  {/* Main button - 56px visual size */}
+                  <div className="relative w-14 h-14 rounded-full bg-background/80 backdrop-blur-md border border-primary/30 flex items-center justify-center transition-all duration-200 group-hover:bg-background/90 group-hover:border-primary/50 group-active:scale-95 shadow-xl">
+                    <ChevronRight className="w-7 h-7 text-primary group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </button>
+              </motion.div>
 
               {/* Optional helper text at bottom */}
               {!hasInteracted && (
@@ -790,17 +803,24 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
           )}
         </AnimatePresence>
 
-        {/* Info Box for Selected Power */}
+        {/* Info Box for Selected Power - Positioned to avoid overlaps */}
         <AnimatePresence>
           {showInfoBox && (
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0, zIndex: 45 }}
+              exit={{ opacity: 0, x: 50, zIndex: 45 }}
               transition={{ duration: 0.2 }}
-              className="absolute bottom-20 left-1/2 transform -translate-x-1/2 max-w-xl hidden lg:block z-25"
+              className="hidden lg:block max-w-md"
+              style={{ 
+                position: 'absolute',
+                zIndex: 45,
+                right: '2rem',
+                top: 'calc(50% - 60px)', // Adjusted to account for navigation
+                transform: 'translateY(-50%)'
+              }}
             >
-              <div className="backdrop-blur-md bg-background/90 rounded-2xl border border-background/20 p-8 shadow-2xl">
+              <div className="relative backdrop-blur-xl bg-background/95 rounded-2xl border border-primary/20 p-8 shadow-2xl" style={{ zIndex: 45 }}>
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={selectedIndex}
@@ -845,7 +865,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
         </AnimatePresence>
       </div>
 
-      {/* Mobile Info Box - Below Orbital Display */}
+      {/* Mobile Info Box - Below Navigation Controls */}
       <AnimatePresence>
         {showInfoBox && (
           <motion.div
@@ -853,9 +873,9 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.5 }}
-            className="mt-8 px-4 lg:hidden"
+            className="mt-24 px-4 lg:hidden"
           >
-            <div className="backdrop-blur-md bg-background/90 rounded-2xl border border-background/20 p-6 shadow-2xl max-w-lg mx-auto">
+            <div className="backdrop-blur-xl bg-background/95 rounded-2xl border border-primary/20 p-6 shadow-2xl max-w-lg mx-auto">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={selectedIndex}
