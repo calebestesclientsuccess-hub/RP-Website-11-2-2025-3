@@ -1,28 +1,24 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ChevronDown } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function CinematicBridge() {
   const containerRef = useRef<HTMLDivElement>(null);
   const firstTextRef = useRef<HTMLHeadingElement>(null);
-  const secondTextRef = useRef<HTMLHeadingElement>(null);
-  const word1Ref = useRef<HTMLSpanElement>(null);
-  const word2Ref = useRef<HTMLSpanElement>(null);
-  const word3Ref = useRef<HTMLSpanElement>(null);
-  const word4Ref = useRef<HTMLSpanElement>(null);
+  const secondTextRef = useRef<HTMLDivElement>(null);
+  const arrowRef = useRef<HTMLDivElement>(null);
+  const [hasTriggered, setHasTriggered] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
     const firstText = firstTextRef.current;
     const secondText = secondTextRef.current;
-    const word1 = word1Ref.current;
-    const word2 = word2Ref.current;
-    const word3 = word3Ref.current;
-    const word4 = word4Ref.current;
+    const arrow = arrowRef.current;
 
-    if (!container || !firstText || !secondText || !word1 || !word2 || !word3 || !word4) return;
+    if (!container || !firstText || !secondText || !arrow) return;
 
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -30,100 +26,110 @@ export default function CinematicBridge() {
     if (prefersReducedMotion) {
       // Show both texts immediately without animation
       gsap.set(firstText, { opacity: 1, scale: 1 });
-      gsap.set([word1, word2, word3, word4], { opacity: 1, scale: 1 });
+      gsap.set(secondText, { opacity: 1 });
+      gsap.set(arrow, { opacity: 0 });
       return;
     }
 
-    const ctx = gsap.context(() => {
-      // Initial states
-      gsap.set([word1, word2, word3, word4], { opacity: 0, y: 30, scale: 0.9 });
-      gsap.set(firstText, { opacity: 1, scale: 1 });
-      gsap.set(container, { backgroundColor: "rgba(0, 0, 0, 0)" });
+    // Initial states
+    gsap.set(secondText, { opacity: 0, y: 20 });
+    gsap.set(arrow, { opacity: 0, y: -10 });
+    gsap.set(firstText, { opacity: 1, scale: 1 });
+    gsap.set(container, { backgroundColor: "rgba(0, 0, 0, 0)" });
 
-      // Create a timeline for the entire sequence - REDUCED scroll distance
-      const tl = gsap.timeline({
+    const ctx = gsap.context(() => {
+      // Create scroll-triggered animation for first text only
+      const scrollTl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
           start: "top top",
-          end: "+=200%", // Reduced from 300% to 200% for smoother experience
+          end: "+=150%",
           pin: true,
-          scrub: 0.5, // Faster response to scroll
+          scrub: 0.5,
           anticipatePin: 1,
           markers: false,
+          onEnter: () => {
+            if (!hasTriggered) {
+              setHasTriggered(true);
+              // Start timer for second text and arrow animations
+              startTimerAnimations();
+            }
+          },
         },
       });
 
-      // Deeper background fade for dramatic effect
-      tl.to(container, {
-        backgroundColor: "rgba(0, 0, 0, 0.85)", // Increased from 0.6 to 0.85
-        duration: 0.2,
-        ease: "power2.in",
-      }, 0);
-
-      // Phase 1: Scale up first text (0% to 30% of scroll)
-      tl.to(firstText, {
-        scale: 1.5,
+      // Scroll-based animations
+      scrollTl.to(container, {
+        backgroundColor: "rgba(0, 0, 0, 0.85)",
         duration: 0.3,
+        ease: "power2.in",
+      }, 0)
+      .to(firstText, {
+        scale: 1.5,
+        duration: 0.4,
         ease: "power2.inOut",
       }, 0);
 
-      // Phase 2: Staggered word reveal with progressive intensity (30% to 50% of scroll)
-      tl.to([word1, word2, word3, word4], {
-        opacity: 1,
-        y: 0,
-        scale: 1.2, // Reduced from 1.5 to prevent overlap
-        duration: 0.05,
-        ease: "back.out(2)",
-        stagger: 0.03, // Quick stagger between words
-      }, 0.3)
-      // Add pulse effect right after words appear
-      .to([word1, word2, word3, word4], {
-        scale: 1.3, // Reduced from 1.7 to prevent overlap
-        duration: 0.05,
-        ease: "power2.out",
-      }, 0.5)
-      .to([word1, word2, word3, word4], {
-        scale: 1.2, // Reduced from 1.5
-        duration: 0.05,
-        ease: "power2.in",
-      }, 0.55);
+      // Timer-based animations
+      const startTimerAnimations = () => {
+        // Wait 1.5 seconds then reveal "You need a system"
+        gsap.to(secondText, {
+          opacity: 1,
+          y: 0,
+          duration: 1.2,
+          delay: 1.5,
+          ease: "power2.out",
+        });
 
-      // Hold moment (50% to 60% of scroll)
-      tl.to({}, { duration: 0.1 }); // Shorter pause
+        // Show arrow after text animation with slight pause
+        gsap.to(arrow, {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          delay: 3.2, // 1.5s delay + 1.2s animation + 0.5s pause
+          ease: "power2.out",
+          onComplete: () => {
+            // Start bounce animation
+            gsap.to(arrow, {
+              y: 10,
+              duration: 0.6,
+              ease: "power2.inOut",
+              yoyo: true,
+              repeat: -1,
+            });
+          },
+        });
+      };
 
-      // Phase 3: Explosive zoom-forward exit (60% to 100% of scroll)
-      tl.to([firstText], {
-        scale: 2.5, // Zoom forward
-        opacity: 0,
-        z: 500, // Move toward camera
-        duration: 0.15,
-        ease: "power3.in",
-      }, 0.7)
-      .to([word1, word2, word3, word4], {
-        scale: 2.5, // Zoom forward
-        opacity: 0,
-        z: 500, // Move toward camera
-        duration: 0.15,
-        ease: "power3.in",
-        stagger: 0.02,
-      }, 0.72)
-      .to(container, {
-        backgroundColor: "rgba(0, 0, 0, 0)",
-        duration: 0.1,
-        ease: "power2.out",
-      }, "-=0.05");
+      // Hide arrow when user scrolls
+      let scrollTimeout: NodeJS.Timeout;
+      const handleScroll = () => {
+        if (arrow && hasTriggered) {
+          clearTimeout(scrollTimeout);
+          gsap.to(arrow, {
+            opacity: 0,
+            duration: 0.3,
+            ease: "power2.out",
+          });
+        }
+      };
 
-      // Refresh ScrollTrigger to ensure proper initialization
-      ScrollTrigger.refresh();
+      window.addEventListener('scroll', handleScroll);
+
+      // Cleanup
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+        clearTimeout(scrollTimeout);
+      };
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [hasTriggered]);
 
   return (
     <section
       ref={containerRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden transition-colors duration-1000"
+      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden transition-colors duration-1000"
       style={{ transformStyle: 'preserve-3d', perspective: '1000px' }}
       data-testid="section-cinematic-bridge"
     >
@@ -138,13 +144,26 @@ export default function CinematicBridge() {
         <div
           ref={secondTextRef}
           className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-primary leading-tight"
-          style={{ transformStyle: 'preserve-3d', wordSpacing: '1.5rem' }}
+          style={{ transformStyle: 'preserve-3d' }}
         >
-          <span ref={word1Ref} className="inline-block px-2 md:px-3 lg:px-4" style={{ transformOrigin: 'center' }}>You</span>
-          <span ref={word2Ref} className="inline-block px-2 md:px-3 lg:px-4" style={{ transformOrigin: 'center' }}>need</span>
-          <span ref={word3Ref} className="inline-block px-2 md:px-3 lg:px-4" style={{ transformOrigin: 'center' }}>a</span>
-          <span ref={word4Ref} className="inline-block px-2 md:px-3 lg:px-4" style={{ transformOrigin: 'center' }}>system</span>
+          You need a system
         </div>
+      </div>
+      
+      {/* Bouncing arrow with subtle glow */}
+      <div
+        ref={arrowRef}
+        className="absolute bottom-20 left-1/2 transform -translate-x-1/2"
+        style={{
+          filter: 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.2))',
+          zIndex: 10,
+        }}
+        data-testid="arrow-scroll-indicator"
+      >
+        <ChevronDown 
+          className="w-8 h-8 text-white opacity-80" 
+          strokeWidth={1.5}
+        />
       </div>
     </section>
   );
