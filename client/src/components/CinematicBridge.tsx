@@ -71,19 +71,19 @@ export default function CinematicBridge() {
       tl.to([word1, word2, word3, word4], {
         opacity: 1,
         y: 0,
-        scale: 1.5,
+        scale: 1.2, // Reduced from 1.5 to prevent overlap
         duration: 0.05,
         ease: "back.out(2)",
         stagger: 0.03, // Quick stagger between words
       }, 0.3)
       // Add pulse effect right after words appear
       .to([word1, word2, word3, word4], {
-        scale: 1.7, // Pulse up
+        scale: 1.3, // Reduced from 1.7 to prevent overlap
         duration: 0.05,
         ease: "power2.out",
       }, 0.5)
       .to([word1, word2, word3, word4], {
-        scale: 1.5, // Settle back
+        scale: 1.2, // Reduced from 1.5
         duration: 0.05,
         ease: "power2.in",
       }, 0.55);
@@ -137,13 +137,13 @@ export default function CinematicBridge() {
         </h2>
         <div
           ref={secondTextRef}
-          className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-primary leading-tight flex flex-wrap justify-center gap-3 md:gap-4 lg:gap-6"
-          style={{ transformStyle: 'preserve-3d' }}
+          className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-primary leading-tight"
+          style={{ transformStyle: 'preserve-3d', wordSpacing: '1.5rem' }}
         >
-          <span ref={word1Ref} className="inline-block">You</span>
-          <span ref={word2Ref} className="inline-block">need</span>
-          <span ref={word3Ref} className="inline-block">a</span>
-          <span ref={word4Ref} className="inline-block">system</span>
+          <span ref={word1Ref} className="inline-block px-2 md:px-3 lg:px-4" style={{ transformOrigin: 'center' }}>You</span>
+          <span ref={word2Ref} className="inline-block px-2 md:px-3 lg:px-4" style={{ transformOrigin: 'center' }}>need</span>
+          <span ref={word3Ref} className="inline-block px-2 md:px-3 lg:px-4" style={{ transformOrigin: 'center' }}>a</span>
+          <span ref={word4Ref} className="inline-block px-2 md:px-3 lg:px-4" style={{ transformOrigin: 'center' }}>system</span>
         </div>
       </div>
     </section>
