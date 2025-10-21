@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronUp, ChevronDown } from "lucide-react";
+import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
 
 interface PowerContent {
   whatItIs: string;
@@ -175,6 +175,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   const [cyclingEnabled, setCyclingEnabled] = useState(false);
   const targetRotationRef = useRef(0);
   const isRotatingRef = useRef(false);
+  const forceInteractiveRef = useRef(false); // Fallback for when video fails
 
   useEffect(() => {
     const container = containerRef.current;
@@ -195,10 +196,27 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   // Check for prefers-reduced-motion
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
+    const isReduced = mediaQuery.matches;
+    setPrefersReducedMotion(isReduced);
+    
+    // If reduced motion, show interactive state immediately
+    if (isReduced) {
+      speedRef.current = 0;
+      setAnimationStopped(true);
+      setIsExpanded(true);
+      setShowLabels(true);
+      forceInteractiveRef.current = true;
+    }
 
     const handleChange = (e: MediaQueryListEvent) => {
       setPrefersReducedMotion(e.matches);
+      if (e.matches) {
+        speedRef.current = 0;
+        setAnimationStopped(true);
+        setIsExpanded(true);
+        setShowLabels(true);
+        forceInteractiveRef.current = true;
+      }
     };
 
     mediaQuery.addEventListener('change', handleChange);
@@ -208,13 +226,33 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   // Listen for video metadata and handle timing
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    
+    // Fallback timer if video doesn't play
+    const fallbackTimer = setTimeout(() => {
+      if (!forceInteractiveRef.current && speedRef.current > 0) {
+        console.log('Activating fallback interactive mode');
+        forceInteractiveRef.current = true;
+        slowdownRef.current = true;
+        
+        setTimeout(() => {
+          speedRef.current = 0;
+          setAnimationStopped(true);
+          setIsExpanded(true);
+          
+          setTimeout(() => {
+            setShowLabels(true);
+          }, 1000);
+        }, 2000);
+      }
+    }, 5000); // 5 second fallback
+    
+    if (!video) return () => clearTimeout(fallbackTimer);
 
     const handleLoadedMetadata = () => {
       videoDurationRef.current = video.duration;
       
       // Calculate when to start slowdown (2.5 seconds before end)
-      const slowdownTime = (video.duration - 2.5) * 1000; // Convert to milliseconds
+      const slowdownTime = Math.max(0, (video.duration - 2.5) * 1000); // Convert to milliseconds
       
       // Start the slowdown timer
       const slowdownTimer = setTimeout(() => {
@@ -233,16 +271,19 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
         }, 2000);
       }, slowdownTime);
       
+      clearTimeout(fallbackTimer);
       return () => clearTimeout(slowdownTimer);
     };
 
     const handleVideoPlay = () => {
-      // Reset animation state when video restarts
-      speedRef.current = 0.5;
-      slowdownRef.current = false;
-      setAnimationStopped(false);
-      setIsExpanded(false);
-      setShowLabels(false);
+      // Reset animation state when video restarts (but not if force interactive)
+      if (!forceInteractiveRef.current) {
+        speedRef.current = 0.5;
+        slowdownRef.current = false;
+        setAnimationStopped(false);
+        setIsExpanded(false);
+        setShowLabels(false);
+      }
     };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
@@ -256,6 +297,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       video.removeEventListener('play', handleVideoPlay);
+      clearTimeout(fallbackTimer);
     };
   }, [videoRef]);
 
@@ -330,8 +372,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
     // Update orbit size on resize
     const handleResize = () => {
       const newSize = getOrbitSize();
-      radiusX = newSize.radiusX;
-      radiusY = newSize.radiusY;
+      radiusRef.current = { x: newSize.radiusX, y: newSize.radiusY };
     };
 
     window.addEventListener('resize', handleResize);
@@ -360,16 +401,34 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
       const timer = setTimeout(() => {
         setCyclingEnabled(true);
         setShowInfoBox(true);
-      }, 500);
+      }, 300); // Faster response
       return () => clearTimeout(timer);
     }
   }, [showLabels]);
+  
+  // Keyboard navigation
+  useEffect(() => {
+    if (!cyclingEnabled) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        cyclePower('left');
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        cyclePower('right');
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [cyclingEnabled, selectedIndex]);
 
   // Cycling functions
-  const cyclePower = (direction: 'up' | 'down') => {
+  const cyclePower = (direction: 'left' | 'right') => {
     if (!cyclingEnabled || isRotatingRef.current) return;
     
-    const newIndex = direction === 'up' 
+    const newIndex = direction === 'left' 
       ? (selectedIndex - 1 + powers.length) % powers.length
       : (selectedIndex + 1) % powers.length;
     
@@ -394,12 +453,12 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
     if (stepsClockwise <= stepsCounterclockwise) {
       // Cycle clockwise
       for (let i = 0; i < stepsClockwise; i++) {
-        setTimeout(() => cyclePower('down'), i * 200);
+        setTimeout(() => cyclePower('right'), i * 200);
       }
     } else {
       // Cycle counterclockwise
       for (let i = 0; i < stepsCounterclockwise; i++) {
-        setTimeout(() => cyclePower('up'), i * 200);
+        setTimeout(() => cyclePower('left'), i * 200);
       }
     }
   };
@@ -608,6 +667,36 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
         ))}
         </div>
 
+        {/* Skip to Interactive Button - Shows when animation hasn't started */}
+        <AnimatePresence>
+          {!showLabels && isVisible && !prefersReducedMotion && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3, delay: 2 }}
+              className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-30"
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  forceInteractiveRef.current = true;
+                  speedRef.current = 0;
+                  setAnimationStopped(true);
+                  setIsExpanded(true);
+                  setTimeout(() => setShowLabels(true), 500);
+                }}
+                className="backdrop-blur-md bg-background/80 border border-background/20 hover-elevate group"
+                data-testid="button-skip-intro"
+              >
+                <SkipForward className="w-4 h-4 mr-2 group-hover:translate-x-0.5 transition-transform" />
+                Skip to Interactive
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Arrow Controls for Cycling */}
         <AnimatePresence>
           {cyclingEnabled && (
@@ -615,28 +704,35 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.5 }}
-              className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 z-30"
+              transition={{ duration: 0.3 }}
+              className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-3 z-30"
             >
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => cyclePower('up')}
-                className="w-10 h-10 rounded-full backdrop-blur-md bg-background/80 border border-background/20 hover-elevate"
+                onClick={() => cyclePower('left')}
+                className="w-12 h-12 rounded-full backdrop-blur-md bg-background/80 border border-background/20 hover-elevate group"
                 disabled={isRotatingRef.current}
-                data-testid="button-cycle-up"
+                data-testid="button-cycle-left"
+                aria-label="Previous Power"
               >
-                <ChevronUp className="w-5 h-5" />
+                <ChevronLeft className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
               </Button>
+              
+              <div className="text-xs text-muted-foreground font-medium px-3">
+                Explore Powers
+              </div>
+              
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => cyclePower('down')}
-                className="w-10 h-10 rounded-full backdrop-blur-md bg-background/80 border border-background/20 hover-elevate"
+                onClick={() => cyclePower('right')}
+                className="w-12 h-12 rounded-full backdrop-blur-md bg-background/80 border border-background/20 hover-elevate group"
                 disabled={isRotatingRef.current}
-                data-testid="button-cycle-down"
+                data-testid="button-cycle-right"
+                aria-label="Next Power"
               >
-                <ChevronDown className="w-5 h-5" />
+                <ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform" />
               </Button>
             </motion.div>
           )}
@@ -649,7 +745,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 50 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.2 }}
               className="absolute right-8 top-1/2 transform -translate-y-1/2 max-w-md hidden lg:block z-30"
             >
               <div className="backdrop-blur-md bg-background/90 rounded-2xl border border-background/20 p-8 shadow-2xl">
@@ -659,7 +755,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.2 }}
                   >
                     {/* Power Title with Icon */}
                     <div className="flex items-center gap-4 mb-6">
