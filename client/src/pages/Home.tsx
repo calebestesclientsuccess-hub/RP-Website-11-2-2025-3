@@ -212,10 +212,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8">
-              The Fully Loaded BDR Pod
+              Your Sales Org
             </h1>
             <p className="text-2xl md:text-3xl font-semibold text-primary">
-              More than one salesperson. A complete Revenue Engine.
+              starring two BDRs, dedicated to finding, and selling your customers.
             </p>
           </div>
 
