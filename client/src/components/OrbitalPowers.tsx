@@ -338,7 +338,10 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
             key={power.id}
             ref={el => orbitalRefs.current[index] = el}
             className="absolute focus:outline-none focus:ring-2 focus:ring-primary rounded-full"
-            style={{ zIndex: expandedPower === power.id ? 50 : 20 }}
+            style={{ 
+              zIndex: expandedPower === power.id ? 50 : 20,
+              willChange: isVisible && !expandedPower ? 'transform' : 'auto'
+            }}
             onMouseEnter={() => handlePowerHover(power.id)}
             onMouseLeave={handlePowerLeave}
             onKeyDown={(e) => handleKeyDown(e, index)}
