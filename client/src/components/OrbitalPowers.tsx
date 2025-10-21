@@ -379,6 +379,8 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
               playsInline
               preload="auto"
               data-testid="video-bdr-pod"
+              onError={(e) => console.error("Video error:", e)}
+              onCanPlay={() => console.log("Video can play:", videoSrc)}
             >
               Your browser does not support the video tag.
             </video>

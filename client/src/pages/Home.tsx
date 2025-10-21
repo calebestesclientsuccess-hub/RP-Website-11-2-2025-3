@@ -6,7 +6,8 @@ import GTMTimeline from "@/components/GTMTimeline";
 import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { OrbitalPowers } from "@/components/OrbitalPowers";
 import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-react";
-import podVideo from "@assets/Change_the_background_202510200715_1761004160815.mp4";
+// Video is served from public directory
+const podVideo = "/bdr-pod-video.mp4";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
@@ -18,6 +19,11 @@ export default function Home() {
   const [hasPlayed, setHasPlayed] = useState(false);
   const scrollAwayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollAwayStartRef = useRef<number | null>(null);
+  
+  // Debug video path
+  useEffect(() => {
+    console.log("Video path being used:", podVideo);
+  }, []);
 
   const problems = [
     {
