@@ -10,6 +10,7 @@ import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -205,12 +206,52 @@ export default function Home() {
           </div>
 
           {/* Bridge Statement - Problem to Solution */}
-          <div className="text-center mt-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold italic text-primary">
-              You don't need another salesperson.<br />
-              <span className="text-foreground">You need leverage.</span>
-            </h2>
-          </div>
+          <motion.div 
+            className="text-center mt-16"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="relative inline-block">
+              {/* Animated background glow */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 blur-3xl"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: [0, 1, 0.7] }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.5, delay: 0.3 }}
+              />
+              
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold relative">
+                {/* First line - staggered reveal */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="text-primary"
+                >
+                  You don't need another salesperson.
+                </motion.div>
+                
+                {/* Second line - delayed reveal with emphasis */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ 
+                    duration: 0.7, 
+                    delay: 0.6,
+                    scale: { type: "spring", stiffness: 200, damping: 15 }
+                  }}
+                  className="text-foreground mt-2"
+                >
+                  You need <span className="text-primary font-extrabold">leverage.</span>
+                </motion.div>
+              </h2>
+            </div>
+          </motion.div>
         </div>
       </section>
 
