@@ -51,8 +51,35 @@ export default function CinematicBridge() {
           onEnter: () => {
             if (!hasTriggered) {
               setHasTriggered(true);
-              // Start timer for second text and arrow animations
-              startTimerAnimations();
+              
+              // Timer-based animations - directly in callback
+              // Wait 1.5 seconds then reveal "You need a system"
+              gsap.to(secondText, {
+                opacity: 1,
+                y: 0,
+                duration: 1.2,
+                delay: 1.5,
+                ease: "power2.out",
+              });
+
+              // Show arrow after text animation with slight pause
+              gsap.to(arrow, {
+                opacity: 1,
+                y: 0,
+                duration: 0.6,
+                delay: 3.2, // 1.5s delay + 1.2s animation + 0.5s pause
+                ease: "power2.out",
+                onComplete: () => {
+                  // Start bounce animation
+                  gsap.to(arrow, {
+                    y: 10,
+                    duration: 0.6,
+                    ease: "power2.inOut",
+                    yoyo: true,
+                    repeat: -1,
+                  });
+                },
+              });
             }
           },
         },
@@ -69,37 +96,6 @@ export default function CinematicBridge() {
         duration: 0.4,
         ease: "power2.inOut",
       }, 0);
-
-      // Timer-based animations
-      const startTimerAnimations = () => {
-        // Wait 1.5 seconds then reveal "You need a system"
-        gsap.to(secondText, {
-          opacity: 1,
-          y: 0,
-          duration: 1.2,
-          delay: 1.5,
-          ease: "power2.out",
-        });
-
-        // Show arrow after text animation with slight pause
-        gsap.to(arrow, {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          delay: 3.2, // 1.5s delay + 1.2s animation + 0.5s pause
-          ease: "power2.out",
-          onComplete: () => {
-            // Start bounce animation
-            gsap.to(arrow, {
-              y: 10,
-              duration: 0.6,
-              ease: "power2.inOut",
-              yoyo: true,
-              repeat: -1,
-            });
-          },
-        });
-      };
 
       // Hide arrow when user scrolls
       let scrollTimeout: NodeJS.Timeout;
