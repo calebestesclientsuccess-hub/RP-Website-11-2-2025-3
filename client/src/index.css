@@ -677,6 +677,74 @@
   mix-blend-mode: overlay;
 }
 
+/* GTM System Glow Animation - Fade in and pulse red glow */
+@keyframes gtm-glow {
+  0% {
+    opacity: 0;
+    text-shadow: 0 0 10px rgba(212, 17, 17, 0);
+  }
+  50% {
+    opacity: 1;
+    text-shadow: 
+      0 0 20px rgba(212, 17, 17, 0.6),
+      0 0 30px rgba(212, 17, 17, 0.4),
+      0 0 40px rgba(212, 17, 17, 0.3);
+  }
+  100% {
+    opacity: 1;
+    text-shadow: 
+      0 0 15px rgba(212, 17, 17, 0.5),
+      0 0 25px rgba(212, 17, 17, 0.3),
+      0 0 35px rgba(212, 17, 17, 0.2);
+  }
+}
+
+.gtm-system-glow {
+  animation: gtm-glow 2s ease-in-out forwards;
+  animation-delay: 0.5s;
+  opacity: 0;
+}
+
+/* Animated Border Glow for Revenue Party Pod Card */
+@keyframes border-glow-rotate {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 200%;
+  }
+}
+
+.animated-border-glow {
+  position: relative;
+  overflow: visible;
+}
+
+.animated-border-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(212, 17, 17, 0.8) 0%,
+    rgba(212, 17, 17, 0.4) 25%,
+    rgba(212, 17, 17, 0) 50%,
+    rgba(212, 17, 17, 0.4) 75%,
+    rgba(212, 17, 17, 0.8) 100%
+  );
+  background-size: 200% 200%;
+  animation: border-glow-rotate 3s linear infinite;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  filter: drop-shadow(0 0 10px rgba(212, 17, 17, 0.5));
+}
+
 /* Respect user's preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
