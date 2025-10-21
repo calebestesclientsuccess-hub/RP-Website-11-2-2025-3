@@ -8,13 +8,21 @@ export default function CinematicBridge() {
   const containerRef = useRef<HTMLDivElement>(null);
   const firstTextRef = useRef<HTMLHeadingElement>(null);
   const secondTextRef = useRef<HTMLHeadingElement>(null);
+  const word1Ref = useRef<HTMLSpanElement>(null);
+  const word2Ref = useRef<HTMLSpanElement>(null);
+  const word3Ref = useRef<HTMLSpanElement>(null);
+  const word4Ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const container = containerRef.current;
     const firstText = firstTextRef.current;
     const secondText = secondTextRef.current;
+    const word1 = word1Ref.current;
+    const word2 = word2Ref.current;
+    const word3 = word3Ref.current;
+    const word4 = word4Ref.current;
 
-    if (!container || !firstText || !secondText) return;
+    if (!container || !firstText || !secondText || !word1 || !word2 || !word3 || !word4) return;
 
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -22,69 +30,88 @@ export default function CinematicBridge() {
     if (prefersReducedMotion) {
       // Show both texts immediately without animation
       gsap.set(firstText, { opacity: 1, scale: 1 });
-      gsap.set(secondText, { opacity: 1, scale: 1 });
+      gsap.set([word1, word2, word3, word4], { opacity: 1, scale: 1 });
       return;
     }
 
     const ctx = gsap.context(() => {
       // Initial states
-      gsap.set(secondText, { opacity: 0, y: 60, scale: 0.8 });
+      gsap.set([word1, word2, word3, word4], { opacity: 0, y: 30, scale: 0.9 });
       gsap.set(firstText, { opacity: 1, scale: 1 });
       gsap.set(container, { backgroundColor: "rgba(0, 0, 0, 0)" });
 
-      // Create a timeline for the entire sequence
+      // Create a timeline for the entire sequence - REDUCED scroll distance
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
           start: "top top",
-          end: "+=300%", // Animation spans 3x viewport height for cinematic feel
+          end: "+=200%", // Reduced from 300% to 200% for smoother experience
           pin: true,
-          scrub: 1, // Smoother scrubbing
+          scrub: 0.5, // Faster response to scroll
           anticipatePin: 1,
-          markers: false, // Debug markers disabled
+          markers: false,
         },
       });
 
-      // Add subtle background fade for depth
+      // Deeper background fade for dramatic effect
       tl.to(container, {
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
-        duration: 0.15,
+        backgroundColor: "rgba(0, 0, 0, 0.85)", // Increased from 0.6 to 0.85
+        duration: 0.2,
         ease: "power2.in",
       }, 0);
 
-      // Phase 1: Scale up first text elegantly (0% to 35% of scroll)
+      // Phase 1: Scale up first text (0% to 30% of scroll)
       tl.to(firstText, {
-        scale: 1.6,
-        duration: 0.35,
-        ease: "power3.inOut",
+        scale: 1.5,
+        duration: 0.3,
+        ease: "power2.inOut",
       }, 0);
 
-      // Phase 2: Fade in and scale up second text (35% to 50% of scroll)
-      tl.to(secondText, {
+      // Phase 2: Staggered word reveal with progressive intensity (30% to 50% of scroll)
+      tl.to([word1, word2, word3, word4], {
         opacity: 1,
         y: 0,
-        scale: 1.6,
-        duration: 0.15,
-        ease: "back.out(1.7)",
-      }, 0.35);
+        scale: 1.5,
+        duration: 0.05,
+        ease: "back.out(2)",
+        stagger: 0.03, // Quick stagger between words
+      }, 0.3)
+      // Add pulse effect right after words appear
+      .to([word1, word2, word3, word4], {
+        scale: 1.7, // Pulse up
+        duration: 0.05,
+        ease: "power2.out",
+      }, 0.5)
+      .to([word1, word2, word3, word4], {
+        scale: 1.5, // Settle back
+        duration: 0.05,
+        ease: "power2.in",
+      }, 0.55);
 
-      // Hold both texts visible (50% to 70% of scroll)
-      tl.to({}, { duration: 0.2 }); // Empty tween to create a dramatic pause
+      // Hold moment (50% to 60% of scroll)
+      tl.to({}, { duration: 0.1 }); // Shorter pause
 
-      // Phase 3: Scale down and fade out everything (70% to 100% of scroll)
-      tl.to([firstText, secondText], {
-        scale: 0.5,
+      // Phase 3: Explosive zoom-forward exit (60% to 100% of scroll)
+      tl.to([firstText], {
+        scale: 2.5, // Zoom forward
         opacity: 0,
-        y: -100,
-        duration: 0.3,
+        z: 500, // Move toward camera
+        duration: 0.15,
         ease: "power3.in",
-        stagger: 0.05,
-      })
+      }, 0.7)
+      .to([word1, word2, word3, word4], {
+        scale: 2.5, // Zoom forward
+        opacity: 0,
+        z: 500, // Move toward camera
+        duration: 0.15,
+        ease: "power3.in",
+        stagger: 0.02,
+      }, 0.72)
       .to(container, {
         backgroundColor: "rgba(0, 0, 0, 0)",
-        duration: 0.15,
+        duration: 0.1,
         ease: "power2.out",
-      }, "-=0.15");
+      }, "-=0.05");
 
       // Refresh ScrollTrigger to ensure proper initialization
       ScrollTrigger.refresh();
@@ -97,20 +124,26 @@ export default function CinematicBridge() {
     <section
       ref={containerRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden transition-colors duration-1000"
+      style={{ transformStyle: 'preserve-3d', perspective: '1000px' }}
       data-testid="section-cinematic-bridge"
     >
       <div className="text-center max-w-5xl mx-auto px-4">
         <h2
           ref={firstTextRef}
           className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-16 leading-tight"
+          style={{ transformStyle: 'preserve-3d' }}
         >
           You need more than another salesperson.
         </h2>
         <h2
           ref={secondTextRef}
           className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-primary leading-tight"
+          style={{ transformStyle: 'preserve-3d' }}
         >
-          You need a system
+          <span ref={word1Ref} className="inline-block">You</span>{' '}
+          <span ref={word2Ref} className="inline-block">need</span>{' '}
+          <span ref={word3Ref} className="inline-block">a</span>{' '}
+          <span ref={word4Ref} className="inline-block">system</span>
         </h2>
       </div>
     </section>
