@@ -110,7 +110,6 @@ export default function Home() {
       icon: <UserX className="w-12 h-12" />,
       title: "The Lone Wolf Fallacy",
       description: "Betting your growth on the heroics of an individual, knowing that 1 in 3 new BDR hires will fail completely within the first year, forcing you to start the painful cycle all over again.",
-      footer: "You don't need another salesperson. You need leverage."
     },
   ];
 
@@ -309,13 +308,16 @@ export default function Home() {
                 <div className="text-primary mb-6">{problem.icon}</div>
                 <h3 className="text-2xl font-bold mb-4">{problem.title}</h3>
                 <p className="text-muted-foreground leading-relaxed mb-4">{problem.description}</p>
-                {problem.footer && (
-                  <p className="text-sm font-semibold text-foreground mt-6 pt-4 border-t border-border">
-                    {problem.footer}
-                  </p>
-                )}
               </Card>
             ))}
+          </div>
+
+          {/* Bridge Statement - Problem to Solution */}
+          <div className="text-center mt-16">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold italic text-primary">
+              You don't need another salesperson.<br />
+              <span className="text-foreground">You need leverage.</span>
+            </h2>
           </div>
         </div>
       </section>
@@ -374,20 +376,6 @@ export default function Home() {
                     >
                       Your browser does not support the video tag.
                     </video>
-                  </div>
-                  
-                  {/* Typography positioned elegantly over the video */}
-                  <div className="absolute inset-0 flex flex-col justify-between p-8 z-20 pointer-events-none">
-                    <div className="text-center">
-                      <h3 className="text-2xl md:text-3xl font-bold text-white drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
-                        Fully Loaded
-                      </h3>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl md:text-3xl font-bold text-primary drop-shadow-[0_3px_8px_rgba(0,0,0,0.9)]">
-                        BDR Pod
-                      </p>
-                    </div>
                   </div>
                 </div>
               </div>
