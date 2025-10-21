@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 import { Brain, Target, Headphones, Users, Wrench, Trophy, ArrowRight } from "lucide-react";
 import gsap from "gsap";
 
@@ -120,15 +121,14 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const orbitalRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [hoveredPower, setHoveredPower] = useState<string | null>(null);
-  const [expandedPower, setExpandedPower] = useState<string | null>(null);
   const animationRef = useRef<number | null>(null);
   const rotationRef = useRef(0);
   const [isVisible, setIsVisible] = useState(false);
   const isPausedRef = useRef(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [focusedPowerIndex, setFocusedPowerIndex] = useState<number>(-1);
   const [videoEnded, setVideoEnded] = useState(false);
-  const [showExpandedBadges, setShowExpandedBadges] = useState(false);
+  const [showLabels, setShowLabels] = useState(false);
+  const [showLearnMore, setShowLearnMore] = useState(false);
   const speedRef = useRef(0.5); // Starting speed
   const slowdownRef = useRef(false);
 
@@ -170,9 +170,13 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
       setVideoEnded(true);
       slowdownRef.current = true;
       
-      // After 3 seconds of slowdown, expand all badges
+      // After 3 seconds of slowdown, show labels
       setTimeout(() => {
-        setShowExpandedBadges(true);
+        setShowLabels(true);
+        // After labels appear, show Learn More button
+        setTimeout(() => {
+          setShowLearnMore(true);
+        }, 600);
       }, 3000);
     };
 
@@ -231,7 +235,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
         badge.style.transform = `translate(${x}px, ${y}px)`;
       });
 
-      if (speedRef.current > 0 || !showExpandedBadges) {
+      if (speedRef.current > 0 || !showLabels) {
         animationRef.current = requestAnimationFrame(animate);
       }
     };
@@ -252,47 +256,15 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
       }
       window.removeEventListener('resize', handleResize);
     };
-  }, [isVisible, showExpandedBadges]);
+  }, [isVisible, showLabels]);
 
-  useEffect(() => {
-    if (hoveredPower) {
-      isPausedRef.current = true;
-    } else if (!expandedPower) {
-      isPausedRef.current = false;
-    }
-  }, [hoveredPower, expandedPower]);
-
+  // Simple hover effect for badges
   const handlePowerHover = (powerId: string) => {
     setHoveredPower(powerId);
-    setTimeout(() => {
-      setExpandedPower(powerId);
-    }, 300);
   };
 
   const handlePowerLeave = () => {
-    setExpandedPower(null);
-    setTimeout(() => {
-      setHoveredPower(null);
-    }, 300);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handlePowerHover(powers[index].id);
-    } else if (e.key === 'Escape') {
-      handlePowerLeave();
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      const nextIndex = (index + 1) % powers.length;
-      setFocusedPowerIndex(nextIndex);
-      orbitalRefs.current[nextIndex]?.focus();
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      const prevIndex = (index - 1 + powers.length) % powers.length;
-      setFocusedPowerIndex(prevIndex);
-      orbitalRefs.current[prevIndex]?.focus();
-    }
+    setHoveredPower(null);
   };
 
   // Reduced motion: show static grid instead of orbital animation
@@ -369,71 +341,20 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
           <div
             key={power.id}
             ref={el => orbitalRefs.current[index] = el}
-            className="absolute focus:outline-none focus:ring-2 focus:ring-primary rounded-full"
+            className="absolute focus:outline-none"
             style={{ 
-              zIndex: expandedPower === power.id ? 50 : 20,
-              willChange: isVisible && !expandedPower ? 'transform' : 'auto'
+              zIndex: 20,
+              willChange: isVisible && speedRef.current > 0 ? 'transform' : 'auto'
             }}
             onMouseEnter={() => handlePowerHover(power.id)}
             onMouseLeave={handlePowerLeave}
-            onKeyDown={(e) => handleKeyDown(e, index)}
-            tabIndex={0}
-            role="button"
-            aria-label={`${power.title}: ${power.description}`}
-            aria-expanded={expandedPower === power.id}
             data-testid={`orbital-power-${power.id}`}
           >
             <AnimatePresence mode="wait">
-              {expandedPower === power.id ? (
+              {showLabels && speedRef.current === 0 ? (
+                // Show labels after video ends and animation stops
                 <motion.div
-                  key="expanded"
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ 
-                    scale: 1, 
-                    opacity: 1,
-                    x: 0,
-                    y: -100
-                  }}
-                  exit={{ scale: 0.5, opacity: 0 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                  className="fixed top-20 right-4 md:top-24 md:right-8 z-50"
-                >
-                  <Card className="w-80 md:w-96 p-4 md:p-6 shadow-2xl backdrop-blur-lg bg-card/95 border-2" data-testid={`card-expanded-${power.id}`}>
-                    <div className="flex items-start gap-4 mb-4">
-                      <div 
-                        className={`${power.color} p-3 rounded-lg bg-background/50`}
-                        style={{ boxShadow: `0 0 20px ${power.glowColor}` }}
-                      >
-                        {power.icon}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold mb-2">{power.title}</h3>
-                        <p className="text-sm text-muted-foreground">{power.description}</p>
-                      </div>
-                    </div>
-                    
-                    <ul className="space-y-2 mb-4">
-                      {power.details.map((detail, idx) => (
-                        <li key={idx} className="text-sm flex items-start gap-2">
-                          <span className={`${power.color} mt-1`}>•</span>
-                          <span>{detail}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <Button 
-                      className="w-full gap-2" 
-                      variant="default"
-                      data-testid={`button-cta-${power.id}`}
-                    >
-                      {power.cta} <ArrowRight className="w-4 h-4" />
-                    </Button>
-                  </Card>
-                </motion.div>
-              ) : showExpandedBadges && speedRef.current === 0 ? (
-                // Expanded state after video ends - shows text and glows
-                <motion.div
-                  key="expanded-badge"
+                  key="label"
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   whileHover={{ scale: 1.05 }}
@@ -444,27 +365,25 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                     damping: 20 
                   }}
                   className={`
-                    px-4 py-3 rounded-xl
-                    backdrop-blur-md bg-background/90
-                    border-2 border-background/30
-                    flex items-center gap-3
-                    cursor-pointer transition-all
-                    animate-pulse-glow
-                    ${hoveredPower && hoveredPower !== power.id ? 'opacity-50' : 'opacity-100'}
+                    px-4 py-2 rounded-lg
+                    backdrop-blur-md bg-background/95
+                    border border-background/20
+                    flex items-center gap-2
+                    transition-all
+                    ${hoveredPower === power.id ? 'shadow-lg' : ''}
                   `}
                   style={{ 
-                    boxShadow: `0 0 40px ${power.glowColor}`,
+                    boxShadow: hoveredPower === power.id ? `0 0 30px ${power.glowColor}` : `0 0 15px ${power.glowColor}`,
                   }}
-                  data-testid={`badge-expanded-${power.id}`}
+                  data-testid={`label-${power.id}`}
                 >
                   <div className={`${power.color} flex-shrink-0`}>
                     {power.icon}
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-sm whitespace-nowrap">{power.title}</p>
-                  </div>
+                  <span className="font-semibold text-sm whitespace-nowrap">{power.title}</span>
                 </motion.div>
               ) : (
+                // Compact badge during orbital animation
                 <motion.div
                   key="compact"
                   initial={{ scale: 1 }}
@@ -491,6 +410,26 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
           </div>
         ))}
       </div>
+
+      {/* Learn More Button */}
+      {showLearnMore && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30"
+        >
+          <Link href="/solutions/fully-loaded-bdr-pod">
+            <Button 
+              size="lg" 
+              className="gap-2 shadow-xl"
+              data-testid="button-learn-more"
+            >
+              Learn More <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Link>
+        </motion.div>
+      )}
     </div>
   );
 }
