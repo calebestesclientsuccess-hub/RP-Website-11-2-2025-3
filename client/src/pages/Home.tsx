@@ -313,10 +313,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <Badge variant="default" className="mb-4">Competitive Edge</Badge>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Traditional Hire? <br />
-              Lead Gen Agency? <br />
-              <span className="text-primary">Or a Complete GTM System?</span>
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6">
+              <span className="block">Traditional Hire?</span>
+              <span className="block mb-4">Lead Gen Agency?</span>
+              <span className="block text-4xl md:text-5xl lg:text-6xl font-extrabold text-primary">
+                Or a Complete GTM System?
+              </span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed">
               Not all sales solutions are created equal. Here's how Your Fullstack Sales Unit stacks up against your alternatives.
