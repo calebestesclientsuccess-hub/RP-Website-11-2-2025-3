@@ -1,7 +1,7 @@
 # Revenue Party - GTM Systems Website
 
 ## Overview
-Revenue Party is a marketing website for a Go-to-Market (GTM) consultancy, specializing in deploying comprehensive revenue generation systems. The site showcases services like the "Fully Loaded BDR Pod" through a dark-mode design, interactive calculators, GSAP animations, and a cinematic timeline visualization. It targets a B2B SaaS audience, focusing on founders and GTM leaders with an emphasis on data-driven decision-making.
+Revenue Party is a marketing website for a Go-to-Market (GTM) consultancy, specializing in deploying comprehensive revenue generation systems. The site showcases services like "Your Fullstack Sales Unit" through a dark-mode design, interactive calculators, GSAP animations, and a cinematic timeline visualization. It targets a B2B SaaS audience, focusing on founders and GTM leaders with an emphasis on data-driven decision-making.
 
 ## User Preferences
 - Dark mode is the default theme
@@ -15,12 +15,14 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 
 **UI/UX Decisions:**
 - **Brand Color Philosophy**: Semantic color system based on "Culture = Community + Competition" with specific colors for competition (Red), collaboration (Purple), technology (Indigo), and strategy (Dark Purple). All colors meet WCAG AA accessibility standards.
-- **Typography**: Inter for headings and body, JetBrains Mono for monospace.
-- **Design System**: Semantic color tokens, badge variants, and consistent typography for a unified aesthetic.
+- **Typography**: Inter for headings and body, JetBrains Mono for monospace. Inverted pyramid hierarchy used in comparison section (larger questions, smaller but bolder answer line with spacing).
+- **Design System**: Semantic color tokens, badge variants with larger sizing and worn/dimpled paper texture effect, and consistent typography for a unified aesthetic.
 - **Animations**: GSAP with ScrollTrigger for scroll-triggered timeline reveals. Fade-in and slide-up animations on timeline steps, sequential line drawing, and bounce effect on result card. Glassmorphic floating calculator CTA. Supports `prefers-reduced-motion`.
 
 **Technical Implementations & Feature Specifications:**
+- **Hero Section**: Features "Your Fullstack Sales Unit" as the main heading with red tagline "starring two BDRs, dedicated to finding, and selling your customers." Problem section uses "Building a Sales Team is expensive" messaging.
 - **Orbital Powers Animation**: Apple-inspired interactive video element featuring a maximized central video (896px desktop, 640px tablet, 448px mobile) with a thin silver metallic frame and multi-color glow (blue, purple, magenta, indigo) that makes it appear to float in the same physical space as the video content. Six orbital "powers" (AI Architect, GTM Strategist, RevOps, Elite Coach, Tech Stack, Community & Competition) orbit around it. Video plays automatically once, replaying only after scrolling away for 6+ seconds. Animation stops 2.5 seconds before video ends, badges expand outward with intensified glow, and labels appear with staggered animation. Navigation arrows are integrated into the info box for easy click access. Video uses object-contain to prevent face cutoff. The futuristic frame features a 2px silver border with layered box-shadow glows matching the video's color palette.
+- **Badge Components**: Larger sizing (text-sm with px-4 py-1.5) with worn, dimpled paper texture effect using cross-hatch patterns, inset shadows, and SVG noise filter for authentic paper grain.
 - **Interactive ROI Calculator**: Compares in-house vs. RevParty Pod based on user inputs (ACV, close rate, sales cycle, quota) with real-time calculations and email capture.
 - **GTM Timeline Visualization**: A cinematic vertical timeline showcasing the complete GTM system with scroll-triggered GSAP animations. Features 4 key components (Elite Talent, Strategic Framework, AI-Powered, Tech Stack) connected by animated lines, culminating in a "20+ Qualified Appointments" result card. Each step fades in and slides up on scroll with brand-specific colors (purple, red, indigo). Mobile-responsive and supports prefers-reduced-motion.
 - **Content Management**: Database-driven blog ("Blueprints") with Markdown rendering (DOMPurify for XSS protection), testimonial display, and career listings with application forms (React Hook Form + Zod for validation).
