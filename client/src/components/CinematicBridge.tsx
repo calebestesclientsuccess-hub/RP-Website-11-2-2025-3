@@ -122,15 +122,14 @@ export default function CinematicBridge() {
               hasTriggeredRef.current = true;
               console.log('Triggering particle disintegration at scroll progress:', self.progress);
               
-              // Small pause before disintegration starts
+              // Wait for text to be fully visible and positioned before disintegration
               setTimeout(() => {
-                console.log('Starting disintegration effect');
-                setIsDisintegrating(true);
+                console.log('Text positioned, waiting before disintegration');
                 
-                // Hide the actual text slightly after disintegration starts
+                // Additional delay to ensure text is settled and visible
                 setTimeout(() => {
-                  console.log('Hiding system text');
-                  setHideSystemText(true);
+                  console.log('Starting disintegration effect');
+                  setIsDisintegrating(true);
                   
                   // Peak theatre-mode intensity during disintegration
                   gsap.to(vignette, {
@@ -144,14 +143,20 @@ export default function CinematicBridge() {
                     duration: 0.5,
                     ease: "power2.inOut",
                   });
-                }, 200);
-                
-                // Backup: Show arrow after 3 seconds regardless of particle completion
-                setTimeout(() => {
-                  console.log('Backup arrow trigger after 3 seconds');
-                  handleDisintegrationComplete();
-                }, 3000);
-              }, 1000); // 1 second pause after scroll reaches threshold
+                  
+                  // Hide text after particles start forming
+                  setTimeout(() => {
+                    console.log('Hiding system text');
+                    setHideSystemText(true);
+                  }, 500);
+                  
+                  // Backup: Show arrow after particles have time to fall
+                  setTimeout(() => {
+                    console.log('Backup arrow trigger after particles settle');
+                    handleDisintegrationComplete();
+                  }, 5000);
+                }, 1500);
+              }, 1000); // Wait for scroll animation to complete
             }
           },
         },

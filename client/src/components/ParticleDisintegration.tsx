@@ -32,19 +32,19 @@ export default function ParticleDisintegration({
   const glowTargetRef = useRef<HTMLElement | null>(null);
 
   const createParticle = useCallback((x: number, y: number, delay: number = 0): Particle => {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 3 + 1;
+    // Create gentle horizontal drift for leaf-like motion
+    const drift = (Math.random() - 0.5) * 0.5;
     
     return {
       x,
       y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.abs(Math.sin(angle)) * speed * 0.8, // Stronger downward bias
+      vx: drift, // Subtle horizontal sway
+      vy: 0, // Start with no vertical velocity, gravity will pull down
       size: Math.random() * 4 + 2, // Larger particles (2-6px)
       alpha: 1,
       color: `hsl(0, ${90 + Math.random() * 10}%, ${55 + Math.random() * 15}%)`, // Brighter red with variation
       life: delay,
-      maxLife: 2500 + Math.random() * 1500, // Particles live 2.5-4 seconds
+      maxLife: 6000 + Math.random() * 3000, // Particles live 6-9 seconds for graceful fall
     };
   }, []);
 
@@ -57,15 +57,9 @@ export default function ParticleDisintegration({
     const canvas = canvasRef.current;
     const rect = textElement.getBoundingClientRect();
     
-    // If text is off-screen, use viewport center as position
-    const isOffScreen = rect.top < -window.innerHeight || rect.top > window.innerHeight * 2;
-    const adjustedTop = isOffScreen ? window.innerHeight / 2 - rect.height / 2 : rect.top;
-    const adjustedLeft = isOffScreen ? window.innerWidth / 2 - rect.width / 2 : rect.left;
-    
     console.log('Initializing particles for text element:', { 
       text: textElement.innerText, 
-      rect: { width: rect.width, height: rect.height, top: rect.top, left: rect.left },
-      adjusted: { top: adjustedTop, left: adjustedLeft, wasOffScreen: isOffScreen }
+      rect: { width: rect.width, height: rect.height, top: rect.top, left: rect.left }
     });
     const particles: Particle[] = [];
 
@@ -78,21 +72,21 @@ export default function ParticleDisintegration({
       for (let x = 0; x < rect.width; x += particleSpacing) {
         // Create particle with left-to-right delay for wave effect
         const delay = (x / rect.width) * duration;
-        particles.push(createParticle(adjustedLeft + x, adjustedTop + y, delay));
+        particles.push(createParticle(rect.left + x, rect.top + y, delay));
       }
     }
 
     particlesRef.current = particles;
     console.log(`Created ${particles.length} particles for disintegration (grid-based, expected ~${particleCount})`);
     
-    // Set canvas size
+    // Set canvas size and position
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     canvas.style.position = 'fixed';
     canvas.style.top = '0';
     canvas.style.left = '0';
     canvas.style.pointerEvents = 'none';
-    canvas.style.zIndex = '100';
+    canvas.style.zIndex = '0'; // At base stacking level so sections render above it
 
     // Find the target element for glow effect
     const targetSection = document.querySelector('[data-testid="section-fullstack-sales-unit"]');
@@ -129,13 +123,17 @@ export default function ParticleDisintegration({
       if (particleAge < particle.maxLife) {
         activeParticles++;
         
-        // Update physics
-        particle.vy += 0.15; // Gravity
+        // Update physics with gentle leaf-like motion
+        particle.vy += 0.08; // Gentle gravity
         particle.x += particle.vx;
         particle.y += particle.vy;
 
-        // Add slight horizontal drift
-        particle.vx += (Math.random() - 0.5) * 0.1;
+        // Add slight horizontal sway like leaves
+        particle.vx += Math.sin(particleAge * 0.002) * 0.02;
+        
+        // Air resistance for more organic motion
+        particle.vx *= 0.995;
+        particle.vy *= 0.998;
         
         // Calculate alpha based on life
         particle.alpha = Math.max(0, 1 - (particleAge / particle.maxLife));
