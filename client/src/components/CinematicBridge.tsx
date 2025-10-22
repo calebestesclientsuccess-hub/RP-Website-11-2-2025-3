@@ -14,10 +14,18 @@ export default function CinematicBridge() {
   const vignetteRef = useRef<HTMLDivElement>(null);
   const spotlightRef = useRef<HTMLDivElement>(null);
   const hasTriggeredRef = useRef(false);
+  const arrowShownRef = useRef(false);
   const [isDisintegrating, setIsDisintegrating] = useState(false);
   const [hideSystemText, setHideSystemText] = useState(false);
 
   const handleDisintegrationComplete = () => {
+    // Prevent duplicate calls
+    if (arrowShownRef.current) {
+      console.log('Arrow already shown, skipping');
+      return;
+    }
+    arrowShownRef.current = true;
+    
     console.log('Disintegration complete, showing arrow');
     const arrow = arrowRef.current;
     const vignette = vignetteRef.current;
@@ -41,13 +49,21 @@ export default function CinematicBridge() {
       ease: "power2.out",
     });
 
-    // Show arrow after disintegration
+    // Show arrow after disintegration - force it to be visible
+    arrow.style.opacity = '0';
+    arrow.style.display = 'block';
+    arrow.style.visibility = 'visible';
+    
     gsap.to(arrow, {
       opacity: 1,
       y: 0,
       duration: 0.6,
       ease: "power2.out",
+      onStart: () => {
+        console.log('Arrow animation started');
+      },
       onComplete: () => {
+        console.log('Arrow fade-in complete, starting bounce');
         // Start bounce animation
         gsap.to(arrow, {
           y: 10,
@@ -129,6 +145,12 @@ export default function CinematicBridge() {
                     ease: "power2.inOut",
                   });
                 }, 200);
+                
+                // Backup: Show arrow after 3 seconds regardless of particle completion
+                setTimeout(() => {
+                  console.log('Backup arrow trigger after 3 seconds');
+                  handleDisintegrationComplete();
+                }, 3000);
               }, 1000); // 1 second pause after scroll reaches threshold
             }
           },
@@ -261,16 +283,19 @@ export default function CinematicBridge() {
       {/* Minimalist red bouncing arrow */}
       <div
         ref={arrowRef}
-        className="absolute bottom-20 left-1/2 transform -translate-x-1/2"
+        className="fixed bottom-20 left-1/2 transform -translate-x-1/2 flex items-center justify-center pointer-events-none"
         style={{
-          filter: 'drop-shadow(0 0 12px rgba(239, 68, 68, 0.4))',
-          zIndex: 20,
+          filter: 'drop-shadow(0 0 20px rgba(239, 68, 68, 0.6))',
+          zIndex: 9999,
+          opacity: 0,
+          width: '60px',
+          height: '60px',
         }}
         data-testid="arrow-scroll-indicator"
       >
         <ChevronDown 
-          className="w-10 h-10 text-primary" 
-          strokeWidth={1}
+          className="w-12 h-12 text-primary" 
+          strokeWidth={2}
         />
       </div>
     </section>

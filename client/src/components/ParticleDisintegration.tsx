@@ -56,9 +56,16 @@ export default function ParticleDisintegration({
 
     const canvas = canvasRef.current;
     const rect = textElement.getBoundingClientRect();
+    
+    // If text is off-screen, use viewport center as position
+    const isOffScreen = rect.top < -window.innerHeight || rect.top > window.innerHeight * 2;
+    const adjustedTop = isOffScreen ? window.innerHeight / 2 - rect.height / 2 : rect.top;
+    const adjustedLeft = isOffScreen ? window.innerWidth / 2 - rect.width / 2 : rect.left;
+    
     console.log('Initializing particles for text element:', { 
       text: textElement.innerText, 
-      rect: { width: rect.width, height: rect.height, top: rect.top, left: rect.left } 
+      rect: { width: rect.width, height: rect.height, top: rect.top, left: rect.left },
+      adjusted: { top: adjustedTop, left: adjustedLeft, wasOffScreen: isOffScreen }
     });
     const particles: Particle[] = [];
 
@@ -86,7 +93,7 @@ export default function ParticleDisintegration({
         if (alpha > 128) {
           // Create particle with left-to-right delay
           const delay = (x / rect.width) * duration;
-          particles.push(createParticle(rect.left + x, rect.top + y, delay));
+          particles.push(createParticle(adjustedLeft + x, adjustedTop + y, delay));
         }
       }
     }
