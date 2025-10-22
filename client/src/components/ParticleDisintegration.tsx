@@ -49,10 +49,17 @@ export default function ParticleDisintegration({
   }, []);
 
   const initParticles = useCallback(() => {
-    if (!textElement || !canvasRef.current) return;
+    if (!textElement || !canvasRef.current) {
+      console.log('Cannot initialize particles:', { textElement: !!textElement, canvas: !!canvasRef.current });
+      return;
+    }
 
     const canvas = canvasRef.current;
     const rect = textElement.getBoundingClientRect();
+    console.log('Initializing particles for text element:', { 
+      text: textElement.innerText, 
+      rect: { width: rect.width, height: rect.height, top: rect.top, left: rect.left } 
+    });
     const particles: Particle[] = [];
 
     // Sample text to create particles
@@ -85,6 +92,7 @@ export default function ParticleDisintegration({
     }
 
     particlesRef.current = particles;
+    console.log(`Created ${particles.length} particles for disintegration`);
     
     // Set canvas size
     canvas.width = window.innerWidth;
@@ -177,10 +185,12 @@ export default function ParticleDisintegration({
   }, [onComplete]);
 
   useEffect(() => {
+    console.log('ParticleDisintegration effect:', { isActive, hasTextElement: !!textElement });
     if (isActive && textElement) {
       initParticles();
       startTimeRef.current = 0;
       animationRef.current = requestAnimationFrame(animate);
+      console.log('Started particle animation');
     }
 
     return () => {

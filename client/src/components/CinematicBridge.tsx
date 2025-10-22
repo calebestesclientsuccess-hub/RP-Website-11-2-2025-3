@@ -18,11 +18,15 @@ export default function CinematicBridge() {
   const [hideSystemText, setHideSystemText] = useState(false);
 
   const handleDisintegrationComplete = () => {
+    console.log('Disintegration complete, showing arrow');
     const arrow = arrowRef.current;
     const vignette = vignetteRef.current;
     const spotlight = spotlightRef.current;
     
-    if (!arrow || !vignette || !spotlight) return;
+    if (!arrow || !vignette || !spotlight) {
+      console.log('Missing refs:', { arrow: !!arrow, vignette: !!vignette, spotlight: !!spotlight });
+      return;
+    }
 
     // Ease back theatre-mode
     gsap.to(vignette, {
@@ -97,16 +101,19 @@ export default function CinematicBridge() {
           anticipatePin: 1,
           markers: false,
           onUpdate: (self) => {
-            // Trigger disintegration when scroll reaches the end
-            if (self.progress >= 0.95 && !hasTriggeredRef.current) {
+            // Trigger disintegration when scroll reaches 75%
+            if (self.progress >= 0.75 && !hasTriggeredRef.current) {
               hasTriggeredRef.current = true;
+              console.log('Triggering particle disintegration at scroll progress:', self.progress);
               
               // Small pause before disintegration starts
               setTimeout(() => {
+                console.log('Starting disintegration effect');
                 setIsDisintegrating(true);
                 
                 // Hide the actual text slightly after disintegration starts
                 setTimeout(() => {
+                  console.log('Hiding system text');
                   setHideSystemText(true);
                   
                   // Peak theatre-mode intensity during disintegration
@@ -122,7 +129,7 @@ export default function CinematicBridge() {
                     ease: "power2.inOut",
                   });
                 }, 200);
-              }, 1000); // 1 second pause after scroll reaches end
+              }, 1000); // 1 second pause after scroll reaches threshold
             }
           },
         },
