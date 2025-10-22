@@ -207,7 +207,7 @@ export default function Home() {
       <CinematicBridge />
 
       {/* Solution Section */}
-      <section className="py-20 px-4 md:px-6 lg:px-8">
+      <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-fullstack-sales-unit">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8">
