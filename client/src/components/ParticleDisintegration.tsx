@@ -33,18 +33,18 @@ export default function ParticleDisintegration({
 
   const createParticle = useCallback((x: number, y: number, delay: number = 0): Particle => {
     const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 2 + 0.5;
+    const speed = Math.random() * 3 + 1;
     
     return {
       x,
       y,
       vx: Math.cos(angle) * speed,
-      vy: Math.abs(Math.sin(angle)) * speed * 0.5, // Bias downward
-      size: Math.random() * 3 + 1,
+      vy: Math.abs(Math.sin(angle)) * speed * 0.8, // Stronger downward bias
+      size: Math.random() * 4 + 2, // Larger particles (2-6px)
       alpha: 1,
-      color: `hsl(0, 85%, ${50 + Math.random() * 20}%)`, // Red with variation
+      color: `hsl(0, ${90 + Math.random() * 10}%, ${55 + Math.random() * 15}%)`, // Brighter red with variation
       life: delay,
-      maxLife: 2000 + Math.random() * 1000, // Particles live 2-3 seconds
+      maxLife: 2500 + Math.random() * 1500, // Particles live 2.5-4 seconds
     };
   }, []);
 
@@ -69,37 +69,21 @@ export default function ParticleDisintegration({
     });
     const particles: Particle[] = [];
 
-    // Sample text to create particles
-    const ctx = document.createElement('canvas').getContext('2d');
-    if (!ctx) return;
-
-    ctx.canvas.width = rect.width;
-    ctx.canvas.height = rect.height;
-    ctx.fillStyle = '#ef4444';
-    ctx.font = window.getComputedStyle(textElement).font;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(textElement.innerText, rect.width / 2, rect.height / 2);
-
-    const imageData = ctx.getImageData(0, 0, rect.width, rect.height);
-    const data = imageData.data;
-
-    // Create particles from text pixels
-    for (let y = 0; y < rect.height; y += 4) {
-      for (let x = 0; x < rect.width; x += 4) {
-        const index = (y * rect.width + x) * 4;
-        const alpha = data[index + 3];
-        
-        if (alpha > 128) {
-          // Create particle with left-to-right delay
-          const delay = (x / rect.width) * duration;
-          particles.push(createParticle(adjustedLeft + x, adjustedTop + y, delay));
-        }
+    // Create particles in a grid pattern across the text bounds
+    // Use tighter spacing for denser, more dramatic particle field
+    const particleSpacing = 4;
+    const particleCount = Math.floor((rect.width / particleSpacing) * (rect.height / particleSpacing));
+    
+    for (let y = 0; y < rect.height; y += particleSpacing) {
+      for (let x = 0; x < rect.width; x += particleSpacing) {
+        // Create particle with left-to-right delay for wave effect
+        const delay = (x / rect.width) * duration;
+        particles.push(createParticle(adjustedLeft + x, adjustedTop + y, delay));
       }
     }
 
     particlesRef.current = particles;
-    console.log(`Created ${particles.length} particles for disintegration`);
+    console.log(`Created ${particles.length} particles for disintegration (grid-based, expected ~${particleCount})`);
     
     // Set canvas size
     canvas.width = window.innerWidth;
@@ -166,14 +150,21 @@ export default function ParticleDisintegration({
           }
         }
 
-        // Draw particle with glow
+        // Draw particle with enhanced glow
         ctx.save();
         ctx.globalAlpha = particle.alpha;
         ctx.fillStyle = particle.color;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 15;
         ctx.shadowColor = particle.color;
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw inner bright core
+        ctx.shadowBlur = 5;
+        ctx.fillStyle = `hsl(0, 100%, 70%)`;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size * 0.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       }
