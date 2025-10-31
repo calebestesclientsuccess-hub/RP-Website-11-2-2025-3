@@ -16,8 +16,15 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 **UI/UX Decisions:**
 - **Brand Color Philosophy**: Semantic color system based on "Culture = Community + Competition" with specific colors for competition (Red), collaboration (Purple), technology (Indigo), and strategy (Dark Purple). All colors meet WCAG AA accessibility standards.
 - **Typography**: Inter for headings and body, JetBrains Mono for monospace. Inverted pyramid hierarchy used in comparison section (larger questions, smaller but bolder answer line with spacing).
-- **Design System**: Semantic color tokens, badge variants with larger sizing and worn/dimpled paper texture effect, and consistent typography for a unified aesthetic.
-- **Animations**: GSAP with ScrollTrigger for scroll-triggered timeline reveals. Fade-in and slide-up animations on timeline steps, sequential line drawing, and bounce effect on result card. Glassmorphic floating calculator CTA. Supports `prefers-reduced-motion`.
+- **Design System**: Semantic color tokens, badge variants with larger sizing, and consistent typography for a unified aesthetic.
+  - **Dark Mode (Default)**: Dramatic cinematic design with dimpled paper texture effect on badges using cross-hatch patterns, inset shadows, and SVG noise filter for authentic paper grain.
+  - **Light Mode Enhancement**: Sophisticated watercolor-meets-glass aesthetic that rivals dark mode's drama while maintaining complete visual isolation (no light mode effects show in dark mode):
+    - **Paper Texture Overlay**: Subtle 2.5% opacity SVG noise filter creates authentic paper grain across entire page
+    - **Watercolor Gradients**: Multi-stop color gradients on badges and cards with breathing animation (15-20s cycles) creates living color that subtly shifts
+    - **Prismatic Glass Effects**: Rainbow chromatic aberration shadows on cards (0.04 peak opacity) with 0.4s hover animation for crystal-like depth
+    - **Vintage Stamp Badges**: Postal stamp aesthetic with -0.8deg rotation, perforated edges, cross-hatch texture, and worn ink shadows
+    - **Animated Sun Rays**: Three slow-drifting light beams (35-40s cycles, 0.18 peak opacity) in hero section for atmospheric warmth
+- **Animations**: GSAP with ScrollTrigger for scroll-triggered timeline reveals. Fade-in and slide-up animations on timeline steps, sequential line drawing, and bounce effect on result card. Glassmorphic floating calculator CTA. All decorative animations respect `prefers-reduced-motion` accessibility preferences.
 
 **Technical Implementations & Feature Specifications:**
 - **Hero Section**: Features "Your Fullstack Sales Unit" as the main heading with red tagline "starring two BDRs, dedicated to finding, and selling your customers." Problem section uses "Building a Sales Team is expensive" messaging.
