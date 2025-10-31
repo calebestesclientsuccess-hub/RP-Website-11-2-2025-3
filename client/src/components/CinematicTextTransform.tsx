@@ -34,7 +34,7 @@ export default function CinematicTextTransform({ onComplete }: CinematicTextTran
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
     if (prefersReducedMotion) {
-      gsap.set(oldText, { opacity: 0 });
+      gsap.set(oldText, { opacity: 0, display: 'none' });
       gsap.set(newText, { opacity: 1 });
       if (onComplete) onComplete();
       return;
@@ -87,6 +87,10 @@ export default function CinematicTextTransform({ onComplete }: CinematicTextTran
             brightness: Math.random() * 30 + 50
           });
         }
+      },
+      onComplete: () => {
+        // Hide old text completely after fade
+        gsap.set(oldText, { display: 'none' });
       }
     })
     
