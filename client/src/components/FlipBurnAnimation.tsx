@@ -14,7 +14,7 @@ export default function FlipBurnAnimation({ onComplete }: FlipBurnAnimationProps
   const cascadeCardsRef = useRef<HTMLDivElement[]>([]);
   const goldenFrameRef = useRef<HTMLDivElement>(null);
   const embersRef = useRef<HTMLCanvasElement>(null);
-  const [emberParticles, setEmberParticles] = useState<Array<{
+  const emberParticlesRef = useRef<Array<{
     x: number;
     y: number;
     vx: number;
@@ -85,7 +85,7 @@ export default function FlipBurnAnimation({ onComplete }: FlipBurnAnimationProps
             life: 1,
             size: Math.random() * 3 + 1
           };
-          setEmberParticles(prev => [...prev, newEmber]);
+          emberParticlesRef.current.push(newEmber);
         }
         
         // Start fading text as it burns
@@ -163,31 +163,32 @@ export default function FlipBurnAnimation({ onComplete }: FlipBurnAnimationProps
     const animateEmbers = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      setEmberParticles(prev => {
-        const updated = prev
-          .map(particle => ({
-            ...particle,
-            x: particle.x + particle.vx,
-            y: particle.y + particle.vy,
-            vy: particle.vy + 0.05, // gravity
-            life: particle.life - 0.01
-          }))
-          .filter(p => p.life > 0);
+      // Update particles without triggering React re-renders
+      const particles = emberParticlesRef.current;
+      const updated = particles
+        .map(particle => ({
+          ...particle,
+          x: particle.x + particle.vx,
+          y: particle.y + particle.vy,
+          vy: particle.vy + 0.05, // gravity
+          life: particle.life - 0.01
+        }))
+        .filter(p => p.life > 0);
+      
+      // Replace the ref's array with the updated one
+      emberParticlesRef.current = updated;
+      
+      // Draw particles
+      updated.forEach(particle => {
+        ctx.globalAlpha = particle.life;
+        ctx.fillStyle = `hsl(${20 + Math.random() * 20}, 100%, ${50 + particle.life * 30}%)`;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        ctx.fill();
         
-        // Draw particles
-        updated.forEach(particle => {
-          ctx.globalAlpha = particle.life;
-          ctx.fillStyle = `hsl(${20 + Math.random() * 20}, 100%, ${50 + particle.life * 30}%)`;
-          ctx.beginPath();
-          ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Add glow
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = 'rgba(255, 100, 0, 0.5)';
-        });
-        
-        return updated;
+        // Add glow
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(255, 100, 0, 0.5)';
       });
       
       requestAnimationFrame(animateEmbers);
@@ -221,13 +222,14 @@ export default function FlipBurnAnimation({ onComplete }: FlipBurnAnimationProps
       <div
         ref={cardRef}
         className="relative inline-block"
+        data-testid="flip-card-front"
         style={{
           transformStyle: 'preserve-3d',
           transform: 'rotateY(0deg)',
         }}
       >
         {/* Business card background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-zinc-800 dark:from-zinc-100 dark:to-zinc-200 rounded-lg shadow-2xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-900 dark:to-zinc-800 rounded-lg shadow-2xl" />
         
         {/* Text to be burned */}
         <div
@@ -280,6 +282,7 @@ export default function FlipBurnAnimation({ onComplete }: FlipBurnAnimationProps
       <div
         ref={backCardRef}
         className="absolute inset-0 opacity-0"
+        data-testid="flip-card-back"
         style={{
           transformStyle: 'preserve-3d',
           transform: 'rotateY(0deg)',
@@ -292,6 +295,7 @@ export default function FlipBurnAnimation({ onComplete }: FlipBurnAnimationProps
               key={index}
               ref={el => cascadeCardsRef.current[index] = el!}
               className="absolute bg-gradient-to-br from-zinc-50 to-white dark:from-zinc-800 dark:to-zinc-900 rounded-lg shadow-xl px-6 py-4 opacity-0 scale-0"
+              data-testid={`cascade-card-${word}`}
               style={{
                 transform: `translateZ(${index * 20}px)`,
                 transformOrigin: 'center center',
@@ -310,6 +314,7 @@ export default function FlipBurnAnimation({ onComplete }: FlipBurnAnimationProps
         <div
           ref={goldenFrameRef}
           className="absolute inset-0 rounded-lg pointer-events-none"
+          data-testid="golden-frame"
           style={{
             border: '3px solid transparent',
             backgroundImage: `linear-gradient(
@@ -332,7 +337,7 @@ export default function FlipBurnAnimation({ onComplete }: FlipBurnAnimationProps
       </div>
       
       {/* Crown/checkmark that forms above */}
-      <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 opacity-0" id="crown-container">
+      <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 opacity-0" id="crown-container" data-testid="crown-checkmark">
         <svg width="60" height="40" viewBox="0 0 60 40" className="text-primary">
           <path
             d="M10 20 L25 35 L50 10"

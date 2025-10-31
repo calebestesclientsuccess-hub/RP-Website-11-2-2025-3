@@ -232,7 +232,7 @@ export default function CinematicBridge() {
           width: '60px',
           height: '60px',
         }}
-        data-testid="arrow-scroll-indicator"
+        data-testid="red-arrow"
       >
         <ChevronDown 
           className="w-12 h-12 text-primary" 
