@@ -2,39 +2,27 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ChevronDown } from 'lucide-react';
-import ParticleDisintegration from './ParticleDisintegration';
+import FlipBurnAnimation from './FlipBurnAnimation';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function CinematicBridge() {
   const containerRef = useRef<HTMLDivElement>(null);
   const firstTextRef = useRef<HTMLHeadingElement>(null);
-  const secondTextRef = useRef<HTMLDivElement>(null);
   const arrowRef = useRef<HTMLDivElement>(null);
   const vignetteRef = useRef<HTMLDivElement>(null);
   const spotlightRef = useRef<HTMLDivElement>(null);
   const hasTriggeredRef = useRef(false);
-  const arrowShownRef = useRef(false);
-  const [isDisintegrating, setIsDisintegrating] = useState(false);
-  const [hideSystemText, setHideSystemText] = useState(false);
+  const [showFlipBurn, setShowFlipBurn] = useState(false);
+  const [hideFirstText, setHideFirstText] = useState(false);
 
-  const handleDisintegrationComplete = () => {
-    // Prevent duplicate calls
-    if (arrowShownRef.current) {
-      console.log('Arrow already shown, skipping');
-      return;
-    }
-    arrowShownRef.current = true;
-    
-    console.log('Disintegration complete, showing arrow');
+  const handleAnimationComplete = () => {
+    console.log('Flip & Burn animation complete, showing arrow');
     const arrow = arrowRef.current;
     const vignette = vignetteRef.current;
     const spotlight = spotlightRef.current;
     
-    if (!arrow || !vignette || !spotlight) {
-      console.log('Missing refs:', { arrow: !!arrow, vignette: !!vignette, spotlight: !!spotlight });
-      return;
-    }
+    if (!arrow || !vignette || !spotlight) return;
 
     // Ease back theatre-mode
     gsap.to(vignette, {
@@ -49,7 +37,7 @@ export default function CinematicBridge() {
       ease: "power2.out",
     });
 
-    // Show arrow after disintegration - force it to be visible
+    // Show arrow with bounce
     arrow.style.opacity = '0';
     arrow.style.display = 'block';
     arrow.style.visibility = 'visible';
@@ -59,12 +47,7 @@ export default function CinematicBridge() {
       y: 0,
       duration: 0.6,
       ease: "power2.out",
-      onStart: () => {
-        console.log('Arrow animation started');
-      },
       onComplete: () => {
-        console.log('Arrow fade-in complete, starting bounce');
-        // Start bounce animation
         gsap.to(arrow, {
           y: 10,
           duration: 0.6,
@@ -79,26 +62,24 @@ export default function CinematicBridge() {
   useEffect(() => {
     const container = containerRef.current;
     const firstText = firstTextRef.current;
-    const secondText = secondTextRef.current;
     const arrow = arrowRef.current;
     const vignette = vignetteRef.current;
     const spotlight = spotlightRef.current;
 
-    if (!container || !firstText || !secondText || !arrow || !vignette || !spotlight) return;
+    if (!container || !firstText || !arrow || !vignette || !spotlight) return;
 
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (prefersReducedMotion) {
-      // Show both texts immediately without animation
-      gsap.set(firstText, { opacity: 1, scale: 1 });
-      gsap.set(secondText, { opacity: 1 });
-      gsap.set(arrow, { opacity: 0 });
+      // Show simplified version without animations
+      setHideFirstText(true);
+      setShowFlipBurn(true);
+      gsap.set(arrow, { opacity: 1, y: 0 });
       return;
     }
 
     // Initial states
-    gsap.set(secondText, { opacity: 0, y: 20, scale: 0.8 });
     gsap.set(arrow, { opacity: 0, y: -10 });
     gsap.set(firstText, { opacity: 1 });
     gsap.set(container, { backgroundColor: "rgba(0, 0, 0, 0)" });
@@ -106,103 +87,66 @@ export default function CinematicBridge() {
     gsap.set(spotlight, { opacity: 0, scale: 1.5 });
 
     const ctx = gsap.context(() => {
-      // Create scroll-triggered animation for first text only
+      // Create scroll-triggered animation
       const scrollTl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
           start: "top top",
-          end: "+=150%",
+          end: "+=100%",
           pin: true,
           scrub: 0.5,
           anticipatePin: 1,
           markers: false,
           onUpdate: (self) => {
-            // Trigger disintegration when scroll reaches 75%
-            if (self.progress >= 0.75 && !hasTriggeredRef.current) {
+            // Trigger Flip & Burn animation at 60% scroll progress
+            if (self.progress >= 0.6 && !hasTriggeredRef.current) {
               hasTriggeredRef.current = true;
-              console.log('Triggering particle disintegration at scroll progress:', self.progress);
+              console.log('Triggering Flip & Burn animation at scroll progress:', self.progress);
               
-              // Wait for text to be fully visible and positioned before disintegration
+              // Peak theatre-mode intensity during animation
+              gsap.to(vignette, {
+                opacity: 0.5,
+                duration: 0.5,
+                ease: "power2.inOut",
+              });
+              gsap.to(spotlight, {
+                opacity: 0.4,
+                scale: 0.8,
+                duration: 0.5,
+                ease: "power2.inOut",
+              });
+              
+              // Show the Flip & Burn animation
+              setShowFlipBurn(true);
+              
+              // Hide first text after a brief moment
               setTimeout(() => {
-                console.log('Text positioned, waiting before disintegration');
-                
-                // Additional delay to ensure text is settled and visible
-                setTimeout(() => {
-                  console.log('Starting disintegration effect');
-                  setIsDisintegrating(true);
-                  
-                  // Peak theatre-mode intensity during disintegration
-                  gsap.to(vignette, {
-                    opacity: 0.5,
-                    duration: 0.5,
-                    ease: "power2.inOut",
-                  });
-                  gsap.to(spotlight, {
-                    opacity: 0.4,
-                    scale: 0.8,
-                    duration: 0.5,
-                    ease: "power2.inOut",
-                  });
-                  
-                  // Hide text after particles start forming
-                  setTimeout(() => {
-                    console.log('Hiding system text');
-                    setHideSystemText(true);
-                  }, 500);
-                  
-                  // Backup: Show arrow after particles have time to fall
-                  setTimeout(() => {
-                    console.log('Backup arrow trigger after particles settle');
-                    handleDisintegrationComplete();
-                  }, 5000);
-                }, 1500);
-              }, 1000); // Wait for scroll animation to complete
+                setHideFirstText(true);
+              }, 300);
             }
           },
         },
       });
 
-      // Scroll-based animations with progressive theatre-mode
+      // Progressive theatre-mode with scroll
       scrollTl
-      // Start with subtle vignette (10-15%)
-      .to(vignette, {
-        opacity: 0.15,
-        duration: 0.2,
-        ease: "power2.in",
-      }, 0)
-      .to(spotlight, {
-        opacity: 0.1,
-        scale: 1.2,
-        duration: 0.2,
-        ease: "power2.in",
-      }, 0)
-      // Intensify during text swap (30-40%)
-      .to(vignette, {
-        opacity: 0.4,
-        duration: 0.3,
-        ease: "power2.inOut",
-      }, 0.2)
-      .to(spotlight, {
-        opacity: 0.3,
-        scale: 1,
-        duration: 0.3,
-        ease: "power2.inOut",
-      }, 0.2)
-      // Fade out first text
-      .to(firstText, {
-        opacity: 0,
-        y: -20,
-        duration: 0.5,
-        ease: "power2.inOut",
-      }, 0.2)
-      // Scale up second text
-      .to(secondText, {
-        opacity: 1,
-        y: 0,
-        scale: 1.2,
-        duration: 0.5,
-        ease: "power2.out",
-      }, 0.3);
+        .to(vignette, {
+          opacity: 0.15,
+          duration: 0.3,
+          ease: "power2.in",
+        }, 0)
+        .to(spotlight, {
+          opacity: 0.1,
+          scale: 1.2,
+          duration: 0.3,
+          ease: "power2.in",
+        }, 0)
+        // Subtle scale on first text as we approach trigger point
+        .to(firstText, {
+          scale: 1.05,
+          duration: 0.5,
+          ease: "power2.inOut",
+        }, 0.2);
 
       // Hide arrow when user scrolls
       let scrollTimeout: NodeJS.Timeout;
@@ -219,7 +163,6 @@ export default function CinematicBridge() {
 
       window.addEventListener('scroll', handleScroll);
 
-      // Cleanup
       return () => {
         window.removeEventListener('scroll', handleScroll);
         clearTimeout(scrollTimeout);
@@ -257,33 +200,26 @@ export default function CinematicBridge() {
       />
 
       <div className="text-center max-w-5xl mx-auto px-4 relative z-10">
+        {/* Initial text that will be burned */}
         <h2
           ref={firstTextRef}
-          className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-16 leading-tight"
-          style={{ transformStyle: 'preserve-3d' }}
+          className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-16 leading-tight transition-opacity duration-300"
+          style={{ 
+            transformStyle: 'preserve-3d',
+            opacity: hideFirstText ? 0 : 1,
+            display: hideFirstText ? 'none' : 'block'
+          }}
         >
           You need more than another salesperson.
         </h2>
-        <div
-          ref={secondTextRef}
-          className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-primary leading-tight"
-          style={{ 
-            transformStyle: 'preserve-3d',
-            opacity: hideSystemText ? 0 : 1,
-            transition: 'opacity 0.3s ease-out'
-          }}
-        >
-          You need a system
-        </div>
+        
+        {/* Flip & Burn animation container */}
+        {showFlipBurn && (
+          <FlipBurnAnimation 
+            onComplete={handleAnimationComplete}
+          />
+        )}
       </div>
-
-      {/* Particle disintegration effect */}
-      <ParticleDisintegration
-        isActive={isDisintegrating}
-        textElement={secondTextRef.current}
-        onComplete={handleDisintegrationComplete}
-        duration={1500}
-      />
       
       {/* Minimalist red bouncing arrow */}
       <div

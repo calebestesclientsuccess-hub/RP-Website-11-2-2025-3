@@ -1062,6 +1062,37 @@ html:not(.dark) .sun-ray:nth-child(3) {
   opacity: 0.85;
 }
 
+/* Flip & Burn Animation Keyframes */
+@keyframes burnGlow {
+  0% {
+    opacity: 0;
+    background-position: -100% 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    background-position: 100% 0;
+  }
+}
+
+@keyframes goldenShimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes crownDraw {
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
 /* Respect user's preference for reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
