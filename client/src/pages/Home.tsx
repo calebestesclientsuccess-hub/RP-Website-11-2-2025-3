@@ -128,6 +128,13 @@ export default function Home() {
         {/* Animated gradient mesh background */}
         <AnimatedGradientMesh intensity="subtle" speed="slow" />
         
+        {/* Sun rays animation (light mode only) */}
+        <div className="sun-rays-container">
+          <div className="sun-ray"></div>
+          <div className="sun-ray"></div>
+          <div className="sun-ray"></div>
+        </div>
+        
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
