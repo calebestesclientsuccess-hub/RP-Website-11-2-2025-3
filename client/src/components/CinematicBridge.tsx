@@ -8,169 +8,113 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function CinematicBridge() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const firstTextRef = useRef<HTMLHeadingElement>(null);
   const arrowRef = useRef<HTMLDivElement>(null);
   const vignetteRef = useRef<HTMLDivElement>(null);
   const spotlightRef = useRef<HTMLDivElement>(null);
-  const hasTriggeredRef = useRef(false);
-  const [showAnimation, setShowAnimation] = useState(false);
-  const [hideFirstText, setHideFirstText] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
-  const handleAnimationComplete = () => {
-    console.log('Cinematic text transform complete, showing arrow');
-    const arrow = arrowRef.current;
-    const vignette = vignetteRef.current;
-    const spotlight = spotlightRef.current;
-    
-    if (!arrow || !vignette || !spotlight) return;
-
-    // Ease back theatre-mode
-    gsap.to(vignette, {
-      opacity: 0.2,
-      duration: 1,
-      ease: "power2.out",
-    });
-    gsap.to(spotlight, {
-      opacity: 0.15,
-      scale: 1,
-      duration: 1,
-      ease: "power2.out",
-    });
-
-    // Show arrow with bounce
-    arrow.style.opacity = '0';
-    arrow.style.display = 'block';
-    arrow.style.visibility = 'visible';
-    
-    gsap.to(arrow, {
-      opacity: 1,
-      y: 0,
-      duration: 0.6,
-      ease: "power2.out",
-      onComplete: () => {
-        gsap.to(arrow, {
-          y: 10,
-          duration: 0.6,
-          ease: "power2.inOut",
-          yoyo: true,
-          repeat: -1,
-        });
-      },
-    });
-  };
+  // Ensure container is mounted before passing ref to child
+  useEffect(() => {
+    if (containerRef.current) {
+      setIsMounted(true);
+    }
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
-    const firstText = firstTextRef.current;
     const arrow = arrowRef.current;
     const vignette = vignetteRef.current;
     const spotlight = spotlightRef.current;
 
-    if (!container || !firstText || !arrow || !vignette || !spotlight) return;
+    if (!container || !arrow || !vignette || !spotlight) return;
 
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (prefersReducedMotion) {
       // Show simplified version without animations
-      setHideFirstText(true);
-      setShowAnimation(true);
       gsap.set(arrow, { opacity: 1, y: 0 });
       return;
     }
 
     // Initial states
     gsap.set(arrow, { opacity: 0, y: -10 });
-    gsap.set(firstText, { opacity: 1 });
-    gsap.set(container, { backgroundColor: "rgba(0, 0, 0, 0)" });
     gsap.set(vignette, { opacity: 0 });
     gsap.set(spotlight, { opacity: 0, scale: 1.5 });
 
     const ctx = gsap.context(() => {
-      // Create scroll-triggered animation
+      // Create scroll-triggered theatre-mode timeline
       const scrollTl = gsap.timeline({
         scrollTrigger: {
           trigger: container,
           start: "top top",
-          end: "+=100%",
+          end: "bottom bottom",
           pin: true,
-          scrub: 0.5,
+          scrub: 1,
           anticipatePin: 1,
           markers: false,
-          onUpdate: (self) => {
-            // Trigger cinematic text transform at 60% scroll progress
-            if (self.progress >= 0.6 && !hasTriggeredRef.current) {
-              hasTriggeredRef.current = true;
-              console.log('Triggering cinematic text transform at scroll progress:', self.progress);
-              
-              // Peak theatre-mode intensity during animation
-              gsap.to(vignette, {
-                opacity: 0.5,
-                duration: 0.5,
-                ease: "power2.inOut",
-              });
-              gsap.to(spotlight, {
-                opacity: 0.4,
-                scale: 0.8,
-                duration: 0.5,
-                ease: "power2.inOut",
-              });
-              
-              // Show the cinematic text transform
-              setShowAnimation(true);
-              
-              // Hide first text after a brief moment
-              setTimeout(() => {
-                setHideFirstText(true);
-              }, 300);
-            }
-          },
         },
       });
 
-      // Progressive theatre-mode with scroll
+      // Theatre-mode effects progress with scroll
+      // Build intensity from 0.3 → 0.6, peak at 0.6-0.7, ease back 0.85-1.0
       scrollTl
+        // Vignette builds
         .to(vignette, {
           opacity: 0.15,
           duration: 0.3,
           ease: "power2.in",
-        }, 0)
+        }, 0.3)
+        .to(vignette, {
+          opacity: 0.5,
+          duration: 0.1,
+          ease: "power2.inOut",
+        }, 0.6)
+        .to(vignette, {
+          opacity: 0.2,
+          duration: 0.15,
+          ease: "power2.out",
+        }, 0.85)
+        
+        // Spotlight builds
         .to(spotlight, {
           opacity: 0.1,
           scale: 1.2,
           duration: 0.3,
           ease: "power2.in",
-        }, 0)
-        // Subtle scale on first text as we approach trigger point
-        .to(firstText, {
-          scale: 1.05,
-          duration: 0.5,
+        }, 0.3)
+        .to(spotlight, {
+          opacity: 0.4,
+          scale: 0.8,
+          duration: 0.1,
           ease: "power2.inOut",
-        }, 0.2);
+        }, 0.6)
+        .to(spotlight, {
+          opacity: 0.15,
+          scale: 1,
+          duration: 0.15,
+          ease: "power2.out",
+        }, 0.85)
+        
+        // Arrow appears and bounces at 0.85-1.0
+        .to(arrow, {
+          opacity: 1,
+          y: 0,
+          duration: 0.1,
+          ease: "power2.out",
+        }, 0.85)
+        .to(arrow, {
+          y: 10,
+          duration: 0.05,
+          ease: "power2.inOut",
+          yoyo: true,
+          repeat: 1,
+        }, 0.9);
 
-      // Hide arrow when user scrolls
-      let scrollTimeout: NodeJS.Timeout;
-      const handleScroll = () => {
-        if (arrow && hasTriggeredRef.current) {
-          clearTimeout(scrollTimeout);
-          gsap.to(arrow, {
-            opacity: 0,
-            duration: 0.3,
-            ease: "power2.out",
-          });
-        }
-      };
-
-      window.addEventListener('scroll', handleScroll);
-
-      return () => {
-        window.removeEventListener('scroll', handleScroll);
-        clearTimeout(scrollTimeout);
-      };
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [isMounted]);
 
   return (
     <section
@@ -200,28 +144,15 @@ export default function CinematicBridge() {
       />
 
       <div className="text-center max-w-5xl mx-auto px-4 relative z-10">
-        {/* Initial text that will be burned */}
-        <h2
-          ref={firstTextRef}
-          className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-16 leading-tight transition-opacity duration-300"
-          style={{ 
-            transformStyle: 'preserve-3d',
-            opacity: hideFirstText ? 0 : 1,
-            display: hideFirstText ? 'none' : 'block'
-          }}
-        >
-          You need more than another salesperson.
-        </h2>
-        
-        {/* Cinematic text transform container */}
-        {showAnimation && (
+        {/* Cinematic text transform - scroll controlled - handles both old and new text */}
+        {isMounted && containerRef.current && (
           <CinematicTextTransform 
-            onComplete={handleAnimationComplete}
+            triggerElement={containerRef.current}
           />
         )}
       </div>
       
-      {/* Minimalist red bouncing arrow */}
+      {/* Minimalist red bouncing arrow - scroll controlled */}
       <div
         ref={arrowRef}
         className="fixed bottom-20 left-1/2 transform -translate-x-1/2 flex items-center justify-center pointer-events-none"

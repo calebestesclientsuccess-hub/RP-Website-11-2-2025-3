@@ -1,210 +1,126 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface CinematicTextTransformProps {
-  onComplete?: () => void;
+  triggerElement: HTMLElement | null;
 }
 
-export default function CinematicTextTransform({ onComplete }: CinematicTextTransformProps) {
+export default function CinematicTextTransform({ triggerElement }: CinematicTextTransformProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const oldTextRef = useRef<HTMLDivElement>(null);
   const newTextRef = useRef<HTMLDivElement>(null);
-  const pulseRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const particlesRef = useRef<Array<{
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    life: number;
-    size: number;
-    brightness: number;
-  }>>([]);
+  const beatOverlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const container = containerRef.current;
     const oldText = oldTextRef.current;
     const newText = newTextRef.current;
-    const pulse = pulseRef.current;
-    const canvas = canvasRef.current;
+    const beatOverlay = beatOverlayRef.current;
     
-    if (!container || !oldText || !newText || !pulse || !canvas) return;
+    if (!container || !oldText || !newText || !beatOverlay || !triggerElement) return;
 
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
     if (prefersReducedMotion) {
-      gsap.set(oldText, { opacity: 0, display: 'none' });
+      gsap.set(oldText, { opacity: 0 });
       gsap.set(newText, { opacity: 1 });
-      if (onComplete) onComplete();
       return;
     }
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Set canvas size to match container
-    const updateCanvasSize = () => {
-      const rect = container.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
-    };
-    updateCanvasSize();
-    window.addEventListener('resize', updateCanvasSize);
-
-    // Custom premium easing curves
-    const cinematicEase = "cubic-bezier(0.4, 0.0, 0.2, 1)"; // Material Design deceleration
-    const softEase = "cubic-bezier(0.25, 0.46, 0.45, 0.94)"; // Soft ease out
-
-    // Main animation timeline (2.2 seconds total)
+    // Create the scroll-controlled timeline
     const tl = gsap.timeline({
-      onComplete: () => {
-        if (onComplete) onComplete();
+      scrollTrigger: {
+        trigger: triggerElement,
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1, // 1 second smoothing for silky motion
+        markers: false,
       }
     });
 
-    // PHASE 1: Dissolution (0.9s)
-    // Old text elegantly fades with subtle particle shimmer
+    // PHASE 1: Dissolution (scroll 0.4 → 0.6)
+    // Old text fades, blurs, and scales down
     tl.to(oldText, {
       opacity: 0,
-      duration: 0.9,
-      ease: cinematicEase,
-      onUpdate: function() {
-        const progress = this.progress();
-        
-        // Generate subtle shimmer particles during dissolution
-        if (progress > 0.2 && progress < 0.8 && Math.random() > 0.85) {
-          const rect = oldText.getBoundingClientRect();
-          const containerRect = container.getBoundingClientRect();
-          
-          particlesRef.current.push({
-            x: (rect.left - containerRect.left) + rect.width * Math.random(),
-            y: (rect.top - containerRect.top) + rect.height * Math.random(),
-            vx: (Math.random() - 0.5) * 0.5,
-            vy: -Math.random() * 0.8 - 0.3,
-            life: 1,
-            size: Math.random() * 2 + 0.5,
-            brightness: Math.random() * 30 + 50
-          });
-        }
-      },
-      onComplete: () => {
-        // Hide old text completely after fade
-        gsap.set(oldText, { display: 'none' });
-      }
-    })
-    
-    // PHASE 2: The Beat (0.3s)
-    // Brief pause with subtle pulse to hold attention
-    .to(pulse, {
-      scale: 1.05,
-      opacity: 0.3,
-      duration: 0.15,
-      ease: "power2.out"
-    }, "+=0.05")
-    .to(pulse, {
-      scale: 1,
-      opacity: 0,
-      duration: 0.15,
+      filter: 'blur(8px)',
+      scale: 0.95,
+      duration: 0.2,
       ease: "power2.in"
-    })
-    
-    // PHASE 3: The Reveal (0.8s)
-    // New message fades in with authority
-    .fromTo(newText, {
+    }, 0.4);
+
+    // PHASE 2: The Beat (scroll 0.6 → 0.65)
+    // Brief pulse/glow effect
+    tl.fromTo(beatOverlay, {
       opacity: 0,
-      y: 10
+      scale: 0.8
+    }, {
+      opacity: 0.15,
+      scale: 1,
+      duration: 0.025,
+      ease: "power2.out"
+    }, 0.6)
+    .to(beatOverlay, {
+      opacity: 0,
+      scale: 1.1,
+      duration: 0.025,
+      ease: "power2.in"
+    }, 0.625);
+
+    // PHASE 3: The Reveal (scroll 0.65 → 0.85)
+    // New text fades in, unblurs, rises slightly
+    tl.fromTo(newText, {
+      opacity: 0,
+      filter: 'blur(8px)',
+      y: 20,
+      scale: 1.05
     }, {
       opacity: 1,
+      filter: 'blur(0px)',
       y: 0,
-      duration: 0.8,
-      ease: softEase
-    }, "-=0.1");
-
-    // Particle animation loop
-    let animationFrameId: number;
-    const animateParticles = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      const particles = particlesRef.current;
-      const updated = particles
-        .map(particle => ({
-          ...particle,
-          x: particle.x + particle.vx,
-          y: particle.y + particle.vy,
-          vy: particle.vy + 0.01, // subtle gravity
-          life: particle.life - 0.008
-        }))
-        .filter(p => p.life > 0);
-      
-      particlesRef.current = updated;
-      
-      // Draw particles with subtle shimmer effect
-      updated.forEach(particle => {
-        ctx.save();
-        ctx.globalAlpha = particle.life * 0.6; // More subtle opacity
-        
-        // Soft glow
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = `hsla(0, 0%, ${particle.brightness}%, ${particle.life * 0.4})`;
-        
-        // Draw particle
-        ctx.fillStyle = `hsl(0, 0%, ${particle.brightness}%)`;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.restore();
-      });
-      
-      animationFrameId = requestAnimationFrame(animateParticles);
-    };
-    
-    animationFrameId = requestAnimationFrame(animateParticles);
+      scale: 1,
+      duration: 0.2,
+      ease: "power2.out"
+    }, 0.65);
 
     return () => {
-      window.removeEventListener('resize', updateCanvasSize);
-      cancelAnimationFrame(animationFrameId);
       tl.kill();
     };
-  }, [onComplete]);
+  }, [triggerElement]);
 
   return (
     <div 
       ref={containerRef}
-      className="relative w-full max-w-5xl mx-auto py-12"
+      className="relative w-full max-w-5xl mx-auto"
+      style={{ height: '200px' }} // Fixed height prevents layout shift
       data-testid="cinematic-text-transform"
     >
-      {/* Particle canvas */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 pointer-events-none"
-        style={{ zIndex: 10 }}
-      />
-      
       {/* Old text that dissolves */}
       <div
         ref={oldTextRef}
-        className="relative text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-center text-foreground leading-tight"
+        className="absolute inset-0 flex items-center justify-center text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-center text-foreground leading-tight px-4"
         data-testid="old-text"
       >
         You need more than another salesperson
       </div>
       
-      {/* Subtle pulse during "the beat" */}
+      {/* Beat pulse overlay */}
       <div
-        ref={pulseRef}
+        ref={beatOverlayRef}
         className="absolute inset-0 rounded-full opacity-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-          filter: 'blur(40px)'
+          background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)',
+          filter: 'blur(60px)'
         }}
       />
       
       {/* New text that reveals */}
       <div
         ref={newTextRef}
-        className="absolute inset-0 flex items-center justify-center opacity-0"
+        className="absolute inset-0 flex items-center justify-center opacity-0 px-4"
         data-testid="new-text"
       >
         <div className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-center leading-tight">
