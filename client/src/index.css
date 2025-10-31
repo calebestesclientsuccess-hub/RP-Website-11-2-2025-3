@@ -1002,6 +1002,11 @@ html:not(.dark) .sun-rays-container {
   z-index: 1;
 }
 
+/* Hide sun rays in dark mode */
+html.dark .sun-rays-container {
+  display: none;
+}
+
 html:not(.dark) .sun-ray {
   position: absolute;
   width: 120%;
