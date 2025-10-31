@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ChevronDown } from 'lucide-react';
-import FlipBurnAnimation from './FlipBurnAnimation';
+import CinematicTextTransform from './CinematicTextTransform';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,11 +13,11 @@ export default function CinematicBridge() {
   const vignetteRef = useRef<HTMLDivElement>(null);
   const spotlightRef = useRef<HTMLDivElement>(null);
   const hasTriggeredRef = useRef(false);
-  const [showFlipBurn, setShowFlipBurn] = useState(false);
+  const [showAnimation, setShowAnimation] = useState(false);
   const [hideFirstText, setHideFirstText] = useState(false);
 
   const handleAnimationComplete = () => {
-    console.log('Flip & Burn animation complete, showing arrow');
+    console.log('Cinematic text transform complete, showing arrow');
     const arrow = arrowRef.current;
     const vignette = vignetteRef.current;
     const spotlight = spotlightRef.current;
@@ -74,7 +74,7 @@ export default function CinematicBridge() {
     if (prefersReducedMotion) {
       // Show simplified version without animations
       setHideFirstText(true);
-      setShowFlipBurn(true);
+      setShowAnimation(true);
       gsap.set(arrow, { opacity: 1, y: 0 });
       return;
     }
@@ -98,10 +98,10 @@ export default function CinematicBridge() {
           anticipatePin: 1,
           markers: false,
           onUpdate: (self) => {
-            // Trigger Flip & Burn animation at 60% scroll progress
+            // Trigger cinematic text transform at 60% scroll progress
             if (self.progress >= 0.6 && !hasTriggeredRef.current) {
               hasTriggeredRef.current = true;
-              console.log('Triggering Flip & Burn animation at scroll progress:', self.progress);
+              console.log('Triggering cinematic text transform at scroll progress:', self.progress);
               
               // Peak theatre-mode intensity during animation
               gsap.to(vignette, {
@@ -116,8 +116,8 @@ export default function CinematicBridge() {
                 ease: "power2.inOut",
               });
               
-              // Show the Flip & Burn animation
-              setShowFlipBurn(true);
+              // Show the cinematic text transform
+              setShowAnimation(true);
               
               // Hide first text after a brief moment
               setTimeout(() => {
@@ -213,9 +213,9 @@ export default function CinematicBridge() {
           You need more than another salesperson.
         </h2>
         
-        {/* Flip & Burn animation container */}
-        {showFlipBurn && (
-          <FlipBurnAnimation 
+        {/* Cinematic text transform container */}
+        {showAnimation && (
+          <CinematicTextTransform 
             onComplete={handleAnimationComplete}
           />
         )}
