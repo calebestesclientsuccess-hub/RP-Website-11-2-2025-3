@@ -784,6 +784,16 @@ html:not(.dark) body::before {
 
 /* 2. Watercolor Gradients - Soft bleeds for semantic colors */
 
+/* Subtle watercolor animation */
+@keyframes watercolor-drift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 /* Apply watercolor to badge variants */
 html:not(.dark) .badge-texture[class*="bg-primary"] {
   background: linear-gradient(
@@ -794,6 +804,7 @@ html:not(.dark) .badge-texture[class*="bg-primary"] {
     hsl(0 70% 52%) 100%
   ) !important;
   background-size: 200% 200%;
+  animation: watercolor-drift 15s ease-in-out infinite;
 }
 
 html:not(.dark) .badge-texture[class*="bg-community"] {
@@ -805,6 +816,7 @@ html:not(.dark) .badge-texture[class*="bg-community"] {
     hsl(252 55% 52%) 100%
   ) !important;
   background-size: 200% 200%;
+  animation: watercolor-drift 15s ease-in-out infinite;
 }
 
 html:not(.dark) .badge-texture[class*="bg-indigo"] {
@@ -816,6 +828,7 @@ html:not(.dark) .badge-texture[class*="bg-indigo"] {
     hsl(249 20% 36%) 100%
   ) !important;
   background-size: 200% 200%;
+  animation: watercolor-drift 15s ease-in-out infinite;
 }
 
 html:not(.dark) .badge-texture[class*="bg-purple-dark"] {
@@ -827,6 +840,7 @@ html:not(.dark) .badge-texture[class*="bg-purple-dark"] {
     hsl(251 42% 50%) 100%
   ) !important;
   background-size: 200% 200%;
+  animation: watercolor-drift 15s ease-in-out infinite;
 }
 
 html:not(.dark) .badge-texture[class*="bg-destructive"] {
@@ -838,9 +852,10 @@ html:not(.dark) .badge-texture[class*="bg-destructive"] {
     hsl(0 76% 68%) 100%
   ) !important;
   background-size: 200% 200%;
+  animation: watercolor-drift 15s ease-in-out infinite;
 }
 
-/* Apply soft watercolor to cards */
+/* Apply soft watercolor to cards with subtle animation */
 html:not(.dark) .shadcn-card {
   background: linear-gradient(
     135deg,
@@ -850,6 +865,7 @@ html:not(.dark) .shadcn-card {
     hsl(30 20% 98%) 100%
   ) !important;
   background-size: 200% 200%;
+  animation: watercolor-drift 20s ease-in-out infinite;
 }
 
 /* 3. Prismatic Glass Effects - Rainbow shadow halos (light mode only) */
@@ -874,16 +890,16 @@ html:not(.dark) .shadcn-card::after {
   border-radius: inherit;
   background: linear-gradient(
     135deg,
-    rgba(255, 0, 0, 0.02) 0%,
-    rgba(255, 127, 0, 0.015) 16%,
-    rgba(255, 255, 0, 0.01) 33%,
-    rgba(0, 255, 0, 0.015) 50%,
-    rgba(0, 0, 255, 0.02) 66%,
-    rgba(75, 0, 130, 0.015) 83%,
-    rgba(148, 0, 211, 0.02) 100%
+    rgba(255, 0, 0, 0.04) 0%,
+    rgba(255, 127, 0, 0.03) 16%,
+    rgba(255, 255, 0, 0.025) 33%,
+    rgba(0, 255, 0, 0.03) 50%,
+    rgba(0, 0, 255, 0.04) 66%,
+    rgba(75, 0, 130, 0.035) 83%,
+    rgba(148, 0, 211, 0.04) 100%
   );
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s ease;
   pointer-events: none;
   z-index: -1;
 }
@@ -929,28 +945,28 @@ html:not(.dark) .badge-texture {
   background-position: 0 0, 0 0, 0 0, calc(100% - 0px) 0, 0 calc(100% - 0px), calc(100% - 0px) calc(100% - 0px);
   background-repeat: repeat, repeat, repeat-y, repeat-y, repeat-x, repeat-x;
   
-  /* Subtle rotation for stamp authenticity */
-  transform: rotate(-0.5deg);
+  /* Subtle rotation for stamp authenticity - more pronounced */
+  transform: rotate(-0.8deg);
   
-  /* Worn ink effect */
+  /* Worn ink effect - enhanced shadows */
   box-shadow: 
-    inset 0 1px 3px rgba(0, 0, 0, 0.12),
-    inset 0 -1px 2px rgba(255, 255, 255, 0.15),
-    0 2px 4px rgba(0, 0, 0, 0.08),
+    inset 0 1px 3px rgba(0, 0, 0, 0.14),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.18),
+    0 2px 5px rgba(0, 0, 0, 0.10),
     /* Vintage stamp shadow */
-    1px 2px 0 rgba(0, 0, 0, 0.03);
+    1px 2px 0 rgba(0, 0, 0, 0.04);
   
-  filter: contrast(1.05) brightness(0.97) saturate(1.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  filter: contrast(1.06) brightness(0.96) saturate(1.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 html:not(.dark) .badge-texture:hover {
-  transform: rotate(0deg) translateY(-1px);
+  transform: rotate(0deg) translateY(-2px);
   box-shadow: 
-    inset 0 1px 3px rgba(0, 0, 0, 0.12),
-    inset 0 -1px 2px rgba(255, 255, 255, 0.15),
-    0 4px 8px rgba(0, 0, 0, 0.12),
-    1px 3px 0 rgba(0, 0, 0, 0.04);
+    inset 0 1px 3px rgba(0, 0, 0, 0.14),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.18),
+    0 6px 12px rgba(0, 0, 0, 0.14),
+    1px 4px 0 rgba(0, 0, 0, 0.05);
 }
 
 html:not(.dark) .badge-texture::before {
@@ -1016,9 +1032,9 @@ html:not(.dark) .sun-ray {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 248, 220, 0.08) 45%,
-    rgba(255, 250, 230, 0.15) 50%,
-    rgba(255, 248, 220, 0.08) 55%,
+    rgba(255, 248, 220, 0.10) 45%,
+    rgba(255, 250, 230, 0.18) 50%,
+    rgba(255, 248, 220, 0.10) 55%,
     transparent 100%
   );
   animation: sun-ray-drift 40s ease-in-out infinite;
@@ -1036,12 +1052,14 @@ html:not(.dark) .sun-ray:nth-child(2) {
   animation-delay: -12s;
   width: 110%;
   filter: blur(50px);
+  opacity: 0.9;
 }
 
 html:not(.dark) .sun-ray:nth-child(3) {
   animation-delay: -25s;
   width: 90%;
   filter: blur(35px);
+  opacity: 0.85;
 }
 
 /* Respect user's preference for reduced motion */
@@ -1081,5 +1099,11 @@ html:not(.dark) .sun-ray:nth-child(3) {
   html:not(.dark) .sun-ray {
     animation: none !important;
     opacity: 0 !important;
+  }
+  
+  /* Disable watercolor animation */
+  html:not(.dark) .badge-texture,
+  html:not(.dark) .shadcn-card {
+    animation: none !important;
   }
 }
