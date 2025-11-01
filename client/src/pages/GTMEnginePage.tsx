@@ -10,50 +10,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import BuildAndRampTimeline from "@/components/BuildAndRampTimeline";
-import { Users, Brain, BookOpen, Shield, Target, Zap, CheckCircle2, ArrowRight } from "lucide-react";
+import { Users, Brain, BookOpen, Shield, Zap, CheckCircle2, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 
 export default function GTMEnginePage() {
-  const architects = [
-    {
-      id: 'caleb',
-      name: 'Caleb Estes',
-      title: 'Visionary Architect',
-      icon: Target,
-      color: '#ef233c',
-      colorClass: 'text-primary',
-      description: 'The designer of your "Impact Selling OS" and GTM strategy.',
-    },
-    {
-      id: 'muneeb',
-      name: 'Muneeb Awan',
-      title: 'Talent Architect',
-      icon: Users,
-      color: '#9F8FFF',
-      colorClass: 'text-community',
-      description: 'The builder of your "Elite Talent" pod and the antidote to the "human toll" of burnout.',
-    },
-    {
-      id: 'danyal',
-      name: 'Danyal Darvesh',
-      title: 'AI Architect',
-      icon: Brain,
-      color: '#42349c',
-      colorClass: 'text-purple-dark',
-      description: 'The engineer of your "Signal Factory" and the solver of the "Tech Stack Tax".',
-    },
-    {
-      id: 'mariya',
-      name: 'Mariya Tamkeen',
-      title: 'Brand Guardian',
-      icon: Shield,
-      color: '#2e294e',
-      colorClass: 'text-indigo',
-      description: 'The protector of your "Brand Physics" and the guardian against "TAM Poisoning".',
-    },
-  ];
-
   const impactSellingTenets = [
     {
       id: 'scene-partner',
@@ -145,12 +106,14 @@ export default function GTMEnginePage() {
                     Elite Talent{" "}
                     <span className="text-muted-foreground text-2xl">(The "Fully Loaded BDR Pod")</span>
                   </h3>
-                  <p className="text-lg text-primary font-semibold mb-4">
-                    Antidote to: The Lone Wolf Fallacy
-                  </p>
-                  <p className="text-muted-foreground leading-relaxed mb-6">
-                    You get a dedicated, white-labeled pod of BDRs, trained and forged by our <strong>Talent Architect, Muneeb Awan</strong>. We handle the 1:1s, coaching, and performance management, eliminating your <strong>$27,000 Management Tax</strong>. No more single points of failure. No more burnout. Just consistent, reliable execution.
-                  </p>
+                  <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
+                    <p>
+                      This is the antidote to the 'Lone Wolf Fallacy.' You don't get a single, isolated rep; you get a pod of trained operators.
+                    </p>
+                    <p>
+                      This pod is built, trained, and forged by our <strong>Talent Architect, Muneeb Awan</strong>.
+                    </p>
+                  </div>
                   <div className="flex flex-wrap gap-3">
                     <Badge variant="outline" className="text-sm">
                       <CheckCircle2 className="w-4 h-4 mr-2" />
@@ -191,12 +154,14 @@ export default function GTMEnginePage() {
                     The Signal Factory{" "}
                     <span className="text-muted-foreground text-2xl">(The "AI-Powered Engine")</span>
                   </h3>
-                  <p className="text-lg text-primary font-semibold mb-4">
-                    Antidote to: The Activity Mirage
-                  </p>
-                  <p className="text-muted-foreground leading-relaxed mb-6">
-                    The complete AI-powered tech stack (included) that finds "allbound" buying signals <em>before</em> they're in-market. No more spray-and-pray. No more activity theater. Just intelligent, data-driven outreach to prospects who actually care. Engineered and maintained by our <strong>AI Architect, Danyal Darvesh</strong>.
-                  </p>
+                  <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
+                    <p>
+                      This is the antidote to the 'Black Box Problem.' We replace vanity 'activity' metrics with a transparent, AI-powered data engine that finds buyers before they're in-market.
+                    </p>
+                    <p>
+                      This engine is engineered and maintained by our <strong>AI Architect, Danyal Darvesh</strong>.
+                    </p>
+                  </div>
                   <div className="flex flex-wrap gap-3">
                     <Badge variant="outline" className="text-sm">
                       <CheckCircle2 className="w-4 h-4 mr-2" />
@@ -237,12 +202,14 @@ export default function GTMEnginePage() {
                     Strategic Framework{" "}
                     <span className="text-muted-foreground text-2xl">(The "Impact Selling OS")</span>
                   </h3>
-                  <p className="text-lg text-primary font-semibold mb-4">
-                    Antidote to: The Zero-IP Trap
-                  </p>
-                  <p className="text-muted-foreground leading-relaxed mb-6">
-                    This is the proprietary, A+ playbook that you <strong>100% own forever</strong>. No black boxes. No agency secrets. When we're done, you have a documented, battle-tested GTM playbook that's yours to keep, scale, and evolve. Designed by our <strong>Visionary Architect, Caleb Estes</strong>, and protected by our <strong>Brand Guardian, Mariya Tamkeen</strong>.
-                  </p>
+                  <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
+                    <p>
+                      This is the antidote to the 'Zero-IP Trap.' The GTM Engine is built on a strategic playbook that you <strong>100% own</strong>.
+                    </p>
+                    <p>
+                      This framework is designed by our <strong>Visionary Architect, Caleb Estes</strong>, and protected by our <strong>Brand Guardian, Mariya Tamkeen</strong>.
+                    </p>
+                  </div>
 
                   {/* Core Tenets - Expandable Accordion */}
                   <div className="mt-6">
@@ -268,47 +235,6 @@ export default function GTMEnginePage() {
                 </div>
               </div>
             </Card>
-          </div>
-
-          {/* Architects Module */}
-          <div className="mt-20">
-            <h3 className="text-3xl font-bold text-center mb-12">
-              A System of Elite Talent,{" "}
-              <span className="text-primary">Guided by Four Architects</span>
-            </h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {architects.map((architect, index) => {
-                const Icon = architect.icon;
-                return (
-                  <motion.div
-                    key={architect.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                  >
-                    <Card className="p-6 hover-elevate transition-all h-full" data-testid={`card-architect-${architect.id}`}>
-                      <div className="text-center mb-6">
-                        <div 
-                          className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                          style={{
-                            backgroundColor: architect.color + '20',
-                            border: `2px solid ${architect.color}`,
-                          }}
-                        >
-                          <Icon className="w-8 h-8" style={{ color: architect.color }} />
-                        </div>
-                        <h4 className="text-xl font-bold mb-2">{architect.name}</h4>
-                        <Badge variant="secondary" className="mb-4">{architect.title}</Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground text-center leading-relaxed">
-                        {architect.description}
-                      </p>
-                    </Card>
-                  </motion.div>
-                );
-              })}
-            </div>
           </div>
         </div>
       </section>
