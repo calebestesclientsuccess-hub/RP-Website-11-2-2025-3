@@ -14,26 +14,21 @@ export default function ScrollScaleReveal() {
     const text = textRef.current;
     const redText = redTextRef.current;
     
-    if (!container || !text || !redText) {
-      console.log('[ScrollScaleReveal] Missing refs', { container: !!container, text: !!text, redText: !!redText });
-      return;
-    }
-
-    console.log('[ScrollScaleReveal] Initializing animation', { gsapAvailable: typeof gsap !== 'undefined' });
+    if (!container || !text || !redText) return;
 
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
     if (prefersReducedMotion) {
-      console.log('[ScrollScaleReveal] Reduced motion detected - showing final state');
       // Show final state immediately
       gsap.set(text, { opacity: 0, scale: 1 });
       gsap.set(redText, { opacity: 1, scale: 1 });
       return;
     }
 
-    // Set initial state explicitly
+    // Set initial states explicitly
     gsap.set(redText, { opacity: 0 });
+    gsap.set(text, { opacity: 1, scale: 1 });
 
     // Timeline for the extended scaling and crossfade effect
     const tl = gsap.timeline({
