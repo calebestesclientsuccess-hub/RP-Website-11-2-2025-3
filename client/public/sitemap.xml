@@ -71,6 +71,36 @@
     <priority>0.7</priority>
   </url>
   
+  <!-- Resource Pillar Pages - SEO Side-Door Pages - High Priority -->
+  <url>
+    <loc>https://revenueparty.com/resources/how-to-build-sdr-team-guide</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://revenueparty.com/resources/sdr-outsourcing-companies-guide</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://revenueparty.com/resources/guide-to-sales-as-a-service</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Manifesto Blog Post - Medium Priority -->
+  <url>
+    <loc>https://revenueparty.com/blog/manifesto-the-lone-wolf-trap</loc>
+    <lastmod>2025-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
   <!-- Company Pages - Medium Priority -->
   <url>
     <loc>https://revenueparty.com/pricing</loc>

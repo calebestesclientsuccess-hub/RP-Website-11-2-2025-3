@@ -21,6 +21,10 @@ import AssessmentPage from "@/pages/AssessmentPage";
 import ContactPage from "@/pages/ContactPage";
 import PricingPage from "@/pages/PricingPage";
 import FAQPage from "@/pages/FAQPage";
+import InternalTrapGuide from "@/pages/resources/InternalTrapGuide";
+import AgencyTrapGuide from "@/pages/resources/AgencyTrapGuide";
+import SalesAsAServiceGuide from "@/pages/resources/SalesAsAServiceGuide";
+import ManifestoPost from "@/pages/blog/ManifestoPost";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -38,6 +42,14 @@ function Router() {
       {/* Tools & Resources */}
       <Route path="/roi-calculator" component={ROICalculator} />
       <Route path="/assessment" component={AssessmentPage} />
+      
+      {/* Resource Pillar Pages */}
+      <Route path="/resources/how-to-build-sdr-team-guide" component={InternalTrapGuide} />
+      <Route path="/resources/sdr-outsourcing-companies-guide" component={AgencyTrapGuide} />
+      <Route path="/resources/guide-to-sales-as-a-service" component={SalesAsAServiceGuide} />
+      
+      {/* Blog Posts */}
+      <Route path="/blog/manifesto-the-lone-wolf-trap" component={ManifestoPost} />
       
       {/* Company */}
       <Route path="/pricing" component={PricingPage} />
