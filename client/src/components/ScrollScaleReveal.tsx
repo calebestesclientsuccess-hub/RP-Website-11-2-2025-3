@@ -84,6 +84,44 @@ export default function ScrollScaleReveal() {
       "<" // Start at same time as white fadeout
     );
 
+    // Create pulsating animation that triggers when red text is fully visible
+    let pulseAnimation: gsap.core.Tween | null = null;
+    
+    ScrollTrigger.create({
+      trigger: container,
+      start: "top top",
+      end: "+=300%",
+      scrub: false,
+      onUpdate: (self) => {
+        // Start pulsating when we're past 85% (red text is mostly visible)
+        if (self.progress > 0.85 && !pulseAnimation) {
+          pulseAnimation = gsap.fromTo(redText, 
+            {
+              textShadow: "0 0 40px rgba(220, 38, 38, 0.3), 0 0 80px rgba(220, 38, 38, 0.15)",
+              scale: 1,
+            },
+            {
+              textShadow: "0 0 80px rgba(220, 38, 38, 0.9), 0 0 160px rgba(220, 38, 38, 0.6), 0 0 240px rgba(220, 38, 38, 0.4)",
+              scale: 1.08,
+              duration: 1.2,
+              repeat: -1,
+              yoyo: true,
+              ease: "power2.inOut",
+            }
+          );
+        }
+        // Stop pulsating if scrolled back up
+        if (self.progress < 0.85 && pulseAnimation) {
+          pulseAnimation.kill();
+          pulseAnimation = null;
+          gsap.set(redText, {
+            textShadow: "0 0 40px rgba(220, 38, 38, 0.3), 0 0 80px rgba(220, 38, 38, 0.15)",
+            scale: 1,
+          });
+        }
+      },
+    });
+
     return () => {
       // Kill only this timeline and its associated ScrollTrigger
       tl.scrollTrigger?.kill();
