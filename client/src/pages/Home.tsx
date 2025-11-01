@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { HeroROICalculator } from "@/components/HeroROICalculator";
 import CinematicBridge from "@/components/CinematicBridge";
+import { OrbitalPowers } from "@/components/OrbitalPowers";
 import { SEO } from "@/components/SEO";
 import { ServiceSchema } from "@/components/ServiceSchema";
 import LocalBusinessSchema from "@/components/LocalBusinessSchema";
@@ -286,6 +287,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Your Fullstack Sales Unit - The Product Reveal */}
+      <OrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
 
       {/* Proof Module - "Social Proof" */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-background">

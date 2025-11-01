@@ -10,11 +10,16 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import BuildAndRampTimeline from "@/components/BuildAndRampTimeline";
+import { OrbitalPowers } from "@/components/OrbitalPowers";
 import { Users, Brain, BookOpen, Shield, Zap, CheckCircle2, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
+import { useRef } from "react";
+
+const podVideo = "/bdr-pod-video.mp4";
 
 export default function GTMEnginePage() {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const impactSellingTenets = [
     {
       id: 'scene-partner',
@@ -72,6 +77,9 @@ export default function GTMEnginePage() {
           </div>
         </div>
       </section>
+
+      {/* Your Fullstack Sales Unit - The Product Reveal */}
+      <OrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
 
       {/* Module 1: The "Hardware" & "Software" of Your Asset */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-asset-components">

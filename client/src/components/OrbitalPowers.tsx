@@ -226,6 +226,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
 
   // Listen for video metadata and handle timing
   useEffect(() => {
+    if (!videoRef) return;  // Guard clause to check if videoRef exists
     const video = videoRef.current;
     
     // Fallback timer if video doesn't play
