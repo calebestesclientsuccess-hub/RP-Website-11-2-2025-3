@@ -67,8 +67,8 @@
 
   --primary-foreground: 0 0% 100%;
   
-  /* Community: Light Purple - darkened for accessibility (4.5:1 contrast) */
-  --community: 252 67% 40%;
+  /* Community: Deep Mature Purple - rich and sophisticated */
+  --community: 252 80% 32%;
   
   --community-foreground: 0 0% 100%;
   
@@ -217,8 +217,8 @@
 
   --primary-foreground: 0 0% 100%;
   
-  /* Community: Light Purple - accessible for dark mode */
-  --community: 252 67% 70%;
+  /* Community: Deep Mature Purple - rich and sophisticated for dark mode */
+  --community: 252 90% 55%;
   
   --community-foreground: 249 12% 6%;
   
