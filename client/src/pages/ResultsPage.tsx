@@ -192,9 +192,6 @@ export default function ResultsPage() {
                             <Badge variant="secondary" data-testid={`badge-model-${index + 1}`}>
                               {study.model}
                             </Badge>
-                            <Badge variant="outline" data-testid={`badge-plan-${index + 1}`}>
-                              {study.plan}
-                            </Badge>
                           </div>
                           <h3 className="text-2xl font-bold" data-testid={`heading-case-study-${index + 1}`}>
                             {study.title}
