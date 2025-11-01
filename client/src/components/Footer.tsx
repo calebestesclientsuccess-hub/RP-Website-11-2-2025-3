@@ -46,12 +46,12 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/why-us" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-why-us">
-                  Why Revenue Party?
+                  Why Party?
                 </Link>
               </li>
               <li>
                 <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-blog">
-                  Blog / Resources
+                  Articles
                 </Link>
               </li>
             </ul>

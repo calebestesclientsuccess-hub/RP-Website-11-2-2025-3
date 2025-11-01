@@ -75,7 +75,18 @@ export function Navbar() {
               }`}
               data-testid="link-why-us"
             >
-              Why Revenue Party?
+              Why Party?
+            </Link>
+            <Link 
+              href="/pricing"
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                isActivePath("/pricing")
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              data-testid="link-pricing"
+            >
+              Pricing
             </Link>
             <Link 
               href="/blog"
@@ -86,7 +97,7 @@ export function Navbar() {
               }`}
               data-testid="link-blog"
             >
-              Blog / Resources
+              Articles
             </Link>
           </div>
 
@@ -167,7 +178,15 @@ export function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-link-why-us"
             >
-              Why Revenue Party?
+              Why Party?
+            </Link>
+            <Link 
+              href="/pricing"
+              className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
+              onClick={() => setMobileMenuOpen(false)}
+              data-testid="mobile-link-pricing"
+            >
+              Pricing
             </Link>
             <Link 
               href="/blog"
@@ -175,7 +194,7 @@ export function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-link-blog"
             >
-              Blog / Resources
+              Articles
             </Link>
 
             <Link href="/audit" onClick={() => setMobileMenuOpen(false)}>
