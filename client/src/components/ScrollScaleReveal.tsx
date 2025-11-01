@@ -95,11 +95,9 @@ export default function ScrollScaleReveal() {
     >
       <div className="sticky top-1/2 -translate-y-1/2 w-full px-4 md:px-6 lg:px-8">
         {/* White scaling text - wraps to multiple lines as it scales */}
-        <div 
-          ref={textRef}
-          className="absolute inset-0 flex items-center justify-center"
-        >
+        <div className="absolute inset-0 flex items-center justify-center">
           <h1 
+            ref={textRef}
             className="text-3xl md:text-4xl lg:text-5xl font-bold text-center text-foreground px-4 leading-tight max-w-5xl"
             data-testid="text-scaling"
           >
@@ -108,11 +106,9 @@ export default function ScrollScaleReveal() {
         </div>
 
         {/* Red finale text - stays at H1 size, no scaling */}
-        <div 
-          ref={redTextRef}
-          className="absolute inset-0 flex items-center justify-center opacity-0"
-        >
+        <div className="absolute inset-0 flex items-center justify-center">
           <h1 
+            ref={redTextRef}
             className="text-4xl md:text-5xl lg:text-6xl font-bold text-center text-primary px-4 leading-tight"
             style={{
               textShadow: "0 0 40px rgba(220, 38, 38, 0.3), 0 0 80px rgba(220, 38, 38, 0.15)",
