@@ -6,15 +6,19 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function ScrollScaleReveal() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
-  const redTextRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLHeadingElement>(null);
+  const redTextRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     const container = containerRef.current;
     const text = textRef.current;
     const redText = redTextRef.current;
     
-    if (!container || !text || !redText) return;
+    if (!container || !text || !redText) {
+      console.log("ScrollScaleReveal: Missing refs", { container, text, redText });
+      return;
+    }
+    console.log("ScrollScaleReveal: Initializing animation");
 
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -34,10 +38,14 @@ export default function ScrollScaleReveal() {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: container,
-        start: "top top", // Animation starts when section top hits viewport top
-        end: "bottom top", // Animation ends when section bottom hits viewport top (400vh scroll)
-        scrub: 1.2, // Snappy but smooth
-        invalidateOnRefresh: true,
+        start: "top bottom", // Animation starts when section enters viewport
+        end: "bottom top", // Animation ends when section leaves viewport
+        scrub: 1, // Smooth scrubbing
+        pin: false,
+        markers: false, // Set to true to debug trigger points
+        onUpdate: (self) => {
+          console.log(`ScrollScaleReveal progress: ${self.progress.toFixed(2)}`);
+        },
       }
     });
 
@@ -56,12 +64,12 @@ export default function ScrollScaleReveal() {
         duration: 7, // 70% of timeline
       }
     )
-    // Phase 2: Crossfade - white fades out, red fades in simultaneously
-    // Duration 2 = 20% of total timeline
+    // Phase 2: Crossfade - white completely fades out, red completely fades in
+    // Duration 3 = 30% of total timeline (increased for complete crossfade)
     .to(text, {
       opacity: 0,
-      ease: "power2.in",
-      duration: 2, // 20% of timeline
+      ease: "power2.inOut",
+      duration: 3, // 30% of timeline
     })
     .fromTo(redText, 
       {
@@ -69,17 +77,11 @@ export default function ScrollScaleReveal() {
       },
       {
         opacity: 1,
-        ease: "power2.out",
-        duration: 2, // 20% of timeline
+        ease: "power2.inOut",
+        duration: 3, // 30% of timeline
       }, 
       "<" // Start at same time as white fadeout
-    )
-    // Phase 3: Hold red text visible
-    // Duration 1 = 10% of total timeline
-    .to(redText, {
-      opacity: 1,
-      duration: 1, // 10% of timeline
-    });
+    );
 
     return () => {
       // Kill only this timeline and its associated ScrollTrigger
