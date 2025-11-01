@@ -3,11 +3,16 @@ import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 
-export function HeroROICalculator() {
+interface HeroROICalculatorProps {
+  testIdSuffix?: string;
+}
+
+export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps) {
   const [ltv, setLtv] = useState([120000]);
   const [closeRate, setCloseRate] = useState([25]);
+  const [, setLocation] = useLocation();
 
   const monthlyInvestment = 15000;
   const guaranteedSQOs = 40;
@@ -128,13 +133,11 @@ export function HeroROICalculator() {
             size="default" 
             className="w-full gap-2" 
             variant="default"
-            data-testid="button-full-calculator"
-            asChild
+            data-testid={`button-full-calculator${testIdSuffix}`}
+            onClick={() => setLocation(`/roi-calculator?ltv=${ltv[0]}&closeRate=${closeRate[0]}`)}
           >
-            <Link href={`/roi-calculator?ltv=${ltv[0]}&closeRate=${closeRate[0]}`}>
-              See Full Calculator →
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            See Full Calculator →
+            <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </Card>

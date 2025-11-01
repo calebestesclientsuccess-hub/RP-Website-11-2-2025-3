@@ -169,7 +169,7 @@ export default function Home() {
             </div>
 
             <div className="flex justify-center lg:justify-end">
-              <HeroROICalculator />
+              <HeroROICalculator testIdSuffix="-hero" />
             </div>
           </div>
         </div>
@@ -384,7 +384,7 @@ export default function Home() {
 
           {/* Centered Calculator */}
           <div className="flex justify-center mb-12">
-            <HeroROICalculator />
+            <HeroROICalculator testIdSuffix="-bottom" />
           </div>
 
           {/* CTA for Full Calculator */}
