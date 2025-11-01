@@ -38,10 +38,11 @@ export default function ScrollScaleReveal() {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: container,
-        start: "top bottom", // Animation starts when section enters viewport
-        end: "bottom top", // Animation ends when section leaves viewport
+        start: "top top", // Pin when section reaches top
+        end: "+=300%", // Scroll 300% of viewport height
         scrub: 1, // Smooth scrubbing
-        pin: false,
+        pin: true, // Pin the container
+        pinSpacing: true,
         markers: false, // Set to true to debug trigger points
         onUpdate: (self) => {
           console.log(`ScrollScaleReveal progress: ${self.progress.toFixed(2)}`);
@@ -93,10 +94,10 @@ export default function ScrollScaleReveal() {
   return (
     <section 
       ref={containerRef}
-      className="relative min-h-[400vh] flex items-center justify-center overflow-hidden bg-background"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background"
       data-testid="section-scroll-scale-reveal"
     >
-      <div className="sticky top-1/2 -translate-y-1/2 w-full px-4 md:px-6 lg:px-8">
+      <div className="w-full px-4 md:px-6 lg:px-8">
         {/* White text - fontSize animates with moderate growth for clean wrapping */}
         <div className="absolute inset-0 flex items-center justify-center">
           <h1 
