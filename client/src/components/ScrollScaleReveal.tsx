@@ -37,7 +37,7 @@ export default function ScrollScaleReveal() {
       }
     });
 
-    // Progressive scaling with letter spacing expansion
+    // Scale modestly and crossfade before text gets too big
     tl.fromTo(text, 
       {
         scale: 1,
@@ -45,32 +45,32 @@ export default function ScrollScaleReveal() {
         letterSpacing: "normal",
       },
       {
-        scale: 8,
-        opacity: 1,
-        letterSpacing: "0.2em",
-        ease: "power2.inOut",
-        duration: 0.6,
+        scale: 2,
+        opacity: 0,
+        letterSpacing: "0.05em",
+        ease: "power2.in",
+        duration: 0.4,
       }
     )
-    // Fade out the white text
-    .to(text, {
-      opacity: 0,
-      duration: 0.15,
-    }, "-=0.1")
-    // Crossfade to red text at normal size
+    // Crossfade to red text - overlaps with white text fadeout
     .fromTo(redText,
       {
         opacity: 0,
-        scale: 1.2,
+        scale: 1.1,
       },
       {
         opacity: 1,
         scale: 1,
-        duration: 0.25,
+        duration: 0.3,
         ease: "power2.out",
       },
-      "-=0.1"
-    );
+      "-=0.2"
+    )
+    // Hold the red text visible
+    .to(redText, {
+      opacity: 1,
+      duration: 0.3,
+    });
 
     return () => {
       // Kill only this timeline and its associated ScrollTrigger
@@ -92,7 +92,7 @@ export default function ScrollScaleReveal() {
           className="absolute inset-0 flex items-center justify-center"
         >
           <h2 
-            className="text-2xl md:text-3xl lg:text-4xl font-bold text-center text-foreground whitespace-nowrap"
+            className="text-base md:text-lg lg:text-xl font-bold text-center text-foreground px-4"
             data-testid="text-scaling"
           >
             You need more than another salesperson
@@ -105,7 +105,7 @@ export default function ScrollScaleReveal() {
           className="absolute inset-0 flex items-center justify-center opacity-0"
         >
           <h2 
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-center text-primary"
+            className="text-2xl md:text-3xl lg:text-4xl font-bold text-center text-primary px-4"
             style={{
               textShadow: "0 0 40px rgba(220, 38, 38, 0.3), 0 0 80px rgba(220, 38, 38, 0.15)",
             }}
