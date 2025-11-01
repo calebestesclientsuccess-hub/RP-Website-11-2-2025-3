@@ -12,6 +12,7 @@ import Home from "@/pages/Home";
 import ProblemPage from "@/pages/ProblemPage";
 import GTMEnginePage from "@/pages/GTMEnginePage";
 import ResultsPage from "@/pages/ResultsPage";
+import WhyRevPartyPage from "@/pages/WhyRevPartyPage";
 import About from "@/pages/About";
 import BlogPage from "@/pages/BlogPage";
 import AuditPage from "@/pages/AuditPage";
@@ -30,9 +31,11 @@ function Router() {
       <Route path="/problem" component={ProblemPage} />
       <Route path="/gtm-engine" component={GTMEnginePage} />
       <Route path="/results" component={ResultsPage} />
+      <Route path="/why-revenue-party" component={WhyRevPartyPage} />
       <Route path="/why-us" component={About} />
       <Route path="/blog" component={BlogPage} />
       <Route path="/audit" component={AuditPage} />
+      <Route path="/gtm-audit" component={AuditPage} />
       
       {/* Tools & Resources */}
       <Route path="/roi-calculator" component={ROICalculator} />

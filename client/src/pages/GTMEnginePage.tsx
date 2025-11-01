@@ -19,20 +19,20 @@ export default function GTMEnginePage() {
     {
       id: 'scene-partner',
       title: 'From Audience to Scene Partner',
-      description: 'Kill sales pressure by reframing the "pitch"',
-      details: 'We kill "sales pressure" by reframing the "pitch" as a collaborative "workshop" with a partner, not a performance for a judge. Your prospects become co-creators in the solution, not passive evaluators.',
+      description: '',
+      details: 'We kill "sales pressure" by reframing the "pitch" as a collaborative "workshop." Our operators aren\'t selling at a prospect; they are solving a problem with a scene partner.',
     },
     {
       id: 'nouns-to-verbs',
       title: 'From Nouns to Verbs',
-      description: 'Execute actions, not pitch features',
-      details: 'Amateurs "pitch nouns" (features, our platform). Our Operators "execute verbs" (Diagnose, Reframe, Validate). This is an active, not passive, methodology that drives real engagement.',
+      description: '',
+      details: 'Amateurs "pitch nouns" (our features, our product, our company). Our operators "execute verbs" (Diagnose, Reframe, Validate, Prescribe). This shifts the entire dynamic.',
     },
     {
       id: 'hierarchy',
       title: 'The Hierarchy of Intention',
-      description: 'Strategic, not tactical',
-      details: 'Our Operators are strategic, not tactical. Every move is purposeful and tied to the "Why" before the "What". This creates conversations that matter, not just activities that count.',
+      description: '',
+      details: 'Our BDRs are strategic, not tactical. Every email, call, and message has a clear, strategic purpose tied to the "GTM Audit" diagnosis. No "random acts of selling".',
     },
   ];
 
@@ -58,7 +58,7 @@ export default function GTMEnginePage() {
               data-testid="heading-hero"
             >
               This Isn't a Sales Team.{" "}
-              <span className="text-primary">It's The Fullstack Sales Unit.</span>
+              <span className="text-primary">It's a Complete Revenue Generation System.</span>
             </motion.h1>
             <motion.p 
               className="text-xl md:text-2xl text-muted-foreground leading-relaxed"
@@ -67,7 +67,7 @@ export default function GTMEnginePage() {
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
               data-testid="text-hero-subheading"
             >
-              You don't have a headcount problem; you have an architecture problem. This is the blueprint for the architecture that guarantees results.
+              You don't have a headcount problem; you have an architecture problem. This is the blueprint for the architecture that scales.
             </motion.p>
           </div>
         </div>
@@ -78,10 +78,10 @@ export default function GTMEnginePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-asset-components">
-              What Your <span className="text-primary">"Fullstack Sales Unit"</span> is Made Of
+              What You Get: The 3 Core Components of <span className="text-primary">Your GTM Engine</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-asset-description">
-              A "Fullstack Sales Unit" is not a person; it's a complete, managed system of elite talent (Hardware), proprietary strategic framework (Software), and AI-powered tech stack (Infrastructure). This is what you <em>own</em>.
+              A GTM Engine is not a person; it's a complete, managed system of talent, strategy, and technology designed to build a permanent pipeline asset.
             </p>
           </div>
 
@@ -111,22 +111,13 @@ export default function GTMEnginePage() {
                       This is the antidote to the 'Lone Wolf Fallacy.' You don't get a single, isolated rep; you get a pod of trained operators.
                     </p>
                     <p>
-                      This pod is built, trained, and forged by our <strong>Talent Architect, Muneeb Awan</strong>.
+                      This pod is built, trained, and forged by our Talent Architect.
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-3">
-                    <Badge variant="outline" className="text-sm">
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Dedicated white-labeled pod
-                    </Badge>
-                    <Badge variant="outline" className="text-sm">
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Elite training & coaching
-                    </Badge>
-                    <Badge variant="outline" className="text-sm">
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Zero management overhead
-                    </Badge>
+                  <div className="space-y-2 mb-6 text-muted-foreground">
+                    <p><strong>• Dedicated & Managed:</strong> Your pod works for you, managed by us. We handle the 1:1s, performance, and 'Management Tax'.</p>
+                    <p><strong>• Community-Powered:</strong> Pods operate in a culture of "Community + Competition," solving problems faster than any single rep.</p>
+                    <p><strong>• Ramped in Days, Not Months:</strong> Our pods are system-ready and pipeline-productive in Week 2.</p>
                   </div>
                 </div>
               </div>
@@ -159,22 +150,13 @@ export default function GTMEnginePage() {
                       This is the antidote to the 'Black Box Problem.' We replace vanity 'activity' metrics with a transparent, AI-powered data engine that finds buyers before they're in-market.
                     </p>
                     <p>
-                      This engine is engineered and maintained by our <strong>AI Architect, Danyal Darvesh</strong>.
+                      This engine is engineered and maintained by our AI Architect.
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-3">
-                    <Badge variant="outline" className="text-sm">
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      AI-powered signal detection
-                    </Badge>
-                    <Badge variant="outline" className="text-sm">
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Complete tech stack included
-                    </Badge>
-                    <Badge variant="outline" className="text-sm">
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Allbound methodology
-                    </Badge>
+                  <div className="space-y-2 mb-6 text-muted-foreground">
+                    <p><strong>• Find "Allbound" Signals:</strong> We combine inbound intent data with outbound ICP triggers.</p>
+                    <p><strong>• AI-Powered, Human-Verified:</strong> Our AI finds the signals; our human operators validate the intent.</p>
+                    <p><strong>• Full Tech Stack Included:</strong> The engine includes the full stack of sequencing, data, and analytics tools.</p>
                   </div>
                 </div>
               </div>
@@ -204,11 +186,16 @@ export default function GTMEnginePage() {
                   </h3>
                   <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
                     <p>
-                      This is the antidote to the 'Zero-IP Trap.' The GTM Engine is built on a strategic playbook that you <strong>100% own</strong>.
+                      This is the antidote to the 'Zero-IP Trap.' The GTM Engine is built on a strategic playbook that you 100% own.
                     </p>
                     <p>
-                      This framework is designed by our <strong>Visionary Architect, Caleb Estes</strong>, and protected by our <strong>Brand Guardian, Mariya Tamkeen</strong>.
+                      This framework is designed by our Visionary Architect, and protected by our Brand Guardian.
                     </p>
+                  </div>
+                  <div className="space-y-2 mb-6 text-muted-foreground">
+                    <p><strong>• Your Playbook, Your IP:</strong> We build your GTM playbook with you, and it stays with you forever.</p>
+                    <p><strong>• Documented & Scalable:</strong> A living system for messaging, objection handling, and tactics.</p>
+                    <p><strong>• Based on "Impact Selling":</strong> Our methodology (detailed below) that kills 'sales pressure' and builds trust.</p>
                   </div>
 
                   {/* Core Tenets - Expandable Accordion */}

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowRight, CheckCircle, DollarSign } from "lucide-react";
 
 export default function ProblemPage() {
 
@@ -224,7 +224,7 @@ export default function ProblemPage() {
                   </h2>
                   <div className="space-y-4 text-lg text-muted-foreground leading-relaxed" data-testid="text-diagnosis">
                     <p>
-                      The 'Lone Wolf' hire (the $198k gamble) and the 'Black Box' agency (the $120k guaranteed loss) are just symptoms. The disease is a broken GTM <em>architecture</em>.
+                      The 'Lone Wolf' hire and the 'Black Box' agency are just symptoms. The disease is a broken GTM architecture.
                     </p>
                     <p className="text-xl font-semibold text-foreground">
                       You cannot solve an architecture problem by hiring another person. You solve it by building a new system.
