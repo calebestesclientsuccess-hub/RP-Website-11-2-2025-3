@@ -1,8 +1,15 @@
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { SEO } from "@/components/SEO";
 
 export default function ContactPage() {
   return (
     <>
+      <SEO 
+        title="Contact Us - Let's Build Your GTM System | Revenue Party"
+        description="Ready to escape the hiring trap? Contact us to schedule your free GTM audit and transform your revenue generation."
+        keywords="contact Revenue Party, GTM consultation, sales inquiry"
+        canonical="/contact"
+      />
       <Breadcrumbs items={[]} currentPage="Contact Us" />
       <div className="min-h-screen flex items-center justify-center">
         <h1 className="text-4xl font-bold" data-testid="heading-contact">

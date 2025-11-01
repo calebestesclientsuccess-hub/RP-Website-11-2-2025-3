@@ -6,6 +6,8 @@ import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { OrbitalPowers } from "@/components/OrbitalPowers";
 import { HeroROICalculator } from "@/components/HeroROICalculator";
 import CinematicBridge from "@/components/CinematicBridge";
+import { SEO } from "@/components/SEO";
+import { ServiceSchema } from "@/components/ServiceSchema";
 import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-react";
 // Video is served from public directory
 const podVideo = "/bdr-pod-video.mp4";
@@ -123,6 +125,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      <SEO 
+        title="Revenue Party - GTM Systems That Multiply Your Pipeline"
+        description="Deploy a complete GTM system with elite BDRs, AI tech, and proven strategy. Get 20+ qualified appointments monthly. Escape the $198k hiring mistake."
+        keywords="GTM system, sales development, BDR pod, revenue generation, pipeline growth"
+        canonical="/"
+      />
+      <ServiceSchema />
+      
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
         {/* Animated gradient mesh background */}
