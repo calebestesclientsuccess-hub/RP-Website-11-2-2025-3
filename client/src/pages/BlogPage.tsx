@@ -383,6 +383,124 @@ export default function BlogPage() {
         </div>
       </section>
 
+      {/* Featured Resources */}
+      <section className="py-16 px-4 md:px-6 lg:px-8 bg-background">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4" data-testid="heading-resource-guides">
+              Featured Resource Guides
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              In-depth guides to help you navigate the modern GTM landscape
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Card 1: Internal Trap */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <Link href="/resources/how-to-build-sdr-team-guide">
+                <Card 
+                  className="p-6 hover-elevate cursor-pointer group h-full"
+                  data-testid="card-resource-sdr-team"
+                >
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="p-3 bg-destructive/10 rounded-md group-hover:bg-destructive/20 transition-colors">
+                      <AlertTriangle className="h-6 w-6 text-destructive" />
+                    </div>
+                    <div className="flex-1">
+                      <Badge variant="destructive" className="mb-3">
+                        Internal Trap
+                      </Badge>
+                      <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors">
+                        How to Build an SDR Team
+                      </h3>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    The complete guide to building an internal SDR team in 2025. Learn the real costs, hidden traps, and whether it's right for your stage.
+                  </p>
+                  <div className="flex items-center justify-end pt-4 border-t">
+                    <ArrowRight className="h-4 w-4 text-primary group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Card>
+              </Link>
+            </motion.div>
+
+            {/* Card 2: Agency Trap */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <Link href="/resources/sdr-outsourcing-companies-guide">
+                <Card 
+                  className="p-6 hover-elevate cursor-pointer group h-full"
+                  data-testid="card-resource-outsourcing"
+                >
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="p-3 bg-primary/10 rounded-md group-hover:bg-primary/20 transition-colors">
+                      <ShieldAlert className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <Badge variant="outline" className="mb-3">
+                        Agency Trap
+                      </Badge>
+                      <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors">
+                        SDR Outsourcing Companies Guide
+                      </h3>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    How to evaluate SDR outsourcing providers. The 3-trap buyer's checklist and what 93% of agencies won't tell you.
+                  </p>
+                  <div className="flex items-center justify-end pt-4 border-t">
+                    <ArrowRight className="h-4 w-4 text-primary group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Card>
+              </Link>
+            </motion.div>
+
+            {/* Card 3: Solution */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <Link href="/resources/guide-to-sales-as-a-service">
+                <Card 
+                  className="p-6 hover-elevate cursor-pointer group h-full"
+                  data-testid="card-resource-sales-service"
+                >
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="p-3 bg-primary/10 rounded-md group-hover:bg-primary/20 transition-colors">
+                      <Cog className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <Badge variant="default" className="mb-3">
+                        Solution
+                      </Badge>
+                      <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors">
+                        Guide to Sales as a Service
+                      </h3>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    What is Sales as a Service? The new category that combines the best of internal teams and agencies without the traps.
+                  </p>
+                  <div className="flex items-center justify-end pt-4 border-t">
+                    <ArrowRight className="h-4 w-4 text-primary group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Card>
+              </Link>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Featured Articles */}
       {featuredArticles.length > 0 && (
         <section className="py-12 px-4 md:px-6 lg:px-8">

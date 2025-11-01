@@ -7,7 +7,7 @@ export function Footer() {
   return (
     <footer className="bg-card border-t border-card-border mt-32" role="contentinfo" aria-label="Site footer">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-8 md:gap-8">
           {/* Logo & Mission */}
           <div className="md:col-span-2">
             <Link href="/" className="inline-block mb-4" data-testid="footer-link-home">
@@ -52,6 +52,33 @@ export function Footer() {
               <li>
                 <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-blog">
                   Articles
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h3 className="font-semibold text-foreground mb-4">Resources</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/resources/how-to-build-sdr-team-guide" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-sdr-guide">
+                  Guide: How to Build an SDR Team
+                </Link>
+              </li>
+              <li>
+                <Link href="/resources/sdr-outsourcing-companies-guide" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-outsourcing-guide">
+                  Guide: SDR Outsourcing Companies
+                </Link>
+              </li>
+              <li>
+                <Link href="/resources/guide-to-sales-as-a-service" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-sales-as-service">
+                  Guide: Sales as a Service
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog/manifesto-the-lone-wolf-trap" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-manifesto">
+                  The Lone Wolf Trap (Manifesto)
                 </Link>
               </li>
             </ul>

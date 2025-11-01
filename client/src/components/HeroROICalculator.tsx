@@ -77,8 +77,8 @@ export function HeroROICalculator() {
             <Slider
               value={closeRate}
               onValueChange={setCloseRate}
-              min={10}
-              max={80}
+              min={5}
+              max={50}
               step={5}
               data-testid="slider-close-rate"
             />
@@ -131,8 +131,8 @@ export function HeroROICalculator() {
             data-testid="button-full-calculator"
             asChild
           >
-            <Link href="/roi-calculator">
-              Calculate Your Full ROI
+            <Link href={`/roi-calculator?ltv=${ltv[0]}&closeRate=${closeRate[0]}`}>
+              See Full Calculator →
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>

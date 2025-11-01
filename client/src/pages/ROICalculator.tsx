@@ -17,7 +17,7 @@ import {
   Zap,
   ArrowRight
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 
@@ -72,6 +72,25 @@ export default function ROICalculator() {
   const [closeRate, setCloseRate] = useState([25]);
   const [selectedEngine, setSelectedEngine] = useState<EngineOption>("2-sdr");
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ltvParam = params.get('ltv');
+    const closeRateParam = params.get('closeRate');
+
+    if (ltvParam) {
+      const ltvValue = parseInt(ltvParam, 10);
+      if (!isNaN(ltvValue) && ltvValue >= 10000 && ltvValue <= 500000) {
+        setLtv([ltvValue]);
+      }
+    }
+
+    if (closeRateParam) {
+      const closeRateValue = parseInt(closeRateParam, 10);
+      if (!isNaN(closeRateValue) && closeRateValue >= 5 && closeRateValue <= 50) {
+        setCloseRate([closeRateValue]);
+      }
+    }
+  }, []);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
