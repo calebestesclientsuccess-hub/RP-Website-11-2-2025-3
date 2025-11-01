@@ -84,11 +84,24 @@ export default function ResultsPage() {
         <section className="pt-32 pb-20 px-4 md:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="text-center max-w-4xl mx-auto space-y-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="mb-6 flex justify-center"
+              >
+                <Badge 
+                  className="bg-strategy/20 text-strategy border-strategy/30 text-sm px-4 py-1.5"
+                  data-testid="badge-hero-results"
+                >
+                  Proven Results
+                </Badge>
+              </motion.div>
               <motion.h1
                 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
                 data-testid="heading-hero"
               >
                 The Numbers Don't Lie.{" "}

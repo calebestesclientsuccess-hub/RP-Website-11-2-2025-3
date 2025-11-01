@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { HeroROICalculator } from "@/components/HeroROICalculator";
 import CinematicBridge from "@/components/CinematicBridge";
@@ -112,25 +113,29 @@ export default function Home() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <div className="space-y-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  className="mb-6"
+                >
+                  <Badge 
+                    className="bg-collaboration/20 text-collaboration border-collaboration/30 text-sm px-4 py-1.5"
+                    data-testid="badge-hero-culture"
+                  >
+                    Community + Competition = Culture
+                  </Badge>
+                </motion.div>
                 <motion.h1 
                   className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
                   data-testid="heading-hero"
                 >
                   Your Next Sales Hire Shouldn't Be a Person.{" "}
                   <span className="text-primary">It Should Be a Revenue Generation System.</span>
                 </motion.h1>
-                <motion.p 
-                  className="text-xl md:text-2xl text-muted-foreground leading-relaxed"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                  data-testid="text-hero-subheading"
-                >
-                  Community + Competition = Culture.
-                </motion.p>
                 <motion.p 
                   className="text-lg md:text-xl text-foreground leading-relaxed"
                   initial={{ opacity: 0, y: 20 }}

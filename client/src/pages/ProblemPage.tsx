@@ -2,6 +2,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle, DollarSign } from "lucide-react";
@@ -22,11 +23,24 @@ export default function ProblemPage() {
         {/* Hero Module */}
         <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
           <div className="max-w-5xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="mb-6 flex justify-center"
+            >
+              <Badge 
+                className="bg-primary/20 text-primary border-primary/30 text-sm px-4 py-1.5"
+                data-testid="badge-hero-trap"
+              >
+                The Lone Wolf Trap
+              </Badge>
+            </motion.div>
             <motion.h1 
               className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
               data-testid="heading-hero"
             >
               Stop Solving Systems Problems{" "}

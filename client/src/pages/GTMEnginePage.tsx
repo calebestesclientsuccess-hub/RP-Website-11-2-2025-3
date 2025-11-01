@@ -55,11 +55,24 @@ export default function GTMEnginePage() {
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-4xl mx-auto text-center mb-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="mb-6 flex justify-center"
+            >
+              <Badge 
+                className="bg-technology/20 text-technology border-technology/30 text-sm px-4 py-1.5"
+                data-testid="badge-hero-engine"
+              >
+                The GTM Engine
+              </Badge>
+            </motion.div>
             <motion.h1 
               className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
               data-testid="heading-hero"
             >
               This Isn't a Sales Team.{" "}
