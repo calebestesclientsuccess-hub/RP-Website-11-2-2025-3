@@ -5,9 +5,9 @@ User-agent: *
 Allow: /
 
 # Sitemap locations
-Sitemap: https://revenuelabs.com/sitemap.xml
-Sitemap: https://revenuelabs.com/sitemap-images.xml
-Sitemap: https://revenuelabs.com/sitemap-video.xml
+Sitemap: https://revenueparty.com/sitemap.xml
+Sitemap: https://revenueparty.com/sitemap-images.xml
+Sitemap: https://revenueparty.com/sitemap-video.xml
 
 # Crawl-delay (optional, helps manage server load)
 Crawl-delay: 1

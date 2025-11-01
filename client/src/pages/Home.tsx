@@ -140,10 +140,10 @@ export default function Home() {
       <VideoSchema 
         name="Your Fullstack Sales Unit - Revenue Party GTM System"
         description="Watch how Revenue Party's GTM Engine deploys elite BDR talent with AI-powered systems to deliver 20+ qualified appointments monthly."
-        thumbnailUrl="https://revenuelabs.com/video-thumbnail.jpg"
+        thumbnailUrl="https://revenueparty.com/video-thumbnail.jpg"
         uploadDate="2024-10-01"
         duration="PT2M"
-        contentUrl={podVideo}
+        contentUrl={`https://revenueparty.com${podVideo}`}
       />
       
       {/* Hero Section */}

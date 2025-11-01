@@ -6,7 +6,7 @@ interface HrefLangMetaProps {
 
 export default function HrefLangMeta({ pathname }: HrefLangMetaProps) {
   // Base domain for the site
-  const baseDomain = 'https://revenuelabs.com';
+  const baseDomain = 'https://revenueparty.com';
   
   // Currently only English, but structured for easy expansion
   const languages = [

@@ -7,7 +7,7 @@ export default function SoftwareApplicationSchema() {
     "name": "GTM Engine",
     "alternateName": "Revenue Party GTM System",
     "description": "Complete revenue generation system combining elite BDR talent with AI-powered tools and strategic frameworks to deliver 20+ qualified appointments monthly.",
-    "url": "https://revenuelabs.com/gtm-engine",
+    "url": "https://revenueparty.com/gtm-engine",
     "applicationCategory": "BusinessApplication",
     "applicationSubCategory": "Sales & Marketing",
     "operatingSystem": "Web-based",
@@ -41,7 +41,7 @@ export default function SoftwareApplicationSchema() {
       "2-Week Deployment",
       "Performance Dashboard"
     ],
-    "screenshot": "https://revenuelabs.com/gtm-engine-screenshot.png",
+    "screenshot": "https://revenueparty.com/gtm-engine-screenshot.png",
     "softwareVersion": "2.0",
     "releaseNotes": "Enhanced AI capabilities, improved BDR training modules, and faster deployment process.",
     "datePublished": "2023-01-01",
@@ -49,7 +49,7 @@ export default function SoftwareApplicationSchema() {
     "creator": {
       "@type": "Organization",
       "name": "Revenue Party",
-      "url": "https://revenuelabs.com"
+      "url": "https://revenueparty.com"
     },
     "provider": {
       "@type": "Organization",
@@ -57,7 +57,7 @@ export default function SoftwareApplicationSchema() {
     },
     "potentialAction": {
       "@type": "ViewAction",
-      "target": "https://revenuelabs.com/gtm-engine"
+      "target": "https://revenueparty.com/gtm-engine"
     }
   };
 

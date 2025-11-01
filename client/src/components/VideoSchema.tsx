@@ -34,7 +34,7 @@ export default function VideoSchema({
       "name": "Revenue Party",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://revenuelabs.com/apple-touch-icon.png"
+        "url": "https://revenueparty.com/apple-touch-icon.png"
       }
     },
     "interactionStatistic": {

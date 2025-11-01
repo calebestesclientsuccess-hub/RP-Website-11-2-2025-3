@@ -16,8 +16,8 @@ export function SEO({
   ogImage = "https://revenueparty.com/og-image.png",
   keywords = "GTM system, sales development, BDR pod, revenue generation, pipeline growth"
 }: SEOProps) {
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://revenueparty.com';
-  const fullCanonical = canonical ? `${siteUrl}${canonical}` : (typeof window !== 'undefined' ? window.location.href : siteUrl);
+  const siteUrl = 'https://revenueparty.com';
+  const fullCanonical = canonical ? `${siteUrl}${canonical}` : siteUrl;
   const pathname = canonical || (typeof window !== 'undefined' ? window.location.pathname : '/');
 
   return (

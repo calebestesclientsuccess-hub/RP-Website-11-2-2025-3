@@ -6,7 +6,7 @@
   
   <!-- Home Page - Highest Priority -->
   <url>
-    <loc>https://revenuelabs.com/</loc>
+    <loc>https://revenueparty.com/</loc>
     <lastmod>2025-11-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -14,35 +14,35 @@
   
   <!-- Primary Navigation Pages - High Priority -->
   <url>
-    <loc>https://revenuelabs.com/problem</loc>
+    <loc>https://revenueparty.com/problem</loc>
     <lastmod>2025-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   
   <url>
-    <loc>https://revenuelabs.com/gtm-engine</loc>
+    <loc>https://revenueparty.com/gtm-engine</loc>
     <lastmod>2025-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   
   <url>
-    <loc>https://revenuelabs.com/results</loc>
+    <loc>https://revenueparty.com/results</loc>
     <lastmod>2025-11-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   
   <url>
-    <loc>https://revenuelabs.com/why-us</loc>
+    <loc>https://revenueparty.com/why-us</loc>
     <lastmod>2025-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <url>
-    <loc>https://revenuelabs.com/blog</loc>
+    <loc>https://revenueparty.com/blog</loc>
     <lastmod>2025-11-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -50,7 +50,7 @@
   
   <!-- Conversion Pages - High Priority -->
   <url>
-    <loc>https://revenuelabs.com/audit</loc>
+    <loc>https://revenueparty.com/audit</loc>
     <lastmod>2025-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
@@ -58,14 +58,14 @@
   
   <!-- Tool Pages - Medium-High Priority -->
   <url>
-    <loc>https://revenuelabs.com/roi-calculator</loc>
+    <loc>https://revenueparty.com/roi-calculator</loc>
     <lastmod>2025-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>https://revenuelabs.com/assessment</loc>
+    <loc>https://revenueparty.com/assessment</loc>
     <lastmod>2025-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -73,21 +73,21 @@
   
   <!-- Company Pages - Medium Priority -->
   <url>
-    <loc>https://revenuelabs.com/pricing</loc>
+    <loc>https://revenueparty.com/pricing</loc>
     <lastmod>2025-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://revenuelabs.com/faq</loc>
+    <loc>https://revenueparty.com/faq</loc>
     <lastmod>2025-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://revenuelabs.com/contact</loc>
+    <loc>https://revenueparty.com/contact</loc>
     <lastmod>2025-11-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>

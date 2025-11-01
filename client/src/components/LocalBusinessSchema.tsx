@@ -7,14 +7,14 @@ export default function LocalBusinessSchema() {
     "name": "Revenue Party",
     "alternateName": "RevParty",
     "description": "Go-to-Market (GTM) consultancy deploying complete revenue generation systems with elite BDR talent, AI technology, and strategic frameworks.",
-    "@id": "https://revenuelabs.com/#business",
-    "url": "https://revenuelabs.com",
-    "logo": "https://revenuelabs.com/apple-touch-icon.png",
+    "@id": "https://revenueparty.com/#business",
+    "url": "https://revenueparty.com",
+    "logo": "https://revenueparty.com/apple-touch-icon.png",
     "image": [
-      "https://revenuelabs.com/apple-touch-icon.png"
+      "https://revenueparty.com/apple-touch-icon.png"
     ],
     "telephone": "",
-    "email": "hello@revenuelabs.com",
+    "email": "hello@revenueparty.com",
     "address": {
       "@type": "PostalAddress",
       "addressCountry": "US",
@@ -53,7 +53,7 @@ export default function LocalBusinessSchema() {
           "@type": "Offer",
           "name": "GTM Engine",
           "description": "Complete revenue generation system with elite BDR pod",
-          "url": "https://revenuelabs.com/gtm-engine",
+          "url": "https://revenueparty.com/gtm-engine",
           "priceCurrency": "USD",
           "price": "10000.00",
           "priceValidUntil": "2025-12-31",
@@ -63,7 +63,7 @@ export default function LocalBusinessSchema() {
           "@type": "Offer",
           "name": "GTM Audit",
           "description": "60-minute comprehensive GTM strategy audit",
-          "url": "https://revenuelabs.com/audit",
+          "url": "https://revenueparty.com/audit",
           "priceCurrency": "USD",
           "price": "0",
           "availability": "https://schema.org/InStock"
