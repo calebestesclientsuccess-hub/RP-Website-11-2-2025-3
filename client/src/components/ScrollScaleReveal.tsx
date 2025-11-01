@@ -26,7 +26,7 @@ export default function ScrollScaleReveal() {
       return;
     }
 
-    // Timeline for the scaling and crossfade effect
+    // Timeline for the extended scaling and crossfade effect
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: container,
@@ -37,7 +37,7 @@ export default function ScrollScaleReveal() {
       }
     });
 
-    // Scale modestly and crossfade before text gets too big
+    // Progressive scaling: 1x → 4x (wraps to multiple lines, then overfills)
     tl.fromTo(text, 
       {
         scale: 1,
@@ -45,31 +45,35 @@ export default function ScrollScaleReveal() {
         letterSpacing: "normal",
       },
       {
-        scale: 2,
-        opacity: 0,
-        letterSpacing: "0.05em",
-        ease: "power2.in",
-        duration: 0.4,
+        scale: 4,
+        opacity: 1,
+        letterSpacing: "0.08em",
+        ease: "power1.inOut",
+        duration: 0.7,
       }
     )
-    // Crossfade to red text - overlaps with white text fadeout
+    // Final fadeout of white text as it overfills
+    .to(text, {
+      opacity: 0,
+      duration: 0.15,
+      ease: "power2.in",
+    })
+    // Red text fades in at fixed H1 size (no scaling)
     .fromTo(redText,
       {
         opacity: 0,
-        scale: 1.1,
       },
       {
         opacity: 1,
-        scale: 1,
-        duration: 0.3,
+        duration: 0.25,
         ease: "power2.out",
       },
-      "-=0.2"
+      "-=0.1"
     )
-    // Hold the red text visible
+    // Hold the red text visible for remaining scroll
     .to(redText, {
       opacity: 1,
-      duration: 0.3,
+      duration: 0.35,
     });
 
     return () => {
@@ -82,24 +86,24 @@ export default function ScrollScaleReveal() {
   return (
     <section 
       ref={containerRef}
-      className="relative min-h-[250vh] flex items-center justify-center overflow-hidden bg-background"
+      className="relative min-h-[400vh] flex items-center justify-center overflow-hidden bg-background"
       data-testid="section-scroll-scale-reveal"
     >
       <div className="sticky top-1/2 -translate-y-1/2 w-full px-4 md:px-6 lg:px-8">
-        {/* White scaling text */}
+        {/* White scaling text - wraps to multiple lines as it scales */}
         <div 
           ref={textRef}
           className="absolute inset-0 flex items-center justify-center"
         >
           <h1 
-            className="text-3xl md:text-4xl lg:text-5xl font-bold text-center text-foreground px-4 leading-tight"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-center text-foreground px-4 leading-tight max-w-5xl"
             data-testid="text-scaling"
           >
             You need more than another salesperson
           </h1>
         </div>
 
-        {/* Red finale text */}
+        {/* Red finale text - stays at H1 size, no scaling */}
         <div 
           ref={redTextRef}
           className="absolute inset-0 flex items-center justify-center opacity-0"
