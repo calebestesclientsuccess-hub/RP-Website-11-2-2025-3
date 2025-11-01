@@ -1,0 +1,643 @@
+Here is the full composition of the 14-page website, based on our finalized, architecturally-sound plan.
+
+---
+---
+
+### **1. Home Page (The "Switchboard")**
+
+**[Hero Module]**
+* **H1:** Your Next Sales Hire Shouldn't Be a Person. It Should Be a Revenue Generation System.
+* **Sub-headline:** We build self-sustaining GTM Engines that deliver 20+ guaranteed, qualified appointments per month at a fixed, predictable cost. This isn't an SDR. It's your entire revenue architecture.
+* **[Primary CTA Button]:** Schedule My GTM Audit
+* **[Secondary CTA Link]:** See How It Works
+
+**[Problem Module - "The Trap"]**
+* **H2:** The $198,000 Mistake You're About to Make
+* **Body Content:** Founders are forced to choose between two bad options: the slow, expensive "$198,000 Mistake" of a failed internal hire, or the "Outsourcing Suicide Mission" that gives you zero IP and zero control.
+* Both are symptoms of the same disease: solving an **architecture** problem with an **un-architected headcount** solution.
+* **[CTA Link]:** Expose The Traps
+
+**[Solution Module - "The System"]**
+* **H2:** Don't Hire a Rep. Deploy an Engine.
+* **Body Content:** A GTM Engine is a complete, managed system of talent, strategy, and technology designed to build a permanent pipeline asset.
+* **Sub-Section 1:**
+    * **H3 (Icon/Title):** Elite Talent (The "Fully Loaded BDR Pod")
+    * **Body:** A dedicated, managed, and battle-tested team of BDRs, not a single "Lone Wolf" rep.
+* **Sub-Section 2:**
+    * **H3 (Icon/Title):** Strategic Framework (The "Impact Selling OS")
+    * **Body:** The operating system and strategic playbook that makes talent effective. You own 100% of the IP.
+* **Sub-Section 3:**
+    * **H3 (Icon/Title):** The Signal Factory (Your AI-Powered Engine)
+    * **Body:** The AI-powered tech stack that finds and qualifies buyers before they're "in-market."
+* **[CTA Link]:** Build Your GTM Engine
+
+**[Proof Module - "Social Proof"]**
+* **H2:** Proven Results. No Black Box.
+* **Body Content:** The GTM Engine model is built on transparency and performance.
+* **Key Stat Callouts (3-Column):**
+    * **Stat 1:** Productive in 14 Days (Subtitle: "Guaranteed pipeline in 2 weeks, not 6-9 months.")
+    * **Stat 2:** 20+ Guaranteed SQOs / Mo (Subtitle: "Fixed-cost appointments that meet your BANT & ICP criteria.")
+    * **Stat 3:** 100% IP Ownership (Subtitle: "You own the playbook, the data, and the asset forever.")
+* **Testimonial Snippet:** "The system just works. We stopped guessing and started building a real pipeline asset. For the first time, our pipeline is predictable."
+* **[CTA Link]:** See The Proof
+
+**[Tool Module - "Interactive ROI Calculator"]**
+* **H2:** Stop Guessing. Compare Your True ROI.
+* **Body Content:** A single internal hire costs over $198,000 and guarantees nothing. For roughly the *same* annual cost, you can deploy a complete GTM Engine that is productive in 14 days. Run the numbers.
+* **[Embedded Component]:** (Simple 3-field version of the ROI Calculator)
+* **[CTA Button]:** Calculate My ROI
+
+**[Final CTA Module]**
+* **H2:** The Blueprint is Clear. Schedule Your GTM Audit.
+* **Body Content:** Stop the hiring/firing cycle. Let's audit your GTM architecture and design a system that scales.
+* **[Primary CTA Button]:** Schedule My GTM Audit
+* **[Secondary CTA / Lead Magnet Module]**
+    * **H3:** Not ready for an audit?
+    * **Body Content:** Take our 3-minute GTM Readiness Assessment to diagnose your current system's bottlenecks.
+    * **[CTA Link]:** Assess My GTM Readiness
+
+---
+
+### **2. The Problem ("The Lone Wolf Trap")**
+
+**[Hero Module]**
+* **H1:** Stop Solving Systems Problems with Headcount Solutions.
+* **Sub-headline:** You're stuck in the "Lone Wolf Trap." It's not your fault, and you're not alone.
+
+**[Introduction Module - "The False Dichotomy"]**
+* **H2:** The Two-Option Trap That Guarantees Failure
+* **Body Content:** B2B leaders are told they have two choices for building pipeline: hire internally or outsource to an agency. What they aren't told is that both of these models are fundamentally broken. They are two paths to the same destination: a burned-out team, a non-existent pipeline, and a GTM strategy with zero long-term assets.
+
+**[Trap 1 Module - "The Internal Hire"]**
+* **H2:** Trap 1: The Internal Hire (The '$198,000 Mistake')
+* **Body Content:** You write the "perfect" job description. You screen 100+ candidates. You hire a rep with a great resume. Six months later, you have no pipeline, the rep is burned out, and you're back at square one—minus $198,000.
+* **H3:** The "Hiring Drag"
+* **Body:** The 3-6 month process of sourcing, interviewing, and onboarding that produces zero pipeline. By the time your rep is "ramped," they're already looking for their next job.
+* **H3:** The "Management Tax"
+* **Body:** The hidden cost of your time (or your sales leader's time) spent on 1:1s, training, and performance management instead of closing revenue. This "tax" is invisible and it's killing your growth.
+* **H3:** The "Lone Wolf Fallacy"
+* **Body:** The belief that one person, armed with a laptop and a phone, can successfully build a predictable pipeline. They operate in a silo, have no data, no system, and no support. They are set up to fail.
+
+**[Trap 2 Module - "The Outsourcing Agency"]**
+* **H2:** Trap 2: The Outsourcing Agency (The 'Suicide Mission')
+* **Body Content:** You're tired of the hiring drag, so you sign a 12-month contract with a "leading" B2B appointment setting service. They promise you 10 meetings a month. What you get is a list of unqualified leads and a bill.
+* **H3:** The "Black Box Problem"
+* **Body:** You have no idea how they're getting meetings. You don't know the messaging, you can't see the data, and you have no control. You're flying blind.
+* **H3:** The "Activity Mirage"
+* **Body:** They send you impressive dashboards showing 1,000s of "activities." But "activity" is not "progress." These are vanity metrics designed to hide a total lack of qualified pipeline.
+* **H3:** The "Zero-IP Trap"
+* **Body:** This is the most dangerous trap. After 12 months, you fire the agency. What do you have to show for it? Nothing. They leave and take 100% of the IP, the learnings, and the playbooks with them. You are left with zero assets.
+
+**[The Diagnosis Module - "The Reframe"]**
+* **H2:** The Diagnosis: You Don't Have a Person Problem. You Have an Architecture Problem.
+* **Body Content:** The "Lone Wolf" hire and the "Black Box" agency are just symptoms. The disease is a broken GTM architecture. You cannot solve an architecture problem by hiring another person. You solve it by building a new system.
+* This is the critical transition. It validates their frustration and pivots them from "I need a better person" to "I need a better system."
+
+**[Primary CTA Module]**
+* **H2:** See the Architecture That Solves This
+* **Body Content:** Stop buying "activity" and "headcount." It's time to build a permanent, scalable revenue generation system.
+* **[CTA Button]:** See The GTM Engine
+
+---
+
+### **3. The GTM Engine (The "Solution")**
+
+**[Hero Module]**
+* **H1:** This Isn't a Sales Team. It's a Complete Revenue Generation System.
+* **Sub-headline:** You don't have a headcount problem; you have an architecture problem. This is the blueprint for the architecture that scales.
+
+**[Module 1: What You Get (The 3 Components of the Engine)]**
+* **H2:** What You Get: The 3 Core Components of Your GTM Engine
+* **Body Content:** A GTM Engine is not a person; it's a complete, managed system of talent, strategy, and technology designed to build a permanent pipeline asset.
+* **Sub-Section 1 (Talent):**
+    * **H3:** Component 1: Elite Talent (The "Fully Loaded BDR Pod")
+    * **Body:** This is the antidote to the "Lone Wolf Fallacy." You don't get a single, isolated rep; you get a pod of trained operators. This pod is built, trained, and forged by our **Talent Architect**.
+    * **Bullets:**
+        * **Dedicated & Managed:** Your pod works for you, managed by us. We handle the 1:1s, performance, and "Management Tax".
+        * **Community-Powered:** Pods operate in a culture of "Community + Competition," solving problems faster than any single rep.
+        * **Ramped in Days, Not Months:** Our pods are system-ready and pipeline-productive in Week 2.
+* **Sub-Section 2 (Strategy):**
+    * **H3:** Component 2: Strategic Framework (The "Impact Selling OS")
+    * **Body:** This is the antidote to the "Zero-IP Trap." The GTM Engine is built on a strategic playbook that you 100% own. This framework is designed by our **Visionary Architect** and protected by our **Brand Guardian**.
+    * **Bullets:**
+        * **Your Playbook, Your IP:** We build your GTM playbook with you, and it stays with you forever.
+        * **Documented & Scalable:** A living system for messaging, objection handling, and tactics.
+        * **Based on "Impact Selling":** Our methodology (detailed below) that kills "sales pressure" and builds trust.
+* **Sub-Section 3 (Tech/Data):**
+    * **H3:** Component 3: The Signal Factory (Your AI-Powered Engine)
+    * **Body:** This is the antidote to the "Black Box Problem." We replace vanity "activity" metrics with a transparent, AI-powered data engine. This engine is engineered and maintained by our **AI Architect**.
+    * **Bullets:**
+        * **Find "Allbound" Signals:** We combine inbound intent data with outbound ICP triggers.
+        * **AI-Powered, Human-Verified:** Our AI finds the signals; our human operators validate the intent.
+        * **Full Tech Stack Included:** The engine includes the full stack of sequencing, data, and analytics tools.
+
+**[Module 2: How We Build It (The 3-Step Blueprint)]**
+* **H2:** How We Build & Deploy Your Engine (The 3-Step Blueprint)
+* **Body Content:** A true system is built on a clear process. We go from audit to active pipeline in 14 days.
+* **Step 1:**
+    * **H3:** 01: GTM Leverage Audit & System Design (Week 1)
+    * **Body:** First, we diagnose. We run a 360-degree audit of your existing GTM motion to find the primary bottleneck. Then, we design the GTM Engine blueprint to solve it.
+* **Step 2:**
+    * **H3:** 02: Pod Activation & Deployment (Week 2)
+    * **Body:** We activate your dedicated BDR Pod, deploy the Signal Factory tech stack, and finalize the v1 "Impact Selling OS" playbook. The system goes live and begins GTM execution.
+* **Step 3:**
+    * **H3:** 03: Performance, Optimization & Scale (Ongoing)
+    * **Body:** This is not a "set it and forget it" service. We operate in weekly sprints, analyzing performance, optimizing plays, and scaling what works—all in 100% transparency.
+
+**[Module 3: Our "Secret Sauce" (The Impact Selling OS)]**
+* **H2:** The "Secret Sauce": Why the "Impact Selling OS" Works
+* **Body Content:** Traditional sales "pitching" is dead. Our framework is built on a different model of persuasion.
+* **Sub-Section 1:**
+    * **H3:** From Audience to Scene Partner
+    * **Body:** We kill "sales pressure" by reframing the "pitch" as a collaborative "workshop." Our operators aren't selling *at* a prospect; they are solving a problem *with* a scene partner.
+* **Sub-Section 2:**
+    * **H3:** From Nouns to Verbs
+    * **Body:** Amateurs "pitch nouns" (our features, our product). Our operators "execute verbs" (Diagnose, Reframe, Validate, Prescribe). This shifts the entire dynamic.
+* **Sub-Section 3:**
+    * **H3:** The Hierarchy of Intention
+    * **Body:** Our BDRs are strategic, not tactical. Every email, call, and message has a clear, strategic purpose tied to the "GTM Audit" diagnosis. No "random acts of selling."
+
+**[Primary CTA Module]**
+* **H2:** See the Results This Engine Produces
+* **Body Content:** The architecture is the "how." The results are the "why." See the proof of what a GTM Engine can build.
+* **[CTA Button]:** See The Proof
+
+---
+
+### **4. Results & Case Studies ("The Proof")**
+
+**[Hero Module]**
+* **H1:** The Numbers Don't Lie. The Results Speak.
+* **Sub-headline:** We don't just solve your pipeline problem. We provide the antidote to the "Traps" that cause it.
+
+**[At-a-Glance "Proven Results" Module]**
+* **H2:** The GTM Engine: Verified Performance
+* **Body Content:** Our model is designed for three outcomes: Speed, Guarantees, and Scalable Assets.
+* **Key Stat Callouts (3-Column Component):**
+    * **Stat 1:** 3-5x Faster Ramp-to-Pipeline
+    * **Detail:** Our Pods are audit-to-active in 14 days, not 6-9 months.
+    * **Stat 2:** 20+ Guaranteed SQOs / Mo
+    * **Detail:** We guarantee 20 B2B qualified appointments that meet your exact ICP & BANT criteria.
+    * **Stat 3:** 100% IP Ownership
+    * **Detail:** You keep every playbook, dataset, and learning. We build your asset, not ours.
+
+**[Featured Case Studies ("The Antidotes") Module]**
+* **H2:** The Antidotes: How We Fix the Traps
+* **Body Content:** Our clients come to us from one of two failed models. Here's how we build their solution.
+* **Case Study 1 Component (Antidote to Trap 1):**
+    * **H3:** CASE STUDY: How [Client X] Escaped the '$198,000 Mistake' and Built a $2\text{M}$ Pipeline Asset.
+    * **Sub-heading:** "Industry: B2B SaaS | Model: Series A"
+    * **H4:** The Problem (The "Hiring Drag")
+    * **Body:** "[Client X] was stuck in the 'Hiring Drag.' They had hired and fired two internal SDRs in 9 months, burning over $150k with nothing to show for it."
+    * **H4:** The Solution (The "GTM Engine" Antidote)
+    * **Body:** "Our GTM Audit revealed a system problem. We deployed a GTM Engine. For roughly the same annual cost as *one* of their failed hires, we deployed a full BDR Pod, the Signal Factory, and their 'Impact Selling OS'—all in 14 days."
+    * **H4:** The Results (The Asset)
+    * **Bullet:** 20-25 BANT-qualified appointments *every month*.
+    * **Bullet:** $2\text{M}$ in qualified pipeline in the first 60 days.
+    * **Bullet:** An effective CPL of $< \$750$, dropping to $< \$300$ as the system scaled.
+* **Case Study 2 Component (Antidote to Trap 2):**
+    * **H3:** CASE STUDY: How [Client Y] Broke Free from the 'Zero-IP Trap' and Took 100% Ownership of Their GTM Playbook.
+    * **Sub-heading:** "Industry: FinTech | Model: PE-Backed"
+    * **H4:** The Problem (The "Agency Black Box")
+    * **Body:** "[Client Y] was 12 months into a contract with a 'Black Box' appointment setting agency. They were getting 8-10 'meetings' a month, but 90% were unqualified."
+    * **H4:** The Solution (The "GTM Engine" Antidote)
+    * **Body:** "We diagnosed them with the 'Activity Mirage' and the 'Zero-IP Trap.' We replaced the commodity agency with a transparent GTM Engine and built their new 'Impact Selling OS'—which we built *with* them and they *own*."
+    * **H4:** The Results (The Asset)
+    * **Bullet:** Cut unqualified meetings by 90% in 30 days.
+    * **Bullet:** Doubled Sales Qualified Opportunities (SQOs) in 45 days.
+    * **Bullet:** 100% ownership of their GTM playbook, data, and process.
+
+**[Testimonial Wall Module]**
+* **H2:** Don't Just Take Our Word For It
+* **Testimonial Component 1:**
+    * **Quote:** "The ROI is a no-brainer. We pay a flat fee and get 20+ guaranteed, qualified meetings a month. Our internal team could *never* get that, and they cost us more."
+    * **Attribution:** "[Name], CEO, [Company]"
+* **Testimonial Component 2:**
+    * **Quote:** "We were about to hire a 'top-tier' agency. The GTM Audit showed us how that would have been a fatal 'Zero-IP Trap'. Revenue Party didn't just sell us a service; they saved us from a multi-six-figure mistake."
+    * **Attribution:** "[Name], CRO, [Company]"
+
+**[Primary CTA Module]**
+* **H2:** Ready to Build Your Own Revenue Asset?
+* **Body Content:** Let's apply these same principles to your business. Schedule a free GTM Audit to get your custom blueprint. Stop renting activity and start building your engine.
+* **[CTA Button]:** Schedule My GTM Audit
+
+---
+
+### **5. Why Revenue Party? ("Why Us?")**
+
+**[Hero Module]**
+* **H1:** Community + Competition = Culture.
+* **Sub-headline:** Our culture is our product. It's the "Why" behind our Elite Talent and the reason our GTM Engines win.
+
+**[Module 1: Our Culture is Your Asset]**
+* **H2:** This is the "Why" Behind Our Elite Talent
+* **Body Content:** You're not just hiring a BDR; you're investing in an asset. An asset that is forged, sharpened, and scaled by a system of excellence. Our competitors sell you a "dedicated" rep who operates in a silo, just like a "Lone Wolf" internal hire. They burn out, get lonely, and quit. Our GTM Engines are built on a completely different human model.
+* **Sub-Section 1 (Community):**
+    * **H3:** Community: Our Pods Operate, Learn, and Win Together
+    * **Body:** Our BDRs operate in pods, not silos. When your rep hits an objection, they don't "go it alone." They bring it to the pod, and 10+ elite operators swarm it. The problem is solved in minutes, not weeks. This collective intelligence is your asset.
+* **Sub-Section 2 (Competition):**
+    * **H3:** Competition: Radical Transparency Drives Elite Performance
+    * **Body:** Our teams compete with radical transparency. All playbooks, all results, and all metrics are open to the entire organization. This internal drive for excellence ensures you get our A-game, every single day. The best-performing playbooks are identified, scaled, and deployed to all client GTM Engines, including yours.
+
+**[Module 2: The Revenue Party Manifesto (Our Beliefs)]**
+* **H2:** The Revenue Party Manifesto
+* **Body Content:** Our beliefs are the foundation of our architecture.
+* **Belief 1:** Own the Asset. (Anti-Zero-IP Trap) We believe our clients must own 100% of the IP, playbooks, and data.
+* **Belief 2:** Systems > Headcount. (Anti-Lone Wolf) We believe the "Lone Wolf" model is fundamentally broken. Only a complete system can create a predictable pipeline.
+* **Belief 3:** Transparency is the Antidote. (Anti-Black Box) We believe "Black Box" agencies and "Activity Mirages" are toxic. We operate with 100% transparency.
+* **Belief 4:** Impact > Activity. We believe in "executing verbs," not "pitching nouns." We are strategic partners, not tactical commodities.
+
+**[Module 3: The Competitive Edge (The "Us vs. Them" Table)]**
+* **H2:** The Competitive Edge: A Clear Comparison
+* **Body Content:** See exactly how a GTM Engine stacks up against the broken models.
+* **[Comparison Table Component]:**
+| Feature | Revenue Party (GTM Engine) | The Internal Hire ("Lone Wolf") | The Outsourcing Agency ("Black Box") |
+| :--- | :--- | :--- | :--- |
+| **Model** | Full BDR Pod + System | Single Rep in a Silo | Shared, "Commodity" Callers |
+| **Annual Cost** | **$180,000** (Predictable) | **$198,000+** (Variable & Hidden) | Varies (but 0 ROI) |
+| **Guaranteed Results** | **Yes (20+ SQOs/mo)** | **None** | No (Only "Activity Mirages") |
+| **IP / Asset Ownership** | **100% You Own It** | You own it (if they build it) | **ZERO. They Own It.** |
+| **Ramp Time** | **14 Days** | 6-9 Months | 30+ Days |
+| **Management** | Included ("Zero Tax") | "Heavy Management Tax" | None ("Black Box") |
+| **Core Risk** | **None (Performance Guarantee)** | High ("$198,000 Mistake") | **Fatal ("Zero-IP Trap")** |
+
+**[Module 4: Meet the Architects]**
+* **H2:** Meet the Architects Behind Your Engine
+* **Body Content:** Your GTM Engine is designed and guided by a team of dedicated architects, not a faceless account manager.
+* **[Profile Components (4-Column Grid)]:**
+    * **Profile 1:** Caleb Estes (Visionary Architect) - "The designer of the 'Impact Selling OS' and your GTM strategy."
+    * **Profile 2:** Muneeb Awan (Talent Architect) - "The builder of our 'Elite Talent' pods."
+    * **Profile 3:** Danyal Darvesh (AI Architect) - "The engineer of the 'Signal Factory'."
+    * **Profile 4:** Mariya Tamkeen (Brand Guardian) - "The protector of your brand and the 'Impact Selling OS'."
+
+**[Primary CTA Module]**
+* **H2:** Get Your GTM Audit
+* **Body Content:** Stop choosing between bad options. Schedule an audit with our Architects and let's design a system that wins.
+* **[CTA Button]:** Schedule My GTM Audit
+
+---
+
+### **6. Guide to Sales as a Service (Pillar Page)**
+
+**[Hero Module]**
+* **H1:** The Definitive Guide to Sales as a Service
+* **Sub-headline:** Why "Sales as a Service" (SaaS 2.0) is the antidote to the "Lone Wolf Trap" and "Black Box" outsourcing.
+
+**[Introduction Module]**
+* **H2:** What is "Sales as a Service"?
+* **Body Content:** "Sales as a Service" is a strategic model that moves beyond "outsourcing." Traditional outsourcing (like a "B2B appointment setting service") is a *commodity*. You rent a "caller" and get a list of "activities." When you stop paying, you are left with zero.
+* A true "Sales as a Service" model is an *asset*. You are investing in a complete, managed revenue system—the talent, the strategy, *and* the technology—that is built inside your business. You get a guaranteed, predictable pipeline *and* you own 100% of the IP.
+* This is the difference between renting a "headcount solution" and building a permanent "GTM Engine."
+
+**[Module 2: The 3 Pillars of a True "Sales as a Service" Model]**
+* **H2:** The 3 Pillars of a Modern GTM Architecture
+* **Body Content:** A true "Sales as a Service" model is built on three distinct, architected pillars.
+* **Pillar 1: The "GTM Engine" (The Architecture)**
+    * **Body:** This is the core operating system. It's the blueprint that combines talent and technology. It's not just "people"; it's a *system* that makes people effective.
+    * **[Spoke Link]:** `Read more → What is a "GTM Engine" (And How Is It Different from a "Sales Team")?`
+    * **[Spoke Link]:** `Read more → What is "Allbound"? A 5-Minute Guide to Combining Inbound and Outbound`
+* **Pillar 2: The "Signal Factory" (The Technology)**
+    * **Body:** This is the AI-powered tech stack that finds buyers *before* they are "in-market." It tracks "allbound" signals—like new hires, funding events, and tech stack changes—to find the 10 prospects ready to talk now.
+    * **[Spoke Link]:** `Read more → The "Signal Factory": How We Use AI to Find Buyers Before They're "In-Market"`
+* **Pillar 3: The "Impact Selling OS" (The Strategy)**
+    * **Body:** This is the playbook and methodology that kills "sales pressure" and builds trust. It's the strategic framework (that you own) for how your operators diagnose, reframe, and prescribe solutions.
+    * **[Spoke Link]:** `Read more → Killing "Sales Pressure": The Core Principles of the "Impact Selling OS"`
+    * **[Spoke Link]:** `Read more → "Community + Competition": Why Our BDR Pods Outperform "Lone Wolf" Reps`
+
+**[Primary CTA Module]**
+* **H2:** See the Model in Action
+* **Body Content:** Stop renting "activity." It's time to build your own revenue asset. Let's design the blueprint for your GTM Engine.
+* **[CTA Button]:** Schedule My GTM Audit
+* **[Secondary CTA Link]:** See Our Transparent Pricing
+
+---
+
+### **7. ROI Calculator (Standalone Page)**
+
+**[Hero Module]**
+* **H1:** The "Lone Wolf" vs. "GTM Engine" ROI Calculator
+* **Sub-headline:** A single internal hire costs over $198,000 and guarantees *zero*. For a similar cost, our GTM Engine guarantees 20+ qualified meetings per month. Run the numbers.
+
+**[Main Content Module: The Calculator Component]**
+* **H2:** Calculate Your 12-Month Pipeline ROI
+* **Body Content:** Don't just look at salary. The "$198,000 Mistake" is made of hidden costs. Fill out the fields below to see the 12-month total cost of ownership (TCO) for a traditional hire.
+* **[Interactive Calculator Component - 2 Columns]**
+* **Column 1: Your Inputs**
+    * **H3:** Part 1: The "Lone Wolf" (Internal Hire) Model
+    * **Field 1 (Slider):** Annual Base Salary (Default: $65,000)
+    * **Field 2 (Slider):** On-Target Earnings (OTE) (Default: $90,000)
+    * **Field 3 (Input):** Number of Hires (Default: 1)
+    * **Field 4 (Slider):** Months to Full Ramp-Up (Default: 6 months)
+    * **H4:** Hidden Costs (The "Gotchas")
+    * **Field 5 (Slider):** Your Manager's Annual Salary (Default: $150,000)
+    * **Field 6 (Slider):** Percent of Manager's Time on this Rep (Default: 20% - "The Management Tax")
+    * **Field 7 (Input - read-only):** Recruiting & Hiring Drag (Default: $25,000)
+    * **Field 8 (Input - read-only):** Tech Stack & Data per Rep (Default: $12,000/yr)
+    * **H3:** Part 2: The "GTM Engine" Model
+    * **Body:** Our model includes a full BDR Pod, all management, and the complete Signal Factory tech stack in a flat, predictable fee.
+    * **Field 9 (Input - read-only):** GTM Engine Annual Cost (Default: $180,000)
+* **Column 2: The Results (Comparison Dashboard)**
+    * **H2:** Your 12-Month Cost & ROI Comparison
+    * **H3: Internal "Lone Wolf" Model**
+        * **Stat 1: Total 12-Month Cost:** **[e.g., $198,400]**
+        * **Stat 2: Time to Pipeline:** 6-9 Months
+        * **Stat 3: Cost per Productive Month:** **[e.g., $33,066]**
+        * **Stat 4: Guaranteed Appointments:** 0
+    * **H3: Revenue Party "GTM Engine" Model**
+        * **Stat 1: Total 12-Month Cost:** **$180,000**
+        * **Stat 2: Time to Pipeline:** **14 Days**
+        * **Stat 3: Cost per Productive Month:** **$15,000**
+        * **Stat 4: Guaranteed Appointments:** **220** (20/mo x 11 mos)
+    * **H3 (Summary): The Verdict**
+    * "For **$18,400 *less*** than a single, non-guaranteed internal hire, the GTM Engine delivers **220+ qualified appointments** and is productive **5.5 months faster**."
+
+**[CTA Module - "The Next Step"]**
+* **H2:** The Math is Clear. The Blueprint is Next.
+* **Body Content:** You've seen the ROI. Now, let's build the blueprint for your GTM Engine. Schedule a GTM Audit, and we will build a custom ROI projection based on your actual sales data, ICP, and growth targets.
+* **[Primary CTA Button]:** Schedule My Free GTM Audit
+
+---
+
+### **8. Schedule GTM Audit (Primary Conversion Page)**
+
+**[Main Content Module - 2-Column Layout]**
+* **Column 1: The "What & Why"**
+    * **H1:** Schedule Your Free GTM Leverage Audit
+    * **Body Content:** This is **not a sales call.** This is a 30-minute strategic workshop with a GTM Architect to design your revenue blueprint.
+    * **H2:** What You Will Get (The Deliverable):
+    * **Bullet (Icon: Checkmark):** A 360-Degree Diagnosis: We'll identify the #1 "Lone Wolf" or "Black Box" bottleneck that is costing you revenue.
+    * **Bullet (Icon: Checkmark):** A "GTM Engine" Blueprint: A custom 1-page plan detailing the Talent, Strategy, and "Signal Factory" components you need.
+    * **Bullet (Icon: Checkmark):** A Transparent ROI Projection: A clear model of the pipeline asset we can build in the first 60-90 days, with zero "Black Box" metrics.
+    * **H2:** What This is NOT:
+    * **Bullet (Icon: X-mark):** This is NOT a "hard pitch". We are diagnosing your system, not selling you a product.
+    * **Bullet (Icon: X-mark):** This is NOT a "demo". We don't demo software; we design revenue architecture.
+    * **Bullet (Icon: X-mark):** This is NOT with a "sales rep". You will be speaking directly with a GTM Architect.
+* **Column 2: The "When" (The Form)**
+    * **H2:** Select a Time to Build Your Blueprint
+    * **[Embedded Calendar Component]:** (e.g., Calendly)
+    * **[Form Fields (Post-Time-Selection)]:**
+        * Full Name
+        * Work Email
+        * Company Name
+        * What is your #1 GTM challenge right now? (Open-text)
+    * **[Submit Button]:** Confirm My GTM Audit
+    * **Confirmation Text:** "A GTM Architect will send a personal confirmation and prep materials within one business day."
+
+---
+
+### **9. GTM Readiness Assessment (Lead Gen Page)**
+
+**[Hero Module]**
+* **H1:** Are You Ready to Scale? Take the 3-Minute GTM Readiness Assessment
+* **Sub-headline:** Your next sales hire *won't* fix your pipeline. A broken *system* is the #1 reason for failure. Diagnose your bottleneck now.
+
+**[Main Content Module: The "Why" & The "Quiz"]**
+* **H2:** Diagnose Your #1 GTM Bottleneck
+* **Body Content:** This 10-question assessment is designed by our GTM Architects to diagnose the true source of your pipeline bottleneck. Is it a "Hiring Drag" problem? A "Management Tax" problem? Or a "Zero-IP Trap" problem?
+* Get your score, an instant diagnosis, and a 1-page playbook on how to fix it.
+* **[Interactive Quiz/Survey Component]**
+    * *(This will be a multi-step form, one question at a time)*
+    * **Q1 (ICP):** "How clearly defined is your Ideal Customer Profile (ICP)?" (Options: "Vague," "Defined," "Documented," "Data-driven")
+    * **Q2 (Messaging):** "How confident are you in your current outbound messaging?" (Options: "Not confident," "It's okay," "It's a data-proven playbook")
+    * **Q3 (Talent):** "How would you describe your current sales development talent?" (Options: "No one," "Trying to hire," "'Lone Wolf' team," "Use an agency")
+    * **Q4 (Management):** "How much of your own time is spent managing the SDR/BDR team?" (Options: "0%," "1-10%," "10-25%," "25%+ ('Management Tax')")
+    * **Q5 (Tech):** "How integrated is your sales tech stack?" (Options: "A mess," "Siloed tools," "Integrated," "Automated 'Signal Factory'")
+    * **Q6 (Data):** "How do you track performance?" (Options: "Gut feel," "'Activity Mirage'," "Qualified Opportunities")
+    * **Q7 (IP):** "If your entire sales team (or agency) left tomorrow, what GTM assets would you have left?" (Options: "Nothing. ('Zero-IP Trap')," "Some scripts," "A complete, data-driven 'Impact Selling OS'")
+* **[Step 2: The "Gate" (Lead Capture)]**
+    * **H2:** You're Almost Done. Get Your Custom Diagnosis.
+    * **Body:** "Enter your info to receive your GTM Readiness Score, a custom diagnosis of your primary bottleneck, and the 1-page playbook to fix it."
+    * **[Form Fields]:** Full Name, Work Email, Company Name
+    * **[Submit Button]:** Get My GTM Diagnosis
+* **[Step 3: The "Result" (Thank You / Result Page)]**
+    * **H1:** Your GTM Readiness Score: [Score e.g., 45/100]
+    * **H2:** Your Primary Bottleneck: The "[e.g., Lone Wolf Fallacy]" Trap
+    * **Body (Dynamic Content):** "Your score indicates that your GTM motion is suffering from a critical 'Management Tax' and 'Hiring Drag.' You are stuck in the internal hire 'Lone Wolf' trap. You are solving a system problem with a headcount solution."
+    * **H3:** Your 1-Page Playbook (The Antidote)
+    * **Body:** "Here are the 3 steps you can take today: 1. Stop the hiring process. 2. Calculate the true TCO of that hire using our ROI Calculator. 3. Explore an 'architecture-first' solution."
+* **[Primary CTA Module (On Result Page)]**
+    * **H2:** Ready to Build the Blueprint?
+    * **Body Content:** This diagnosis is the "what." The GTM Audit is the "how." Schedule a free GTM Audit with one of our Architects to build the custom blueprint to solve your specific bottleneck.
+    * **[CTA Button]:** Schedule My GTM Audit
+
+---
+
+### **10. Contact Us / Careers**
+
+**[Hero Module]**
+* **H1:** Get in Touch
+* **Sub-headline:** We're building the future of revenue generation. Let's connect.
+
+**[Main Content Module - 2-Column Layout]**
+* **Column 1: Contact Information & Deflection**
+    * **H2:** General Inquiries
+    * **Body:** "For media, partnerships, or general operational questions, please use the form or email us at hello@revenueparty.com."
+    * **H2 (Deflection):** Looking to Build Your GTM Engine?
+    * **Body:** To see if a GTM Engine is right for your business, the fastest and best path is to schedule a GTM Audit. This is a free, 30-minute strategic workshop with a GTM Architect. (Please do not use the general contact form for sales inquiries).
+    * **[CTA Button]:** Schedule My GTM Audit
+* **Column 2: General Contact Form**
+    * **[Form Fields]:**
+        * Full Name
+        * Work Email
+        * Company Name
+        * Reason for Contacting: (Dropdown: Media/Press, Partnerships, Operations, Other)
+        * Your Message
+    * **[Submit Button]:** Send Message
+
+**[Careers Module]**
+* **H2:** Careers: Join the Party
+* **Body Content:** Our culture is our product (Community + Competition = Culture). We are always looking for elite operators, architects, and engineers who believe in our manifesto. If you are a "Lone Wolf" stuck in a broken system, it's time to find your pod.
+* **[CTA Link]:** See Our Open Roles
+
+---
+
+### **11. Pricing & Engagement**
+
+**[Hero Module]**
+* **H1:** Transparent Pricing. Guaranteed Results.
+* **Sub-headline:** We don't have "hidden fees" or "long-term contracts." We have a predictable investment that guarantees a return.
+
+**[The "Anti-Trap" Pricing Philosophy Module]**
+* **H2:** Our Pricing is the Antidote to the Agency Trap
+* **Body Content:** Traditional agency pricing is designed to trap you. Our model is built on transparency and alignment.
+* **[3-Column Component - The "Anti-Trap" Guarantees]:**
+    * **Column 1:**
+        * **H3:** No Long-Term Contracts
+        * **Body:** We don't need to lock you in for 12 months. We earn your business every 90 days. You have the flexibility to scale up, scale down, or pause.
+    * **Column 2:**
+        * **H3:** No Commissions. Ever.
+        * **Body:** Commissions misalign incentives. We charge a flat, predictable fee for your GTM Engine. This ensures we are 100% focused on building your asset, not just chasing a quick commission.
+    * **Column 3:**
+        * **H3:** A Performance Guarantee
+        * **Body:** We guarantee 20+ BANT-qualified appointments every month, or we don't get paid. We agree on the pipeline objectives during the GTM Audit. No "Activity Mirages."
+
+**[Pricing Tiers / Model Module]**
+* **H2:** Your Dedicated GTM Engine
+* **Body Content:** You are not buying "meetings." You are investing in a complete, managed revenue system. Our pricing is a simple, flat monthly fee that includes all three core components.
+* **[Single Pricing Box Component]**
+    * **Tier Name:** The GTM Engine
+    * **Pricing:** $15,000 / month
+    * **Sub-text:** For a fully-loaded BDR Pod & System.
+    * **H4:** What You Get (The Guarantee):
+    * **Bullet (Icon: Check):** 20+ Guaranteed Appointments / Mo
+    * **Detail:** "B2B qualified 'shown' appointments that meet your specific ICP and BANT criteria. We operate 11 months of the year."
+    * **H4:** What's Included (The 3 Components):
+    * **Bullet (Icon: Users):** Elite Talent (BDR Pod)
+    * **Bullet (Icon: Map):** Strategic Framework (Impact Selling OS)
+    * **Bullet (Icon: Cog):** The Signal Factory (AI-Powered Engine)
+
+**[Who Is This For? Module]**
+* **H2:** Is a GTM Engine Right For You?
+* **Body Content:** We are transparent about who we help. Our model is built for B2B companies with a high average contract value (ACV) or lifetime value (LTV).
+* **Sub-Section 1: This is FOR YOU if:**
+    * "A **$750 cost per qualified appointment** is a tolerable (or great) number for your business."
+    * "You understand the value of owning your GTM asset (the playbooks, data, and process) which drives your effective cost-per-meeting down to **< $300** over time."
+* **Sub-Section 2: This is NOT for you if:**
+    * "Your LTV is low, and you need $50 meetings. We are partners in building a revenue asset, not a commodity 'call center'."
+    * "You are looking for a 'quick fix' and not a long-term, scalable system."
+
+**[Final CTA Module]**
+* **H2:** Let's Build Your Blueprint
+* **Body Content:** The price is simple. The value is transformative. Schedule your free GTM Audit to get a custom quote and a transparent ROI projection for your business.
+* **[CTA Button]:** Schedule My GTM Audit
+
+---
+
+### **12. FAQ (Frequently Asked Questions)**
+
+**[Hero Module]**
+* **H1:** Frequently Asked Questions
+* **Sub-headline:** Clear answers. No "Black Box" responses.
+
+**[FAQ Section 1: The Pod & Talent]**
+* **[Accordion/Toggle Component 1]:**
+    * **H3 (Question):** Q: How is this different from Belkins, Upwork, or a traditional agency?
+    * **Body (Answer):** "It's the difference between renting a commodity and building an asset.
+        * **Upwork / "Lone Wolf":** You're hiring an unmanaged freelancer. You pay 100% of the 'Management Tax' and risk the '$198,000 Mistake' with no system and no guarantees.
+        * **Belkins / Traditional Agency:** You're renting a 'Black Box' service. They don't guarantee *qualified* meetings, and you get zero IP. When you leave, you leave with nothing. This is the 'Zero-IP Trap'.
+        * **Revenue Party (GTM Engine):** You get a dedicated BDR Pod, a transparent system, a guaranteed 20+ qualified appointments/mo, and a strategic playbook ('Impact Selling OS') that you 100% own forever."
+* **[Accordion/Toggle Component 2]:**
+    * **H3 (Question):** Q: Are the BDRs dedicated to us?
+    * **Body (Answer):** "Yes. 100%. This is a core part of our 'anti-Black Box' model. Your BDR Pod is a dedicated, fully-managed team that is 100% focused on your business."
+* **[Accordion/Toggle Component 3]:**
+    * **H3 (Question):** Q: What is the hiring and training process for your talent?
+    * **Body (Answer):** "Our 'Elite Talent' is our product. Our Talent Architect, Muneeb Awan, runs a continuous forging process. We hire the top 1% of operators and put them through a rigorous certification on our 'Impact Selling OS' *before* they are ever assigned to a client."
+
+**[FAQ Section 2: The Tech Stack & Process]**
+* **[Accordion/Toggle Component 1]:**
+    * **H3 (Question):** Q: What do you mean by "The Signal Factory"?
+    * **Body (Answer):** "The 'Signal Factory' is our AI-powered engine that finds your buyers before they're 'in-market.' Instead of just making 1,000 cold calls, our engine tracks 'allbound' signals—like company intent data, new hires, and funding events—to find the 10 prospects who are ready to talk now."
+* **[Accordion/Toggle Component 2]:**
+    * **H3 (Question):** Q: What's in the tech stack? Do we have to use your tools?
+    * **Body (Answer):** "The 'Signal Factory' tech stack is included in your engagement. This includes our full suite of data providers, sequencing software, and our proprietary AI tools. You do not need to buy or integrate anything. If you have an existing stack (e.g., Salesforce), we integrate directly with it."
+
+**[FAQ Section 3: The Engagement & IP]**
+* **[Accordion/Toggle Component 1]:**
+    * **H3 (Question):** Q: What does $15,000/month get me? What's the guarantee?
+    * **Body (Answer):** "It gets you the complete GTM Engine: the Elite Talent (BDR Pod), the Strategic Framework (Impact Selling OS), and the Tech Stack (Signal Factory), all managed for you. We **guarantee 20 B2B qualified 'shown' appointments** per month (11 months of the year) that meet the specific ICP and BANT qualification we agree upon in your GTM Audit."
+* **[Accordion/Toggle Component 2]:**
+    * **H3 (Question):** Q: What does "owning the playbook" actually mean? (How do you prevent the "Zero-IP Trap"?)
+    * **Body (Answer):** "This is the most critical part of our model. From Day 1, we build your 'Impact Selling OS'—your messaging, personas, objection handling, and playbooks—in a shared, living document. This is your IP. If you ever choose to leave, you take this entire GTM asset with you."
+* **[Accordion/Toggle Component 3]:**
+    * **H3 (Question):** Q: Who isn't this for?
+    * **Body (Answer):** "Our model is not for everyone. We are not a fit for companies with a low client LTV. If a $750 cost-per-meeting is not tolerable for your business, we are not the right partner. Our system is designed to build a scalable asset for companies with a high ACV."
+
+**[Primary CTA Module]**
+* **H2:** Have More Questions?
+* **Body Content:** The best way to get your specific questions answered is in a GTM Audit. Spend 30 minutes with an Architect to get a transparent, no-obligation blueprint for your business.
+* **[CTA Button]:** Schedule My GTM Audit
+
+---
+
+### **13. Buyer's Guide to SDR Outsourcing (Pillar Page)**
+
+**[Hero Module]**
+* **H1:** A 2025 Buyer's Guide to SDR Outsourcing (And the 3 "Traps" to Avoid)
+* **Sub-headline:** How to choose a provider and avoid the 3 "hidden traps" that cost 90% of companies their IP and pipeline.
+
+**[Module 1: Meet the Intent - "The Standard Model"]**
+* **H2:** What "SDR Outsourcing Companies" Promise
+* **Body Content:** You're here because you need pipeline, and you're evaluating "SDR outsourcing" or "appointment setting services" to get it. The standard model (from providers like Belkins, CIENCE, etc.) promises to deliver a set number of meetings for a set fee.
+* This model seems simple, but it's a minefield. This guide will give you the checklist you need to protect yourself.
+
+**[Module 2: The Reframe & Prove - "The 3 Hidden Traps (Your Buyer's Checklist)"]**
+* **H2:** 3 Questions to Ask Any Provider (To Avoid the "Traps")
+* **Body:** Before you sign any 12-month contract, use this checklist to diagnose whether you're buying a true *asset* or a high-risk "Suicide Mission."
+* **Trap 1: The "Black Box Problem" (The Cost of No-Control)**
+    * **H3:** Q1: "Can I see 100% of the data, messaging, and process?"
+    * **Body:** Most agencies hide their process in a "Black Box." You get meetings but have no idea how. You can't see the data, you can't improve the messaging, and you have no control.
+    * **[Spoke Link]:** `Read the checklist → 3 "Black Box" Questions You Must Ask a B2B Appointment Setting Service`
+    * **[Spoke Link]:** `See the comparison → Belkins vs. CIENCE vs. Revenue Party: A 2025 Comparison`
+* **Trap 2: The "Activity Mirage" (The Cost of Vanity Metrics)**
+    * **H3:** Q2: "How do you guarantee *qualified* meetings, not just 'activity'?"
+    * **Body:** Ask to see their dashboard. If they show you "1,000s of emails sent," you're seeing an "Activity Mirage." This is a vanity metric to hide a lack of *qualified* pipeline.
+    * **[Spoke Link]:** `Read the guide → "Activity" vs. "Progress": 5 SDR Vanity Metrics to Ignore (and 3 That Matter)`
+    * **[Spoke Link]:** `See the data → What Are "Qualified" Appointments? A BANT vs. SQL Framework`
+* **Trap 3: The "Zero-IP Trap" (The Cost of Renting)**
+    * **H3:** Q3: "If I fire you, what IP do I get to keep?"
+    * **Body:** This is the most important question. With 99% of agencies, the answer is **nothing**. They leave and take 100% of the playbooks, the learnings, and the data. You are left with zero assets. This is the "Zero-IP Trap."
+    * **[Spoke Link]:** `Read the full analysis → What is "Sales IP" and Why Don't Most Outsourced SDR Agencies Let You Keep It?`
+    * **[Spoke Link]:** `See the risk → What Happens When You Fire a Sales Agency? (The "Zero-IP" Exit)`
+
+**[Module 3: The Convert - "The Antidote"]**
+* **H2:** The Antidote: The GTM Engine (Owning the Asset)
+* **Body Content:** There is an alternative to "renting" a commodity. A GTM Engine is a "Sales as a Service" model where you get the pod, the system, and the strategy—and you **own 100% of the IP forever.**
+* **[Comparison Table]:**
+| Feature | Revenue Party (GTM Engine) | Traditional Agency ("Black Box") |
+| :--- | :--- | :--- |
+| **IP Ownership** | **100% You Own It** | **ZERO. They Own It.** |
+| **Transparency** | 100% ("Signal Factory") | "Black Box Problem" |
+| **Metrics** | Pipeline & SQOs | "Activity Mirage" |
+| **Guarantee** | **20+ Qualified SQOs** | "10 meetings" (unqualified) |
+* **[CTA Button]:** See The GTM Engine
+* **[Secondary CTA Link]:** See Our Performance Guarantee
+
+---
+
+### **14. How to Build an SDR Team (Pillar Page)**
+
+**[Hero Module]**
+* **H1:** The Complete Guide to Building an SDR Team (And the 3 "Traps" That Cause 90% of Failure)
+* **Sub-headline:** Hiring an SDR seems simple. But most new programs fail within 6 months. Here is a realistic guide to avoid the "$198,000 Mistake."
+
+**[Module 1: Meet the Intent - "The Standard Playbook"]**
+* **H2:** The "Standard" 4-Step Playbook for Hiring an SDR
+* **Body Content:** You're here because you need pipeline, and you've decided to build an internal team. The "standard" process everyone follows looks like this:
+    1.  Write the "Perfect" Job Description
+    2.  Source & Interview 100+ Candidates
+    3.  Hire the "Lone Wolf" Rep
+    4.  Onboard Them (and wait... and wait...)
+* This process seems logical. But it's a minefield. It's the reason most founders are back at square one 6 months later, minus $198,000.
+
+**[Module 2: The Reframe & Prove - "The 3 Hidden Traps (Your Real TCO)"]**
+* **H2:** The 3 "Hidden Traps" That Define Your Real TCO (Total Cost of Ownership)
+* **Body Content:** Before you post that job, you must understand the *real* costs. These are the three "traps" that turn a "$65k salary" into a "$198,000 Mistake". Each trap is a critical failure in your GTM architecture.
+* **Trap 1: The "Ramp & Churn" Trap (The $198,000 Mistake)**
+    * **H3:** Cost 1: The $198,000 "Mistake"
+    * **Body:** You've budgeted for the salary, but not the 34% industry churn rate or the 6-9 month "Hiring Drag" and "Ramp Time." These hidden costs create a six-figure liability before your rep makes a single call.
+    * **[Spoke Link]:** `Read the full analysis → The $198,000 Mistake: Why You Can't Just Hire Cold Callers`
+    * **[Spoke Link]:** `See the data → Why SDR Ramp Time Is Actually Architecture-Building Time`
+    * **[Spoke Link]:** `Understand the cause → The 34% SDR Churn Rate Isn't a Talent Problem—It's a System Problem`
+* **Trap 2: The "Lone Wolf Fallacy" (The Cost of No-System)**
+    * **H3:** Cost 2: The "Lone Wolf" Setup
+    * **Body:** You aren't hiring a *person*; you're trying to hire a *system*. You're expecting one "Lone Wolf" to find data, write scripts, build a tech stack, and manage themselves. They are being set up to fail.
+    * **[Spoke Link]:** `Read the guide → How to Hire a Salesperson Without Gambling $198,000`
+    * **[Spoke Link]:** `See the trap → Why Sales Hiring Fails: The Architecture Before Headcount Framework`
+* **Trap 3: The "Management Tax" (The Cost of Your Time)**
+    * **H3:** Cost 3: The Hidden "Management Tax"
+    * **Body:** Who is training, coaching, and managing this rep? You? Your Head of Sales? That's 20-30% of their time *not* spent on closing revenue. This "tax" is the most invisible and expensive cost of all.
+    * **[Spoke Link]:** `Read the full analysis → The Hidden "Management Tax": What Your SDR Hire Really Costs You`
+    * **[Spoke Link]:** `See the tech cost → The SDR Tech Stack Tax: $11k Per Rep You Didn't Budget For`
+
+**[Module 3: The Convert - "The Antidote"]**
+* **H2:** The Antidote: Deploying an "Architecture," Not a "Person"
+* **Body Content:** What if, for roughly the *same annual cost* as that one $198,000+ "Lone Wolf" hire, you could deploy a *complete* GTM Engine—with a full pod, the tech, the strategy, and all management included—and be productive in 14 days?
+* **[Comparison Table]:**
+| Feature | Revenue Party (GTM Engine) | The Internal Hire ("Lone Wolf") |
+| :--- | :--- | :--- |
+| **Annual Cost** | **$180,000** (Predictable) | **$198,000+** (Variable & Hidden) |
+| **Time to Pipeline** | **14 Days** | 6-9 Months |
+| **Management** | **Zero "Management Tax"** | Heavy "Management Tax" |
+| **Guarantee** | **20+ SQOs/Month** | 0 (High Risk of Failure) |
+* **[Primary CTA Button]:** See the GTM Engine
+* **[Secondary CTA Link]:** Calculate Your True "Lone Wolf" Cost
