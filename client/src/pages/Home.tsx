@@ -243,7 +243,7 @@ export default function Home() {
               data-testid="button-learn-more"
               asChild
             >
-              <Link href="/solutions/fully-loaded-bdr-pod">
+              <Link href="/gtm-engine">
                 Learn More <ArrowRight className="w-3 h-3" />
               </Link>
             </Button>
@@ -319,7 +319,7 @@ export default function Home() {
 
           <div className="text-center">
             <Button size="lg" variant="outline" className="gap-2" data-testid="button-success-stories" asChild>
-              <Link href="/results/success-stories">
+              <Link href="/results">
                 Read Success Stories <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
@@ -433,7 +433,7 @@ export default function Home() {
 
           <div className="text-center">
             <Button size="lg" variant="outline" className="gap-2" data-testid="button-full-comparison" asChild>
-              <Link href="/comparison">
+              <Link href="/blog">
                 See Full Comparison <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
@@ -480,7 +480,7 @@ export default function Home() {
 
           <div className="text-center mt-16">
             <Button size="lg" variant="outline" className="gap-2" data-testid="button-learn-process" asChild>
-              <Link href="/our-process">
+              <Link href="/gtm-engine">
                 Learn About Our Process <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>

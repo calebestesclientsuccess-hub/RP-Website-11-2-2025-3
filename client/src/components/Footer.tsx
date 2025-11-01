@@ -7,7 +7,7 @@ export function Footer() {
   return (
     <footer className="bg-card border-t border-card-border mt-32">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 md:gap-8">
           {/* Logo & Mission */}
           <div className="md:col-span-2">
             <Link href="/" className="inline-block mb-4" data-testid="footer-link-home">
@@ -18,40 +18,72 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Solutions */}
+          {/* Core Pages */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Solutions</h3>
+            <h3 className="font-semibold text-foreground mb-4">Explore</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/solutions/gtm-engine" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-gtm-engine">
-                  GTM Engine
+                <Link href="/problem" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-problem">
+                  The Problem
                 </Link>
               </li>
               <li>
-                <Link href="/solutions/fully-loaded-bdr-pod" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-services">
-                  Fully Loaded BDR Pod
+                <Link href="/gtm-engine" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-gtm-engine">
+                  The GTM Engine
+                </Link>
+              </li>
+              <li>
+                <Link href="/results" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-results">
+                  Results & Case Studies
+                </Link>
+              </li>
+              <li>
+                <Link href="/why-us" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-why-us">
+                  Why Revenue Party?
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-blog">
+                  Blog / Resources
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Why Party? */}
+          {/* Tools */}
           <div>
-            <h3 className="font-semibold text-foreground mb-4">Why Party?</h3>
+            <h3 className="font-semibold text-foreground mb-4">Tools</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/why-party" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-about">
-                  Why Party
+                <Link href="/roi-calculator" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-roi-calculator">
+                  ROI Calculator
                 </Link>
               </li>
               <li>
-                <Link href="/join-the-party" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-careers">
-                  Careers
+                <Link href="/assessment" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-assessment">
+                  GTM Readiness Assessment
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h3 className="font-semibold text-foreground mb-4">Company</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-pricing">
+                  Pricing & Engagement
                 </Link>
               </li>
               <li>
-                <Link href="/contact-us" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-contact">
-                  Contact Us
+                <Link href="/faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-faq">
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-contact">
+                  Contact Us / Careers
                 </Link>
               </li>
             </ul>

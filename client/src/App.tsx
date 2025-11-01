@@ -8,22 +8,17 @@ import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { FloatingCalculatorCTA } from "./components/FloatingCalculatorCTA";
 import Home from "@/pages/Home";
+import ProblemPage from "@/pages/ProblemPage";
 import GTMEnginePage from "@/pages/GTMEnginePage";
-import FullyLoadedBDRPage from "@/pages/FullyLoadedBDRPage";
-import Methodology from "@/pages/Methodology";
-import FullStackSalespersonPage from "@/pages/FullStackSalespersonPage";
-import AIPoweredPage from "@/pages/AIPoweredPage";
-import OurProcessPage from "@/pages/OurProcessPage";
 import ResultsPage from "@/pages/ResultsPage";
-import ROICalculator from "@/pages/ROICalculator";
-import SuccessStoriesPage from "@/pages/SuccessStoriesPage";
-import BlueprintsPage from "@/pages/BlueprintsPage";
-import BlueprintPost from "@/pages/BlueprintPost";
-import ComparisonPage from "@/pages/ComparisonPage";
 import About from "@/pages/About";
-import Careers from "@/pages/Careers";
-import CareerDetail from "@/pages/CareerDetail";
+import BlogPage from "@/pages/BlogPage";
+import AuditPage from "@/pages/AuditPage";
+import ROICalculator from "@/pages/ROICalculator";
+import AssessmentPage from "@/pages/AssessmentPage";
 import ContactPage from "@/pages/ContactPage";
+import PricingPage from "@/pages/PricingPage";
+import FAQPage from "@/pages/FAQPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -31,32 +26,21 @@ function Router() {
     <Switch>
       {/* Core Pages */}
       <Route path="/" component={Home} />
-
-      {/* Solutions Section */}
-      <Route path="/solutions/gtm-engine" component={GTMEnginePage} />
-      <Route path="/solutions/fully-loaded-bdr-pod" component={FullyLoadedBDRPage} />
-
-      {/* Methodology Section */}
-      <Route path="/methodology" component={Methodology} />
-      <Route path="/methodology/full-stack-salesperson" component={FullStackSalespersonPage} />
-      <Route path="/methodology/ai-powered-by-humans" component={AIPoweredPage} />
-      <Route path="/our-process" component={OurProcessPage} />
-
-      {/* Results Section */}
+      <Route path="/problem" component={ProblemPage} />
+      <Route path="/gtm-engine" component={GTMEnginePage} />
       <Route path="/results" component={ResultsPage} />
-      <Route path="/results/roi-calculator" component={ROICalculator} />
-      <Route path="/results/success-stories" component={SuccessStoriesPage} />
-
-      {/* Resources */}
-      <Route path="/blueprints" component={BlueprintsPage} />
-      <Route path="/blueprints/:slug" component={BlueprintPost} />
-      <Route path="/comparison" component={ComparisonPage} />
-
+      <Route path="/why-us" component={About} />
+      <Route path="/blog" component={BlogPage} />
+      <Route path="/audit" component={AuditPage} />
+      
+      {/* Tools & Resources */}
+      <Route path="/roi-calculator" component={ROICalculator} />
+      <Route path="/assessment" component={AssessmentPage} />
+      
       {/* Company */}
-      <Route path="/why-party" component={About} />
-      <Route path="/join-the-party" component={Careers} />
-      <Route path="/join-the-party/:id" component={CareerDetail} />
-      <Route path="/contact-us" component={ContactPage} />
+      <Route path="/pricing" component={PricingPage} />
+      <Route path="/faq" component={FAQPage} />
+      <Route path="/contact" component={ContactPage} />
 
       {/* Fallback */}
       <Route component={NotFound} />
