@@ -21,16 +21,16 @@ export default function ScrollScaleReveal() {
     
     if (prefersReducedMotion) {
       // Show final state immediately
-      gsap.set(text, { opacity: 0, scale: 1 });
-      gsap.set(redText, { opacity: 1, scale: 1 });
+      gsap.set(text, { opacity: 0 });
+      gsap.set(redText, { opacity: 1 });
       return;
     }
 
     // Set initial states explicitly
     gsap.set(redText, { opacity: 0 });
-    gsap.set(text, { opacity: 1, scale: 1 });
+    gsap.set(text, { opacity: 1, fontSize: "3rem" }); // Start at 48px
 
-    // Timeline for the extended scaling and crossfade effect
+    // Timeline for fontSize growth + crossfade effect
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: container,
@@ -41,29 +41,24 @@ export default function ScrollScaleReveal() {
       }
     });
 
-    // Progressive scaling: 1x → 4x (wraps to multiple lines, then overfills)
-    // This takes 70% of the scroll distance
-    tl.fromTo(text, 
+    // Phase 1: Grow fontSize from 3rem to 12rem (natural wrapping from 1 line to 4-5 lines)
+    // This takes 75% of the scroll distance
+    tl.to(text, 
       {
-        scale: 1,
+        fontSize: "12rem", // 192px - will wrap to 4-5 lines
         opacity: 1,
-        letterSpacing: "normal",
-      },
-      {
-        scale: 4,
-        opacity: 1,
-        letterSpacing: "0.08em",
+        letterSpacing: "0.04em",
         ease: "power1.inOut",
-        duration: 0.70,
+        duration: 0.75,
       }
     )
-    // Final fadeout of white text as it overfills (70-85% of scroll)
+    // Phase 2: Crossfade - white text fades out (75-90% of scroll)
     .to(text, {
       opacity: 0,
       duration: 0.15,
       ease: "power2.in",
     })
-    // Red text fades in at fixed H1 size (no scaling) - simultaneous with white fadeout
+    // Red text fades in at normal H1 size - simultaneous with white fadeout
     .fromTo(redText,
       {
         opacity: 0,
@@ -75,10 +70,10 @@ export default function ScrollScaleReveal() {
       },
       "<" // Start at the same time as previous tween
     )
-    // Hold the red text visible for remaining scroll (85-100%)
+    // Phase 3: Hold the red text visible for remaining scroll (90-100%)
     .to(redText, {
       opacity: 1,
-      duration: 0.15,
+      duration: 0.10,
     });
 
     return () => {
@@ -95,18 +90,19 @@ export default function ScrollScaleReveal() {
       data-testid="section-scroll-scale-reveal"
     >
       <div className="sticky top-1/2 -translate-y-1/2 w-full px-4 md:px-6 lg:px-8">
-        {/* White scaling text - wraps to multiple lines as it scales */}
+        {/* White text - fontSize animates from 3rem to 12rem, wrapping naturally */}
         <div className="absolute inset-0 flex items-center justify-center">
           <h1 
             ref={textRef}
-            className="text-3xl md:text-4xl lg:text-5xl font-bold text-center text-foreground px-4 leading-tight max-w-5xl"
+            className="font-bold text-center text-foreground leading-tight max-w-3xl"
+            style={{ fontSize: "3rem" }}
             data-testid="text-scaling"
           >
             You need more than another salesperson
           </h1>
         </div>
 
-        {/* Red finale text - stays at H1 size, no scaling */}
+        {/* Red finale text - stays at normal H1 size */}
         <div className="absolute inset-0 flex items-center justify-center">
           <h1 
             ref={redTextRef}
