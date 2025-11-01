@@ -34,14 +34,15 @@ export default function ScrollScaleReveal() {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: container,
-        start: "top bottom",
-        end: "bottom top",
+        start: "top top", // Animation starts when section top hits viewport top
+        end: "bottom top", // Animation ends when section bottom hits viewport top (400vh scroll)
         scrub: 1.2, // Snappy but smooth
         invalidateOnRefresh: true,
       }
     });
 
     // Progressive scaling: 1x → 4x (wraps to multiple lines, then overfills)
+    // This takes 70% of the scroll distance
     tl.fromTo(text, 
       {
         scale: 1,
@@ -53,31 +54,31 @@ export default function ScrollScaleReveal() {
         opacity: 1,
         letterSpacing: "0.08em",
         ease: "power1.inOut",
-        duration: 0.7,
+        duration: 0.70,
       }
     )
-    // Final fadeout of white text as it overfills
+    // Final fadeout of white text as it overfills (70-85% of scroll)
     .to(text, {
       opacity: 0,
       duration: 0.15,
       ease: "power2.in",
     })
-    // Red text fades in at fixed H1 size (no scaling)
+    // Red text fades in at fixed H1 size (no scaling) - simultaneous with white fadeout
     .fromTo(redText,
       {
         opacity: 0,
       },
       {
         opacity: 1,
-        duration: 0.25,
+        duration: 0.15,
         ease: "power2.out",
       },
-      "-=0.1"
+      "<" // Start at the same time as previous tween
     )
-    // Hold the red text visible for remaining scroll
+    // Hold the red text visible for remaining scroll (85-100%)
     .to(redText, {
       opacity: 1,
-      duration: 0.35,
+      duration: 0.15,
     });
 
     return () => {
