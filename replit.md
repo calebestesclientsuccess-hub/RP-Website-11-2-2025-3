@@ -58,14 +58,20 @@ Comprehensive technical SEO enhancements to conquer Google search results:
 - **Canonical URLs**: Prevents duplicate content penalties across all pages
 
 **Meta Tags & Social Sharing:**
-- **Open Graph Tags**: Complete Facebook sharing optimization (title, description, image, type, locale)
-- **Twitter Card Tags**: Enhanced Twitter/X sharing with summary_large_image format
+- **react-helmet-async Integration**: Centralized SPA meta tag management system (client/src/components/SEO.tsx)
+- **Page-Specific SEO**: All 11 pages have unique, optimized titles and descriptions managed dynamically
+- **Open Graph Tags**: Complete Facebook sharing optimization (title, description, image, type, locale) per page
+- **Twitter Card Tags**: Enhanced Twitter/X sharing with summary_large_image format per page
 - **Theme Color**: Brand-specific theme color (#dc2626) for mobile browsers
-- **SEO Meta Tags**: Comprehensive title, description, and keywords for all pages
+- **Canonical URLs**: Dynamic canonical URLs that update per page to prevent duplicate content penalties
+- **Meta Tag Architecture**: Static meta tags removed from index.html to eliminate conflicts; all dynamic tags managed via Helmet
 
 **Structured Data (JSON-LD):**
-- **Organization Schema**: Company information, logo, contact points, social profiles
-- **WebSite Schema**: Site-wide search functionality markup
+- **Organization Schema**: Company information, logo, contact points, social profiles (global in index.html)
+- **WebSite Schema**: Site-wide search functionality markup (global in index.html)
+- **Service Schema**: GTM Engine service offering on homepage (client/src/components/ServiceSchema.tsx)
+- **FAQ Schema Component**: Reusable component for FAQ pages (client/src/components/FAQSchema.tsx)
+- **Article Schema Component**: Reusable component for blog posts (client/src/components/ArticleSchema.tsx)
 - **BreadcrumbList Schema**: Automatic per-page breadcrumb navigation (injected dynamically)
 
 **Performance Optimizations:**
