@@ -39,10 +39,11 @@ export default function ScrollScaleReveal() {
       scrollTrigger: {
         trigger: container,
         start: "top top", // Pin when section reaches top
-        end: "+=300%", // Scroll 300% of viewport height
+        end: () => "+=" + (window.innerHeight * 4), // 4x viewport height for friction
         scrub: 1, // Smooth scrubbing
         pin: true, // Pin the container
         pinSpacing: true,
+        anticipatePin: 1,
         markers: false, // Set to true to debug trigger points
         onUpdate: (self) => {
           console.log(`ScrollScaleReveal progress: ${self.progress.toFixed(2)}`);
@@ -51,7 +52,7 @@ export default function ScrollScaleReveal() {
     });
 
     // Phase 1: Grow fontSize to emphasized size (moderate growth for clean wrapping)
-    // Duration 7 = 70% of total timeline
+    // Duration 6 = 60% of timeline
     tl.fromTo(text, 
       {
         fontSize: "clamp(2rem, 5vw, 3rem)", // Responsive starting size
@@ -62,15 +63,15 @@ export default function ScrollScaleReveal() {
         opacity: 1,
         letterSpacing: "0.02em",
         ease: "power2.inOut",
-        duration: 7, // 70% of timeline
+        duration: 6, // 60% of timeline
       }
     )
     // Phase 2: Crossfade - white completely fades out, red completely fades in
-    // Duration 3 = 30% of total timeline (increased for complete crossfade)
+    // Duration 2 = 20% of timeline
     .to(text, {
       opacity: 0,
       ease: "power2.inOut",
-      duration: 3, // 30% of timeline
+      duration: 2, // 20% of timeline
     })
     .fromTo(redText, 
       {
@@ -79,10 +80,17 @@ export default function ScrollScaleReveal() {
       {
         opacity: 1,
         ease: "power2.inOut",
-        duration: 3, // 30% of timeline
+        duration: 2, // 20% of timeline
       }, 
       "<" // Start at same time as white fadeout
-    );
+    )
+    // Phase 3: Hold with friction - force user to stay with the message
+    // Duration 2 = 20% of timeline (creates the "stuck" feeling)
+    .to(redText, {
+      opacity: 1, // Keep it visible
+      duration: 2, // Hold for 20% of scroll
+      ease: "none", // No easing, just hold
+    });
 
     // Create pulsating animation that triggers when red text is fully visible
     let pulseAnimation: gsap.core.Tween | null = null;
@@ -90,11 +98,11 @@ export default function ScrollScaleReveal() {
     ScrollTrigger.create({
       trigger: container,
       start: "top top",
-      end: "+=300%",
+      end: () => "+=" + (window.innerHeight * 4),
       scrub: false,
       onUpdate: (self) => {
-        // Start pulsating when we're past 85% (red text is mostly visible)
-        if (self.progress > 0.85 && !pulseAnimation) {
+        // Start pulsating when we're past 70% (after crossfade completes)
+        if (self.progress > 0.70 && !pulseAnimation) {
           pulseAnimation = gsap.fromTo(redText, 
             {
               textShadow: "0 0 40px rgba(220, 38, 38, 0.3), 0 0 80px rgba(220, 38, 38, 0.15)",
@@ -111,7 +119,7 @@ export default function ScrollScaleReveal() {
           );
         }
         // Stop pulsating if scrolled back up
-        if (self.progress < 0.85 && pulseAnimation) {
+        if (self.progress < 0.70 && pulseAnimation) {
           pulseAnimation.kill();
           pulseAnimation = null;
           gsap.set(redText, {
