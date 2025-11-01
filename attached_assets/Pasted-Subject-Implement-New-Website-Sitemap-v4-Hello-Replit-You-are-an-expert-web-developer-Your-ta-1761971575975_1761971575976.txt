@@ -1,0 +1,108 @@
+Subject: Implement New Website Sitemap (v4)
+
+Hello Replit,
+
+You are an expert web developer. Your task is to update my existing website to implement a brand new sitemap.
+
+Here is the goal:
+
+We are restructuring the entire site based on the sitemap (v4) provided. This involves updating all navigation, deleting old pages, and creating new placeholder pages.
+
+Please follow these steps exactly:
+
+1. Update Primary Navigation (Header):
+
+
+
+Locate the main header navigation menu.
+
+Delete all existing navigation links.
+
+Add the following new links in this specific order:
+
+The Problem (href: /problem)
+
+The GTM Engine (href: /gtm-engine)
+
+Results & Case Studies (href: /results)
+
+Why Revenue Party? (href: /why-us)
+
+Blog / Resources (href: /blog)
+
+Schedule GTM Audit (as a styled button, href: /audit)
+
+2. Update Footer Navigation:
+
+
+
+Locate the footer navigation/sitemap area.
+
+Ensure the following links are present (add any that are missing, and remove any old ones):
+
+The Problem (href: /problem)
+
+The GTM Engine (href: /gtm-engine)
+
+Results & Case Studies (href: /results)
+
+Why Revenue Party? (href: /why-us)
+
+Blog / Resources (href: /blog)
+
+ROI Calculator (href: /roi-calculator)
+
+GTM Readiness Assessment (href: /assessment)
+
+Pricing & Engagement (href: /pricing)
+
+FAQ (href: /faq)
+
+Contact Us / Careers (href: /contact)
+
+3. Purge/Create Pages:
+
+
+
+Home Page (/):
+
+DO NOT DELETE the content on the Home Page.
+
+Go through the Home Page content and update all internal links to point to the new URLs (e.g., the "The Problem" section should link to /problem, "The Solution" to /gtm-engine, etc.).
+
+All Other Pages (New & Old):
+
+Delete any old pages that are not in the new sitemap (e.g., "Solutions," "Methodology," "Blueprints," etc. if they exist).
+
+Create the following new pages.
+
+For each new page, add only a simple <h1> title as placeholder content.
+
+Crucially, delete all other body content from any old pages that are being repurposed. We want blank slates for all pages except the Home Page.
+
+New Page Placeholders:
+
+/problem -> <h1>The Problem ("The Lone Wolf Trap")</h1>
+
+/gtm-engine -> <h1>The GTM Engine</h1>
+
+/results -> <h1>Results & Case Studies ("The Proof")</h1>
+
+/why-us -> <h1>Why Revenue Party? ("Why Us?")</h1>
+
+/blog -> <h1>Blog / Resources ("The Pillar Page")</h1>
+
+/audit -> <h1>Schedule GTM Audit</h1> (Note: This page should contain the Calendly/form embed)
+
+/roi-calculator -> <h1>ROI Calculator</h1> (Note: This page should contain the calculator tool)
+
+/assessment -> <h1>GTM Readiness Assessment</h1> (Note: This page will contain the quiz)
+
+/contact -> <h1>Contact Us / Careers</h1>
+
+/pricing -> <h1>Pricing & Engagement</h1>
+
+/faq -> <h1>FAQ</h1>
+
+Please confirm once you have completed this site-wide restructuring.
+
