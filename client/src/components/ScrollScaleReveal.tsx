@@ -82,7 +82,7 @@ export default function ScrollScaleReveal() {
   return (
     <section 
       ref={containerRef}
-      className="relative min-h-[200vh] flex items-center justify-center overflow-hidden bg-background"
+      className="relative min-h-[250vh] flex items-center justify-center overflow-hidden bg-background"
       data-testid="section-scroll-scale-reveal"
     >
       <div className="sticky top-1/2 -translate-y-1/2 w-full px-4 md:px-6 lg:px-8">
@@ -91,12 +91,12 @@ export default function ScrollScaleReveal() {
           ref={textRef}
           className="absolute inset-0 flex items-center justify-center"
         >
-          <h2 
-            className="text-base md:text-lg lg:text-xl font-bold text-center text-foreground px-4"
+          <h1 
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-center text-foreground px-4 leading-tight"
             data-testid="text-scaling"
           >
             You need more than another salesperson
-          </h2>
+          </h1>
         </div>
 
         {/* Red finale text */}
@@ -104,15 +104,15 @@ export default function ScrollScaleReveal() {
           ref={redTextRef}
           className="absolute inset-0 flex items-center justify-center opacity-0"
         >
-          <h2 
-            className="text-2xl md:text-3xl lg:text-4xl font-bold text-center text-primary px-4"
+          <h1 
+            className="text-4xl md:text-5xl lg:text-6xl font-bold text-center text-primary px-4 leading-tight"
             style={{
               textShadow: "0 0 40px rgba(220, 38, 38, 0.3), 0 0 80px rgba(220, 38, 38, 0.15)",
             }}
             data-testid="text-red-finale"
           >
             You need a system.
-          </h2>
+          </h1>
         </div>
       </div>
     </section>
