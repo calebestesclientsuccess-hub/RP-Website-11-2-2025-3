@@ -21,7 +21,14 @@ export function Navbar() {
         <div className="flex items-center justify-between h-20 md:h-22">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 hover-elevate rounded-md px-2 py-1 transition-all" data-testid="link-home">
-            <img src={logoWhite} alt="Revenue Party Logo" className="h-16 md:h-18 w-auto" />
+            <img 
+              src={logoWhite} 
+              alt="Revenue Party Logo" 
+              className="h-16 md:h-18 w-auto" 
+              loading="eager"
+              width="200"
+              height="64"
+            />
           </Link>
 
           {/* Desktop Navigation */}

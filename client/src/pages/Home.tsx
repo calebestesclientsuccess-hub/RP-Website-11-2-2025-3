@@ -8,6 +8,9 @@ import { HeroROICalculator } from "@/components/HeroROICalculator";
 import CinematicBridge from "@/components/CinematicBridge";
 import { SEO } from "@/components/SEO";
 import { ServiceSchema } from "@/components/ServiceSchema";
+import LocalBusinessSchema from "@/components/LocalBusinessSchema";
+import VideoSchema from "@/components/VideoSchema";
+import SoftwareApplicationSchema from "@/components/SoftwareApplicationSchema";
 import { Calendar, PiggyBank, UserX, ArrowRight, Check, Quote } from "lucide-react";
 // Video is served from public directory
 const podVideo = "/bdr-pod-video.mp4";
@@ -132,6 +135,16 @@ export default function Home() {
         canonical="/"
       />
       <ServiceSchema />
+      <LocalBusinessSchema />
+      <SoftwareApplicationSchema />
+      <VideoSchema 
+        name="Your Fullstack Sales Unit - Revenue Party GTM System"
+        description="Watch how Revenue Party's GTM Engine deploys elite BDR talent with AI-powered systems to deliver 20+ qualified appointments monthly."
+        thumbnailUrl="https://revenuelabs.com/video-thumbnail.jpg"
+        uploadDate="2024-10-01"
+        duration="PT2M"
+        contentUrl={podVideo}
+      />
       
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">

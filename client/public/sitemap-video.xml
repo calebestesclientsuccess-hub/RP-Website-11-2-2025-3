@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+  <url>
+    <loc>https://revenuelabs.com/</loc>
+    <video:video>
+      <video:thumbnail_loc>https://revenuelabs.com/video-thumbnail.jpg</video:thumbnail_loc>
+      <video:title>Your Fullstack Sales Unit - Revenue Party GTM System</video:title>
+      <video:description>Watch how Revenue Party's GTM Engine deploys elite BDR talent with AI-powered systems to deliver 20+ qualified appointments monthly.</video:description>
+      <video:content_loc>https://revenuelabs.com/hero-video.mp4</video:content_loc>
+      <video:player_loc>https://revenuelabs.com/</video:player_loc>
+      <video:duration>120</video:duration>
+      <video:publication_date>2024-10-01T08:00:00+00:00</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:tag>GTM</video:tag>
+      <video:tag>Sales</video:tag>
+      <video:tag>BDR</video:tag>
+      <video:tag>Revenue Generation</video:tag>
+      <video:tag>B2B SaaS</video:tag>
+      <video:category>Business</video:category>
+      <video:uploader info="https://revenuelabs.com">Revenue Party</video:uploader>
+      <video:live>no</video:live>
+    </video:video>
+  </url>
+</urlset>
