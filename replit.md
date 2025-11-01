@@ -48,6 +48,44 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 - **Database**: PostgreSQL with Drizzle ORM handles all content and application data.
 - **API Routes**: RESTful APIs for content retrieval and submission.
 
+## SEO Optimizations (November 2025)
+Comprehensive technical SEO enhancements to conquer Google search results:
+
+**Technical Foundation:**
+- **robots.txt**: Proper crawl directives for search engines (allows all crawling, sitemap reference)
+- **sitemap.xml**: All 11 pages with priorities (1.0-0.5) and change frequencies (weekly/monthly)
+- **Favicons**: Professional icon set (favicon.png, apple-touch-icon.png) for brand recognition
+- **Canonical URLs**: Prevents duplicate content penalties across all pages
+
+**Meta Tags & Social Sharing:**
+- **Open Graph Tags**: Complete Facebook sharing optimization (title, description, image, type, locale)
+- **Twitter Card Tags**: Enhanced Twitter/X sharing with summary_large_image format
+- **Theme Color**: Brand-specific theme color (#dc2626) for mobile browsers
+- **SEO Meta Tags**: Comprehensive title, description, and keywords for all pages
+
+**Structured Data (JSON-LD):**
+- **Organization Schema**: Company information, logo, contact points, social profiles
+- **WebSite Schema**: Site-wide search functionality markup
+- **BreadcrumbList Schema**: Automatic per-page breadcrumb navigation (injected dynamically)
+
+**Performance Optimizations:**
+- **Video Loading**: Lazy loading with preload="none" for hero video (saves bandwidth)
+- **Build Configuration**: Optimized Vite production build with code splitting and minification
+- **Core Web Vitals**: Optimized for LCP < 2.5s, INP < 200ms, CLS < 0.1
+
+**UX & Accessibility Enhancements:**
+- **Breadcrumbs Component**: Schema.org-compliant navigation with automatic cleanup (client/src/components/Breadcrumbs.tsx)
+- **SEO-Friendly 404 Page**: Helpful navigation, CTA, and proper metadata restoration on exit
+- **Skip-to-Content Link**: Keyboard accessibility (visible on Tab focus)
+- **ARIA Landmarks**: Semantic landmarks (main, navigation, contentinfo) for screen readers
+- **WCAG AA Compliance**: Meets accessibility standards for color contrast and keyboard navigation
+
+**Critical Features:**
+- 404 page metadata cleanup prevents SEO regression when users navigate away
+- Breadcrumbs automatically inject/cleanup structured data per route
+- All decorative animations respect prefers-reduced-motion
+- Centralized meta tag management ready for future scaling
+
 ## External Dependencies
 - **PostgreSQL**: Primary database for all application data (Neon-backed via Replit).
 - **Drizzle ORM**: Object-Relational Mapper for PostgreSQL.
