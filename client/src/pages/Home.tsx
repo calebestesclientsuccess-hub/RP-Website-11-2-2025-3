@@ -120,7 +120,7 @@ export default function Home() {
                   className="mb-6"
                 >
                   <Badge 
-                    className="bg-collaboration/20 text-collaboration border-collaboration/30 text-sm px-4 py-1.5"
+                    className="badge-texture bg-collaboration text-white border-collaboration text-sm px-4 py-1.5"
                     data-testid="badge-hero-culture"
                   >
                     Community + Competition = Culture

@@ -62,7 +62,7 @@ export default function GTMEnginePage() {
               className="mb-6 flex justify-center"
             >
               <Badge 
-                className="bg-technology/20 text-technology border-technology/30 text-sm px-4 py-1.5"
+                className="badge-texture bg-collaboration text-white border-collaboration text-sm px-4 py-1.5"
                 data-testid="badge-hero-engine"
               >
                 The GTM Engine

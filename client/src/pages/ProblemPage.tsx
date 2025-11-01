@@ -30,7 +30,7 @@ export default function ProblemPage() {
               className="mb-6 flex justify-center"
             >
               <Badge 
-                className="bg-primary/20 text-primary border-primary/30 text-sm px-4 py-1.5"
+                className="badge-texture bg-primary text-white border-primary text-sm px-4 py-1.5"
                 data-testid="badge-hero-trap"
               >
                 The Lone Wolf Trap
