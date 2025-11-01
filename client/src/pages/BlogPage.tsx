@@ -15,7 +15,13 @@ import {
   Briefcase,
   Zap,
   BookOpen,
-  Brain
+  Brain,
+  AlertTriangle,
+  TrendingDown,
+  ShieldAlert,
+  AlertCircle,
+  Cog,
+  Lightbulb
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
@@ -199,40 +205,61 @@ export default function BlogPage() {
   const featuredArticles = filteredArticles.filter(a => a.featured);
   const regularArticles = filteredArticles.filter(a => !a.featured);
 
-  // Group articles by content hub for SEO
+  // 5 Strategic Content Hubs - SEO Cluster Architecture
   const contentHubs = [
     {
-      name: "Hiring Economics Hub",
-      slug: "hiring-economics",
-      description: "Everything you need to know about the true costs of sales hiring",
+      name: "Theme 1: The Internal Hire Trap",
+      subtitle: "The $198k Mistake",
+      slug: "hire-cold-callers",
+      targetKeyword: "hire cold callers",
+      description: "The forensic deconstruction of the $198,000 Liability. Why the 'Hiring Drag,' 'Management Tax,' and 'Lone Wolf Fallacy' are costing you revenue.",
+      icon: TrendingDown,
       articleCount: articles.filter(a => a.contentHub === "hiring-economics").length
     },
     {
-      name: "Performance Optimization Hub",
-      slug: "performance-optimization",
-      description: "Strategies and tactics for maximizing team performance",
-      articleCount: articles.filter(a => a.contentHub === "performance-optimization").length
+      name: "Theme 2: The Outsourcing Trap",
+      subtitle: "The Shell Game",
+      slug: "b2b-appointment-setting",
+      targetKeyword: "b2b appointment setting services",
+      description: "How to spot the 'Black Box Problem,' 'Zero-IP Trap,' and 'Activity Mirage' from commodity agencies (the 93% that fail).",
+      icon: ShieldAlert,
+      articleCount: articles.filter(a => a.contentHub === "performance-optimization").length + articles.filter(a => a.contentHub === "sales-operations").length
     },
     {
-      name: "GTM Playbooks Hub",
-      slug: "gtm-playbooks",
-      description: "Proven playbooks for go-to-market success",
-      articleCount: articles.filter(a => a.contentHub === "gtm-playbooks").length
+      name: "Theme 3: The Symptom",
+      subtitle: "Underperforming Team",
+      slug: "underperforming-sales-team",
+      targetKeyword: "underperforming sales team",
+      description: "How to diagnose if you have a talent problem or a system problem. This hub contains the '5 Red Flags' and diagnostics for fixing a broken, siloed pipeline.",
+      icon: AlertCircle,
+      articleCount: articles.filter(a => a.category === "Team Performance").length
     },
     {
-      name: "Sales Operations Hub",
-      slug: "sales-operations",
-      description: "Optimize your sales tech stack and processes",
-      articleCount: articles.filter(a => a.contentHub === "sales-operations").length
+      name: "Theme 4: The Solution",
+      subtitle: "The Revenue Engine",
+      slug: "allbound",
+      targetKeyword: "allbound",
+      description: "The blueprint for the 'Fullstack' asset. How to combine the 'Pod Architecture,' 'Signal Factory,' and 'Impact Selling OS' into one 'Allbound' system.",
+      icon: Cog,
+      articleCount: articles.filter(a => a.contentHub === "gtm-playbooks").length + articles.filter(a => a.contentHub === "ai-powered-gtm").length
+    },
+    {
+      name: "Theme 5: The Methodology",
+      subtitle: "Impact Selling OS",
+      slug: "sales-agency",
+      targetKeyword: "sales agency",
+      description: "The 'software' for the 'hardware.' How our 'verb-based' OS and 'Scene Partner' mindset turns reps into Operators.",
+      icon: Brain,
+      articleCount: articles.filter(a => a.contentHub === "sales-methodology").length
     }
   ];
 
   return (
     <div className="min-h-screen">
       <SEO 
-        title="GTM Blueprints - Revenue Party Blog"
-        description="Expert insights on building revenue generation systems, escaping hiring traps, and scaling B2B SaaS sales effectively."
-        keywords="GTM blog, sales resources, revenue insights, B2B SaaS, SDR outsourcing, BDR hiring costs"
+        title="The Lone Wolf Trap: Why SDR Outsourcing Fails When You Need Scale - Revenue Party Blog"
+        description="An open-source library of strategic frameworks, financial models, and execution playbooks to build high-performance revenue engines. Deconstruct the hidden costs of traditional GTM."
+        keywords="hire cold callers, b2b appointment setting services, underperforming sales team, allbound, sales agency, GTM blog, SDR outsourcing, BDR hiring costs, revenue generation system"
         canonical="/blog"
       />
 
@@ -248,8 +275,11 @@ export default function BlogPage() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-blog">
               The Lone Wolf Trap: Why SDR Outsourcing Fails When You Need Scale
             </h1>
-            <p className="text-xl text-muted-foreground mb-8" data-testid="text-blog-subtitle">
+            <p className="text-xl text-muted-foreground mb-4" data-testid="text-blog-subtitle">
               Stop renting reps. Start building revenue assets.
+            </p>
+            <p className="text-lg text-muted-foreground/80 mb-8 max-w-3xl" data-testid="text-blog-body">
+              This isn't a blog. It's an open-source library of the strategic frameworks, financial models, and execution playbooks we use to build high-performance revenue engines. We deconstruct the hidden costs of traditional GTM and provide a clear blueprint for systematic scale.
             </p>
             
             {/* Search Bar */}
@@ -295,27 +325,60 @@ export default function BlogPage() {
         </div>
       </section>
 
-      {/* Content Hubs for SEO */}
-      <section className="py-8 px-4 md:px-6 lg:px-8 bg-card/30">
+      {/* 5 Strategic Content Hubs - SEO Cluster Navigation */}
+      <section className="py-16 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-card/30 to-background">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl font-bold mb-6" data-testid="heading-content-hubs">
-            Explore Our Content Hubs
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {contentHubs.map((hub) => (
-              <Card 
-                key={hub.slug} 
-                className="p-4 hover-elevate cursor-pointer"
-                data-testid={`card-hub-${hub.slug}`}
-              >
-                <h3 className="font-semibold mb-2">{hub.name}</h3>
-                <p className="text-sm text-muted-foreground mb-2">{hub.description}</p>
-                <div className="flex items-center justify-between">
-                  <Badge variant="secondary">{hub.articleCount} articles</Badge>
-                  <ArrowRight className="h-4 w-4 text-primary" />
-                </div>
-              </Card>
-            ))}
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4" data-testid="heading-content-hubs">
+              5 Strategic Content Hubs
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Navigate our SEO cluster architecture. Each hub is a forensic deep-dive into the systems that drive (or destroy) revenue growth.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {contentHubs.map((hub, index) => {
+              const Icon = hub.icon;
+              return (
+                <motion.div
+                  key={hub.slug}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className={index === 4 ? "md:col-span-2 lg:col-span-1 lg:col-start-2" : ""}
+                >
+                  <Card 
+                    className="p-6 hover-elevate cursor-pointer group h-full"
+                    data-testid={`card-hub-${hub.slug}`}
+                  >
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="p-3 bg-primary/10 rounded-md group-hover:bg-primary/20 transition-colors">
+                        <Icon className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <Badge variant="outline" className="mb-2">
+                          {hub.targetKeyword}
+                        </Badge>
+                        <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors">
+                          {hub.name}
+                        </h3>
+                        <p className="text-sm font-semibold text-primary/70">
+                          {hub.subtitle}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                      {hub.description}
+                    </p>
+                    <div className="flex items-center justify-between pt-4 border-t">
+                      <Badge variant="secondary">{hub.articleCount} articles</Badge>
+                      <ArrowRight className="h-4 w-4 text-primary group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>

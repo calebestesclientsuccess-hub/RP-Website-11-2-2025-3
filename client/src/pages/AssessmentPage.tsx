@@ -64,6 +64,7 @@ interface AssessmentQuestion {
 interface AssessmentResults {
   score: number;
   level: "Foundational" | "Developing" | "Advanced" | "Elite";
+  primaryBottleneck: string;
   diagnosis: string;
   strengths: string[];
   gaps: string[];
@@ -97,8 +98,8 @@ export default function AssessmentPage() {
       id: "icp",
       category: "ICP Definition",
       icon: <Target className="w-5 h-5" />,
-      question: "How well-defined is your Ideal Customer Profile (ICP)?",
-      description: "A clear ICP is the foundation of effective GTM. It determines who you target, how you message, and where you focus resources.",
+      question: "How clearly defined is your Ideal Customer Profile (ICP)?",
+      description: "Your ICP determines who you target, how you message, and where you focus resources.",
       options: [
         {
           value: "none",
@@ -109,152 +110,20 @@ export default function AssessmentPage() {
         {
           value: "basic",
           label: "We have a general idea of our target market",
-          score: 2,
+          score: 3,
           insight: "A general idea isn't enough - you need specific criteria to qualify prospects"
         },
         {
           value: "documented",
           label: "We have documented criteria but it's not strictly followed",
-          score: 4,
+          score: 7,
           insight: "Documentation is good, but inconsistent application wastes opportunities"
         },
         {
           value: "refined",
           label: "We have a refined ICP with firmographic, technographic, and behavioral signals",
-          score: 6,
+          score: 10,
           insight: "Excellent - a multi-dimensional ICP enables precision targeting"
-        }
-      ]
-    },
-    {
-      id: "process",
-      category: "Sales Process",
-      icon: <Settings className="w-5 h-5" />,
-      question: "How mature is your sales process?",
-      description: "A repeatable sales process is critical for predictable revenue and efficient scaling.",
-      options: [
-        {
-          value: "adhoc",
-          label: "Each rep follows their own approach",
-          score: 0,
-          insight: "Without process standardization, you can't identify what works or scale success"
-        },
-        {
-          value: "basic",
-          label: "We have basic stages defined",
-          score: 2,
-          insight: "Basic stages are a start, but you need exit criteria and playbooks for each stage"
-        },
-        {
-          value: "documented",
-          label: "We have a documented process with clear stages and activities",
-          score: 4,
-          insight: "Good foundation - now focus on enforcement and continuous optimization"
-        },
-        {
-          value: "optimized",
-          label: "We have an optimized, data-driven process with playbooks and enablement",
-          score: 6,
-          insight: "Excellent - this level of maturity enables predictable, scalable growth"
-        }
-      ]
-    },
-    {
-      id: "techstack",
-      category: "Tech Stack",
-      icon: <Database className="w-5 h-5" />,
-      question: "How integrated is your sales tech stack?",
-      description: "Your tech stack either multiplies or divides your team's productivity.",
-      options: [
-        {
-          value: "minimal",
-          label: "We use basic tools (CRM + email)",
-          score: 1,
-          insight: "Basic tools limit your ability to scale and optimize performance"
-        },
-        {
-          value: "disconnected",
-          label: "We have multiple tools but they don't talk to each other",
-          score: 2,
-          insight: "Disconnected tools create data silos and inefficiency - costing you 20%+ productivity"
-        },
-        {
-          value: "partial",
-          label: "Some tools are integrated but we still have manual processes",
-          score: 4,
-          insight: "Partial integration is progress, but manual processes still create bottlenecks"
-        },
-        {
-          value: "unified",
-          label: "Fully integrated stack with automated workflows and unified data",
-          score: 6,
-          insight: "A unified stack is a competitive advantage - this is where scale happens"
-        }
-      ]
-    },
-    {
-      id: "team",
-      category: "Team Structure",
-      icon: <Users className="w-5 h-5" />,
-      question: "How is your revenue team structured?",
-      description: "Team structure determines velocity, accountability, and scalability.",
-      options: [
-        {
-          value: "solo",
-          label: "Single person or founder-led sales",
-          score: 1,
-          insight: "Founder-led sales can't scale - you need dedicated resources to grow"
-        },
-        {
-          value: "generalist",
-          label: "Full-cycle reps handling everything from prospecting to closing",
-          score: 2,
-          insight: "Full-cycle reps get pulled in too many directions to excel at any one thing"
-        },
-        {
-          value: "specialized",
-          label: "Specialized roles (BDRs, AEs) but working in silos",
-          score: 4,
-          insight: "Specialization is good, but silos create handoff friction and lost opportunities"
-        },
-        {
-          value: "pods",
-          label: "Integrated pods with aligned BDRs, AEs, and support resources",
-          score: 6,
-          insight: "Pod structures maximize collaboration and accountability - the gold standard"
-        }
-      ]
-    },
-    {
-      id: "data",
-      category: "Data Quality",
-      icon: <Database className="w-5 h-5" />,
-      question: "What's the state of your prospect and customer data?",
-      description: "Data quality directly impacts your ability to target, personalize, and convert.",
-      options: [
-        {
-          value: "poor",
-          label: "Our data is outdated, incomplete, or inaccurate",
-          score: 0,
-          insight: "Bad data = bad outcomes. You're wasting 50%+ of your outreach effort"
-        },
-        {
-          value: "basic",
-          label: "We have basic contact info but limited enrichment",
-          score: 2,
-          insight: "Basic data limits personalization and reduces response rates by 70%+"
-        },
-        {
-          value: "enriched",
-          label: "We enrich data but it's a manual or periodic process",
-          score: 4,
-          insight: "Periodic enrichment is good, but real-time enrichment unlocks true potential"
-        },
-        {
-          value: "dynamic",
-          label: "Real-time enrichment with technographic and intent data",
-          score: 6,
-          insight: "Dynamic data enrichment enables precision targeting and 10x better results"
         }
       ]
     },
@@ -262,65 +131,197 @@ export default function AssessmentPage() {
       id: "messaging",
       category: "Messaging",
       icon: <MessageSquare className="w-5 h-5" />,
-      question: "How developed is your sales messaging?",
-      description: "Messaging is the bridge between your value and your customer's pain.",
+      question: "How confident are you in your current outbound messaging?",
+      description: "Effective messaging is the bridge between your value and your customer's pain.",
       options: [
         {
-          value: "feature",
-          label: "We focus on product features and capabilities",
-          score: 1,
-          insight: "Feature-focused messaging doesn't resonate - buyers care about outcomes"
+          value: "not_confident",
+          label: "Not confident - we're guessing what resonates",
+          score: 0,
+          insight: "Guesswork in messaging leads to poor response rates and wasted effort"
         },
         {
-          value: "benefit",
-          label: "We talk about benefits but it's generic",
+          value: "somewhat",
+          label: "Somewhat confident - we get some responses",
           score: 3,
-          insight: "Generic benefits are better than features, but still don't create urgency"
+          insight: "Some success isn't enough - you need a proven, repeatable framework"
         },
         {
-          value: "problem",
-          label: "We focus on customer problems and pain points",
-          score: 4,
-          insight: "Problem-focused messaging is good - now personalize it by persona"
+          value: "confident",
+          label: "Confident - we have tested messaging that works",
+          score: 7,
+          insight: "Tested messaging is good - now focus on personalization at scale"
         },
         {
-          value: "impact",
-          label: "We quantify business impact with personalized, multi-threaded messaging",
-          score: 6,
-          insight: "Impact-based messaging with personalization is what drives conversions"
+          value: "very_confident",
+          label: "Very confident - our messaging consistently drives conversations",
+          score: 10,
+          insight: "Excellent - consistent results indicate a strong messaging foundation"
         }
       ]
     },
     {
-      id: "metrics",
+      id: "talent",
+      category: "Talent Quality",
+      icon: <Users className="w-5 h-5" />,
+      question: "How would you describe your current sales development talent?",
+      description: "Your team's skill level directly impacts your pipeline quality and velocity.",
+      options: [
+        {
+          value: "struggling",
+          label: "We're struggling to find or retain good SDRs",
+          score: 0,
+          insight: "The 'Lone Wolf Trap' - relying on individual heroes creates constant risk"
+        },
+        {
+          value: "junior",
+          label: "We have junior reps who need constant supervision",
+          score: 3,
+          insight: "High supervision needs create a 'Management Tax' that limits your leverage"
+        },
+        {
+          value: "competent",
+          label: "We have competent reps but inconsistent performance",
+          score: 7,
+          insight: "Inconsistency signals a process problem, not a people problem"
+        },
+        {
+          value: "elite",
+          label: "We have elite talent who consistently exceed quota",
+          score: 10,
+          insight: "Elite talent is a competitive advantage - now systematize their success"
+        }
+      ]
+    },
+    {
+      id: "management",
+      category: "Management Burden",
+      icon: <Settings className="w-5 h-5" />,
+      question: "How much of your own time (or a sales leader's time) is spent managing the SDR/BDR team?",
+      description: "Management time is either an investment in leverage or a tax on productivity.",
+      options: [
+        {
+          value: "most_time",
+          label: "Most of my time - I'm constantly coaching and firefighting",
+          score: 0,
+          insight: "You're paying the 'Management Tax' - your high-leverage time is consumed by low-leverage work"
+        },
+        {
+          value: "significant",
+          label: "A significant amount - daily 1:1s and check-ins",
+          score: 3,
+          insight: "Heavy management needs indicate a missing system or undertrained team"
+        },
+        {
+          value: "moderate",
+          label: "Moderate - weekly check-ins and occasional coaching",
+          score: 7,
+          insight: "Good balance - focus on building systems to reduce this further"
+        },
+        {
+          value: "minimal",
+          label: "Minimal - the team operates independently with clear processes",
+          score: 10,
+          insight: "Excellent - independent operation is the sign of a mature system"
+        }
+      ]
+    },
+    {
+      id: "techstack",
+      category: "Tech Stack",
+      icon: <Database className="w-5 h-5" />,
+      question: "How integrated is your sales tech stack (CRM, Data, Sequencer)?",
+      description: "Your tech stack either multiplies or divides your team's productivity.",
+      options: [
+        {
+          value: "disconnected",
+          label: "Disconnected - lots of manual work and data silos",
+          score: 0,
+          insight: "Disconnected tools create the 'Tech Stack Tax' - costing you 20%+ productivity"
+        },
+        {
+          value: "partial",
+          label: "Partially integrated - some automation but many gaps",
+          score: 3,
+          insight: "Partial integration is progress, but gaps still create bottlenecks"
+        },
+        {
+          value: "mostly",
+          label: "Mostly integrated - automated workflows with minor manual steps",
+          score: 7,
+          insight: "Good foundation - eliminate remaining manual steps to unlock full potential"
+        },
+        {
+          value: "fully",
+          label: "Fully integrated - unified data and automated workflows",
+          score: 10,
+          insight: "A unified stack is a competitive advantage - this is where scale happens"
+        }
+      ]
+    },
+    {
+      id: "tracking",
       category: "Performance Tracking",
       icon: <BarChart3 className="w-5 h-5" />,
-      question: "How do you track and optimize GTM performance?",
+      question: "How do you track performance?",
       description: "What gets measured gets managed. What gets managed gets improved.",
       options: [
         {
-          value: "none",
-          label: "We track basic metrics like calls made and emails sent",
-          score: 1,
-          insight: "Activity metrics without outcome metrics create busy work, not results"
+          value: "basic_activity",
+          label: "Basic activity metrics (calls, emails)",
+          score: 0,
+          insight: "Activity metrics without outcomes create the 'Activity Mirage' - busy work, not results"
         },
         {
-          value: "lagging",
-          label: "We track results (deals closed, revenue) but not leading indicators",
-          score: 2,
+          value: "outcome_only",
+          label: "Outcome metrics only (meetings booked, deals closed)",
+          score: 3,
           insight: "Lagging indicators tell you what happened, not what will happen"
         },
         {
           value: "mixed",
-          label: "We track both activity and outcome metrics",
-          score: 4,
-          insight: "Good balance - now focus on conversion rates between stages"
+          label: "Both activity and outcome metrics",
+          score: 7,
+          insight: "Good balance - now focus on conversion rates and predictive indicators"
         },
         {
-          value: "predictive",
-          label: "We have full-funnel visibility with predictive analytics and optimization loops",
-          score: 6,
-          insight: "Predictive analytics enable proactive optimization - this is elite level"
+          value: "full_funnel",
+          label: "Full-funnel visibility with leading and lagging indicators",
+          score: 10,
+          insight: "Full-funnel tracking enables proactive optimization - this is elite level"
+        }
+      ]
+    },
+    {
+      id: "ip_ownership",
+      category: "IP Ownership",
+      icon: <Database className="w-5 h-5" />,
+      question: "If your entire sales team (or agency) left tomorrow, what GTM assets would you have left?",
+      description: "The true test of a system is what remains when the people leave.",
+      options: [
+        {
+          value: "nothing",
+          label: "Nothing - all the knowledge walks out the door",
+          score: 0,
+          insight: "You're trapped in the 'Zero-IP Trap' - you're building their company, not yours"
+        },
+        {
+          value: "some_docs",
+          label: "Some documentation and spreadsheets",
+          score: 3,
+          insight: "Basic documentation is a start, but it's not a transferable system"
+        },
+        {
+          value: "playbooks",
+          label: "Documented playbooks and processes in our CRM",
+          score: 7,
+          insight: "Good foundation - now focus on making it repeatable and transferable"
+        },
+        {
+          value: "full_system",
+          label: "A complete, documented system with playbooks, data, and tech stack",
+          score: 10,
+          insight: "Excellent - you own a true asset that can survive team changes"
         }
       ]
     }
@@ -360,24 +361,29 @@ export default function AssessmentPage() {
 
   const calculateResults = (): AssessmentResults => {
     const totalScore = Object.values(answers).reduce((sum, score) => sum + score, 0);
-    const maxScore = questions.length * 6;
+    const maxScore = questions.length * 10;
     const percentage = (totalScore / maxScore) * 100;
     
     let level: AssessmentResults["level"];
     let diagnosis: string;
+    let primaryBottleneck: string;
     
-    if (percentage < 25) {
+    if (percentage < 30) {
       level = "Foundational";
-      diagnosis = "Your GTM engine needs significant development. You're likely experiencing high customer acquisition costs, long sales cycles, and unpredictable revenue. The good news: small improvements will yield massive returns.";
-    } else if (percentage < 50) {
+      primaryBottleneck = "The Lone Wolf Fallacy (Single Point of Failure)";
+      diagnosis = "Your GTM system is trapped in the 'Lone Wolf' model. You're likely experiencing the $198k liability cycle: hire, ramp, burn out, repeat. This isn't a person problem—it's an architecture problem. Your pipeline is dangerously dependent on individual performance, creating constant risk and unpredictable revenue.";
+    } else if (percentage < 55) {
       level = "Developing";
-      diagnosis = "You have some GTM foundations in place, but critical gaps are limiting your growth potential. You're leaving money on the table through inefficiency and missed opportunities.";
-    } else if (percentage < 75) {
+      primaryBottleneck = "The Management Tax (High-Leverage Time Drain)";
+      diagnosis = "You have some GTM foundations, but you're paying the 'Management Tax.' Your high-leverage time is consumed by low-leverage work: coaching, firefighting, and supervising reps who lack proper systems. This creates a ceiling on your growth and limits your strategic impact.";
+    } else if (percentage < 80) {
       level = "Advanced";
-      diagnosis = "Your GTM engine shows maturity in several areas. With targeted optimizations, you can unlock the next level of growth and efficiency.";
+      primaryBottleneck = "The Zero-IP Trap (Missing Transferable Assets)";
+      diagnosis = "Your GTM engine shows maturity, but you're vulnerable to the 'Zero-IP Trap.' If key people leave, what remains? Without documented systems, playbooks, and processes, you're building their career, not your company's asset. Focus on systematizing your success to create true enterprise value.";
     } else {
       level = "Elite";
-      diagnosis = "You have a sophisticated GTM engine. Focus on continuous optimization and scaling what works. Consider advanced strategies like account-based orchestration.";
+      primaryBottleneck = "Minor Optimization Opportunities";
+      diagnosis = "You have a sophisticated GTM system. You've escaped the common traps: Lone Wolf dependency, Management Tax, and Zero-IP risk. Your focus should be on continuous optimization, scaling what works, and exploring advanced strategies like account-based orchestration.";
     }
     
     // Identify strengths and gaps
@@ -386,14 +392,14 @@ export default function AssessmentPage() {
     
     questions.forEach(q => {
       const score = answers[q.id] || 0;
-      if (score >= 4) {
+      if (score >= 7) {
         strengths.push(q.category);
-      } else if (score <= 2) {
+      } else if (score <= 3) {
         gaps.push(q.category);
       }
     });
     
-    // Generate recommendations
+    // Generate recommendations based on specific gaps
     const recommendations: AssessmentResults["recommendations"] = {
       immediate: [],
       shortTerm: [],
@@ -401,32 +407,35 @@ export default function AssessmentPage() {
     };
     
     if (gaps.includes("ICP Definition")) {
-      recommendations.immediate.push("Define and document your ICP with specific qualifying criteria");
-    }
-    if (gaps.includes("Sales Process")) {
-      recommendations.immediate.push("Map and standardize your sales process with clear stage gates");
-    }
-    if (gaps.includes("Data Quality")) {
-      recommendations.immediate.push("Audit and clean your CRM data, implement enrichment tools");
-    }
-    
-    if (gaps.includes("Tech Stack")) {
-      recommendations.shortTerm.push("Integrate your core sales tools to eliminate manual data entry");
+      recommendations.immediate.push("Define your ICP with firmographic, technographic, and behavioral signals");
     }
     if (gaps.includes("Messaging")) {
-      recommendations.shortTerm.push("Develop impact-based messaging frameworks by persona");
+      recommendations.immediate.push("Develop and test impact-based messaging frameworks by persona");
     }
-    if (gaps.includes("Team Structure")) {
-      recommendations.shortTerm.push("Consider specialized roles or pod structures for better efficiency");
+    if (gaps.includes("Talent Quality")) {
+      recommendations.immediate.push("Audit your hiring process and consider a pod-based system to reduce 'Lone Wolf' risk");
     }
     
+    if (gaps.includes("Management Burden")) {
+      recommendations.shortTerm.push("Build self-managing systems to reduce the 'Management Tax'");
+    }
+    if (gaps.includes("Tech Stack")) {
+      recommendations.shortTerm.push("Integrate your sales tools to eliminate manual work and data silos");
+    }
+    if (gaps.includes("Performance Tracking")) {
+      recommendations.shortTerm.push("Implement full-funnel tracking with leading and lagging indicators");
+    }
+    
+    if (gaps.includes("IP Ownership")) {
+      recommendations.longTerm.push("Document all playbooks, processes, and systems to escape the 'Zero-IP Trap'");
+    }
     recommendations.longTerm.push("Build predictive models for lead scoring and opportunity prioritization");
-    recommendations.longTerm.push("Implement account-based strategies for enterprise accounts");
-    recommendations.longTerm.push("Create a continuous optimization culture with weekly strategy sessions");
+    recommendations.longTerm.push("Create a continuous optimization culture with data-driven strategy sessions");
     
     return {
       score: totalScore,
       level,
+      primaryBottleneck,
       diagnosis,
       strengths,
       gaps,
@@ -461,16 +470,31 @@ export default function AssessmentPage() {
           >
             <Badge className="mb-4" variant="outline">
               <ClipboardCheck className="w-3 h-3 mr-1" />
-              7-Question Assessment
+              3-Minute Assessment
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-assessment">
-              Is Your GTM Engine Ready to Scale?
+              Are You Ready to Build a Sales Asset?
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto" data-testid="text-assessment-description">
-              Answer 7 strategic questions to assess your GTM maturity. Get a personalized diagnosis 
-              and actionable recommendations to multiply your pipeline.
+              Your next sales hire won't fix your pipeline. A broken system is the #1 reason for failure. 
+              Take our 3-minute assessment to diagnose your #1 bottleneck.
             </p>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Intro Section */}
+      <section className="pb-8 px-4 md:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-4" data-testid="heading-diagnose">
+            Diagnose Your #1 GTM Bottleneck
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto" data-testid="text-intro">
+            You're feeling the pain. But where is it really coming from? This assessment is designed by 
+            our GTM Architects to diagnose the true source of your pipeline bottleneck. Is it a 'Hiring Drag' 
+            problem? A 'Management Tax' problem? Or a 'Zero-IP Trap' problem? Get your score, an instant 
+            diagnosis, and a 1-page playbook on how to fix it.
+          </p>
         </div>
       </section>
 
@@ -697,18 +721,20 @@ export default function AssessmentPage() {
                 <Card className="p-8 mb-6 bg-gradient-to-br from-primary/10 to-background border-primary/20" data-testid="card-results">
                   <div className="text-center mb-6">
                     <Trophy className="w-16 h-16 text-primary mx-auto mb-4" />
-                    <h2 className="text-3xl font-bold mb-2">Your GTM Maturity Level</h2>
-                    <div className="flex items-center justify-center gap-3 mb-4">
+                    <h1 className="text-3xl md:text-4xl font-bold mb-2" data-testid="heading-score">
+                      Your GTM Readiness Score: {results.score}/70
+                    </h1>
+                    <div className="flex items-center justify-center gap-3 mb-6">
                       <Badge 
                         variant={results.level === "Elite" ? "default" : "secondary"}
                         className="text-lg px-4 py-2"
                       >
                         {results.level}
                       </Badge>
-                      <span className="text-2xl font-bold text-primary">
-                        {results.score}/{questions.length * 6} Points
-                      </span>
                     </div>
+                    <h2 className="text-2xl font-bold mb-4 text-primary" data-testid="heading-bottleneck">
+                      Your Primary Bottleneck: {results.primaryBottleneck}
+                    </h2>
                     <p className="text-muted-foreground max-w-2xl mx-auto">
                       {results.diagnosis}
                     </p>
@@ -761,9 +787,9 @@ export default function AssessmentPage() {
 
                 {/* Recommendations */}
                 <Card className="p-8 mb-6" data-testid="card-recommendations">
-                  <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold mb-6 flex items-center gap-2" data-testid="heading-playbook">
                     <TrendingUp className="w-6 h-6 text-primary" />
-                    Your Strategic Roadmap
+                    Your 1-Page Playbook (The Antidote)
                   </h3>
                   
                   <div className="space-y-6">
@@ -817,21 +843,21 @@ export default function AssessmentPage() {
                 {/* CTA */}
                 <Card className="p-8 bg-primary/5 border-primary/20" data-testid="card-cta">
                   <div className="text-center">
-                    <h3 className="text-2xl font-bold mb-3">Ready to Level Up Your GTM Engine?</h3>
+                    <h3 className="text-2xl font-bold mb-3">Ready to Build Your GTM Asset?</h3>
                     <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                      Get a detailed GTM audit and custom blueprint. We'll show you exactly how to 
-                      implement these recommendations and multiply your pipeline.
+                      Schedule your free GTM Leverage Audit. We'll design your custom blueprint and show you 
+                      exactly how to escape these traps and build a scalable revenue system.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                       <Button size="lg" asChild data-testid="button-schedule-audit">
                         <Link href="/audit">
-                          Schedule GTM Audit
+                          Schedule My GTM Audit
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
                       </Button>
                       <Button size="lg" variant="outline" asChild data-testid="button-view-solution">
                         <Link href="/gtm-engine">
-                          See Our Solution
+                          See The GTM Engine
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
                       </Button>
