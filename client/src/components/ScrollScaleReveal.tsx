@@ -41,27 +41,27 @@ export default function ScrollScaleReveal() {
       }
     });
 
-    // Phase 1: Grow fontSize to uncomfortably large (fills/overfills screen)
-    // Duration 7 = 70% of total timeline (10 seconds)
+    // Phase 1: Grow fontSize to emphasized size (moderate growth for clean wrapping)
+    // Duration 7 = 70% of total timeline
     tl.fromTo(text, 
       {
-        fontSize: "3rem",
+        fontSize: "clamp(2rem, 5vw, 3rem)", // Responsive starting size
         opacity: 1,
       },
       {
-        fontSize: "18rem", // 288px - uncomfortably large, fills entire screen
+        fontSize: "clamp(6rem, 15vw, 10rem)", // Moderate max: 96px mobile → 160px desktop
         opacity: 1,
-        letterSpacing: "0.04em",
-        ease: "power1.inOut",
+        letterSpacing: "0.02em",
+        ease: "power2.inOut",
         duration: 7, // 70% of timeline
       }
     )
     // Phase 2: Crossfade - white fades out, red fades in simultaneously
-    // Duration 1.5 = 15% of total timeline
+    // Duration 2 = 20% of total timeline
     .to(text, {
       opacity: 0,
       ease: "power2.in",
-      duration: 1.5, // 15% of timeline
+      duration: 2, // 20% of timeline
     })
     .fromTo(redText, 
       {
@@ -70,15 +70,15 @@ export default function ScrollScaleReveal() {
       {
         opacity: 1,
         ease: "power2.out",
-        duration: 1.5, // 15% of timeline
+        duration: 2, // 20% of timeline
       }, 
       "<" // Start at same time as white fadeout
     )
     // Phase 3: Hold red text visible
-    // Duration 1.5 = 15% of total timeline
+    // Duration 1 = 10% of total timeline
     .to(redText, {
       opacity: 1,
-      duration: 1.5, // 15% of timeline
+      duration: 1, // 10% of timeline
     });
 
     return () => {
@@ -95,12 +95,12 @@ export default function ScrollScaleReveal() {
       data-testid="section-scroll-scale-reveal"
     >
       <div className="sticky top-1/2 -translate-y-1/2 w-full px-4 md:px-6 lg:px-8">
-        {/* White text - fontSize animates from 3rem to 18rem, wrapping naturally */}
+        {/* White text - fontSize animates with moderate growth for clean wrapping */}
         <div className="absolute inset-0 flex items-center justify-center">
           <h1 
             ref={textRef}
-            className="font-bold text-center text-foreground leading-tight max-w-6xl"
-            style={{ fontSize: "3rem" }}
+            className="font-bold text-center text-foreground leading-tight max-w-4xl"
+            style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}
             data-testid="text-scaling"
           >
             You need more than another salesperson
