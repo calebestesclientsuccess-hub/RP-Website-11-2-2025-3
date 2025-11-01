@@ -583,7 +583,7 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
                 className="w-full h-full object-contain rounded-sm"
                 muted
                 playsInline
-                preload="auto"
+                preload="none"
                 data-testid="video-bdr-pod"
                 onError={(e) => console.error("Video error:", e)}
                 onCanPlay={() => console.log("Video can play:", videoSrc)}

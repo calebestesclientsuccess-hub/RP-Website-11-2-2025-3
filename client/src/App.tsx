@@ -53,9 +53,18 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
+          {/* Skip to content link for accessibility */}
+          <a 
+            href="#main-content" 
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg"
+            data-testid="skip-to-content"
+          >
+            Skip to main content
+          </a>
+          
           <div className="min-h-screen bg-background text-foreground">
             <Navbar />
-            <main>
+            <main id="main-content" role="main" aria-label="Main content">
               <Router />
             </main>
             <Footer />
