@@ -6,20 +6,28 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
 export function HeroROICalculator() {
-  const [acv, setAcv] = useState([75000]);
-  const [closeRate, setCloseRate] = useState([30]);
+  const [ltv, setLtv] = useState([120000]);
+  const [closeRate, setCloseRate] = useState([25]);
 
-  const appointmentsPerMonth = 20;
-  const appointmentsPerYear = appointmentsPerMonth * 12;
+  const monthlyInvestment = 15000;
+  const guaranteedSQOs = 40;
+  const costPerMeeting = monthlyInvestment / guaranteedSQOs;
 
-  const pipelinePerMonth = appointmentsPerMonth * acv[0];
-  const closedDealsPerYear = appointmentsPerYear * (closeRate[0] / 100);
-  const annualizedRevenue = closedDealsPerYear * acv[0];
+  const closedDealsPerMonth = guaranteedSQOs * (closeRate[0] / 100);
+  const projectedLTVPerMonth = closedDealsPerMonth * ltv[0];
+  const roi = projectedLTVPerMonth / monthlyInvestment;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
@@ -33,35 +41,35 @@ export function HeroROICalculator() {
       
       <Card className="p-6 bg-card/95 backdrop-blur-md border-primary/40 shadow-2xl relative" data-testid="card-hero-roi">
         <div className="mb-5">
-          <h3 className="text-2xl font-bold mb-1">ROI Calculator</h3>
+          <h3 className="text-2xl font-bold mb-1">2-SDR Pod ROI</h3>
           <p className="text-xs text-muted-foreground">
-            Adjust to see your potential revenue
+            See the math behind the system
           </p>
         </div>
 
         <div className="space-y-4">
-          {/* ACV Slider */}
+          {/* LTV Slider */}
           <div>
             <div className="flex justify-between mb-2">
-              <label className="text-sm font-medium">Average Contract Value</label>
-              <span className="text-sm font-mono font-bold text-primary" data-testid="text-acv-value">
-                {formatCurrency(acv[0])}
+              <label className="text-sm font-medium">Your 24-Month Client LTV</label>
+              <span className="text-sm font-mono font-bold text-primary" data-testid="text-ltv-value">
+                {formatCurrency(ltv[0])}
               </span>
             </div>
             <Slider
-              value={acv}
-              onValueChange={setAcv}
+              value={ltv}
+              onValueChange={setLtv}
               min={10000}
               max={500000}
               step={5000}
-              data-testid="slider-acv"
+              data-testid="slider-ltv"
             />
           </div>
 
           {/* Close Rate Slider */}
           <div>
             <div className="flex justify-between mb-2">
-              <label className="text-sm font-medium">Close Rate</label>
+              <label className="text-sm font-medium">Close Rate from Qualified Meeting</label>
               <span className="text-sm font-mono font-bold text-primary" data-testid="text-close-rate-value">
                 {closeRate[0]}%
               </span>
@@ -79,26 +87,41 @@ export function HeroROICalculator() {
 
         {/* Results */}
         <div className="mt-5 pt-5 border-t border-border space-y-3">
-          <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
-            <p className="text-xs text-muted-foreground mb-1">Projected Annual Revenue</p>
-            <p className="text-3xl font-bold text-primary font-mono" data-testid="text-projected-revenue">
-              {formatCurrency(annualizedRevenue)}
-            </p>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-card/50 p-3 rounded-lg border border-border">
+              <p className="text-xs text-muted-foreground mb-1">Monthly Investment</p>
+              <p className="text-lg font-bold font-mono" data-testid="text-monthly-investment">
+                {formatCurrency(monthlyInvestment)}
+              </p>
+            </div>
+            <div className="bg-card/50 p-3 rounded-lg border border-border">
+              <p className="text-xs text-muted-foreground mb-1">Guaranteed SQOs</p>
+              <p className="text-lg font-bold font-mono" data-testid="text-guaranteed-sqos">
+                {guaranteedSQOs}
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-card/50 p-3 rounded-lg border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Appointments/Year</p>
-              <p className="text-lg font-bold font-mono" data-testid="text-appointments">
-                {appointmentsPerYear}
+              <p className="text-xs text-muted-foreground mb-1">Cost per Meeting</p>
+              <p className="text-lg font-bold font-mono" data-testid="text-cost-per-meeting">
+                {formatCurrency(costPerMeeting)}
               </p>
             </div>
             <div className="bg-card/50 p-3 rounded-lg border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Pipeline/Month</p>
-              <p className="text-lg font-bold font-mono" data-testid="text-pipeline">
-                {formatCurrency(pipelinePerMonth)}
+              <p className="text-xs text-muted-foreground mb-1">ROI</p>
+              <p className="text-lg font-bold font-mono text-primary" data-testid="text-roi">
+                {formatNumber(roi)}x
               </p>
             </div>
+          </div>
+
+          <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+            <p className="text-xs text-muted-foreground mb-1">Projected New LTV/Month</p>
+            <p className="text-3xl font-bold text-primary font-mono" data-testid="text-projected-ltv">
+              {formatCurrency(projectedLTVPerMonth)}
+            </p>
           </div>
 
           <Button 
@@ -108,8 +131,8 @@ export function HeroROICalculator() {
             data-testid="button-full-calculator"
             asChild
           >
-            <Link href="/results/roi-calculator">
-              See Full Analysis
+            <Link href="/roi-calculator">
+              Calculate Your Full ROI
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
