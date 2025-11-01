@@ -254,6 +254,14 @@
   --input: 249 6% 35%;
   --ring: 0 85% 45%;
   
+  /* Dimensional Surfaces - 5-shade gray system for 3D depth */
+  --surface-sunken: 249 10% 9%;      /* Recessed surfaces - between sidebar and card */
+  --surface-elevated: 249 8% 20%;    /* Raised/highlighted surfaces */
+  
+  /* Light Trickle System - Control properties for dimensional gradients */
+  --light-intensity: 4%;             /* How much lighter the lit areas are (2-6% recommended) */
+  --light-angle: 135deg;             /* Default light direction (top-left to bottom-right) */
+  
   /* Chart colors using brand palette - brighter for dark mode */
   --chart-1: 0 100% 55%;        /* Competition red */
   --chart-2: 252 67% 65%;       /* Community purple */
@@ -426,6 +434,93 @@
   .border.active-elevate-2:not(.no-active-interaction-elevate)::after,
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
+  }
+
+  /* ================================================
+     DIMENSIONAL LIGHTING SYSTEM - Light Trickle Gradients
+     Creates subtle gradients that simulate light falling across 3D surfaces
+     ================================================ */
+
+  /* Light from top - like overhead lighting */
+  .dark .light-trickle-top {
+    background: linear-gradient(
+      180deg,
+      hsl(249 10% calc(11% + var(--light-intensity))) 0%,
+      hsl(249 10% 11%) 100%
+    );
+  }
+
+  /* Diagonal light - like sun through a window (top-left to bottom-right) */
+  .dark .light-trickle-diagonal {
+    background: linear-gradient(
+      var(--light-angle),
+      hsl(249 10% calc(11% + var(--light-intensity))) 0%,
+      hsl(249 10% 11%) 50%,
+      hsl(249 10% calc(11% - 1%)) 100%
+    );
+  }
+
+  /* Radial spotlight - light from center fading to edges */
+  .dark .light-trickle-radial {
+    background: radial-gradient(
+      ellipse at center,
+      hsl(249 10% calc(11% + var(--light-intensity))) 0%,
+      hsl(249 10% 11%) 70%
+    );
+  }
+
+  /* Corner light - like ambient room lighting from top-left */
+  .dark .light-trickle-corner {
+    background: radial-gradient(
+      ellipse at top left,
+      hsl(249 10% calc(11% + var(--light-intensity))) 0%,
+      hsl(249 10% 11%) 60%,
+      hsl(249 10% calc(11% - 1%)) 100%
+    );
+  }
+
+  /* Elevated surface - combines raised bg color with light from top */
+  .dark .light-trickle-elevated {
+    background: linear-gradient(
+      180deg,
+      hsl(249 8% calc(20% + 2%)) 0%,
+      hsl(var(--surface-elevated)) 100%
+    );
+  }
+
+  /* Bottom light - creates inset/recessed effect (light from below) */
+  .dark .light-trickle-bottom {
+    background: linear-gradient(
+      0deg,
+      hsl(249 10% calc(11% + var(--light-intensity))) 0%,
+      hsl(249 10% 11%) 100%
+    );
+  }
+
+  /* Depth utilities - use the new surface shades for layering */
+  .dark .depth-sunken {
+    background: hsl(var(--surface-sunken));
+  }
+
+  .dark .depth-elevated {
+    background: hsl(var(--surface-elevated));
+  }
+
+  /* Depth with light trickle - combines depth and gradient */
+  .dark .depth-sunken-lit {
+    background: linear-gradient(
+      var(--light-angle),
+      hsl(249 10% calc(9% + var(--light-intensity))) 0%,
+      hsl(var(--surface-sunken)) 100%
+    );
+  }
+
+  .dark .depth-elevated-lit {
+    background: linear-gradient(
+      180deg,
+      hsl(249 8% calc(20% + 2%)) 0%,
+      hsl(var(--surface-elevated)) 100%
+    );
   }
 }
 

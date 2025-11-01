@@ -75,7 +75,7 @@ export function MiniCalculator() {
           )}
         </div>
       </h3>
-      <Card className={`p-6 md:p-8 bg-card/50 backdrop-blur-sm border-2 shadow-lg transition-all duration-1000 ${
+      <Card className={`p-6 md:p-8 light-trickle-diagonal backdrop-blur-sm border-2 shadow-lg transition-all duration-1000 ${
         isGlowing 
           ? 'border-primary shadow-[0_0_30px_rgba(239,35,60,0.5)] animate-pulse-glow' 
           : 'border-primary/20'

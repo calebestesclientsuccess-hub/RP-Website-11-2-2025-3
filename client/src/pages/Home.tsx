@@ -218,7 +218,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0 }}
             >
-              <Card className="p-8 hover-elevate transition-all h-full" data-testid="card-component-talent">
+              <Card className="p-8 light-trickle-top hover-elevate transition-all h-full" data-testid="card-component-talent">
                 <div className="mb-6">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <Users className="w-8 h-8 text-primary" />
@@ -237,7 +237,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <Card className="p-8 hover-elevate transition-all h-full" data-testid="card-component-framework">
+              <Card className="p-8 light-trickle-corner hover-elevate transition-all h-full" data-testid="card-component-framework">
                 <div className="mb-6">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <Target className="w-8 h-8 text-primary" />
@@ -256,7 +256,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Card className="p-8 hover-elevate transition-all h-full" data-testid="card-component-signal">
+              <Card className="p-8 light-trickle-radial hover-elevate transition-all h-full" data-testid="card-component-signal">
                 <div className="mb-6">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <Zap className="w-8 h-8 text-primary" />
