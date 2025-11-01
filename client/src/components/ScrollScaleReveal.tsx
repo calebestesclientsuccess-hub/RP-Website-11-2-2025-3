@@ -26,9 +26,9 @@ export default function ScrollScaleReveal() {
       return;
     }
 
-    // Set initial states explicitly
+    // Set initial states explicitly (fromTo handles fontSize)
     gsap.set(redText, { opacity: 0 });
-    gsap.set(text, { opacity: 1, fontSize: "3rem" }); // Start at 48px
+    gsap.set(text, { opacity: 1 });
 
     // Timeline for fontSize growth + crossfade effect
     const tl = gsap.timeline({
@@ -41,39 +41,44 @@ export default function ScrollScaleReveal() {
       }
     });
 
-    // Phase 1: Grow fontSize from 3rem to 12rem (natural wrapping from 1 line to 4-5 lines)
-    // This takes 75% of the scroll distance
-    tl.to(text, 
+    // Phase 1: Grow fontSize to uncomfortably large (fills/overfills screen)
+    // Duration 7 = 70% of total timeline (10 seconds)
+    tl.fromTo(text, 
       {
-        fontSize: "12rem", // 192px - will wrap to 4-5 lines
+        fontSize: "3rem",
+        opacity: 1,
+      },
+      {
+        fontSize: "18rem", // 288px - uncomfortably large, fills entire screen
         opacity: 1,
         letterSpacing: "0.04em",
         ease: "power1.inOut",
-        duration: 0.75,
+        duration: 7, // 70% of timeline
       }
     )
-    // Phase 2: Crossfade - white text fades out (75-90% of scroll)
+    // Phase 2: Crossfade - white fades out, red fades in simultaneously
+    // Duration 1.5 = 15% of total timeline
     .to(text, {
       opacity: 0,
-      duration: 0.15,
       ease: "power2.in",
+      duration: 1.5, // 15% of timeline
     })
-    // Red text fades in at normal H1 size - simultaneous with white fadeout
-    .fromTo(redText,
+    .fromTo(redText, 
       {
         opacity: 0,
       },
       {
         opacity: 1,
-        duration: 0.15,
         ease: "power2.out",
-      },
-      "<" // Start at the same time as previous tween
+        duration: 1.5, // 15% of timeline
+      }, 
+      "<" // Start at same time as white fadeout
     )
-    // Phase 3: Hold the red text visible for remaining scroll (90-100%)
+    // Phase 3: Hold red text visible
+    // Duration 1.5 = 15% of total timeline
     .to(redText, {
       opacity: 1,
-      duration: 0.10,
+      duration: 1.5, // 15% of timeline
     });
 
     return () => {
@@ -90,11 +95,11 @@ export default function ScrollScaleReveal() {
       data-testid="section-scroll-scale-reveal"
     >
       <div className="sticky top-1/2 -translate-y-1/2 w-full px-4 md:px-6 lg:px-8">
-        {/* White text - fontSize animates from 3rem to 12rem, wrapping naturally */}
+        {/* White text - fontSize animates from 3rem to 18rem, wrapping naturally */}
         <div className="absolute inset-0 flex items-center justify-center">
           <h1 
             ref={textRef}
-            className="font-bold text-center text-foreground leading-tight max-w-3xl"
+            className="font-bold text-center text-foreground leading-tight max-w-6xl"
             style={{ fontSize: "3rem" }}
             data-testid="text-scaling"
           >
