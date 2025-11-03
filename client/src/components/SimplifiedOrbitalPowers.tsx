@@ -192,11 +192,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const selectedPower = powers[selectedIndex];
 
   return (
-    <section className="py-12 px-4 md:px-6 lg:px-8 bg-background" data-testid="section-orbital-powers">
+    <section className="py-8 px-4 md:px-6 lg:px-8 bg-background" data-testid="section-orbital-powers">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
+        <div className="text-center mb-4">
+          <h2 className="text-5xl md:text-6xl font-bold mb-2 bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
             Your Fullstack Sales Unit
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -207,7 +207,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         {/* Main Container */}
         <div ref={containerRef} className="relative mx-auto" style={{ maxWidth: '900px' }}>
           {/* Orbital Container */}
-          <div className="relative mx-auto h-[600px] md:h-[700px] flex items-center justify-center">
+          <div className="relative mx-auto h-[550px] md:h-[650px] flex items-center justify-center">
             
             {/* Central Video */}
             <div className="relative z-20">
@@ -290,7 +290,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Info Box */}
           {showInfoBox && (
-            <Card className="mt-4 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
+            <Card className="-mt-12 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
