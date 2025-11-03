@@ -8,7 +8,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { FloatingCalculatorCTA } from "./components/FloatingCalculatorCTA";
-import { AnimationDebugOverlay } from "./components/AnimationDebugOverlay";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import Home from "@/pages/Home";
 import ProblemPage from "@/pages/ProblemPage";
 import GTMEnginePage from "@/pages/GTMEnginePage";
@@ -65,10 +65,11 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <HelmetProvider>
-        <ThemeProvider defaultTheme="dark">
-          <TooltipProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <HelmetProvider>
+          <ThemeProvider defaultTheme="dark">
+            <TooltipProvider>
             {/* Skip to content link for accessibility */}
             <a 
               href="#main-content" 
@@ -87,11 +88,11 @@ function App() {
               <FloatingCalculatorCTA />
             </div>
             <Toaster />
-            <AnimationDebugOverlay />
-          </TooltipProvider>
-        </ThemeProvider>
-      </HelmetProvider>
-    </QueryClientProvider>
+            </TooltipProvider>
+          </ThemeProvider>
+        </HelmetProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

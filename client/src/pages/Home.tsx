@@ -5,7 +5,6 @@ import { StaticGradientBg } from "@/components/StaticGradientBg";
 import { HeroROICalculator } from "@/components/HeroROICalculator";
 import SimpleBridgeSection from "@/components/SimpleBridgeSection";
 import { SimplifiedOrbitalPowers } from "@/components/SimplifiedOrbitalPowers";
-import { AnimationErrorBoundary } from "@/components/AnimationErrorBoundary";
 import { SEO } from "@/components/SEO";
 import { ServiceSchema } from "@/components/ServiceSchema";
 import LocalBusinessSchema from "@/components/LocalBusinessSchema";
