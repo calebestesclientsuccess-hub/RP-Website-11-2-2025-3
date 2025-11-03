@@ -555,13 +555,13 @@
      GRADIENT TEXT SYSTEM - Progressive Enhancement
      ================================================ */
 
-  /* Base gradient text class with fallback - LIGHT MODE ONLY */
+  /* Base gradient text class with fallback - LIGHT MODE */
   html:not(.dark) .gradient-text {
-    /* Layer 1: Always-on solid color fallback */
+    /* Layer 0: Legacy browser fallback (outside @supports) */
     color: var(--gradient-fallback);
     font-weight: 600; /* Improve readability */
     
-    /* Layer 2: Gradient for capable browsers */
+    /* Layer 1: Gradient for capable browsers */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
       background: linear-gradient(
         90deg,
@@ -574,18 +574,17 @@
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      color: transparent;
       background-size: 200% 100%;
     }
   }
 
-  /* In dark mode, gradient-text uses warm red gradient (no blues/purples) */
+  /* Dark mode gradient - uses warm red gradient (no blues/purples) */
   html.dark .gradient-text {
-    /* Layer 1: Always-on red fallback */
+    /* Layer 0: Legacy browser fallback (outside @supports) */
     color: hsl(var(--primary));
     font-weight: 600;
     
-    /* Layer 2: Warm red gradient for capable browsers */
+    /* Layer 1: Warm red gradient for capable browsers */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
       background: linear-gradient(
         90deg,
@@ -597,7 +596,6 @@
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      color: transparent;
       background-size: 200% 100%;
     }
   }
