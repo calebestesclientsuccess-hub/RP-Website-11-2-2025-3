@@ -154,9 +154,10 @@ interface SimplifiedOrbitalPowersProps {
  */
 export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbitalPowersProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(2); // Start with RevOps (index 2)
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
+  const [initialPulse, setInitialPulse] = useState(true);
 
   // Simple intersection observer to trigger video play once
   useEffect(() => {
@@ -168,6 +169,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           if (entry.isIntersecting && !hasPlayed) {
             videoRef.current?.play().catch(console.error);
             setHasPlayed(true);
+            // Show info box after 1 second and stop pulse after 3 seconds
+            setTimeout(() => setShowInfoBox(true), 1000);
+            setTimeout(() => setInitialPulse(false), 3000);
           }
         });
       },
@@ -195,7 +199,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     <section className="py-8 px-4 md:px-6 lg:px-8 bg-background" data-testid="section-orbital-powers">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-4">
+        <div className="text-center mb-2">
           <h2 className="text-5xl md:text-6xl font-bold mb-2 bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
             Your Fullstack Sales Unit
           </h2>
@@ -258,8 +262,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       onClick={() => {
                         setSelectedIndex(index);
                         setShowInfoBox(true);
+                        setInitialPulse(false);
                       }}
-                      className="group cursor-pointer transition-all duration-300 hover:scale-110"
+                      className={`group cursor-pointer transition-all duration-300 hover:scale-110 ${
+                        index === selectedIndex && initialPulse ? 'animate-pulse' : ''
+                      }`}
                       data-testid={`power-badge-${power.id}`}
                     >
                       <div 
@@ -267,9 +274,12 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                           relative rounded-full p-3 bg-background/90 backdrop-blur-sm
                           border-2 ${power.color} shadow-lg
                           group-hover:shadow-xl transition-all duration-300
+                          ${index === selectedIndex ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-110' : ''}
                         `}
                         style={{
-                          boxShadow: `0 0 20px ${power.glowColor}`
+                          boxShadow: index === selectedIndex 
+                            ? `0 0 30px ${power.glowColor}, 0 0 60px ${power.glowColor}` 
+                            : `0 0 20px ${power.glowColor}`
                         }}
                       >
                         {power.icon}
@@ -307,17 +317,19 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       size="icon" 
                       variant="outline" 
                       onClick={handlePrevious}
+                      className="hover:scale-110 transition-transform animate-pulse"
                       data-testid="button-previous-power"
                     >
-                      <ChevronLeft className="h-4 w-4" />
+                      <ChevronLeft className="h-5 w-5" />
                     </Button>
                     <Button 
                       size="icon" 
                       variant="outline" 
                       onClick={handleNext}
+                      className="hover:scale-110 transition-transform animate-pulse"
                       data-testid="button-next-power"
                     >
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-5 w-5" />
                     </Button>
                   </div>
                 </div>
