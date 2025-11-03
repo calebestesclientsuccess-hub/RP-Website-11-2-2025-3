@@ -41,7 +41,25 @@ export const testimonials = pgTable("testimonials", {
   quote: text("quote").notNull(),
   rating: integer("rating").notNull(),
   featured: boolean("featured").default(false).notNull(),
+  avatarUrl: text("avatar_url"),
+  metrics: text("metrics"),
+  industry: text("industry"),
+  companySize: text("company_size"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const leadCaptures = pgTable("lead_captures", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  company: text("company"),
+  role: text("role"),
+  resourceDownloaded: text("resource_downloaded").notNull(),
+  downloadedAt: timestamp("downloaded_at").defaultNow().notNull(),
+  source: text("source"),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
 });
 
 export const jobPostings = pgTable("job_postings", {
@@ -99,6 +117,16 @@ export const insertJobApplicationSchema = createInsertSchema(jobApplications).om
   createdAt: true,
 });
 
+export const insertLeadCaptureSchema = createInsertSchema(leadCaptures)
+  .omit({
+    id: true,
+  })
+  .extend({
+    email: z.string().email("Please enter a valid email address"),
+    firstName: z.string().min(1, "First name is required"),
+    company: z.string().optional(),
+  });
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type EmailCapture = typeof emailCaptures.$inferSelect;
@@ -111,3 +139,5 @@ export type JobPosting = typeof jobPostings.$inferSelect;
 export type InsertJobPosting = z.infer<typeof insertJobPostingSchema>;
 export type JobApplication = typeof jobApplications.$inferSelect;
 export type InsertJobApplication = z.infer<typeof insertJobApplicationSchema>;
+export type LeadCapture = typeof leadCaptures.$inferSelect;
+export type InsertLeadCapture = z.infer<typeof insertLeadCaptureSchema>;

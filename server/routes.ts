@@ -6,7 +6,8 @@ import {
   insertBlogPostSchema,
   insertTestimonialSchema,
   insertJobPostingSchema,
-  insertJobApplicationSchema
+  insertJobApplicationSchema,
+  insertLeadCaptureSchema
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
@@ -191,6 +192,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error creating job application:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Lead magnet download endpoint
+  app.post("/api/lead-magnets/download", async (req, res) => {
+    try {
+      const result = insertLeadCaptureSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const leadCapture = await storage.createLeadCapture(result.data);
+
+      const downloadUrl = `/downloads/${result.data.resourceDownloaded}.pdf`;
+
+      return res.status(201).json({
+        success: true,
+        downloadUrl,
+        message: "Download ready! Check your email for the resource.",
+        id: leadCapture.id,
+        downloadedAt: leadCapture.downloadedAt,
+      });
+    } catch (error) {
+      console.error("Error creating lead capture:", error);
+      return res.status(500).json({
+        error: "Internal server error",
+        message: "Failed to process your request. Please try again.",
+      });
+    }
+  });
+
+  // Get all lead captures (for admin/analytics purposes)
+  app.get("/api/lead-captures", async (req, res) => {
+    try {
+      const captures = await storage.getAllLeadCaptures();
+      return res.json(captures);
+    } catch (error) {
+      console.error("Error fetching lead captures:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

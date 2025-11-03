@@ -10,6 +10,8 @@ import { ServiceSchema } from "@/components/ServiceSchema";
 import LocalBusinessSchema from "@/components/LocalBusinessSchema";
 import VideoSchema from "@/components/VideoSchema";
 import SoftwareApplicationSchema from "@/components/SoftwareApplicationSchema";
+import LeadMagnetHero from "@/components/LeadMagnetHero";
+import TestimonialCarousel from "@/components/TestimonialCarousel";
 import { ArrowRight, Users, Target, Zap } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect, useRef, useState } from "react";
@@ -169,6 +171,8 @@ export default function Home() {
                   <Link href="/gtm-engine">See How It Works</Link>
                 </Button>
               </div>
+
+              <LeadMagnetHero />
             </div>
 
             <div className="flex justify-center lg:justify-end">
@@ -354,13 +358,9 @@ export default function Home() {
             </motion.div>
           </div>
 
-          {/* Testimonial Snippet */}
-          <div className="max-w-3xl mx-auto mb-12">
-            <Card className="p-8 light-depth hover-elevate transition-all" data-testid="testimonial-snippet">
-              <p className="text-xl text-foreground leading-relaxed italic text-center">
-                "The system just works. We stopped guessing and started building a real pipeline asset."
-              </p>
-            </Card>
+          {/* Testimonial Carousel */}
+          <div className="mb-16">
+            <TestimonialCarousel />
           </div>
 
           {/* CTA */}
