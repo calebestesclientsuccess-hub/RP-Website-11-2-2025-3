@@ -22,7 +22,10 @@ export default function ProblemPage() {
       <div className="min-h-screen">
         {/* Hero Module */}
         <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
-          <div className="max-w-5xl mx-auto text-center">
+          {/* Light grid dots pattern (light mode only) */}
+          <div className="light-grid-dots" />
+          
+          <div className="max-w-5xl mx-auto text-center relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -44,7 +47,7 @@ export default function ProblemPage() {
               data-testid="heading-hero"
             >
               Stop Solving Systems Problems{" "}
-              <span className="text-primary">with Headcount Solutions.</span>
+              <span className="gradient-text gradient-hero">with Headcount Solutions.</span>
             </motion.h1>
             <motion.p 
               className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto"
@@ -69,7 +72,7 @@ export default function ProblemPage() {
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 text-center" data-testid="heading-false-dichotomy">
                 The Two-Option Trap{" "}
-                <span className="text-primary">That Guarantees Failure</span>
+                <span className="gradient-text gradient-hero">That Guarantees Failure</span>
               </h2>
               <div className="space-y-6 text-lg text-muted-foreground leading-relaxed" data-testid="text-false-dichotomy">
                 <p>
@@ -95,7 +98,7 @@ export default function ProblemPage() {
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-trap-1">
                 Trap 1: The Internal Hire{" "}
-                <span className="text-primary">(The '$198,000 Mistake')</span>
+                <span className="gradient-text gradient-hero">(The '$198,000 Mistake')</span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed max-w-4xl" data-testid="text-trap-1-intro">
                 You write the 'perfect' job description. You screen 100+ candidates. You hire a rep with a great resume. Six months later, you have no pipeline, the rep is burned out, and you're back at square one—minus $198,000.
@@ -229,7 +232,7 @@ export default function ProblemPage() {
               transition={{ duration: 0.6 }}
               className="text-center"
             >
-              <Card className="p-10 bg-primary/5 border-primary/20" data-testid="card-diagnosis">
+              <Card className="p-10 light-depth bg-primary/5 border-primary/20" data-testid="card-diagnosis">
                 <div className="max-w-3xl mx-auto">
                   <CheckCircle className="w-16 h-16 text-primary mx-auto mb-6" />
                   <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-diagnosis">
@@ -264,7 +267,7 @@ export default function ProblemPage() {
                 <span className="text-primary">in This Trap</span>
               </h2>
               
-              <Card className="p-8 hover-elevate transition-all" data-testid="card-testimonial">
+              <Card className="p-8 light-depth hover-elevate transition-all" data-testid="card-testimonial">
                 <div className="relative">
                   <div className="absolute -top-4 -left-4 text-6xl text-primary/20 font-serif">"</div>
                   <blockquote className="relative z-10 mb-6">

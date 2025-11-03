@@ -53,7 +53,10 @@ export default function GTMEnginePage() {
       
       {/* Hero Module */}
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
-        <div className="max-w-7xl mx-auto">
+        {/* Light grid dots pattern (light mode only) */}
+        <div className="light-grid-dots" />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -76,7 +79,7 @@ export default function GTMEnginePage() {
               data-testid="heading-hero"
             >
               This Isn't a Sales Team.{" "}
-              <span className="text-primary">It's a Complete Revenue Generation System.</span>
+              <span className="gradient-text gradient-hero">It's a Complete Revenue Generation System.</span>
             </motion.h1>
             <motion.p 
               className="text-xl md:text-2xl text-muted-foreground leading-relaxed"
@@ -99,7 +102,7 @@ export default function GTMEnginePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-asset-components">
-              What You Get: The 3 Core Components of <span className="text-primary">Your GTM Engine</span>
+              What You Get: The 3 Core Components of <span className="gradient-text gradient-hero">Your GTM Engine</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-asset-description">
               A GTM Engine is not a person; it's a complete, managed system of talent, strategy, and technology designed to build a permanent pipeline asset.
@@ -108,7 +111,7 @@ export default function GTMEnginePage() {
 
           {/* Component 1: Elite Talent */}
           <div className="mb-16">
-            <Card className="p-8 md:p-12 hover-elevate transition-all" data-testid="card-elite-talent">
+            <Card className="p-8 md:p-12 light-depth hover-elevate transition-all" data-testid="card-elite-talent">
               <div className="flex flex-col md:flex-row gap-8 items-start">
                 <div className="flex-shrink-0">
                   <div 

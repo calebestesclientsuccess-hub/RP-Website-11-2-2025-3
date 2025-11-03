@@ -102,6 +102,9 @@ export default function Home() {
         {/* Animated gradient mesh background */}
         <AnimatedGradientMesh intensity="subtle" speed="slow" />
         
+        {/* Light grid dots pattern (light mode only) */}
+        <div className="light-grid-dots" />
+        
         {/* Sun rays animation (light mode only) */}
         <div className="sun-rays-container">
           <div className="sun-ray"></div>
@@ -134,7 +137,7 @@ export default function Home() {
                   data-testid="heading-hero"
                 >
                   Your Next Sales Hire Shouldn't Be a Person.{" "}
-                  <span className="text-primary">It Should Be a Revenue Generation System.</span>
+                  <span className="gradient-text gradient-hero">It Should Be a Revenue Generation System.</span>
                 </motion.h1>
                 <motion.p 
                   className="text-lg md:text-xl text-foreground leading-relaxed"
@@ -150,7 +153,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   size="lg" 
-                  className="text-lg px-8 py-6 shadow-lg" 
+                  className="text-lg px-8 py-6 shadow-lg btn-gradient-text" 
                   data-testid="button-hero-schedule"
                   asChild
                 >
@@ -181,7 +184,7 @@ export default function Home() {
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-trap">
               The $198,000 Mistake{" "}
-              <span className="text-primary">You're About to Make</span>
+              <span className="gradient-text gradient-hero">You're About to Make</span>
             </h2>
             <div className="space-y-4">
               <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-trap-description">
@@ -212,7 +215,7 @@ export default function Home() {
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-solution">
               Don't Hire a Rep.{" "}
-              <span className="text-primary">Deploy an Engine.</span>
+              <span className="gradient-text gradient-hero">Deploy an Engine.</span>
             </h2>
           </div>
 
@@ -224,7 +227,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0 }}
             >
-              <Card className="p-8 light-trickle-top hover-elevate transition-all h-full" data-testid="card-component-talent">
+              <Card className="p-8 light-trickle-top light-depth hover-elevate transition-all h-full" data-testid="card-component-talent">
                 <div className="mb-6">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <Users className="w-8 h-8 text-primary" />
@@ -243,7 +246,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <Card className="p-8 light-trickle-corner hover-elevate transition-all h-full" data-testid="card-component-framework">
+              <Card className="p-8 light-trickle-corner light-depth hover-elevate transition-all h-full" data-testid="card-component-framework">
                 <div className="mb-6">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <Target className="w-8 h-8 text-primary" />
@@ -262,7 +265,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Card className="p-8 light-trickle-radial hover-elevate transition-all h-full" data-testid="card-component-signal">
+              <Card className="p-8 light-trickle-radial light-depth hover-elevate transition-all h-full" data-testid="card-component-signal">
                 <div className="mb-6">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <Zap className="w-8 h-8 text-primary" />
@@ -301,7 +304,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-proof">
-              Proven Results. <span className="text-primary">No Black Box.</span>
+              Proven Results. <span className="gradient-text gradient-hero">No Black Box.</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-proof-description">
               The GTM Engine model is built on transparency and performance.
@@ -316,7 +319,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0 }}
             >
-              <Card className="p-8 text-center hover-elevate transition-all h-full" data-testid="metric-ramp">
+              <Card className="p-8 text-center light-depth hover-elevate transition-all h-full" data-testid="metric-ramp">
                 <h3 className="text-6xl font-bold text-primary mb-4">3-5x</h3>
                 <h4 className="text-2xl font-bold mb-3">Faster Ramp</h4>
                 <p className="text-muted-foreground">Pipeline productive in 14 days, not 6 months.</p>
@@ -329,7 +332,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <Card className="p-8 text-center hover-elevate transition-all h-full" data-testid="metric-savings">
+              <Card className="p-8 text-center light-depth hover-elevate transition-all h-full" data-testid="metric-savings">
                 <h3 className="text-6xl font-bold text-primary mb-4">60%+</h3>
                 <h4 className="text-2xl font-bold mb-3">Cost Savings</h4>
                 <p className="text-muted-foreground">vs. the $198k+ total cost of a failed internal hire.</p>
@@ -342,7 +345,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Card className="p-8 text-center hover-elevate transition-all h-full" data-testid="metric-pipeline">
+              <Card className="p-8 text-center light-depth hover-elevate transition-all h-full" data-testid="metric-pipeline">
                 <h3 className="text-6xl font-bold text-primary mb-4">$2M</h3>
                 <h4 className="text-2xl font-bold mb-3">Pipeline Asset</h4>
                 <p className="text-muted-foreground">Teaser from 'Antidote' case study.</p>
@@ -352,7 +355,7 @@ export default function Home() {
 
           {/* Testimonial Snippet */}
           <div className="max-w-3xl mx-auto mb-12">
-            <Card className="p-8 hover-elevate transition-all" data-testid="testimonial-snippet">
+            <Card className="p-8 light-depth hover-elevate transition-all" data-testid="testimonial-snippet">
               <p className="text-xl text-foreground leading-relaxed italic text-center">
                 "The system just works. We stopped guessing and started building a real pipeline asset."
               </p>
@@ -413,7 +416,7 @@ export default function Home() {
           </p>
           <Button 
             size="lg" 
-            className="text-lg px-10 py-7 shadow-lg"
+            className="text-lg px-10 py-7 shadow-lg btn-gradient-text"
             data-testid="button-final-schedule"
             asChild
           >

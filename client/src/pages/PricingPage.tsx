@@ -155,7 +155,10 @@ export default function PricingPage() {
       
       {/* Hero Module */}
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
-        <div className="max-w-7xl mx-auto">
+        {/* Light grid dots pattern (light mode only) */}
+        <div className="light-grid-dots" />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <motion.h1 
               className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-6"
@@ -165,7 +168,7 @@ export default function PricingPage() {
               data-testid="heading-hero"
             >
               Predictable Pricing for a{" "}
-              <span className="text-primary">Guaranteed Asset.</span>
+              <span className="gradient-text gradient-hero">Guaranteed Asset.</span>
             </motion.h1>
             <motion.p 
               className="text-xl md:text-2xl text-muted-foreground leading-relaxed"
@@ -185,7 +188,7 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-pricing-cards">
-              Choose Your <span className="text-primary">Guaranteed GTM Engine</span>
+              Choose Your <span className="gradient-text gradient-hero">Guaranteed GTM Engine</span>
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed" data-testid="text-pricing-description">
               All plans include the full "Fullstack Sales Unit": Elite Talent, the "Impact Selling OS" (100% IP Ownership), and the "Signal Factory" Tech Stack. All plans include the 20+ SQOs / SDR guarantee.
@@ -201,7 +204,7 @@ export default function PricingPage() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 <Card 
-                  className={`relative p-8 h-full flex flex-col hover-elevate transition-all ${
+                  className={`relative p-8 h-full flex flex-col light-depth hover-elevate transition-all ${
                     plan.isMostPopular ? 'border-primary border-2' : ''
                   }`}
                   data-testid={`card-pricing-${plan.id}`}

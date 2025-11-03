@@ -114,6 +114,9 @@ export default function About() {
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
         <AnimatedGradientMesh intensity="subtle" speed="slow" />
         
+        {/* Light grid dots pattern (light mode only) */}
+        <div className="light-grid-dots" />
+        
         <div className="sun-rays-container">
           <div className="sun-ray"></div>
           <div className="sun-ray"></div>
@@ -132,7 +135,7 @@ export default function About() {
                 data-testid="heading-hero"
               >
                 Community + Competition ={" "}
-                <span className="text-primary">Culture.</span>
+                <span className="gradient-text gradient-hero">Culture.</span>
               </h1>
               <p 
                 className="text-xl md:text-2xl text-muted-foreground leading-relaxed"
@@ -151,7 +154,7 @@ export default function About() {
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-culture">
               This is the 'Why' Behind{" "}
-              <span className="text-primary">Our Elite Talent</span>
+              <span className="gradient-text gradient-hero">Our Elite Talent</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-culture-intro">
               You're not just hiring a BDR; you're investing in an asset forged by a system of excellence. Competitors sell you a 'dedicated' rep operating in a silo like a Lone Wolf. They burn out (34% churn) and quit.
@@ -166,7 +169,7 @@ export default function About() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <Card className="p-8 md:p-12 hover-elevate transition-all" data-testid="card-community">
+              <Card className="p-8 md:p-12 light-depth hover-elevate transition-all" data-testid="card-community">
                 <div className="flex items-start gap-6 mb-6">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Users className="w-8 h-8 text-primary" />
@@ -222,7 +225,7 @@ export default function About() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Card className="p-8 md:p-12 hover-elevate transition-all" data-testid="card-competition">
+              <Card className="p-8 md:p-12 light-depth hover-elevate transition-all" data-testid="card-competition">
                 <div className="flex items-start gap-6 mb-6">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Trophy className="w-8 h-8 text-primary" />
@@ -335,7 +338,7 @@ export default function About() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Card className="p-8 hover-elevate transition-all bg-primary/5 border-primary/20">
+              <Card className="p-8 light-depth hover-elevate transition-all bg-primary/5 border-primary/20">
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 mb-6">
                     <Sparkles className="w-8 h-8 text-primary" />

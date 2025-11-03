@@ -105,8 +105,11 @@ export default function WhyRevPartyPage() {
       
       <div className="min-h-screen">
         {/* Hero Module */}
-        <section className="pt-32 pb-20 px-4 md:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
+        <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
+          {/* Light grid dots pattern (light mode only) */}
+          <div className="light-grid-dots" />
+          
+          <div className="max-w-7xl mx-auto relative z-10">
             <div className="text-center max-w-4xl mx-auto space-y-6">
               <motion.h1
                 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight"
@@ -115,7 +118,7 @@ export default function WhyRevPartyPage() {
                 transition={{ duration: 0.8 }}
                 data-testid="heading-hero"
               >
-                <span className="text-primary">Community + Competition</span> = Culture.
+                <span className="gradient-text gradient-hero">Community + Competition</span> = Culture.
               </motion.h1>
               <motion.p
                 className="text-xl md:text-2xl text-muted-foreground leading-relaxed"
