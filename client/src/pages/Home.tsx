@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -143,6 +143,17 @@ const powers: Power[] = [
 
 export default function Home() {
   const [selectedPower, setSelectedPower] = useState<Power | null>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -212,7 +223,7 @@ export default function Home() {
               const variant = floatVariants[index % floatVariants.length];
               
               return (
-                <motion.div
+                <motion.button
                   key={power.id}
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ 
@@ -249,12 +260,16 @@ export default function Home() {
                       delay: index * 0.4
                     }
                   }}
-                  className="absolute cursor-pointer group -translate-x-1/2 -translate-y-1/2"
-                  style={{
-                    ...power.position.mobile,
-                    ...(typeof window !== 'undefined' && window.innerWidth >= 768 ? power.position.desktop : {})
-                  }}
+                  className="absolute group -translate-x-1/2 -translate-y-1/2"
+                  style={isDesktop ? power.position.desktop : power.position.mobile}
                   onClick={() => setSelectedPower(power)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedPower(power);
+                    }
+                  }}
+                  aria-label={`Learn more about ${power.title}`}
                   data-testid={`badge-${power.id}`}
                 >
                   <div className="relative">
@@ -287,7 +302,7 @@ export default function Home() {
                       <span className="whitespace-nowrap">{power.title}</span>
                     </Badge>
                   </div>
-                </motion.div>
+                </motion.button>
               );
             })}
           </div>
