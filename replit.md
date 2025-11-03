@@ -29,7 +29,7 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 **Technical Implementations & Feature Specifications:**
 - **Hero Section**: Features "Your Fullstack Sales Unit" with tagline and problem statement.
 - **SimpleBridgeSection**: Simple static text transition between content sections, no scroll-triggered animations.
-- **SimplifiedOrbitalPowers**: Static badges arranged around a central video. Six clickable badges that reveal detailed information. No rotation or complex animations.
+- **SimplifiedOrbitalPowers**: Interactive badges that gently orbit around a central video with magnetic hover effects and dynamic background color morphing. Six clickable badges that reveal detailed information about each power.
 - **Interactive ROI Calculator**: Compares in-house vs. RevParty Pod based on user inputs with real-time calculations and email capture.
 - **BuildAndRampTimeline**: The only component with GSAP ScrollTrigger animations. Showcases 4 GTM steps with scroll-triggered reveals.
 - **Content Management**: Database-driven blog ("Blueprints") with Markdown rendering (DOMPurify for XSS protection), testimonial display, and career listings with application forms (React Hook Form + Zod).

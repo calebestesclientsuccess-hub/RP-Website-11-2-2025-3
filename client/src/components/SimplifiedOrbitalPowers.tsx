@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
 import { gsap } from 'gsap';
 import { prefersReducedMotion } from "@/lib/animationConfig";
 
@@ -169,7 +169,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
   const [initialPulse, setInitialPulse] = useState(true);
-  const [viewedPowers, setViewedPowers] = useState<Set<string>>(new Set(['revops']));
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const orbitAnimationRef = useRef<gsap.core.Tween | null>(null);
   const [orbitRotation, setOrbitRotation] = useState(0);
@@ -255,25 +254,21 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     const newIndex = (selectedIndex - 1 + powers.length) % powers.length;
     setSelectedIndex(newIndex);
     setInitialPulse(false);
-    setViewedPowers(prev => new Set([...Array.from(prev), powers[newIndex].id]));
   };
 
   const handleNext = () => {
     const newIndex = (selectedIndex + 1) % powers.length;
     setSelectedIndex(newIndex);
     setInitialPulse(false);
-    setViewedPowers(prev => new Set([...Array.from(prev), powers[newIndex].id]));
   };
 
   const handleBadgeClick = (index: number) => {
     setSelectedIndex(index);
     setShowInfoBox(true);
     setInitialPulse(false);
-    setViewedPowers(prev => new Set([...Array.from(prev), powers[index].id]));
   };
 
   const selectedPower = powers[selectedIndex];
-  const explorationProgress = viewedPowers.size;
 
   return (
     <section 
@@ -282,16 +277,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       data-testid="section-orbital-powers"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Section Header with Progress */}
+        {/* Section Header */}
         <div className="text-center mb-2">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
-              Your Fullstack Sales Unit
-            </h2>
-            <Badge variant="secondary" className="text-sm px-3 py-1">
-              {explorationProgress}/6 Explored
-            </Badge>
-          </div>
+          <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent mb-2">
+            Your Fullstack Sales Unit
+          </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Not just BDRs. A complete system engineered to deliver predictable revenue.
           </p>
@@ -349,8 +339,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 const pullX = (mousePos.x - badgeX) * magneticStrength * 0.15;
                 const pullY = (mousePos.y - badgeY) * magneticStrength * 0.15;
                 
-                const isViewed = viewedPowers.has(power.id);
-                
                 return (
                   <div
                     key={power.id}
@@ -382,13 +370,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                         }}
                       >
                         {power.icon}
-                        
-                        {/* Viewed Indicator - inside badge circle for better visibility */}
-                        {isViewed && (
-                          <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5 border-2 border-background z-10">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        )}
                       </div>
                       
                       <div className={`
@@ -424,7 +405,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       size="icon" 
                       variant="outline" 
                       onClick={handlePrevious}
-                      className={`hover:scale-110 transition-transform ${explorationProgress < 6 ? 'animate-pulse' : ''}`}
+                      className="hover:scale-110 transition-transform"
                       data-testid="button-previous-power"
                     >
                       <ChevronLeft className="h-5 w-5" />
@@ -433,7 +414,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       size="icon" 
                       variant="outline" 
                       onClick={handleNext}
-                      className={`hover:scale-110 transition-transform ${explorationProgress < 6 ? 'animate-pulse' : ''}`}
+                      className="hover:scale-110 transition-transform"
                       data-testid="button-next-power"
                     >
                       <ChevronRight className="h-5 w-5" />
