@@ -173,6 +173,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const orbitAnimationRef = useRef<gsap.core.Tween | null>(null);
   const [orbitRotation, setOrbitRotation] = useState(0);
   const [showPlayButton, setShowPlayButton] = useState(false);
+  const [videoError, setVideoError] = useState(false);
 
   // Track mouse position for magnetic effect
   useEffect(() => {
@@ -236,13 +237,29 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     const video = videoRef.current;
 
+    // Handle video errors
+    const handleError = () => {
+      console.error('Video load error:', video.error);
+      setVideoError(true);
+      setShowPlayButton(false);
+    };
+
+    video.addEventListener('error', handleError);
+
     const attemptPlay = () => {
+      // Check for video errors first
+      if (video.error) {
+        handleError();
+        return;
+      }
+
       // iOS Safari often only reaches readyState 2 (HAVE_CURRENT_DATA)
       if (video.readyState >= 2) {
         video.play()
           .then(() => {
             setHasPlayed(true);
             setShowPlayButton(false);
+            setVideoError(false);
             setTimeout(() => setShowInfoBox(true), 1000);
             setTimeout(() => setInitialPulse(false), 3000);
           })
@@ -254,10 +271,16 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       } else {
         // Wait for enough data to be loaded
         const playHandler = () => {
+          if (video.error) {
+            handleError();
+            return;
+          }
+
           video.play()
             .then(() => {
               setHasPlayed(true);
               setShowPlayButton(false);
+              setVideoError(false);
               setTimeout(() => setShowInfoBox(true), 1000);
               setTimeout(() => setInitialPulse(false), 3000);
             })
@@ -269,13 +292,20 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         
         video.addEventListener('loadeddata', playHandler, { once: true });
         video.addEventListener('canplay', playHandler, { once: true });
+        
+        // Timeout fallback for error detection
+        setTimeout(() => {
+          if (video.readyState === 0 && video.networkState === 3) {
+            handleError();
+          }
+        }, 3000);
       }
     };
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasPlayed) {
+          if (entry.isIntersecting && !hasPlayed && !videoError) {
             attemptPlay();
           }
         });
@@ -287,8 +317,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       observer.observe(containerRef.current);
     }
 
-    return () => observer.disconnect();
-  }, [hasPlayed, videoRef]);
+    return () => {
+      video.removeEventListener('error', handleError);
+      observer.disconnect();
+    };
+  }, [hasPlayed, videoError, videoRef]);
 
   // Background color morphing
   useEffect(() => {
@@ -373,7 +406,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 />
                 
                 {/* Play button overlay for when autoplay is blocked */}
-                {showPlayButton && (
+                {showPlayButton && !videoError && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
                     <Button
                       size="lg"
@@ -383,6 +416,19 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                     >
                       <Play className="w-10 h-10" />
                     </Button>
+                  </div>
+                )}
+                
+                {/* Error message when video can't load */}
+                {videoError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm p-8">
+                    <div className="text-center space-y-4">
+                      <div className="text-4xl">📹</div>
+                      <p className="text-white font-semibold">Video Unavailable</p>
+                      <p className="text-white/70 text-sm max-w-xs">
+                        The video could not be loaded. Please check back later or contact support.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
