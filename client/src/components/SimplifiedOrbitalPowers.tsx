@@ -220,14 +220,24 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasPlayed) {
-            videoRef.current?.play().catch(console.error);
+            // Ensure video is loaded before attempting to play
+            const video = videoRef.current;
+            if (video) {
+              if (video.readyState >= 2) {
+                video.play().catch(console.error);
+              } else {
+                video.addEventListener('loadeddata', () => {
+                  video.play().catch(console.error);
+                }, { once: true });
+              }
+            }
             setHasPlayed(true);
             setTimeout(() => setShowInfoBox(true), 1000);
             setTimeout(() => setInitialPulse(false), 3000);
           }
         });
       },
-      { threshold: 0.2 }
+      { threshold: 0.1 }
     );
 
     if (containerRef.current) {
@@ -314,8 +324,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                   src={videoSrc}
                   muted
                   playsInline
+                  preload="metadata"
                   controls={false}
                   data-testid="orbital-video"
+                  webkit-playsinline="true"
                 />
               </div>
             </div>

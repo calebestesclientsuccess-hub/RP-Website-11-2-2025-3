@@ -61,7 +61,7 @@ export default function Home() {
         });
       },
       {
-        threshold: 0.5, // Video is considered visible when 50% is in view
+        threshold: 0.3, // Video is considered visible - lowered for mobile
       }
     );
 
