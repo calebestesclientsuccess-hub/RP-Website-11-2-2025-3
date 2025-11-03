@@ -2,7 +2,7 @@ import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
+import { StaticGradientBg } from "@/components/StaticGradientBg";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { 
@@ -112,7 +112,7 @@ export default function About() {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
-        <AnimatedGradientMesh intensity="subtle" speed="slow" />
+        <StaticGradientBg />
         
         {/* Light grid dots pattern (light mode only) */}
         <div className="light-grid-dots" />
