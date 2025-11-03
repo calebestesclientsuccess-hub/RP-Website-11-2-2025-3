@@ -48,14 +48,15 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 - **Database**: PostgreSQL with Drizzle ORM handles all content and application data.
 - **API Routes**: RESTful APIs for content retrieval and submission.
 
-## Light Mode Enhancement System (November 2025)
+## Light & Dark Mode Gradient System (November 2025)
 Comprehensive WCAG AA-compliant gradient system with performance-tiered effects:
 
 **Gradient System:**
-- **WCAG AA Compliance**: All gradient colors achieve 4.5:1+ contrast ratios against white backgrounds
-- **Color Palette**: Coral (0 70% 45%) → Pink (330 60% 48%) → Magenta (300 50% 46%) → Purple (252 50% 46%) → Blue (210 50% 48%)
-- **Progressive Enhancement**: @supports detection for gradient capabilities with solid color fallbacks
-- **Dark Mode Scoping**: Gradient effects only apply in light mode (html:not(.dark) selectors)
+- **WCAG AA Compliance**: All gradient colors achieve 4.5:1+ contrast ratios
+- **Light Mode Palette**: Full spectrum - Coral (0 70% 45%) → Pink (330 60% 48%) → Magenta (300 50% 46%) → Purple (252 50% 46%) → Blue (210 50% 48%)
+- **Dark Mode Palette**: Warm reds only - Pure Red Coral (0 85% 58%) → Crimson (350 82% 60%) → Rose (340 78% 58%) → Warm Pink (330 70% 58%)
+- **Progressive Enhancement**: @supports detection for gradient capabilities with solid color fallbacks outside @supports block for legacy browser support
+- **Theme-Specific Gradients**: Both light and dark modes now feature gradient text with appropriate color ranges for each theme
 
 **Performance Tier System:**
 - **3-Tier Detection**: Automatic device capability assessment on page load
