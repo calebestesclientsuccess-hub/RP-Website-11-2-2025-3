@@ -184,7 +184,7 @@ export default function Home() {
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-trap">
               The $198,000 Mistake{" "}
-              <span className="gradient-text gradient-hero">You're About to Make</span>
+              <span className="gradient-text gradient-hero">You Don't Have to Make</span>
             </h2>
             <div className="space-y-4">
               <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-trap-description">
