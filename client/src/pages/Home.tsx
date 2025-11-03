@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { StaticGradientBg } from "@/components/StaticGradientBg";
 import { HeroROICalculator } from "@/components/HeroROICalculator";
 import SimpleBridgeSection from "@/components/SimpleBridgeSection";
-import { OrbitalPowers } from "@/components/OrbitalPowers";
+import { SimplifiedOrbitalPowers } from "@/components/SimplifiedOrbitalPowers";
 import { AnimationErrorBoundary } from "@/components/AnimationErrorBoundary";
 import { SEO } from "@/components/SEO";
 import { ServiceSchema } from "@/components/ServiceSchema";
@@ -298,9 +298,7 @@ export default function Home() {
       </section>
 
       {/* Your Fullstack Sales Unit - The Product Reveal */}
-      <AnimationErrorBoundary componentName="OrbitalPowers">
-        <OrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
-      </AnimationErrorBoundary>
+      <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
 
       {/* Proof Module - "Social Proof" */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-background">
