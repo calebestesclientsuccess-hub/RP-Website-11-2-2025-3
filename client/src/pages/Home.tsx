@@ -199,56 +199,97 @@ export default function Home() {
             </motion.div>
 
             {/* Floating Power Badges */}
-            {powers.map((power, index) => (
-              <motion.div
-                key={power.id}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ 
-                  opacity: 1, 
-                  scale: 1,
-                  y: [0, -8, 0]
-                }}
-                transition={{
-                  opacity: { duration: 0.5, delay: 0.6 + index * 0.1 },
-                  scale: { duration: 0.5, delay: 0.6 + index * 0.1 },
-                  y: {
-                    duration: 3 + index * 0.3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: index * 0.5
-                  }
-                }}
-                className="absolute cursor-pointer group"
-                style={{
-                  ...power.position.mobile,
-                  ...(window.innerWidth >= 768 && power.position.desktop)
-                }}
-                onClick={() => setSelectedPower(power)}
-                data-testid={`badge-${power.id}`}
-              >
-                <div className="relative">
-                  {/* Glow effect */}
-                  <div 
-                    className="absolute inset-0 rounded-full blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{
-                      background: `hsl(${power.glowColor} / 0.5)`,
-                      transform: 'scale(1.5)'
-                    }}
-                  />
-                  
-                  {/* Badge */}
-                  <Badge
-                    className={`relative flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 text-xs md:text-sm font-semibold bg-background/95 backdrop-blur-md border-2 hover-elevate active-elevate-2 transition-all shadow-lg ${power.color}`}
-                    style={{
-                      borderColor: `hsl(${power.glowColor})`
-                    }}
-                  >
-                    {power.icon}
-                    <span className="whitespace-nowrap">{power.title}</span>
-                  </Badge>
-                </div>
-              </motion.div>
-            ))}
+            {powers.map((power, index) => {
+              const floatVariants = [
+                { y: [0, -12, 0], x: [0, 3, 0], rotate: [0, 2, 0] },
+                { y: [0, -8, 0], x: [0, -4, 0], rotate: [0, -1, 0] },
+                { y: [0, -10, 0], x: [0, 2, 0], rotate: [0, 1.5, 0] },
+                { y: [0, -9, 0], x: [0, -3, 0], rotate: [0, -2, 0] },
+                { y: [0, -11, 0], x: [0, 4, 0], rotate: [0, 1, 0] },
+                { y: [0, -7, 0], x: [0, -2, 0], rotate: [0, -1.5, 0] }
+              ];
+              
+              const variant = floatVariants[index % floatVariants.length];
+              
+              return (
+                <motion.div
+                  key={power.id}
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ 
+                    opacity: 1, 
+                    scale: 1,
+                    y: variant.y,
+                    x: variant.x,
+                    rotate: variant.rotate
+                  }}
+                  whileHover={{ 
+                    scale: 1.1,
+                    transition: { duration: 0.2 }
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{
+                    opacity: { duration: 0.5, delay: 0.6 + index * 0.1 },
+                    scale: { duration: 0.5, delay: 0.6 + index * 0.1 },
+                    y: {
+                      duration: 3 + index * 0.4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: index * 0.3
+                    },
+                    x: {
+                      duration: 4 + index * 0.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: index * 0.2
+                    },
+                    rotate: {
+                      duration: 5 + index * 0.3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: index * 0.4
+                    }
+                  }}
+                  className="absolute cursor-pointer group -translate-x-1/2 -translate-y-1/2"
+                  style={{
+                    ...power.position.mobile,
+                    ...(typeof window !== 'undefined' && window.innerWidth >= 768 ? power.position.desktop : {})
+                  }}
+                  onClick={() => setSelectedPower(power)}
+                  data-testid={`badge-${power.id}`}
+                >
+                  <div className="relative">
+                    {/* Animated Glow effect */}
+                    <motion.div 
+                      className="absolute inset-0 rounded-full blur-xl opacity-50 group-hover:opacity-100"
+                      animate={{
+                        opacity: [0.4, 0.7, 0.4],
+                        scale: [1.3, 1.6, 1.3]
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: index * 0.5
+                      }}
+                      style={{
+                        background: `hsl(${power.glowColor} / 0.6)`
+                      }}
+                    />
+                    
+                    {/* Badge */}
+                    <Badge
+                      className={`relative flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 text-xs md:text-sm font-semibold bg-background/95 backdrop-blur-md border-2 hover-elevate active-elevate-2 transition-all shadow-lg ${power.color}`}
+                      style={{
+                        borderColor: `hsl(${power.glowColor})`
+                      }}
+                    >
+                      {power.icon}
+                      <span className="whitespace-nowrap">{power.title}</span>
+                    </Badge>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* CTA Section */}
