@@ -397,13 +397,15 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 <video
                   ref={videoRef}
                   className="w-full h-full object-contain bg-black"
-                  src={videoSrc}
                   muted
                   playsInline
                   preload="auto"
                   controls={false}
                   data-testid="orbital-video"
-                />
+                >
+                  <source src="/bdr-pod-video.webm" type="video/webm" />
+                  <source src={videoSrc} type="video/mp4" />
+                </video>
                 
                 {/* Play button overlay for when autoplay is blocked */}
                 {showPlayButton && !videoError && (
