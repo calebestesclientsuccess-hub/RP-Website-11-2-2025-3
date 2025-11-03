@@ -48,6 +48,51 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 - **Database**: PostgreSQL with Drizzle ORM handles all content and application data.
 - **API Routes**: RESTful APIs for content retrieval and submission.
 
+## Light Mode Enhancement System (November 2025)
+Comprehensive WCAG AA-compliant gradient system with performance-tiered effects:
+
+**Gradient System:**
+- **WCAG AA Compliance**: All gradient colors achieve 4.5:1+ contrast ratios against white backgrounds
+- **Color Palette**: Coral (0 70% 45%) → Pink (330 60% 48%) → Magenta (300 50% 46%) → Purple (252 50% 46%) → Blue (210 50% 48%)
+- **Progressive Enhancement**: @supports detection for gradient capabilities with solid color fallbacks
+- **Dark Mode Scoping**: Gradient effects only apply in light mode (html:not(.dark) selectors)
+
+**Performance Tier System:**
+- **3-Tier Detection**: Automatic device capability assessment on page load
+  - Tier 1 (Low): Basic solid colors, minimal effects
+  - Tier 2 (Medium): Grid patterns, basic shadows, simple animations
+  - Tier 3 (High): Full gradient meshes, multi-layer shadows, complex animations
+- **Non-Deprecated APIs**: Uses modern performance detection without battery API
+- **Dynamic Class Application**: Performance tier classes on html element for CSS activation
+
+**Multi-Layer Shadow System:**
+- **4-Layer Depth**: Ambient (soft spread) + Key (directional) + Fill (opposite) + Rim (edge highlight)
+- **Adjustable Intensities**: CSS variables for contextual shadow strength
+- **Performance Conscious**: Shadow complexity scales with device tier
+
+**Technical Grid Patterns:**
+- **Dot Grid**: Subtle radial gradient pattern for technical aesthetic (Tier 2+)
+- **Isometric Grid**: 30-degree diagonal lines for depth perception (Tier 2+)
+- **Performance Gated**: Only renders on capable devices
+
+**Accessibility Features:**
+- **prefers-reduced-motion**: Disables all animations, shows static gradients
+- **prefers-contrast**: Increases shadow intensities and border strengths
+- **forced-colors**: Windows high contrast mode support with semantic colors
+- **Keyboard Navigation**: Gradient-aware focus states with proper outlines
+
+**Theme Transition System:**
+- **Smooth Transitions**: 300ms fade between themes without layout shifts
+- **Scoped Selectors**: Performance-optimized transition targets (no * selector)
+- **Gradient Mesh Fading**: Visual effects fade during theme switch
+
+**Implementation Details:**
+- All gradient text properly scoped to light mode only
+- Performance tier classes on documentElement (html) for CSS activation
+- CSS variables properly initialized in :root
+- No gradient persistence in dark mode (shows solid red instead)
+- Context-aware gradient intensities (hero, card, button, subtle)
+
 ## SEO Optimizations (November 2025)
 Comprehensive technical SEO enhancements to conquer Google search results:
 
