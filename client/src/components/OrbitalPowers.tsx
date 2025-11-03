@@ -232,7 +232,6 @@ export function OrbitalPowers({ videoSrc, videoRef }: OrbitalPowersProps) {
     // Fallback timer if video doesn't play
     const fallbackTimer = setTimeout(() => {
       if (!forceInteractiveRef.current && speedRef.current > 0) {
-        console.log('Activating fallback interactive mode');
         forceInteractiveRef.current = true;
         slowdownRef.current = true;
         

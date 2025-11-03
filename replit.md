@@ -10,6 +10,71 @@ Revenue Party is a marketing website for a Go-to-Market (GTM) consultancy, speci
 - Emphasis on data-driven decision making
 - Clean, modern typography with strong hierarchy
 
+## Animation System Architecture (November 2025)
+All animations are centralized, maintainable, and isolated for reliability. The system is designed to delight without distraction while being easy to debug and modify.
+
+**Core Principles:**
+- **Centralized Configuration**: All timing values, easings, and constants in `/client/src/lib/animationConfig.ts`
+- **Error Isolation**: Error boundaries prevent animation failures from breaking the page
+- **Debug Mode**: Add `?debug=true` to URL to see live animation values and performance metrics
+- **Accessibility First**: All animations respect `prefers-reduced-motion` and show end states immediately when needed
+
+**Animation Flow Map:**
+
+1. **Hero Section** (Home page)
+   - Static hero with ROI calculator
+   - No scroll-triggered animations here
+
+2. **ScrollScaleReveal** (`/components/ScrollScaleReveal.tsx`)
+   - **What**: "You need more than another salesperson" → "You need a system"
+   - **Trigger**: Pinned scroll (4x viewport height)
+   - **Phases**: Growth (60%) → Crossfade (20%) → Friction hold (20%) with pulsating effect
+   - **Purpose**: Create dramatic pause before revealing the solution
+   - **Config**: `ANIMATION_CONFIG.scrollScale`
+
+3. **CinematicBridge** + **CinematicTextTransform** (`/components/CinematicBridge.tsx`)
+   - **What**: Theatre-mode vignette/spotlight effects with text transformation
+   - **Trigger**: Pinned scroll section
+   - **Phases**: Build intensity → Peak → Ease with bouncing arrow
+   - **Purpose**: Transition between problem and solution with cinematic drama
+   - **Config**: `ANIMATION_CONFIG.cinematicBridge` and `ANIMATION_CONFIG.cinematicText`
+   - **Note**: CinematicBridge contains CinematicTextTransform as child
+
+4. **ParticleDisintegration** (`/components/ParticleDisintegration.tsx`)
+   - **What**: Red particle effects falling like leaves after text transformation
+   - **Trigger**: Activated programmatically when text changes
+   - **Physics**: Gravity, horizontal sway, air resistance (6-9 second lifespan)
+   - **Purpose**: Visual metaphor of old thinking "falling away"
+   - **Config**: `ANIMATION_CONFIG.particles`
+
+5. **OrbitalPowers** (`/components/OrbitalPowers.tsx`)
+   - **What**: Video with 6 orbiting "powers" badges using golden ratio proportions
+   - **Trigger**: IntersectionObserver when 20% visible, plays video once
+   - **Phases**: Orbital rotation → Slowdown (2.5s before video end) → Expansion → Interactive
+   - **Purpose**: Showcase the 6 components of the GTM system dynamically
+   - **Config**: `ANIMATION_CONFIG.orbital`
+
+6. **BuildAndRampTimeline** (`/components/BuildAndRampTimeline.tsx`)
+   - **What**: Vertical 5-month timeline with scroll reveals
+   - **Trigger**: Individual ScrollTriggers per step (85% viewport)
+   - **Animation**: Steps fade up 50px, connecting lines draw downward
+   - **Purpose**: Show transparent path from audit to guaranteed results
+   - **Config**: `ANIMATION_CONFIG.timeline`
+
+**Debugging Animations:**
+- **Development**: Add `?debug=true` to URL to see AnimationDebugOverlay (bottom-right)
+- **Config Changes**: Edit `/client/src/lib/animationConfig.ts` - all components use these values
+- **Error Handling**: Each major animation wrapped in `<AnimationErrorBoundary>` 
+  - Production: Fails silently (graceful degradation)
+  - Development: Shows error card with details
+- **Console Logs**: All debugging console.logs removed from production code
+
+**Performance Considerations:**
+- Performance tier detection still active (via ThemeProvider)
+- Reduced motion users see end states immediately
+- Animations designed to run at 60fps on mid-tier devices
+- Error boundaries prevent cascading failures
+
 ## System Architecture
 The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js backend with PostgreSQL and Drizzle ORM.
 

@@ -1,4 +1,22 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { ANIMATION_CONFIG } from '@/lib/animationConfig';
+
+/**
+ * ParticleDisintegration: Canvas-based particle effects
+ * 
+ * Creates falling particles from text with leaf-like physics.
+ * Particles spawn from text position with gentle sway and gravity.
+ * 
+ * Physics:
+ * - Gentle gravity pulls particles down
+ * - Horizontal sway creates leaf-like motion
+ * - Air resistance for organic movement
+ * - Particles glow target element when approaching
+ * 
+ * Triggers: When isActive prop becomes true
+ * Duration: 6-9 seconds (configurable)
+ * Dependencies: Canvas API, requestAnimationFrame
+ */
 
 interface Particle {
   x: number;
@@ -32,44 +50,38 @@ export default function ParticleDisintegration({
   const glowTargetRef = useRef<HTMLElement | null>(null);
 
   const createParticle = useCallback((x: number, y: number, delay: number = 0): Particle => {
-    // Create gentle horizontal drift for leaf-like motion
+    const config = ANIMATION_CONFIG.particles;
     const drift = (Math.random() - 0.5) * 0.5;
     
     return {
       x,
       y,
-      vx: drift, // Subtle horizontal sway
-      vy: 0, // Start with no vertical velocity, gravity will pull down
-      size: Math.random() * 4 + 2, // Larger particles (2-6px)
+      vx: drift,
+      vy: 0,
+      size: Math.random() * (config.size.max - config.size.min) + config.size.min,
       alpha: 1,
-      color: `hsl(0, ${90 + Math.random() * 10}%, ${55 + Math.random() * 15}%)`, // Brighter red with variation
+      color: `hsl(0, ${config.color.saturation.min + Math.random() * (config.color.saturation.max - config.color.saturation.min)}%, ${config.color.lightness.min + Math.random() * (config.color.lightness.max - config.color.lightness.min)}%)`,
       life: delay,
-      maxLife: 6000 + Math.random() * 3000, // Particles live 6-9 seconds for graceful fall
+      maxLife: config.lifespan.min + Math.random() * (config.lifespan.max - config.lifespan.min),
     };
   }, []);
 
   const initParticles = useCallback(() => {
     if (!textElement || !canvasRef.current) {
-      console.log('Cannot initialize particles:', { textElement: !!textElement, canvas: !!canvasRef.current });
       return;
     }
 
     const canvas = canvasRef.current;
     const rect = textElement.getBoundingClientRect();
     
-    console.log('Initializing particles for text element:', { 
-      text: textElement.innerText, 
-      rect: { width: rect.width, height: rect.height, top: rect.top, left: rect.left }
-    });
     const particles: Particle[] = [];
+    const config = ANIMATION_CONFIG.particles;
 
     // Create particles in a grid pattern across the text bounds
-    // Use tighter spacing for denser, more dramatic particle field
-    const particleSpacing = 4;
-    const particleCount = Math.floor((rect.width / particleSpacing) * (rect.height / particleSpacing));
+    const particleCount = Math.floor((rect.width / config.spacing) * (rect.height / config.spacing));
     
-    for (let y = 0; y < rect.height; y += particleSpacing) {
-      for (let x = 0; x < rect.width; x += particleSpacing) {
+    for (let y = 0; y < rect.height; y += config.spacing) {
+      for (let x = 0; x < rect.width; x += config.spacing) {
         // Create particle with left-to-right delay for wave effect
         const delay = (x / rect.width) * duration;
         particles.push(createParticle(rect.left + x, rect.top + y, delay));
@@ -77,7 +89,6 @@ export default function ParticleDisintegration({
     }
 
     particlesRef.current = particles;
-    console.log(`Created ${particles.length} particles for disintegration (grid-based, expected ~${particleCount})`);
     
     // Set canvas size and position
     canvas.width = window.innerWidth;
@@ -123,17 +134,19 @@ export default function ParticleDisintegration({
       if (particleAge < particle.maxLife) {
         activeParticles++;
         
+        const config = ANIMATION_CONFIG.particles;
+        
         // Update physics with gentle leaf-like motion
-        particle.vy += 0.08; // Gentle gravity
+        particle.vy += config.gravity;
         particle.x += particle.vx;
         particle.y += particle.vy;
 
         // Add slight horizontal sway like leaves
-        particle.vx += Math.sin(particleAge * 0.002) * 0.02;
+        particle.vx += Math.sin(particleAge * config.sway.frequency) * config.sway.amplitude;
         
         // Air resistance for more organic motion
-        particle.vx *= 0.995;
-        particle.vy *= 0.998;
+        particle.vx *= config.airResistance.horizontal;
+        particle.vy *= config.airResistance.vertical;
         
         // Calculate alpha based on life
         particle.alpha = Math.max(0, 1 - (particleAge / particle.maxLife));
@@ -141,10 +154,9 @@ export default function ParticleDisintegration({
         // Check if particle is near target text for glow effect
         if (targetRect && glowTargetRef.current) {
           const dist = Math.abs(particle.y - targetRect.top);
-          if (dist < 50) {
-            // Add glow to target element
-            const glowIntensity = (50 - dist) / 50 * particle.alpha;
-            glowTargetRef.current.style.filter = `drop-shadow(0 0 ${glowIntensity * 20}px rgba(239, 68, 68, ${glowIntensity * 0.5}))`;
+          if (dist < config.targetGlow.distance) {
+            const glowIntensity = (config.targetGlow.distance - dist) / config.targetGlow.distance * particle.alpha;
+            glowTargetRef.current.style.filter = `drop-shadow(0 0 ${glowIntensity * config.targetGlow.intensity}px rgba(239, 68, 68, ${glowIntensity * config.targetGlow.opacityMultiplier}))`;
           }
         }
 
@@ -152,17 +164,17 @@ export default function ParticleDisintegration({
         ctx.save();
         ctx.globalAlpha = particle.alpha;
         ctx.fillStyle = particle.color;
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = config.shadowBlur;
         ctx.shadowColor = particle.color;
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fill();
         
         // Draw inner bright core
-        ctx.shadowBlur = 5;
+        ctx.shadowBlur = config.shadowBlur / 3;
         ctx.fillStyle = `hsl(0, 100%, 70%)`;
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size * 0.5, 0, Math.PI * 2);
+        ctx.arc(particle.x, particle.y, particle.size * config.coreSize, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       }
@@ -181,12 +193,10 @@ export default function ParticleDisintegration({
   }, [onComplete]);
 
   useEffect(() => {
-    console.log('ParticleDisintegration effect:', { isActive, hasTextElement: !!textElement });
     if (isActive && textElement) {
       initParticles();
       startTimeRef.current = 0;
       animationRef.current = requestAnimationFrame(animate);
-      console.log('Started particle animation');
     }
 
     return () => {

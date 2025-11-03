@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ANIMATION_CONFIG, prefersReducedMotion } from '@/lib/animationConfig';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -8,6 +9,19 @@ interface CinematicTextTransformProps {
   triggerElement: HTMLElement | null;
 }
 
+/**
+ * CinematicTextTransform: Scroll-triggered text fade transition
+ * 
+ * Transforms "salesperson" → "system" with blur + beat pulse effect
+ * 
+ * Animation Phases:
+ * 1. Dissolution (40-60%): Old text blurs and fades out
+ * 2. Beat (60-65%): Brief glow pulse between transitions
+ * 3. Reveal (65-85%): New text fades in and unblurs
+ * 
+ * Triggers: Scroll position within parent CinematicBridge
+ * Dependencies: GSAP, ScrollTrigger, requires triggerElement ref
+ */
 export default function CinematicTextTransform({ triggerElement }: CinematicTextTransformProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const oldTextRef = useRef<HTMLDivElement>(null);
@@ -22,10 +36,9 @@ export default function CinematicTextTransform({ triggerElement }: CinematicText
     
     if (!container || !oldText || !newText || !beatOverlay || !triggerElement) return;
 
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const config = ANIMATION_CONFIG.cinematicText;
     
-    if (prefersReducedMotion) {
+    if (prefersReducedMotion()) {
       gsap.set(oldText, { opacity: 0 });
       gsap.set(newText, { opacity: 1 });
       return;
@@ -37,54 +50,51 @@ export default function CinematicTextTransform({ triggerElement }: CinematicText
         trigger: triggerElement,
         start: "top top",
         end: "bottom bottom",
-        scrub: 1, // 1 second smoothing for silky motion
-        markers: false,
+        scrub: config.scrub,
+        markers: ANIMATION_CONFIG.global.scrollTrigger.markers,
       }
     });
 
-    // PHASE 1: Dissolution (scroll 0.4 → 0.6)
-    // Old text fades, blurs, and scales down
+    // PHASE 1: Dissolution
     tl.to(oldText, {
-      opacity: 0,
-      filter: 'blur(8px)',
-      scale: 0.95,
-      duration: 0.2,
-      ease: "power2.in"
-    }, 0.4);
+      opacity: config.dissolution.opacity,
+      filter: `blur(${config.dissolution.blur})`,
+      scale: config.dissolution.scale,
+      duration: config.dissolution.duration,
+      ease: config.dissolution.easing
+    }, config.dissolution.start);
 
-    // PHASE 2: The Beat (scroll 0.6 → 0.65)
-    // Brief pulse/glow effect
+    // PHASE 2: The Beat pulse
     tl.fromTo(beatOverlay, {
       opacity: 0,
-      scale: 0.8
+      scale: config.beat.fadeIn.scale - 0.2
     }, {
-      opacity: 0.15,
-      scale: 1,
-      duration: 0.025,
-      ease: "power2.out"
-    }, 0.6)
+      opacity: config.beat.fadeIn.opacity,
+      scale: config.beat.fadeIn.scale,
+      duration: config.beat.fadeIn.duration,
+      ease: config.beat.fadeIn.easing
+    }, config.beat.fadeIn.start)
     .to(beatOverlay, {
-      opacity: 0,
-      scale: 1.1,
-      duration: 0.025,
-      ease: "power2.in"
-    }, 0.625);
+      opacity: config.beat.fadeOut.opacity,
+      scale: config.beat.fadeOut.scale,
+      duration: config.beat.fadeOut.duration,
+      ease: config.beat.fadeOut.easing
+    }, config.beat.fadeOut.start);
 
-    // PHASE 3: The Reveal (scroll 0.65 → 0.85)
-    // New text fades in, unblurs, rises slightly
+    // PHASE 3: The Reveal
     tl.fromTo(newText, {
       opacity: 0,
-      filter: 'blur(8px)',
-      y: 20,
-      scale: 1.05
+      filter: `blur(${config.reveal.blur})`,
+      y: config.reveal.yOffset,
+      scale: config.reveal.scale
     }, {
       opacity: 1,
       filter: 'blur(0px)',
       y: 0,
       scale: 1,
-      duration: 0.2,
-      ease: "power2.out"
-    }, 0.65);
+      duration: config.reveal.duration,
+      ease: config.reveal.easing
+    }, config.reveal.start);
 
     return () => {
       tl.kill();

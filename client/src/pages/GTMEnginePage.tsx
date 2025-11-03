@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import BuildAndRampTimeline from "@/components/BuildAndRampTimeline";
 import { OrbitalPowers } from "@/components/OrbitalPowers";
+import { AnimationErrorBoundary } from "@/components/AnimationErrorBoundary";
 import { Users, Brain, BookOpen, Shield, Zap, CheckCircle2, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
@@ -264,7 +265,9 @@ export default function GTMEnginePage() {
             </p>
           </div>
 
-          <BuildAndRampTimeline />
+          <AnimationErrorBoundary componentName="BuildAndRampTimeline">
+            <BuildAndRampTimeline />
+          </AnimationErrorBoundary>
 
           <div className="text-center mt-12">
             <Card className="p-8 bg-primary/5 border-2 border-primary max-w-2xl mx-auto">

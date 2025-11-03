@@ -1,9 +1,25 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ANIMATION_CONFIG, prefersReducedMotion } from "@/lib/animationConfig";
 
 gsap.registerPlugin(ScrollTrigger);
 
+/**
+ * ScrollScaleReveal: Dramatic scroll-triggered text transformation
+ * 
+ * Shows "You need more than another salesperson" which scales up and
+ * crossfades to red "You need a system." message with pulsating effect.
+ * 
+ * Animation Phases:
+ * 1. Growth (60%): Text scales from small to large
+ * 2. Crossfade (20%): White fades out, red fades in
+ * 3. Friction (20%): Holds with "stuck" feeling, pulsating
+ * 
+ * Triggers: Pinned when section reaches top of viewport
+ * Duration: 4x viewport height of scroll
+ * Dependencies: GSAP, ScrollTrigger
+ */
 export default function ScrollScaleReveal() {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLHeadingElement>(null);
@@ -15,15 +31,12 @@ export default function ScrollScaleReveal() {
     const redText = redTextRef.current;
     
     if (!container || !text || !redText) {
-      console.log("ScrollScaleReveal: Missing refs", { container, text, redText });
       return;
     }
-    console.log("ScrollScaleReveal: Initializing animation");
 
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const config = ANIMATION_CONFIG.scrollScale;
     
-    if (prefersReducedMotion) {
+    if (prefersReducedMotion()) {
       // Show final state immediately
       gsap.set(text, { opacity: 0 });
       gsap.set(redText, { opacity: 1 });
@@ -38,40 +51,35 @@ export default function ScrollScaleReveal() {
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: container,
-        start: "top top", // Pin when section reaches top
-        end: () => "+=" + (window.innerHeight * 4), // 4x viewport height for friction
-        scrub: 1, // Smooth scrubbing
-        pin: true, // Pin the container
+        start: "top top",
+        end: () => "+=" + (window.innerHeight * config.scrollDistanceMultiplier),
+        scrub: config.scrub,
+        pin: true,
         pinSpacing: true,
-        anticipatePin: 1,
-        markers: false, // Set to true to debug trigger points
-        onUpdate: (self) => {
-          console.log(`ScrollScaleReveal progress: ${self.progress.toFixed(2)}`);
-        },
+        anticipatePin: ANIMATION_CONFIG.global.scrollTrigger.anticipatePin,
+        markers: ANIMATION_CONFIG.global.scrollTrigger.markers,
       }
     });
 
-    // Phase 1: Grow fontSize to emphasized size (moderate growth for clean wrapping)
-    // Duration 6 = 60% of timeline
+    // Phase 1: Growth - font size increases
     tl.fromTo(text, 
       {
-        fontSize: "clamp(2rem, 5vw, 3rem)", // Responsive starting size
+        fontSize: config.fontSize.start,
         opacity: 1,
       },
       {
-        fontSize: "clamp(6rem, 15vw, 10rem)", // Moderate max: 96px mobile → 160px desktop
+        fontSize: config.fontSize.end,
         opacity: 1,
-        letterSpacing: "0.02em",
-        ease: "power2.inOut",
-        duration: 6, // 60% of timeline
+        letterSpacing: config.letterSpacing,
+        ease: config.easing.growth,
+        duration: config.phases.growth,
       }
     )
-    // Phase 2: Crossfade - white completely fades out, red completely fades in
-    // Duration 2 = 20% of timeline
+    // Phase 2: Crossfade - white fades out, red fades in
     .to(text, {
       opacity: 0,
-      ease: "power2.inOut",
-      duration: 2, // 20% of timeline
+      ease: config.easing.crossfade,
+      duration: config.phases.crossfade,
     })
     .fromTo(redText, 
       {
@@ -79,17 +87,16 @@ export default function ScrollScaleReveal() {
       },
       {
         opacity: 1,
-        ease: "power2.inOut",
-        duration: 2, // 20% of timeline
+        ease: config.easing.crossfade,
+        duration: config.phases.crossfade,
       }, 
-      "<" // Start at same time as white fadeout
+      "<"
     )
-    // Phase 3: Hold with friction - force user to stay with the message
-    // Duration 2 = 20% of timeline (creates the "stuck" feeling)
+    // Phase 3: Friction hold - creates "stuck" feeling
     .to(redText, {
-      opacity: 1, // Keep it visible
-      duration: 2, // Hold for 20% of scroll
-      ease: "none", // No easing, just hold
+      opacity: 1,
+      duration: config.phases.friction,
+      ease: config.easing.friction,
     });
 
     // Create pulsating animation that triggers when red text is fully visible
@@ -98,33 +105,33 @@ export default function ScrollScaleReveal() {
     ScrollTrigger.create({
       trigger: container,
       start: "top top",
-      end: () => "+=" + (window.innerHeight * 4),
+      end: () => "+=" + (window.innerHeight * config.scrollDistanceMultiplier),
       scrub: false,
       onUpdate: (self) => {
-        // Start pulsating when we're past 70% (after crossfade completes)
-        if (self.progress > 0.70 && !pulseAnimation) {
+        // Start pulsating after crossfade completes
+        if (self.progress > config.pulse.triggerProgress && !pulseAnimation) {
           pulseAnimation = gsap.fromTo(redText, 
             {
-              textShadow: "0 0 40px rgba(220, 38, 38, 0.3), 0 0 80px rgba(220, 38, 38, 0.15)",
-              scale: 1,
+              textShadow: config.pulse.shadows.initial,
+              scale: config.pulse.scale.initial,
             },
             {
-              textShadow: "0 0 80px rgba(220, 38, 38, 0.9), 0 0 160px rgba(220, 38, 38, 0.6), 0 0 240px rgba(220, 38, 38, 0.4)",
-              scale: 1.08,
-              duration: 1.2,
+              textShadow: config.pulse.shadows.peak,
+              scale: config.pulse.scale.peak,
+              duration: config.pulse.duration,
               repeat: -1,
               yoyo: true,
-              ease: "power2.inOut",
+              ease: config.pulse.easing,
             }
           );
         }
         // Stop pulsating if scrolled back up
-        if (self.progress < 0.70 && pulseAnimation) {
+        if (self.progress < config.pulse.triggerProgress && pulseAnimation) {
           pulseAnimation.kill();
           pulseAnimation = null;
           gsap.set(redText, {
-            textShadow: "0 0 40px rgba(220, 38, 38, 0.3), 0 0 80px rgba(220, 38, 38, 0.15)",
-            scale: 1,
+            textShadow: config.pulse.shadows.initial,
+            scale: config.pulse.scale.initial,
           });
         }
       },
@@ -149,7 +156,7 @@ export default function ScrollScaleReveal() {
           <h1 
             ref={textRef}
             className="font-bold text-center text-foreground leading-tight max-w-4xl"
-            style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}
+            style={{ fontSize: ANIMATION_CONFIG.scrollScale.fontSize.start }}
             data-testid="text-scaling"
           >
             You need more than another salesperson

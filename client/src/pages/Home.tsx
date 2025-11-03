@@ -5,6 +5,7 @@ import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { HeroROICalculator } from "@/components/HeroROICalculator";
 import ScrollScaleReveal from "@/components/ScrollScaleReveal";
 import { OrbitalPowers } from "@/components/OrbitalPowers";
+import { AnimationErrorBoundary } from "@/components/AnimationErrorBoundary";
 import { SEO } from "@/components/SEO";
 import { ServiceSchema } from "@/components/ServiceSchema";
 import LocalBusinessSchema from "@/components/LocalBusinessSchema";
@@ -207,7 +208,9 @@ export default function Home() {
       </section>
 
       {/* Cinematic Bridge Statement */}
-      <ScrollScaleReveal />
+      <AnimationErrorBoundary componentName="ScrollScaleReveal">
+        <ScrollScaleReveal />
+      </AnimationErrorBoundary>
 
       {/* Solution Module - "The System" */}
       <section className="relative z-10 py-20 px-4 md:px-6 lg:px-8" data-testid="section-solution">
@@ -297,7 +300,9 @@ export default function Home() {
       </section>
 
       {/* Your Fullstack Sales Unit - The Product Reveal */}
-      <OrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
+      <AnimationErrorBoundary componentName="OrbitalPowers">
+        <OrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
+      </AnimationErrorBoundary>
 
       {/* Proof Module - "Social Proof" */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-background">

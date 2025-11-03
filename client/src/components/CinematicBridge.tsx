@@ -2,10 +2,26 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ChevronDown } from 'lucide-react';
+import { ANIMATION_CONFIG, prefersReducedMotion } from '@/lib/animationConfig';
 import CinematicTextTransform from './CinematicTextTransform';
 
 gsap.registerPlugin(ScrollTrigger);
 
+/**
+ * CinematicBridge: Theatre-mode scroll transition
+ * 
+ * Creates dramatic scroll-triggered vignette and spotlight effects
+ * with choreographed text transformation (via CinematicTextTransform).
+ * 
+ * Animation Phases:
+ * 1. Build (30-60%): Vignette and spotlight intensity increase
+ * 2. Peak (60-70%): Maximum dramatic effect
+ * 3. Ease (85-100%): Effects fade, arrow appears and bounces
+ * 
+ * Triggers: Pinned scroll section
+ * Duration: Full viewport height
+ * Dependencies: GSAP, ScrollTrigger, CinematicTextTransform
+ */
 export default function CinematicBridge() {
   const containerRef = useRef<HTMLDivElement>(null);
   const arrowRef = useRef<HTMLDivElement>(null);
@@ -28,10 +44,9 @@ export default function CinematicBridge() {
 
     if (!container || !arrow || !vignette || !spotlight) return;
 
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const config = ANIMATION_CONFIG.cinematicBridge;
 
-    if (prefersReducedMotion) {
+    if (prefersReducedMotion()) {
       // Show simplified version without animations
       gsap.set(arrow, { opacity: 1, y: 0 });
       return;
@@ -50,63 +65,62 @@ export default function CinematicBridge() {
           start: "top top",
           end: "bottom bottom",
           pin: true,
-          scrub: 1,
-          anticipatePin: 1,
-          markers: false,
+          scrub: config.scrub,
+          anticipatePin: ANIMATION_CONFIG.global.scrollTrigger.anticipatePin,
+          markers: ANIMATION_CONFIG.global.scrollTrigger.markers,
         },
       });
 
       // Theatre-mode effects progress with scroll
-      // Build intensity from 0.3 → 0.6, peak at 0.6-0.7, ease back 0.85-1.0
       scrollTl
         // Vignette builds
         .to(vignette, {
-          opacity: 0.15,
-          duration: 0.3,
-          ease: "power2.in",
-        }, 0.3)
+          opacity: config.vignette.phases[0].opacity,
+          duration: config.vignette.phases[0].duration,
+          ease: config.vignette.phases[0].easing,
+        }, config.vignette.phases[0].start)
         .to(vignette, {
-          opacity: 0.5,
-          duration: 0.1,
-          ease: "power2.inOut",
-        }, 0.6)
+          opacity: config.vignette.phases[1].opacity,
+          duration: config.vignette.phases[1].duration,
+          ease: config.vignette.phases[1].easing,
+        }, config.vignette.phases[1].start)
         .to(vignette, {
-          opacity: 0.2,
-          duration: 0.15,
-          ease: "power2.out",
-        }, 0.85)
+          opacity: config.vignette.phases[2].opacity,
+          duration: config.vignette.phases[2].duration,
+          ease: config.vignette.phases[2].easing,
+        }, config.vignette.phases[2].start)
         
         // Spotlight builds
         .to(spotlight, {
-          opacity: 0.1,
-          scale: 1.2,
-          duration: 0.3,
-          ease: "power2.in",
-        }, 0.3)
+          opacity: config.spotlight.phases[0].opacity,
+          scale: config.spotlight.phases[0].scale,
+          duration: config.spotlight.phases[0].duration,
+          ease: config.spotlight.phases[0].easing,
+        }, config.spotlight.phases[0].start)
         .to(spotlight, {
-          opacity: 0.4,
-          scale: 0.8,
-          duration: 0.1,
-          ease: "power2.inOut",
-        }, 0.6)
+          opacity: config.spotlight.phases[1].opacity,
+          scale: config.spotlight.phases[1].scale,
+          duration: config.spotlight.phases[1].duration,
+          ease: config.spotlight.phases[1].easing,
+        }, config.spotlight.phases[1].start)
         .to(spotlight, {
-          opacity: 0.15,
-          scale: 1,
-          duration: 0.15,
-          ease: "power2.out",
-        }, 0.85)
+          opacity: config.spotlight.phases[2].opacity,
+          scale: config.spotlight.phases[2].scale,
+          duration: config.spotlight.phases[2].duration,
+          ease: config.spotlight.phases[2].easing,
+        }, config.spotlight.phases[2].start)
         
-        // Arrow appears and bounces at 0.85-1.0
+        // Arrow appears and bounces
         .to(arrow, {
-          opacity: 1,
-          y: 0,
+          opacity: config.arrow.opacity,
+          y: config.arrow.yPosition,
           duration: 0.1,
           ease: "power2.out",
-        }, 0.85)
+        }, config.arrow.start)
         .to(arrow, {
-          y: 10,
-          duration: 0.05,
-          ease: "power2.inOut",
+          y: config.arrow.bounce.yOffset,
+          duration: config.arrow.bounce.duration,
+          ease: config.arrow.bounce.easing,
           yoyo: true,
           repeat: 1,
         }, 0.9);

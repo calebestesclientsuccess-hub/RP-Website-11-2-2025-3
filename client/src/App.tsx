@@ -8,6 +8,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { FloatingCalculatorCTA } from "./components/FloatingCalculatorCTA";
+import { AnimationDebugOverlay } from "./components/AnimationDebugOverlay";
 import Home from "@/pages/Home";
 import ProblemPage from "@/pages/ProblemPage";
 import GTMEnginePage from "@/pages/GTMEnginePage";
@@ -86,6 +87,7 @@ function App() {
               <FloatingCalculatorCTA />
             </div>
             <Toaster />
+            <AnimationDebugOverlay />
           </TooltipProvider>
         </ThemeProvider>
       </HelmetProvider>

@@ -4,8 +4,24 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Search, Rocket, TrendingUp, Target, Zap } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ANIMATION_CONFIG, prefersReducedMotion } from '@/lib/animationConfig';
 
 gsap.registerPlugin(ScrollTrigger);
+
+/**
+ * BuildAndRampTimeline: Vertical timeline with scroll reveals
+ * 
+ * Shows 5-month GTM system build process with sequential reveals.
+ * Each step fades in and connecting lines draw as user scrolls.
+ * 
+ * Animation:
+ * - Steps: Fade up from 50px offset with 0.8s duration
+ * - Lines: Draw from top to bottom with 0.6s duration
+ * - Triggers at 85% viewport for natural reveal timing
+ * 
+ * Triggers: Individual ScrollTriggers per step
+ * Dependencies: GSAP, ScrollTrigger
+ */
 
 const timelineSteps = [
   {
@@ -89,10 +105,10 @@ export default function BuildAndRampTimeline() {
     const container = containerRef.current;
     if (!container) return;
 
-    const ctx = gsap.context(() => {
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const config = ANIMATION_CONFIG.timeline;
 
-      if (prefersReducedMotion) {
+    const ctx = gsap.context(() => {
+      if (prefersReducedMotion()) {
         gsap.set(stepsRef.current, { opacity: 1, y: 0 });
         gsap.set(linesRef.current, { scaleY: 1 });
         return;
@@ -103,16 +119,16 @@ export default function BuildAndRampTimeline() {
 
         gsap.fromTo(
           step,
-          { opacity: 0, y: 50 },
+          { opacity: 0, y: config.step.initialOffset },
           {
             opacity: 1,
             y: 0,
-            duration: 0.8,
-            ease: 'power2.out',
+            duration: config.step.duration,
+            ease: config.step.easing,
             scrollTrigger: {
               trigger: step,
-              start: 'top 85%',
-              end: 'top 65%',
+              start: config.step.scrollTrigger.start,
+              end: config.step.scrollTrigger.end,
               toggleActions: 'play none none reverse',
             },
           }
@@ -125,12 +141,12 @@ export default function BuildAndRampTimeline() {
             { scaleY: 0, transformOrigin: 'top' },
             {
               scaleY: 1,
-              duration: 0.6,
-              ease: 'power2.inOut',
+              duration: config.line.duration,
+              ease: config.line.easing,
               scrollTrigger: {
                 trigger: step,
-                start: 'center 75%',
-                end: 'center 55%',
+                start: config.line.scrollTrigger.start,
+                end: config.line.scrollTrigger.end,
                 toggleActions: 'play none none reverse',
               },
             }
