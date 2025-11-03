@@ -286,8 +286,8 @@ export default function About() {
               transition={{ duration: 0.6 }}
             >
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-bot">
-                Don't Just Outsource.{" "}
-                <span className="text-primary">Build Your Future Department.</span>
+                Don't Just Outsource.<br />
+                <span className="gradient-text gradient-hero">Build Your Future Department.</span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed mb-8">
                 We are not a typical agency. We are a strategic partner that builds, operates, and transfers a complete sales asset to you. You can run it in-house whenever you're ready. The IP, playbooks, and processes are 100% yours.
@@ -393,8 +393,8 @@ export default function About() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-architects">
-              The Four Architects{" "}
-              <span className="text-primary">Who Build Your Engine</span>
+              The Four Architects<br />
+              <span className="gradient-text gradient-hero">Who Build Your Engine</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed">
               Your success is engineered by a dedicated team of specialists, each mastering a critical dimension of your GTM system.
@@ -445,8 +445,8 @@ export default function About() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-comparison">
-              The Math of{" "}
-              <span className="text-primary">Smarter Investment</span>
+              The Math of<br />
+              <span className="gradient-text gradient-hero">Smarter Investment</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed">
               See how Revenue Party's Build-Operate-Transfer model compares to traditional hiring and commodity agencies.
@@ -564,8 +564,8 @@ export default function About() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-cta">
-              Ready to Build{" "}
-              <span className="text-primary">With The Best?</span>
+              Ready to Build<br />
+              <span className="gradient-text gradient-hero">With The Best?</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed mb-8">
               Our culture is your competitive advantage. Schedule a GTM Audit to meet the Architects and see how we'll build your revenue engine.

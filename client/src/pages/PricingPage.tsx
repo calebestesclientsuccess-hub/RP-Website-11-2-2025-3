@@ -290,7 +290,8 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-anti-trap-terms">
-              Our Terms: <span className="text-primary">100% Transparency</span>, 0% "Black Box"
+              Our Terms:<br />
+              <span className="gradient-text gradient-hero">100% Transparency</span>, 0% "Black Box"
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed" data-testid="text-anti-trap-description">
               Our terms are designed to build trust and mitigate your risk.
@@ -336,7 +337,8 @@ export default function PricingPage() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-proud-of-price">
-              We Are a <span className="text-primary">Premium Investment</span> in Relevance
+              We Are a<br />
+              <span className="gradient-text gradient-hero">Premium Investment</span> in Relevance
             </h2>
           </div>
 
@@ -385,7 +387,8 @@ export default function PricingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-qualifier">
-              The <span className="text-primary">$750 Question</span>
+              The<br />
+              <span className="gradient-text gradient-hero">$750 Question</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-qualifier-intro">
               Our model is not for everyone. Here's how to know if it's right for you.
@@ -452,7 +455,8 @@ export default function PricingPage() {
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-final-cta">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-final-cta">
-            Let's Build Your <span className="text-primary">Blueprint</span>
+            Let's Build Your<br />
+            <span className="gradient-text gradient-hero">Blueprint</span>
           </h2>
           <p className="text-xl text-muted-foreground mb-8 leading-relaxed" data-testid="text-final-cta-description">
             Stop choosing between bad options. Schedule a free GTM Audit with our Architects and let's design a system that wins.

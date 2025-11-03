@@ -129,7 +129,7 @@ export default function ResultsPage() {
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-proven-results">
                 The GTM Engine:<br />
-                <span className="text-primary">Verified Performance</span>
+                <span className="gradient-text gradient-hero">Verified Performance</span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-proven-results-description">
                 Our model is designed for three outcomes: Speed, Guarantees, and Scalable Assets.
@@ -170,7 +170,7 @@ export default function ResultsPage() {
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-case-studies">
                 The Antidotes:<br />
-                <span className="text-primary">How We Fix the Traps</span>
+                <span className="gradient-text gradient-hero">How We Fix the Traps</span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-case-studies-description">
                 Our clients come to us from one of two failed models. Here's how we build their solution.
@@ -262,7 +262,7 @@ export default function ResultsPage() {
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-testimonials">
                 Don't Just Take<br />
-                <span className="text-primary">Our Word For It</span>
+                <span className="gradient-text gradient-hero">Our Word For It</span>
               </h2>
             </div>
 
@@ -302,7 +302,7 @@ export default function ResultsPage() {
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-cta">
               Ready to Build Your Own<br />
-              <span className="text-primary">Revenue Asset?</span>
+              <span className="gradient-text gradient-hero">Revenue Asset?</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed" data-testid="text-cta-description">
               Let's apply these same principles to your business. Schedule a free GTM Audit to get your custom blueprint. Stop renting activity and start building your engine.

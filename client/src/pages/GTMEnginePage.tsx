@@ -256,7 +256,8 @@ export default function GTMEnginePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-build-ramp">
-              The 4-Month <span className="text-primary">"Build & Ramp"</span>
+              The 4-Month<br />
+              <span className="gradient-text gradient-hero">"Build & Ramp"</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-build-ramp-description">
               Our Transparent Path to Your Guaranteed Asset
@@ -284,8 +285,8 @@ export default function GTMEnginePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-anti-risk">
-              The System is the Asset,{" "}
-              <span className="text-primary">Not the Person.</span> This is Your Safety Net.
+              The System is the Asset,<br />
+              <span className="gradient-text gradient-hero">Not the Person.</span> This is Your Safety Net.
             </h2>
           </div>
 
@@ -373,8 +374,8 @@ export default function GTMEnginePage() {
       <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-cta">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-cta">
-            See the Results{" "}
-            <span className="text-primary">This Engine Produces</span>
+            See the Results<br />
+            <span className="gradient-text gradient-hero">This Engine Produces</span>
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed mb-8" data-testid="text-cta-description">
             The architecture is the "how." The results are the "why." See the proof of what a guaranteed GTM Engine can build.

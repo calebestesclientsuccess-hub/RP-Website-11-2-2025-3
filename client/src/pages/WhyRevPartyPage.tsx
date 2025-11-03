@@ -138,8 +138,8 @@ export default function WhyRevPartyPage() {
           <div className="max-w-7xl mx-auto">
             <div className="max-w-4xl mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-8 text-center" data-testid="heading-culture">
-                This is the "Why" Behind{" "}
-                <span className="text-primary">Our Elite Talent</span>
+                This is the "Why" Behind<br />
+                <span className="gradient-text gradient-hero">Our Elite Talent</span>
               </h2>
               <div className="space-y-6 text-lg text-muted-foreground leading-relaxed" data-testid="text-culture-intro">
                 <p>
@@ -267,7 +267,8 @@ export default function WhyRevPartyPage() {
           <div className="max-w-7xl mx-auto">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-manifesto">
-                The <span className="text-primary">Revenue Party Manifesto</span>
+                The<br />
+                <span className="gradient-text gradient-hero">Revenue Party Manifesto</span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-manifesto-description">
                 Our beliefs are the foundation of our architecture.
@@ -310,8 +311,8 @@ export default function WhyRevPartyPage() {
           <div className="max-w-7xl mx-auto">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-comparison">
-                The Competitive Edge:{" "}
-                <span className="text-primary">A Clear Comparison</span>
+                The Competitive Edge:<br />
+                <span className="gradient-text gradient-hero">A Clear Comparison</span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-comparison-description">
                 See exactly how a GTM Engine stacks up against the broken models.
@@ -369,7 +370,8 @@ export default function WhyRevPartyPage() {
           <div className="max-w-7xl mx-auto">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-architects">
-                Meet the <span className="text-primary">Architects</span> Behind Your Engine
+                Meet the<br />
+                <span className="gradient-text gradient-hero">Architects</span> Behind Your Engine
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-architects-description">
                 Your GTM Engine is designed and guided by a team of dedicated architects, not a faceless account manager.
@@ -409,8 +411,8 @@ export default function WhyRevPartyPage() {
         <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-social-proof">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center" data-testid="heading-social-proof">
-              Why Leaders Choose{" "}
-              <span className="text-primary">Revenue Party</span>
+              Why Leaders Choose<br />
+              <span className="gradient-text gradient-hero">Revenue Party</span>
             </h2>
             <Card className="p-8 md:p-12" data-testid="card-testimonial">
               <blockquote className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-6 italic">
@@ -428,7 +430,8 @@ export default function WhyRevPartyPage() {
         <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-cta">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-cta">
-              Get Your <span className="text-primary">GTM Audit</span>
+              Get Your<br />
+              <span className="gradient-text gradient-hero">GTM Audit</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed" data-testid="text-cta-description">
               Stop choosing between bad options. Schedule an audit with our Architects and let's design a system that wins.

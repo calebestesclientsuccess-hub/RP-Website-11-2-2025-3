@@ -165,8 +165,8 @@ export default function ProblemPage() {
               className="mb-12"
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-trap-2">
-                Trap 2: The Outsourcing Agency{" "}
-                <span className="text-primary">(The 'Suicide Mission')</span>
+                Trap 2: The Outsourcing Agency<br />
+                <span className="gradient-text gradient-hero">(The 'Suicide Mission')</span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed max-w-4xl" data-testid="text-trap-2-intro">
                 You're tired of the hiring drag, so you sign a 12-month contract with a 'leading' B2B appointment setting service. They promise you 10 meetings a month. What you get is a list of unqualified leads and a bill.
@@ -236,8 +236,8 @@ export default function ProblemPage() {
                 <div className="max-w-3xl mx-auto">
                   <CheckCircle className="w-16 h-16 text-primary mx-auto mb-6" />
                   <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-diagnosis">
-                    The Diagnosis: You Don't Have a Person Problem.{" "}
-                    <span className="text-primary">You Have an Architecture Problem.</span>
+                    The Diagnosis: You Don't Have a Person Problem.<br />
+                    <span className="gradient-text gradient-hero">You Have an Architecture Problem.</span>
                   </h2>
                   <div className="space-y-4 text-lg text-muted-foreground leading-relaxed" data-testid="text-diagnosis">
                     <p>
@@ -263,8 +263,8 @@ export default function ProblemPage() {
               transition={{ duration: 0.6 }}
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center" data-testid="heading-social-proof">
-                You Are Not Alone{" "}
-                <span className="text-primary">in This Trap</span>
+                You Are Not Alone<br />
+                <span className="gradient-text gradient-hero">in This Trap</span>
               </h2>
               
               <Card className="p-8 light-depth hover-elevate transition-all" data-testid="card-testimonial">
@@ -300,8 +300,8 @@ export default function ProblemPage() {
               transition={{ duration: 0.6 }}
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-cta">
-                See the Architecture{" "}
-                <span className="text-primary">That Solves This</span>
+                See the Architecture<br />
+                <span className="gradient-text gradient-hero">That Solves This</span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed mb-8 max-w-2xl mx-auto" data-testid="text-cta">
                 Stop buying 'activity' and 'headcount.' It's time to build a permanent, scalable revenue generation system.
