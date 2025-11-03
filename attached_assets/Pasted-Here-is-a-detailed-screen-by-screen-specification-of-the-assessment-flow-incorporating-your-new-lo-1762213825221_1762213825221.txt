@@ -1,0 +1,249 @@
+Here is a detailed, screen-by-screen specification of the assessment flow, incorporating your new logic for the calculator and "Person vs. System" concept.
+
+This document describes the flow from a User Experience (UX) and User Interface (UI) perspective, detailing the logic for each step.
+
+---
+
+### 📋 Detailed Assessment Flow & UX Specification
+
+**Core UX Principle:** The assessment uses a "one-question-per-screen" layout to maximize focus and completion rates. Progression is automatic upon selection, except where text input is required. A progress bar is visible at all times.
+
+---
+
+### Phase 1: Core Philosophy
+* **Progress Bar:** 0%
+* **UI:** Each option is presented as a large, clickable "card" or button.
+
+**Screen 1: Question 1 (Philosophy)**
+* **Header:** Phase 1: Core Philosophy
+* **Question:** "When it comes to your pipeline, what is your core philosophy?"
+* **Options (Cards):**
+    * **a. "I want to RENT a managed service."**
+        * (Sub-text: "I want to outsource this problem. I need a vendor to handle it.")
+    * **b. "I want to OWN the asset/capability."**
+        * (Sub-text: "I want to build an internal capability, whether I hire or partner.")
+* **Logic:** On selection, the user is automatically advanced to Screen 2.
+
+**Screen 2: Question 2 (Sale Type)**
+* **Header:** Phase 1: Core Philosophy
+* **Question:** "How does your ideal customer typically buy?"
+* **Options (Cards):**
+    * **a. "It's a Transactional Sale."**
+        * (Sub-text: "They already know they have a problem and are shopping for a known solution.")
+    * **b. "It's a Consultative Sale."**
+        * (Sub-text: "They often don't know the scope of their problem. We have to educate them.")
+* **Logic:** On selection, the user is automatically advanced to Screen 3.
+
+**Screen 3: Question 3 (Critical Piece)**
+* **Header:** Phase 1: Core Philosophy
+* **Question:** "When building a new revenue function, what do you believe is the most critical piece to get right first?"
+* **Options (Cards):**
+    * a. "The Person (e.g., a 'star' cold caller)"
+    * b. "Pricing"
+    * c. "Technology"
+    * d. "Brand"
+    * e. "The System (The GTM Engine)"
+* **Logic:** On selection, the user is automatically advanced to Phase 2 (Screen 4).
+
+---
+
+### Phase 2: The Architect's Audit
+* **Progress Bar:** ~15%
+
+**Screen 4: Q4 (Urgency)**
+* **Header:** Phase 2: Architect's Audit (Part A)
+* **Question:** "How urgently do you need to see a reliable pipeline?"
+* **Options (Cards):**
+    * i. "ASAP"
+    * ii. "90 Days"
+    * iii. "180 Days"
+    * iv. "1+ Year"
+* **Logic:** On selection, the user is automatically advanced to Screen 5.
+
+**Screen 5: Q5 (Consequence)**
+* **Header:** Phase 2: Architect's Audit (Part A)
+* **Question (Dynamic):** "What happens if you don't succeed in **[User's Q4 Answer]**?"
+    * *Example: If user selected "90 Days," the prompt reads: "What happens if you don't succeed in 90 Days?"*
+* **UI:** Multiline Text Box
+* **Button:** `[ Next ]`
+* **Logic:** User types answer and clicks `[ Next ]` to proceed to Screen 6.
+
+**Screen 6: Q6 (Owner)**
+* **Header:** Phase 2: Architect's Audit (Part A)
+* **Question:** "Who is the ultimate owner of this pipeline problem?"
+* **Options (Cards):**
+    * i. "Me (The Founder / CEO)."
+    * ii. "Our Head of Sales / CRO."
+    * iii. "A committee (Sales, Marketing, Ops)."
+* **Logic:** On selection, the user is automatically advanced to Screen 7.
+
+**Screen 7: Q7 (Problem Type)**
+* **Header:** Phase 2: Architect's Audit (Part B)
+* **Question:** "What kind of problem is your company aiming to solve?"
+* **Options (Cards):**
+    * i. "A hiring problem. (We need to hire/train good salespeople.)"
+    * ii. "A branding problem. (Our brand needs to better support sales.)"
+    * iii. "A pricing problem. (We are not competitive.)"
+    * iv. "A holistic revenue problem. (We need a full system.)"
+* **Logic:** On selection, the user is automatically advanced to Screen 8.
+
+**Screen 8: Q8 (Current Allocation)**
+* **Header:** Phase 2: Architect's Audit (Part B)
+* **Question:** "Where is that budget (or your team's effort) going now?"
+* **Options (Cards):**
+    * i. "Nowhere. We're trying to do this ourselves." (The "DIY / Founder Trap")
+    * ii. "To an internal 'Lone Wolf' hire." (The "$198k Mistake")
+    * iii. "To a commodity agency or freelancers." (The "Black Box Trap")
+* **Logic:** On selection, the user is automatically advanced to Screen 9.
+
+**Screen 9: Q9 (Symptom)**
+* **Header:** Phase 2: Architect's Audit (Part C)
+* **Question:** "Where in the pipeline does the trouble FIRST start?"
+* **Options (Cards):**
+    * i. "No Meetings. We're not booking enough new qualified meetings."
+    * ii. "Low-Quality Meetings. We get meetings, but they are low-quality, no-shows, or not with the right person."
+    * iii. "Low Close Rate. Our meetings are good, but they don't close."
+* **Logic:** On selection, the user is advanced to the *conditional* Screen 10.
+
+**Screen 10: Q10 (Conditional Diagnosis)**
+* **Header:** Phase 2: Architect's Audit (Part C)
+* **Question:** "Let's find out why..."
+* **Conditional Logic:** The UI of this screen *changes* based on the Q9 answer.
+    * **IF Q9 = "No Meetings," SHOW:**
+        * **Q10.a.1:** "How many full-time appointment setters (SDRs/BDRs) do you have?" (UI: Numeric Input)
+        * **Q10.a.2:** "How many other people have this responsibility (e.g., AEs, Founders)?" (UI: Numeric Input)
+    * **IF Q9 = "Low-Quality Meetings," SHOW:**
+        * **Q10.b.1:** "How is data (accounts, contacts) provided to your appointment setters?" (UI: Radio buttons)
+            * "They build their own lists"
+            * "We provide lists from a data provider"
+            * "We have an ops team that builds enriched lists"
+        * **Q10.b.2:** "Do you have a crystal-clear, written ICP (Ideal Customer Profile)?" (UI: Radio buttons)
+            * "Yes, and it is rigorously enforced"
+            * "Yes, but it's not really enforced"
+            * "No, we don't have a formal ICP"
+    * **IF Q9 = "Low Close Rate," SHOW:**
+        * **Q10.c.1:** "Is there at least one video of your sales cycle being successfully carried out in a standardized way, that you use for training?" (UI: Radio buttons)
+            * "Yes, we have a clear, repeatable process"
+            * "No, every rep does their own thing"
+        * **Q10.c.2:** "What is your actual lead-to-close/win rate (as a %)? (e.g., '5' for 5%)" (UI: Numeric Input)
+* **Button:** `[ Next ]`
+* **Logic:** User fills in the 2 conditional questions and clicks `[ Next ]` to proceed to Screen 11.
+
+**Screen 11: Q11 (Investment)**
+* **Header:** Phase 2: Architect's Audit (Part D)
+* **Question:** "What is your realistic monthly budget for this system?"
+* **Options (Cards):**
+    * i. "< $8,000 / month"
+    * ii. "$8,000+ / month"
+* **Logic:** On selection, the user is automatically advanced to Phase 3 (Screen 12).
+
+---
+
+### Phase 3: Final Capture
+* **Progress Bar:** ~90%
+
+**Screen 12: Q19 & Q20 (Context & Email)**
+* **Header:** Your Architect's Blueprint is ready.
+* **Prompt 1 (Q19):** "Optional: Add any other context about your goals or challenges here."
+    * **UI:** Multiline Text Box
+* **Prompt 2 (Q20):** "Where should we send your full, personalized 'Pipeline Diagnosis & Reframe' PDF?"
+    * **UI:** Email Text Box (Required, with validation)
+* **Logic:** After the user fills the *required* email field, they are *automatically advanced* to Phase 4 (Screen 13). There is no "Next" button.
+
+---
+
+### Phase 4: The Final Choice (Calculator Branch)
+* **Progress Bar:** ~95%
+
+**Screen 13: Q21 (Branching Question)**
+* **Header:** One Last Question...
+* **Prompt:** "How much should I pay per meeting?"
+* **UI / Buttons:**
+    * **Button A:** `[ Calculate ]`
+        * (Standard primary button)
+    * **Button B:** `[ Get My Results ]`
+        * (A larger, visually distinct "call to action" button positioned below Button A)
+* **Logic:**
+    * If user clicks `[ Calculate ]`, they proceed to Phase 5 (Screen 14).
+    * If user clicks `[ Get My Results ]`, the form is submitted immediately (See **Submission Logic - Path A**).
+
+---
+
+### Phase 5: Optional Financial Calculator
+* **Progress Bar:** ~98%
+
+**Screen 14: Calculator Inputs (Q13 - Q18)**
+* **UX Note:** This screen is **ONLY** shown if the user clicked `[ Calculate ]` on Screen 13.
+* **Header:** Optional: Pipeline ROI Calculator
+* **Prompt:** "Fill in your numbers to add a detailed ROI projection to your report."
+* **UI (All on one screen):**
+    * **Q13:** "Average LTV (Lifetime Value)?" (UI: Numeric Input, prefixed with "$")
+    * **Q14:** "Average Close/Win Rate (from qualified meeting, as %)" (UI: Numeric Input, suffixed with "%")
+    * **Q15:** "Average Contract Term (in months)?" (UI: Numeric Input)
+    * **Q16:** "Gross Margin (as %)" (UI: Numeric Input, suffixed with "%")
+    * **Q17:** "Average Sales Cycle Length (in days)?" (UI: Numeric Input)
+    * **Q18:** "Average Deal Size (ACV)?" (UI: Numeric Input, prefixed with "$")
+* **Final Button:** `[ Get My Results ]`
+    * (A large, primary "call to action" button)
+* **Logic:** When the user clicks `[ Get My Results ]`, the form is submitted (See **Submission Logic - Path B**).
+
+---
+
+### Phase 6: Submission & Redirect Logic (Backend)
+
+**Submission Logic - Path A (Skip Calculator)**
+1.  **Trigger:** User clicks `[ Get My Results ]` on Screen 13 (Phase 4).
+2.  **Data Submitted:** Answers to Q1-Q11, Q19 (optional), and Q20 (email).
+3.  **Action:** Backend Sorting Logic (see below) runs. User is redirected to the "Thank You" page.
+
+**Submission Logic - Path B (Use Calculator)**
+1.  **Trigger:** User clicks `[ Get My Results ]` on Screen 14 (Phase 5).
+2.  **Data Submitted:** Answers to Q1-Q11, Q19 (optional), Q20 (email), *and* Q13-Q18 (optional).
+3.  **Action:** Backend Sorting Logic (see below) runs. User is redirected to the "Thank You" page.
+
+**"Thank You" Page**
+* **Header:** "Thank You!"
+* **Message:** "Your personalized 'Pipeline Diagnosis & Reframe' PDF is being generated. It will arrive in your inbox in the next 5-10 minutes."
+
+---
+
+### Backend Sorting Logic (For PDF Generation)
+After submission, the system routes the user's data to generate one of the following personalized PDFs based on these triggers:
+
+### Bucket 1: "Hot MQL Architect" (Path 4.A)
+* **Triggers:**
+    * Q1 = **b. "Own"** AND
+    * Q2 = **b. "Consultative"** AND
+    * Q3 = **e. "The System (The GTM Engine)"** AND
+    * Q11 = **ii. "$8,000+ / month"**
+* **PDF Sent:** The "GTM Pod" Blueprint. (High-intent, sales-ready).
+
+### Bucket 2: "Architecture Gap" (Path 4.B)
+* **Triggers:**
+    * Q1 = **b. "Own"** AND
+    * Q2 = **b. "Consultative"** AND
+    * Q3 = **e. "The System (The GTM Engine)"** AND
+    * Q11 = **i. "< $8,000 / month"**
+* **PDF Sent:** The "Architecture Gap" Blueprint. (Nurture-focused, high-value).
+
+### Bucket 3: "The Person Trap" (Path 3)
+* **Triggers:**
+    * Q3 = **a. "The Person (e.g., a 'star' cold caller)"**
+* **Note:** This answer is the primary trigger and overrides other combinations.
+* **PDF Sent:** The "$198k Mistake" (Anti-Trap) Blueprint.
+
+### Bucket 4: "Agency" (Path 2)
+* **Triggers:**
+    * Q1 = **a. "RENT"** AND
+    * Q2 = **a. "Transactional"**
+* **PDF Sent:** A PDF focused on the "Agency / Black Box Trap".
+
+### Bucket 5: "Freelancer" (Path 1)
+* **Triggers:**
+    * Q1 = **b. "OWN"** AND
+    * Q2 = **a. "Transactional"**
+* **PDF Sent:** A PDF focused on "Why Freelancers Fail at Scale".
+
+### Catch-All / Default Bucket
+* **Triggers:** Any user who does not fit the specific, multi-part triggers for Buckets 1, 3, 4, or 5.
+* **PDF Sent:** The "Architecture Gap" Blueprint. (This is the safest, most helpful nurture document for all other profiles).
