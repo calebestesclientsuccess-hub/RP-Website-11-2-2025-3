@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,12 +6,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { SEO } from "@/components/SEO";
 import CinematicBridge from "@/components/CinematicBridge";
-import OrbitalPowers from "@/components/OrbitalPowers";
+import { OrbitalPowers } from "@/components/OrbitalPowers";
 import GTMTimeline from "@/components/GTMTimeline";
 import { HeroROICalculator } from "@/components/HeroROICalculator";
 import { Brain, Target, Settings, Users, Wrench, Trophy, ArrowRight, X } from "lucide-react";
 import { Link } from "wouter";
 import heroImage from "@assets/image_1762158443107.png";
+import orbitalVideo from "@assets/Maintain_the_geometric_202510201050_1760987621907.mp4";
 
 interface Power {
   id: string;
@@ -148,6 +149,7 @@ const powers: Power[] = [
 export default function Home() {
   const [selectedPower, setSelectedPower] = useState<Power | null>(null);
   const [isDesktop, setIsDesktop] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   
   useEffect(() => {
     const handleResize = () => {
@@ -350,7 +352,7 @@ export default function Home() {
       <CinematicBridge />
 
       {/* Orbital Powers - Interactive Video Element */}
-      <OrbitalPowers />
+      <OrbitalPowers videoSrc={orbitalVideo} videoRef={videoRef} />
 
       {/* GTM Timeline */}
       <GTMTimeline />
