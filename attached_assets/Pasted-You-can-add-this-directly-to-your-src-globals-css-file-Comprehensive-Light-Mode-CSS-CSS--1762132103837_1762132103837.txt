@@ -1,0 +1,244 @@
+You can add this directly to your src/globals.css file.
+
+## Comprehensive Light Mode CSS
+CSS
+
+/* --- Add this to your globals.css --- */
+
+/* 1. GRADIENT TEXT SYSTEM
+  Apply this class to any h1, h2, or key text element.
+*/
+.gradient-text {
+  background: linear-gradient(
+    90deg,
+    #ff6b6b 0%,  /* Coral start */
+    #ff6b9d 20%, /* Pink transition */
+    #c44b8c 40%, /* Magenta */
+    #9f8fff 60%, /* Your brand purple */
+    #7b6ed6 80%, /* Purple-blue transition */
+    #4a90e2 100% /* Blue end */
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* Fallback for browsers that don't support background-clip */
+  color: #9f8fff;
+}
+
+/* 2. TECHNICAL GRID PATTERN LAYERS
+  Apply these to backgrounds or card pseudo-elements.
+*/
+/* Dot grid - engineering paper style */
+.light-grid-dots {
+  background-image: radial-gradient(
+    circle at center,
+    hsla(var(--foreground), 0.03) 1px,
+    transparent 1px
+  );
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+}
+
+/* Isometric grid for hero sections */
+.light-grid-iso {
+  background-image: linear-gradient(
+      30deg,
+      hsla(var(--border), 0.3) 1px,
+      transparent 1px
+    ),
+    linear-gradient(-30deg, hsla(var(--border), 0.3) 1px, transparent 1px);
+  background-size: 40px 69.28px; /* Perfect isometric ratio */
+}
+
+/* 3. DEPTH THROUGH LIGHT PHYSICS
+  Apply this class to your light-mode Shadcn <Card>
+*/
+.light-depth-card {
+  box-shadow:
+    /* Ambient occlusion - subtle self-shadow */
+      inset 0 -1px 2px -1px hsla(var(--foreground), 0.04),
+    /* Contact shadow - grounding */ 0 1px 3px -1px hsla(var(--foreground), 0.06),
+    /* Soft elevation */ 0 2px 8px -4px hsla(var(--foreground), 0.08);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Optional: Fresnel effect on hover - edges catch light */
+.light-depth-card:hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit; /* Assumes it's on a rounded element */
+  background: linear-gradient(
+    135deg,
+    transparent 40%,
+    hsla(0, 0%, 100%, 0.4) 50%,
+    transparent 60%
+  );
+  opacity: 1;
+  animation: light-sweep 0.6s ease-out;
+}
+
+/* 4. PRECISION BACKGROUND GRADIENTS
+  Apply this to hero sections or large containers.
+*/
+.light-gradient-mesh {
+  background: radial-gradient(
+      ellipse at 20% 30%,
+      hsla(0, 85%, 60%, 0.05) 0%, /* Coral hint */
+      transparent 40%
+    ),
+    radial-gradient(
+      ellipse at 60% 50%,
+      hsla(252, 67%, 53%, 0.05) 0%, /* Purple hint */
+      transparent 40%
+    ),
+    radial-gradient(
+      ellipse at 90% 70%,
+      hsla(210, 64%, 58%, 0.05) 0%, /* Blue hint */
+      transparent 40%
+    );
+}
+
+/* 5. MICRO-ANIMATIONS SUITE
+  Define the keyframes. We'll apply these with utility classes or GSAP.
+*/
+
+/* Animation for the Fresnel hover effect */
+@keyframes light-sweep {
+  from {
+    opacity: 0;
+    transform: translateX(-50%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0%);
+  }
+}
+
+/* Text gradient reveal on scroll */
+@keyframes gradient-reveal {
+  from {
+    background-size: 0% 100%;
+    -webkit-text-fill-color: hsl(var(--foreground));
+  }
+  to {
+    background-size: 100% 100%;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+/* Number counter with shimmer */
+/* Apply to a .gradient-text element with .animate-shimmer */
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: data-shimmer 3s linear infinite;
+}
+@keyframes data-shimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+/* Light scanning effect for progress bars */
+@keyframes light-scan {
+  0% {
+    box-shadow: inset 0 0 0 0 hsla(var(--primary), 0.2);
+  }
+  50% {
+    box-shadow: inset 100px 0 20px -20px hsla(var(--primary), 0.2);
+  }
+  100% {
+    box-shadow: inset 200px 0 0 0 hsla(var(--primary), 0.2);
+  }
+}
+
+/* 6. REDUCED MOTION PREFERENCES
+  This ensures accessibility by disabling animations for users who prefer it.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .light-depth-card:hover::before,
+  .animate-shimmer,
+  [data-animation='gradient-reveal'] {
+    animation: none;
+    transition: none;
+  }
+}
+## Component Integration Examples (JSX/Tailwind)
+Here is how you would use those CSS classes within your components.
+
+1. Card Component (Layering Effects):
+
+JavaScript
+
+import { Card, CardContent } from "@/components/ui/card";
+
+<Card className="
+  light-depth-card  {/* Applies depth & hover physics */}
+  relative          {/* Positioning context for overlays */}
+  overflow-hidden   {/* Clips the overlays */}
+">
+  {/* Layer 1: Grid (most subtle) */}
+  <div className="absolute inset-0 light-grid-dots opacity-50" />
+  
+  {/* Layer 2: Gradient Mesh (color hint) */}
+  <div className="absolute inset-0 light-gradient-mesh" />
+
+  {/* Layer 3: Content (on top) */}
+  <CardContent className="relative z-10 pt-6"> {/* pt-6 is default for CardContent */}
+    <h3 className="text-lg font-semibold gradient-text">
+      Fullstack Sales Unit
+    </h3>
+    <p className="mt-2 text-muted-foreground">
+      This isn't "outsourced SDRs." It's a complete, managed revenue engine.
+    </p>
+  </CardContent>
+</Card>
+2. Hero Headline (Gradient Text):
+
+JavaScript
+
+{/* You would use GSAP/ScrollTrigger to add the 'animate-gradient-reveal' class
+    when this scrolls into view, which would trigger the keyframe animation.
+*/}
+<h1 
+  className="gradient-text text-5xl font-bold"
+  style={{ backgroundSize: '0% 100%' }} // Initial state for animation
+  data-animation="gradient-reveal" // Target for your JS
+>
+  We Pay For Introductions.
+</h1>
+3. Button (Gradient Text on Ghost Button):
+
+JavaScript
+
+import { Button } from "@/components/ui/button";
+
+<Button variant="outline" size="lg" className="group">
+  <span className="
+    gradient-text 
+    font-semibold
+    opacity-90
+    group-hover:opacity-100
+    transition-opacity
+  ">
+    Meet a Founder
+  </span>
+</Button>
+4. Key Metric (Shimmering Number):
+
+JavaScript
+
+<div className="text-center">
+  <div className="
+    gradient-text
+    animate-shimmer
+    text-6xl
+    font-bold
+  ">
+    $12K/year
+  </div>
+  <p className="text-muted-foreground">Or More. Forever.</p>
+</div>
