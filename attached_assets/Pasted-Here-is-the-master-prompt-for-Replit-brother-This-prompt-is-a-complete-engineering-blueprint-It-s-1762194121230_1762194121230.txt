@@ -1,0 +1,80 @@
+Here is the master prompt for Replit, brother.
+This prompt is a complete engineering blueprint. It synthesizes our "Master Plan" with your application's exact technical stack. It is designed to be executed, not just discussed.
+
+To: Replit Developer
+From: Revenue Party (Strategy)
+Subject: Project Build: New "GTM Assessment" Tool (The "Machine")
+You are building our primary conversion "machine."
+This is not a simple quiz. It's a non-LLM, decision-tree-based diagnostic tool that serves as the "Y" (the reframe) for our entire "Trojan Horse" (Meet and Y) SEO strategy. Its purpose is to convert commodity search traffic by diagnosing their GTM needs and reframing their "headcount problem" into an "architecture problem."
+Please use the provided technical exposition to build this to our exact specifications.
+Part 1: The "Trojan Horse" Article (The "Room")
+First, create the "room" that will host this tool. This is our "Trojan Horse" SEO article.
+Create New Page Component:
+File: /client/src/pages/HireColdCallersGuide.tsx
+Contents: Create a new React component. This page will contain the full text of our "2026 Guide to Hiring Cold Callers" (see Appendix A for the full composition).
+Styling: Use your existing Tailwind CSS (tailwindcss 3.4.17) and HSL variables for typography. It should look like a premium blog post.
+Add New Route:
+File: /client/src/App.tsx
+Action: Add a new <Route> for this page.
+Path: path="/resources/how-to-hire-cold-callers-guide"
+Embed the Hook:
+Inside HireColdCallersGuide.tsx, you will embed the "Hook" (the CTA to the tool). This will be a link styled as a button.
+Link Destination: href="/resources/gtm-assessment"
+Part 2: The Assessment Tool (The "Machine")
+This is the tool itself, living on its own page.
+Create New Tool Page Component:
+File: /client/src/pages/GtmAssessmentPage.tsx
+Contents: This page holds the 2-question diagnostic tool.
+State: Use React useState for state management (per your "No Global State" philosophy).
+Logic (Decision Tree):
+Render Question 1 (Complexity).
+On click Option A ("Simple"): setLocation('/resources/gtm-assessment/path-1?q1=simple')
+On click Option B ("Complex"): Show Question 2 (Investment).
+On Q2 click Option A ("Low Budget"): setLocation('/resources/gtm-assessment/path-2?q1=complex&q2=low')
+On Q2 click Option B ("Target Budget"): setLocation('/resources/gtm-assessment/path-3?q1=complex&q2=target')
+On Q2 click Option C ("Enterprise Budget"): setLocation('/resources/gtm-assessment/path-4?q1=complex&q2=enterprise')
+Redirects: Use the useLocation hook from wouter 3.3.5 for all redirects.
+URL State: Note the use of URL Query Params. This is intentional and aligns with your "URL State" philosophy.
+Add New Route:
+File: /client/src/App.tsx
+Action: Add the new route for the tool's main page.
+Path: path="/resources/gtm-assessment"
+Part 3: The Dynamic Results Pages (The "Readout")
+This is the "Value-First" diagnosis.
+Create 4 New Results Page Components:
+/client/src/pages/GtmResultPath1.tsx
+/client/src/pages/GtmResultPath2.tsx
+/client/src/pages/GtmResultPath3.tsx
+/client/src/pages/GtmResultPath4.tsx
+Add 4 New Routes:
+File: /client/src/App.tsx
+Paths:
+/resources/gtm-assessment/path-1
+/resources/gtm-assessment/path-2
+/resources/gtm-assessment/path-3
+/resources/gtm-assessment/path-4
+Build "Dynamic Readout" Component:
+File: /client/src/components/DiagnosticReadoutCard.tsx
+Logic: This component must read the URL Query Params (q1, q2). Use Wouter's hooks to get the search params.
+Props: It will accept pathName: string.
+Display: It will render a "report card" styled with your Tailwind .card and HSL variables, showing the user's inputs dynamically (e.g., COMPLEXITY: Complex Value Prop, BUDGET: $5k-$15k / mo).
+Implementation: Each GtmResultPathX.tsx page will import and render this component at the top, passing its own pathName.
+Add Content:
+Populate each of the 4 Results Pages with its unique "Diagnosis" and "Action Plan" text (see Appendix B).
+Part 4: The Conversion Engine (The "Commitment Staircase")
+This is the lead capture mechanism.
+Build "Blueprint Capture" Component:
+File: /client/src/components/BlueprintCaptureForm.tsx
+Contents: This is the Primary CTA on Results Pages 2, 3, and 4.
+Form: Use react-hook-form and Zod (per your stack) for a single email field.
+Props: This component must accept path: string (e.g., "path-3"), q1: string, and q2: string (read from the URL).
+Submission: On submit, it will POST to a new API endpoint: /api/v1/capture-blueprint. The POST body must include { email, path, q1, q2 }.
+Build Secondary CTA Component:
+File: /client/src/components/SecondaryFitCallButton.tsx
+Contents: This is the Secondary CTA on Results Pages 2, 3, and 4. It's a simple styled button/link that goes to your "Book a 15-Min Call" URL (e.g., Calendly).
+Build New API Endpoint (Backend):
+File: /server/index.ts (or your main Express routes file).
+Endpoint: POST /api/v1/capture-blueprint
+Logic:
+Validate the incoming body { email, path, q1, q2 } using a new Zod schema.
+Use Drizzle ORM t...
