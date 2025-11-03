@@ -1,0 +1,305 @@
+To: Replit Developer From: Revenue Party (Strategy) Subject: Project Build: New "GTM Assessment" Tool (The "Machine")
+
+You are building our primary conversion "machine."
+
+This is not a simple quiz. It is a non-LLM, decision-tree-based diagnostic tool that serves as the "Y" (the reframe) for our entire "Trojan Horse" (Meet and Y) SEO strategy. Its purpose is to convert commodity search traffic by diagnosing their GTM needs and reframing their "headcount problem" into an "architecture problem."
+
+Please use our provided technical exposition (React, Wouter, Vite, Tailwind, Express, Drizzle ORM) to build this to our exact specifications. All user-facing copy is provided in the Appendices of this prompt.
+
+Part 1: The "Trojan Horse" Article (The "Room")
+First, create the "room" that will host this tool. This is our "Trojan Horse" SEO article.
+
+Create New Page Component:
+
+File: /client/src/pages/HireColdCallersGuide.tsx
+
+Contents: Create a new React component. This page will contain the full text of our "2026 Guide to Hiring Cold Callers" (see Appendix A for the full composition).
+
+Styling: Use your existing Tailwind CSS (tailwindcss 3.4.17) and HSL variables for typography, ensuring it matches our premium blog post aesthetic.
+
+Add New Route:
+
+File: /client/src/App.tsx
+
+Action: Add a new <Route> for this page.
+
+Path: path="/resources/how-to-hire-cold-callers-guide"
+
+Part 2: The Assessment Tool (The "Machine")
+This is the tool itself, living on its own page.
+
+Create New Tool Page Component:
+
+File: /client/src/pages/GtmAssessmentPage.tsx
+
+Contents: This page holds the 2-question diagnostic tool. See Appendix B for the full composition (Questions & Options).
+
+State: Use React useState for state management (per our "No Global State" philosophy).
+
+Logic (Decision Tree):
+
+Render Question 1 (Complexity).
+
+On click Option A ("Simple"): setLocation('/resources/gtm-assessment/path-1?q1=simple')
+
+On click Option B ("Complex"): Show Question 2 (Investment).
+
+On Q2 click Option A ("Low Budget"): setLocation('/resources/gtm-assessment/path-2?q1=complex&q2=low')
+
+On Q2 click Option B ("Target Budget"): setLocation('/resources/gtm-assessment/path-3?q1=complex&q2=target')
+
+On Q2 click Option C ("Enterprise Budget"): setLocation('/resources/gtm-assessment/path-4?q1=complex&q2=enterprise')
+
+Redirects: Use the useLocation hook from wouter 3.3.5 for all redirects.
+
+URL State: Note the use of URL Query Params. This is intentional and aligns with our "URL State" philosophy.
+
+Add New Route:
+
+File: /client/src/App.tsx
+
+Action: Add the new route for the tool's main page.
+
+Path: path="/resources/gtm-assessment"
+
+Part 3: The Dynamic Results Pages (The "Readout")
+This is the "Value-First" diagnosis.
+
+Create 4 New Results Page Components:
+
+/client/src/pages/GtmResultPath1.tsx
+
+/client/src/pages/GtmResultPath2.tsx
+
+/client/src/pages/GtmResultPath3.tsx
+
+/client/src/pages/GtmResultPath4.tsx
+
+Add 4 New Routes:
+
+File: /client/src/App.tsx
+
+Paths:
+
+/resources/gtm-assessment/path-1
+
+/resources/gtm-assessment/path-2
+
+/resources/gtm-assessment/path-3
+
+/resources/gtm-assessment/path-4
+
+Build "Dynamic Readout" Component:
+
+File: /client/src/components/DiagnosticReadoutCard.tsx
+
+Logic: This component must read the URL Query Params (q1, q2). Use Wouter's hooks to get the search params.
+
+Props: It will accept pathName: string.
+
+Display: It will render a "report card" styled with your Tailwind .card and HSL variables, showing the user's inputs dynamically. See Appendix C for the exact copy for this component.
+
+Implementation: Each GtmResultPathX.tsx page will import and render this component at the top, passing its own pathName and other required props.
+
+Add Content:
+
+Populate each of the 4 Results Pages with its unique "Diagnosis," "Action Plan," and "Commitment Staircase" CTAs (see Appendix C).
+
+Part 4: The Conversion Engine (The "Commitment Staircase")
+This is the lead capture mechanism.
+
+Build "Blueprint Capture" Component:
+
+File: /client/src/components/BlueprintCaptureForm.tsx
+
+Contents: This is the Primary CTA on Results Pages 2, 3, and 4.
+
+Form: Use react-hook-form and Zod (per your stack) for a single email field.
+
+Props: This component must accept path: string (e.g., "path-3"), q1: string, and q2: string (read from the URL).
+
+Submission: On submit, it will POST to a new API endpoint: /api/v1/capture-blueprint. The POST body must include { email, path, q1, q2 }.
+
+See Appendix C for the exact CTA copy.
+
+Build Secondary CTA Component:
+
+File: /client/src/components/SecondaryFitCallButton.tsx
+
+Contents: This is the Secondary CTA on Results Pages 2, 3, and 4. It's a simple styled button/link that goes to your "Book a 15-Min Call" URL (e.g., Calendly).
+
+See Appendix C for the exact CTA copy.
+
+Build New API Endpoint (Backend):
+
+File: /server/index.ts (or your main Express routes file).
+
+Endpoint: POST /api/v1/capture-blueprint
+
+Logic:
+
+Validate the incoming body { email, path, q1, q2 } using a new Zod schema.
+
+Use Drizzle ORM to insert the lead into the emailCaptures table. Store all 4 fields.
+
+Trigger Email: After a successful DB insert, trigger a dynamic HTML email to the user. Do not build a PDF generator. Use the path, q1, and q2 variables to populate an HTML email template that restates their diagnosis. This is simpler and more robust.
+
+Return 201 OK.
+
+Part 5: Final Navigation (The "Link")
+Modify Footer:
+
+File: /client/src/components/Footer.tsx (or equivalent).
+
+Action: Add a new link to our "Trojan Horse" article under the "Resources" column.
+
+Link Text: How to Hire Cold Callers (A 2026 Guide)
+
+Link Href: /resources/how-to-hire-cold-callers-guide
+
+Appendix A: Composition for HireColdCallersGuide.tsx
+H1: The 2026 Guide to Hiring Cold Callers: The 2 Paths (And the 1 Mistake)
+
+Hook: You're here because you need pipeline, and you're searching for hire cold callers or b2b appointment setting services.
+
+You will find dozens of "ways" to do this, but they all fall into two paths:
+
+The "Simple" Path: For straightforward, transactional sales.
+
+The "Complex" Path: For consultative, high-value B2B sales.
+
+Choosing the wrong path for your business is the "$198,000 Mistake"—a six-figure gamble that ends in failure.
+
+This guide breaks down both paths. But if you want to find your path in the next 2 minutes, use our GTM Assessment tool. It will confirm your fit and build your custom blueprint.
+
+[WIDGET HOOK - EMBED 1 OF 2] (This will be a styled component that links to /resources/gtm-assessment)
+
+Headline: You've Seen the Paths. Now Confirm Your Fit.
+
+Sub-header: This 2-minute tool will confirm your GTM path and build your custom blueprint.
+
+Call to Action (Button): Get My GTM Blueprint
+
+Path 1: The "Simple Value Prop" Solution (For Transactional Sales)
+This path is for businesses where the "what" is simple. If your sale is transactional (low ACV, 1-2 decision-makers), you don't need a complex engine. You just need activity.
+
+This path includes:
+
+Gig Marketplaces (Upwork/Fiverr): Hiring a freelancer for a short-term "call-down" project. It's cheap and fast.
+
+Commodity Agencies: Renting a "fractional" rep from a b2b appointment setting firm. It's "hands-off."
+
+The Trap: These solutions are 100% valid if your sale is simple. But if your sale is complex, these options will fail. They cannot perform consultative discovery, challenge a prospect, or differentiate your brand. They are built for volume, not value.
+
+Path 2: The "Complex Value Prop" Solution (The $198,000 Mistake)
+This path is for businesses where the "why" is complex. If you sell a high-value, consultative solution, you must have a team that can challenge, differentiate, and explore unacknowledged risk.
+
+Most founders try to solve this with a "DIY" Internal Hire.
+
+The Trap: This is the "$198,000 Mistake". You're not just hiring a rep; you're trying to hire an entire system. You're expecting one "Lone Wolf" to be an expert in list-building, tech, scripting, and coaching.
+
+You've put an "architecture" problem on the shoulders of a "headcount" solution. This is why the 34% churn rate is a system problem, not a person problem.
+
+The Third Path: The GTM Architecture (The "Build vs. Buy" Choice)
+For a complex sale, you don't need a "person." You need an "architecture." This leaves you with two choices:
+
+Build It (The $15k+/mo Enterprise Path): Hire the 5 SDRs, 2 AEs, Coach, RevOps team, and CRO yourself. This is the high-cost, 9-month ramp.
+
+Deploy It (The GTM-as-a-Service Path): Deploy a complete, managed "GTM Architecture" for a fraction of the cost and be booking qualified meetings in 14 days.
+
+Conclusion: Stop Guessing. Get Your Blueprint.
+The only thing that matters is matching your model to your complexity. If you haven't already, confirm your path.
+
+[WIDGET HOOK - EMBED 2 OF 2] (This will be a styled component that links to /resources/gtm-assessment)
+
+Headline: You've Seen the Paths. Now Confirm Your Fit.
+
+Sub-header: This 2-minute tool will confirm your GTM path and build your custom blueprint.
+
+Call to Action (Button): Get My GTM Blueprint
+
+Appendix B: Composition for GtmAssessmentPage.tsx
+H1: The 2-Minute GTM Assessment Sub-header: Find the right GTM path for your business.
+
+Question 1: The Complexity Filter
+Prompt: Which of these *best* describes your sales process?
+
+[Option A (Button)] Our value is clear and the sale is straightforward. We just need more at-bats.
+
+[Option B (Button)] Our value is complex. We need a consultative team that can challenge, differentiate, and explore unacknowledged risk.
+
+Question 2: The Investment Filter
+(Only show this if Q1 = B)
+
+Prompt: What is your realistic *total* monthly budget for a GTM engine (including all people, tech, and management)?
+
+[Option A (Button)] <$5,000 / month
+
+[Option B (Button)] $5,000 - $15,000 / month
+
+[Option C (Button)] $15,000+ / month
+
+Appendix C: Composition for GtmResultPathX.tsx Pages
+PATH 1: THE "COMMODITY" PATH (GtmResultPath1.tsx)
+(Trigger: Q1 = A)
+
+[DYNAMIC READOUT CARD COMPONENT] YOUR GTM DIAGNOSTIC: [ICON] COMPLEXITY: Simple Value Prop [ICON] BUDGET: N/A [ICON] DIAGNOSIS: Path 1 - The "Commodity" Path
+
+The Diagnosis: Your GTM Path is the "Activity" Model Based on your "Simple Value Prop," you don't need a complex, consultative engine. You need high-volume *activity*. A traditional "Commodity" Agency or gig-market freelancer is your best fit. Our architecture-first model would be overkill.
+
+Your Action Plan: Your most important step is to find a trusted vendor. We've reviewed the top players in the space to help you start.
+
+Your "Commitment Staircase" (The CTAs):
+
+[Primary CTA (Link)] See the "Top 10 Cold Calling Companies" Guide
+
+[Secondary CTA (Email Capture Form)] Want to see how AI is changing the 'activity' game? Get the "AI Revenue in 2026" E-book.
+
+PATH 2: THE "DIY / INTERNAL TRAP" PATH (GtmResultPath2.tsx)
+(Trigger: Q1 = B AND Q2 = A)
+
+[DYNAMIC READOUT CARD COMPONENT] YOUR GTM DIAGNOSTIC: [ICON] COMPLEXITY: Complex Value Prop [ICON] BUDGET: <$5,000 / month [ICON] DIAGNOSIS: Path 2 - The "DIY Architect" Path
+
+The Diagnosis: You Are in the "DIY Architect" Path You have a "Complexity" Problem. Your consultative sale means commodity agencies *will fail*—they cannot challenge or differentiate for you. Because you're on a tight budget, you are forced to build this system yourself.
+
+Your Action Plan: You must avoid the "$198,000 Mistake"—hiring a single "Lone Wolf" rep and expecting them to build an entire system. Your job is to be the *architect* first. This blueprint is your survival guide.
+
+Your "Commitment Staircase" (The CTAs):
+
+[Primary CTA (Email Capture Form - BlueprintCaptureForm.tsx)] Download Your Custom GTM Blueprint (PDF) (On-click, show email field: "Where should we send your 'DIY Architect' blueprint?")
+
+[Secondary CTA (Link - SecondaryFitCallButton.tsx)] Book a 15-Min "Fit" Call *(Sub-text): "A GTM Strategist can review your plan and see if a full GTM Audit is right for you."
+
+PATH 3: THE "GTM ARCHITECTURE" PATH (GtmResultPath3.tsx)
+(Trigger: Q1 = B AND Q2 = B)
+
+[DYNAMIC READOUT CARD COMPONENT] YOUR GTM DIAGNOSTIC: [ICON] COMPLEXITY: Complex Value Prop [ICON] BUDGET: $5,000 - $15,000 / month [ICON] DIAGNOSIS: Path 3 - The "GTM Architecture" Path
+
+The Diagnosis: You Are in the "GTM Architecture" Zone You have a complex sale *and* a realistic budget. A "Lone Wolf" hire is too high-risk (the $198k Mistake), and a "Commodity" agency is guaranteed to fail. You are ready to stop "renting" a service and start *building an asset*.
+
+Your Action Plan: Your path is to deploy a complete revenue engine (people, tech, and strategy) that **you own**. When you're ready, we hand you the keys, and you can hire an internal team to run the *system* we built for you.
+
+Your "Commitment Staircase" (The CTAs):
+
+[Primary CTA (Email Capture Form - BlueprintCaptureForm.tsx)] Download Your Custom GTM Blueprint (PDF) *(On-click, show email field: "Where should we send your 'GTM Architecture' blueprint?")
+
+[Secondary CTA (Link - SecondaryFitCallButton.tsx)] Book a 15-Min "Fit" Call *(Sub-text): "This is not a sales call. A GTM Strategist will confirm if a full GTM Audit is right for you. If it is, we'll get it scheduled."
+
+[Tertiary CTA (Link)] Get the GrowthCorp Case Study
+
+PATH 4: THE "ENTERPRISE / BUILD VS. BUY" PATH (GtmResultPath4.tsx)
+(Trigger: Q1 = B AND Q2 = C)
+
+[DYNAMIC READOUT CARD COMPONENT] YOUR GTM DIAGNOSTIC: [ICON] COMPLEXITY: Complex Value Prop [ICON] BUDGET: $15,000+ / month [ICON] DIAGNOSIS: Path 4 - The "Build vs. Buy" Path
+
+The Diagnosis: You Are in the "Build vs. Buy" Path You have the budget and the need to build a full internal GTM Architecture. You *can* hire the 5 SDRs, 2 AEs, Coach, RevOps team, and CRO yourself. This is the 9-month, high-cost "Internal Build."
+
+Your Action Plan: Your choice is "Build vs. Buy." You can either spend $15k+/mo *plus* 9 months of ramp time to build it yourself, *or* you can deploy our complete, managed "GTM Architecture" for a fraction of the cost and be booking qualified meetings in 14 days.
+
+Your "Commitment Staircase" (The CTAs):
+
+[Primary CTA (Email Capture Form - BlueprintCaptureForm.tsx)] Download Your Custom GTM Blueprint (PDF) *(On-click, show email field: "Where should we send your 'Build vs. Buy' blueprint?")
+
+[Secondary CTA (Link - SecondaryFitCallButton.tsx)] Book a 15-Min "Fit" Call *(Sub-text): "This is not a sales call. A GTM Strategist will confirm if a full GTM Audit is right for you. If it is, we'll get it scheduled."
+
+[Tertiary CTA (Link)] Get the GrowthCorp Case Study

@@ -1,0 +1,142 @@
+Appendix C (Complete): Diagnostic & Action Plan Content for All 4 Results Pages
+PATH 1: THE "COMMODITY" PATH (GtmResultPath1.tsx)
+(Trigger: Q1 = A: "Simple Value Prop")
+
+[DYNAMIC READOUT CARD COMPONENT] YOUR GTM DIAGNOSTIC: [ICON] COMPLEXITY: Simple Value Prop [ICON] BUDGET: N/A [ICON] DIAGNOSIS: Path 1 - The "Commodity" Path
+
+H2: The Diagnosis: Your GTM Path is the "Activity" Model
+
+Based on your "Simple Value Prop," your sales process is straightforward. You don't need a complex, consultative sales team to explore "unacknowledged risk"—you just need more high-quality at-bats.
+
+Your primary goal is *activity*, not architecture. A traditional "Commodity" Agency or a skilled "Gig Marketplace" freelancer is a 100% valid path for you. Our full "GTM Architecture" model would be overkill.
+
+H2: Your Action Plan
+
+Your most important step is to find a trusted, high-volume vendor that can represent your brand professionally. This is all about finding a reliable partner, not building a complex internal system.
+
+We've reviewed the top players in this space. We're happy to point you in the right direction.
+
+H2: Your "Commitment Staircase" (The CTAs):
+
+[Primary CTA (Link)]
+
+Headline: See the "Top 10 Cold Calling Companies" Guide
+
+Text: This guide breaks down the best "activity-first" providers for businesses like yours.
+
+[Secondary CTA (Email Capture Form)]
+
+Headline: Want to see how AI is changing the 'activity' game?
+
+Text: Get the "AI Revenue in 2026 (AI Changes Everything)" E-book.
+
+PATH 2: THE "DIY / INTERNAL TRAP" PATH (GtmResultPath2.tsx)
+(Trigger: Q1 = B: "Complex Value Prop" AND Q2 = A: "Low Budget")
+
+[DYNAMIC READOUT CARD COMPONENT] YOUR GTM DIAGNOSTIC: [ICON] COMPLEXITY: Complex Value Prop [ICON] BUDGET: <$5,000 / month [ICON] DIAGNOSIS: Path 2 - The "DIY Architect" Path
+
+H2: The Diagnosis: You Are in the "DIY Architect" Path
+
+You have a "Complexity" Problem. Your consultative sale means commodity agencies *will fail*. They are not built to challenge prospects, differentiate complex value, or navigate multi-threaded deals. They are built for "activity," and you need "architecture."
+
+Because you are on a tight budget, you are in the toughest, most common position for a founder. You are forced to build this system yourself.
+
+H2: Your Action Plan
+
+You must avoid the **"$198,000 Mistake"** at all costs. This is the trap of hiring a single "Lone Wolf" rep and expecting them to be an expert in list-building, tech, *and* strategy. This is a gamble, not a plan.
+
+Your job is not "Head of Sales"; your job is "GTM Architect." You must build the *system* (the plays, the tech, the metrics) *before* you hire the person. We've written the survival guide for you.
+
+H2: Your "Commitment Staircase" (The CTAs):
+
+[Primary CTA (Email Capture Form - BlueprintCaptureForm.tsx)]
+
+Headline: Download Your Custom "DIY Architect" Blueprint (PDF)
+
+Text (On-click): Where should we send your blueprint? It includes the 4-part cost breakdown of the "$198k Mistake."
+
+[Secondary CTA (Link - SecondaryFitCallButton.tsx)]
+
+Headline: Book a 15-Min "Fit" Call
+
+Text: A GTM Strategist can review your plan and see if a full GTM Audit is right for you.
+
+PATH 3: THE "GTM ARCHITECTURE" PATH (GtmResultPath3.tsx)
+(Trigger: Q1 = B: "Complex Value Prop" AND Q2 = B: "Target Budget")
+
+[DYNAMIC READOUT CARD COMPONENT] YOUR GTM DIAGNOSTIC: [ICON] COMPLEXITY: Complex Value Prop [ICON] BUDGET: $5,000 - $15,000 / month [ICON] DIAGNOSIS: Path 3 - The "GTM Architecture" Path
+
+H2: The Diagnosis: You Are in the "GTM Architecture" Zone
+
+You are in the perfect position to scale. You have a "Complex Value Prop" that needs a real system, *and* you have a realistic budget to build one.
+
+This also makes you the #1 target for the two biggest traps:
+
+The "Lone Wolf Trap": Hiring an internal rep and falling into the "$198,000 Mistake."
+
+The "Black Box Trap": Renting a commodity agency that will fail to sell your complex solution.
+
+You are ready to stop "renting" a service and start *building an asset*.
+
+H2: Your Action Plan
+
+Your path is to deploy a complete GTM Revenue Engine (people, tech, and strategy) that **you own**. This is the "architecture-first" model. It's the only way to get the consultative, expert-level sales development you need without the 9-month ramp time and six-figure risk of a new hire.
+
+When you're ready to scale, we hand you the keys, and you can hire an internal team to run the *system* we built for you.
+
+H2: Your "Commitment Staircase" (The CTAs):
+
+[Primary CTA (Email Capture Form - BlueprintCaptureForm.tsx)]
+
+Headline: Download Your Custom "GTM Architecture" Blueprint (PDF)
+
+Text (On-click): Where should we send your blueprint? It includes the "Build vs. Buy" cost-benefit analysis.
+
+[Secondary CTA (Link - SecondaryFitCallButton.tsx)]
+
+Headline: Book a 15-Min "Fit" Call
+
+Text: This is not a sales call. A GTM Strategist will confirm if a full GTM Audit is right for you. If it is, we'll get it scheduled.
+
+[Tertiary CTA (Link)]
+
+Headline: Get the GrowthCorp Case Study
+
+Text: See how we helped a company just like yours escape the "Black Box" trap.
+
+PATH 4: THE "ENTERPRISE / BUILD VS. BUY" PATH (GtmResultPath4.tsx)
+(Trigger: Q1 = B: "Complex Value Prop" AND Q2 = C: "Enterprise Budget")
+
+[DYNAMIC READOUT CARD COMPONENT] YOUR GTM DIAGNOSTIC: [ICON] COMPLEXITY: Complex Value Prop [ICON] BUDGET: $15,000+ / month [ICON] DIAGNOSIS: Path 4 - The "Build vs. Buy" Path
+
+H2: The Diagnosis: You Are in the "Build vs. Buy" Path
+
+You have the "Complex Value Prop" *and* the capital to build a full internal GTM Architecture. You can afford to hire the 5 SDRs, 2 AEs, Coach, RevOps team, and CRO yourself.
+
+This is the classic "Build vs. Buy" decision. The "Internal Build" gives you 100% control, but it's a 9-month, high-cost, high-risk project. The "Deploy" model gives you a complete, managed GTM Architecture in 14 days for a fraction of the cost.
+
+H2: Your Action Plan
+
+Your choice is not *what* to build, but *how*. You can either spend $15k+/mo *plus* 9 months of ramp time and management overhead to "Build It"...
+
+...*or* you can "Deploy It" with our "GTM-as-a-Service" model. We build your entire revenue engine as an asset you own, managed for you, at a fraction of the cost and time. It's the capital-efficient path to the exact same outcome.
+
+H2: Your "Commitment Staircase" (The CTAs):
+
+[Primary CTA (Email Capture Form - BlueprintCaptureForm.tsx)]
+
+Headline: Download Your Custom "Build vs. Buy" Blueprint (PDF)
+
+Text (On-click): Where should we send your blueprint? It includes a detailed "True Cost of Ownership" calculator.
+
+[Secondary CTA (Link - SecondaryFitCallButton.tsx)]
+
+Headline: Book a 15-Min "Fit" Call
+
+Text: This is not a sales call. A GTM Strategist will confirm if a full GTM Audit is right for you. If it is, we'll get it scheduled.
+
+[Tertiary CTA (Link)]
+
+Headline: Get the GrowthCorp Case Study
+
+Text: See how we build GTM Engines faster and more efficiently than a full internal build.
