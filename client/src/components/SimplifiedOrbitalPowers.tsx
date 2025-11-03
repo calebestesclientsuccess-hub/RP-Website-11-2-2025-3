@@ -252,13 +252,17 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   }, [selectedIndex]);
 
   const handlePrevious = () => {
-    setSelectedIndex((prev) => (prev - 1 + powers.length) % powers.length);
+    const newIndex = (selectedIndex - 1 + powers.length) % powers.length;
+    setSelectedIndex(newIndex);
     setInitialPulse(false);
+    setViewedPowers(prev => new Set([...Array.from(prev), powers[newIndex].id]));
   };
 
   const handleNext = () => {
-    setSelectedIndex((prev) => (prev + 1) % powers.length);
+    const newIndex = (selectedIndex + 1) % powers.length;
+    setSelectedIndex(newIndex);
     setInitialPulse(false);
+    setViewedPowers(prev => new Set([...Array.from(prev), powers[newIndex].id]));
   };
 
   const handleBadgeClick = (index: number) => {
@@ -378,14 +382,14 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                         }}
                       >
                         {power.icon}
+                        
+                        {/* Viewed Indicator - inside badge circle for better visibility */}
+                        {isViewed && (
+                          <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5 border-2 border-background z-10">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
                       </div>
-                      
-                      {/* Viewed Indicator */}
-                      {isViewed && (
-                        <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5 border-2 border-background">
-                          <Check className="w-3 h-3 text-white" />
-                        </div>
-                      )}
                       
                       <div className={`
                         absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap
