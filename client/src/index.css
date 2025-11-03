@@ -199,6 +199,12 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
+  /* Dark Mode Warm Gradient - stays in red spectrum only */
+  --gradient-dark-red: 0 85% 58%;        /* Pure red coral */
+  --gradient-dark-crimson: 350 82% 60%;  /* Warm crimson */
+  --gradient-dark-rose: 340 78% 58%;     /* Rose-red */
+  --gradient-dark-pink: 330 70% 58%;     /* Warm pink (just a hint) */
+
   /* Dark backgrounds with subtle purple undertones */
   --background: 249 12% 6%;
 
@@ -573,13 +579,30 @@
     }
   }
 
-  /* In dark mode, gradient-text should use primary color */
+  /* In dark mode, gradient-text uses warm red gradient (no blues/purples) */
   html.dark .gradient-text {
+    /* Layer 1: Always-on red fallback */
     color: hsl(var(--primary));
     font-weight: 600;
+    
+    /* Layer 2: Warm red gradient for capable browsers */
+    @supports (background-clip: text) or (-webkit-background-clip: text) {
+      background: linear-gradient(
+        90deg,
+        hsl(var(--gradient-dark-red)) 0%,
+        hsl(var(--gradient-dark-crimson)) 30%,
+        hsl(var(--gradient-dark-rose)) 60%,
+        hsl(var(--gradient-dark-pink)) 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      background-size: 200% 100%;
+    }
   }
 
-  /* Context-aware gradient intensities - LIGHT MODE ONLY */
+  /* Context-aware gradient intensities - LIGHT MODE */
   html:not(.dark) .gradient-hero {
     filter: saturate(1.2) brightness(1.05);
   }
@@ -594,6 +617,23 @@
 
   html:not(.dark) .gradient-subtle {
     filter: saturate(0.8) opacity(0.9);
+  }
+
+  /* Context-aware gradient intensities - DARK MODE */
+  html.dark .gradient-hero {
+    filter: saturate(1.15) brightness(1.1);
+  }
+
+  html.dark .gradient-card {
+    filter: saturate(1.05);
+  }
+
+  html.dark .gradient-button {
+    filter: saturate(1);
+  }
+
+  html.dark .gradient-subtle {
+    filter: saturate(0.85) opacity(0.95);
   }
 
   /* ================================================
