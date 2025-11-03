@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
+import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { gsap } from 'gsap';
 import { prefersReducedMotion } from "@/lib/animationConfig";
 
@@ -172,6 +172,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const orbitAnimationRef = useRef<gsap.core.Tween | null>(null);
   const [orbitRotation, setOrbitRotation] = useState(0);
+  const [showPlayButton, setShowPlayButton] = useState(false);
 
   // Track mouse position for magnetic effect
   useEffect(() => {
@@ -212,32 +213,74 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     };
   }, []);
 
+  // Manual play handler for when autoplay is blocked
+  const handleManualPlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.play()
+      .then(() => {
+        setHasPlayed(true);
+        setShowPlayButton(false);
+        setTimeout(() => setShowInfoBox(true), 1000);
+        setTimeout(() => setInitialPulse(false), 3000);
+      })
+      .catch((error) => {
+        console.error('Manual play failed:', error);
+      });
+  };
+
   // Video play and initial animations
   useEffect(() => {
     if (!videoRef.current) return;
+
+    const video = videoRef.current;
+
+    const attemptPlay = () => {
+      // iOS Safari often only reaches readyState 2 (HAVE_CURRENT_DATA)
+      if (video.readyState >= 2) {
+        video.play()
+          .then(() => {
+            setHasPlayed(true);
+            setShowPlayButton(false);
+            setTimeout(() => setShowInfoBox(true), 1000);
+            setTimeout(() => setInitialPulse(false), 3000);
+          })
+          .catch((error) => {
+            console.log('Video autoplay prevented:', error);
+            // Show play button for manual playback
+            setShowPlayButton(true);
+          });
+      } else {
+        // Wait for enough data to be loaded
+        const playHandler = () => {
+          video.play()
+            .then(() => {
+              setHasPlayed(true);
+              setShowPlayButton(false);
+              setTimeout(() => setShowInfoBox(true), 1000);
+              setTimeout(() => setInitialPulse(false), 3000);
+            })
+            .catch((error) => {
+              console.log('Video autoplay prevented:', error);
+              setShowPlayButton(true);
+            });
+        };
+        
+        video.addEventListener('loadeddata', playHandler, { once: true });
+        video.addEventListener('canplay', playHandler, { once: true });
+      }
+    };
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasPlayed) {
-            // Ensure video is loaded before attempting to play
-            const video = videoRef.current;
-            if (video) {
-              if (video.readyState >= 2) {
-                video.play().catch(console.error);
-              } else {
-                video.addEventListener('loadeddata', () => {
-                  video.play().catch(console.error);
-                }, { once: true });
-              }
-            }
-            setHasPlayed(true);
-            setTimeout(() => setShowInfoBox(true), 1000);
-            setTimeout(() => setInitialPulse(false), 3000);
+            attemptPlay();
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.3 }
     );
 
     if (containerRef.current) {
@@ -324,11 +367,24 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                   src={videoSrc}
                   muted
                   playsInline
-                  preload="metadata"
+                  preload="auto"
                   controls={false}
                   data-testid="orbital-video"
-                  webkit-playsinline="true"
                 />
+                
+                {/* Play button overlay for when autoplay is blocked */}
+                {showPlayButton && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                    <Button
+                      size="lg"
+                      onClick={handleManualPlay}
+                      className="rounded-full w-20 h-20 shadow-2xl"
+                      data-testid="button-play-video"
+                    >
+                      <Play className="w-10 h-10" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
