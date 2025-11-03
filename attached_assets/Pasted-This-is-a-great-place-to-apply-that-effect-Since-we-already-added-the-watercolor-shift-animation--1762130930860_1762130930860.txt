@@ -1,0 +1,42 @@
+This is a great place to apply that effect. Since we already added the `watercolor-shift` animation and `bg-watercolor-sunset` to your Tailwind config, this is extremely simple.
+
+You'll just apply those utility classes directly to your Shadcn `<Button>` component.
+
+-----
+
+### \#\# Applying the Watercolor Gradient to a Button
+
+Here is the code for your React component. The most important addition is a dark text color (like `text-neutral-900`) to ensure contrast against the light sunset gradient.
+
+```jsx
+import { Button } from "@/components/ui/button";
+
+// ... inside your component's return ...
+
+<Button 
+  size="lg" // Or any size you prefer
+  className="
+    bg-watercolor-sunset  {/* 1. Applies your custom gradient */}
+    bg-400                {/* 2. Sets the 400% size needed for the animation */}
+    animate-watercolor-shift {/* 3. Starts the 20-second 'living ink' effect */}
+    
+    text-neutral-900    {/* IMPORTANT: Overrides default white text for readability */}
+    font-semibold       {/* Optional: Makes the text a bit stronger */}
+    hover:opacity-90      {/* Optional: A clean hover effect */}
+    transition-opacity
+  "
+>
+  Get Started Now
+</Button>
+```
+
+### 💡 How This Works
+
+1.  **`bg-watercolor-sunset`**: Applies the multi-stop gradient you defined.
+2.  **`bg-400`**: Stretches the gradient to 400% of the button's size, so there's "room" for it to move.
+3.  **`animate-watercolor-shift`**: Triggers the `@keyframes` animation, which slowly moves the `background-position` back and forth, creating the "breathing" effect.
+4.  **`text-neutral-900`**: Your gradient colors are light (peaches, pinks, lavenders), so the default white text of the Shadcn button would be unreadable. This forces a dark text color for high contrast.
+
+This will give your main CTAs that premium, "living painting" feel you wanted.
+
+We still have the **Museum Gallery Lighting** (Idea 10) and **Soft Focus Depth** (Idea 8) left to implement. Would you like to tackle the "Museum Gallery Lighting" on your cards next?

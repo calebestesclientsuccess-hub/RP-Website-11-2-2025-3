@@ -1,0 +1,112 @@
+Here is the code for the ThemeEffects.jsx component.
+
+You can create this file at components/ThemeEffects.jsx (or wherever you prefer, like components/ui/theme-effects.jsx).
+
+components/ThemeEffects.jsx (Complete File)
+JavaScript
+
+import { useTheme } from 'next-themes';
+import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+
+/**
+ * This component renders theme-specific aesthetic effects,
+ * like paper textures and ambient light, which only
+ * appear in light mode. It renders 'null' in dark mode.
+ */
+export function ThemeEffects() {
+  const { resolvedTheme } = useTheme();
+  const lightRayRef = useRef(null);
+
+  // Animate the light ray using GSAP when the theme is 'light'
+  useEffect(() => {
+    // Ensure GSAP is loaded and the element exists
+    if (resolvedTheme === 'light' && lightRayRef.current) {
+      // Set initial position
+      gsap.set(lightRayRef.current, { x: '-100vw', opacity: 0.15 });
+
+      // Create a looping animation
+      gsap.to(lightRayRef.current, {
+        x: '100vw', // Move it across the full viewport width
+        duration: 30,
+        ease: 'none', // A steady, linear movement
+        repeat: -1, // Loop forever
+        delay: -15, // Start the animation halfway through its cycle
+      });
+    }
+
+    // Clean up the animation if the component unmounts or theme changes
+    return () => {
+      if (lightRayRef.current) {
+        gsap.killTweensOf(lightRayRef.current);
+      }
+    };
+  }, [resolvedTheme]);
+
+  // Only render these effects if the theme is light
+  if (resolvedTheme !== 'light') {
+    return null;
+  }
+
+  return (
+    <>
+      {/* --- 5. Paper Texture Overlay ---
+        This SVG filter is invisible and positioned off-screen.
+        It just defines the 'noise' algorithm we can reference by its ID.
+      */}
+      <svg className="absolute w-0 h-0 overflow-hidden">
+        <filter id="paper-texture">
+          <feTurbulence 
+            type="fractalNoise" 
+            baseFrequency="0.65" 
+            numOctaves="3" 
+            stitchTiles="stitch" 
+          />
+        </filter>
+      </svg>
+
+      {/* This is the visible overlay div that applies the SVG filter */}
+      <div
+        className="fixed inset-0 z-[9999] opacity-[0.03] pointer-events-none"
+        style={{ filter: 'url(#paper-texture)' }}
+      />
+
+      {/* --- 4. Ambient Light Rays ---
+        This is the visible "ray" element that GSAP will animate.
+        It's a tall, thin gradient, blurred and rotated.
+      */}
+      <div
+        ref={lightRayRef}
+        className="fixed top-0 -left-[100vw] w-1/2 h-screen 
+                   bg-gradient-to-r from-transparent via-white/10 to-transparent 
+                   -rotate-45 blur-3xl pointer-events-none z-[9998]"
+      />
+    </>
+  );
+}
+✍️ Quick Notes:
+Install GSAP: Your tech overview mentioned GSAP, but if you haven't installed it yet, you'll need to:
+
+Bash
+
+npm install gsap
+# or
+yarn add gsap
+Add to Layout: Remember to import and add this component to your main layout file (like App.jsx or src/components/Layout.jsx), placing it inside your ThemeProvider so it can access the theme context.
+
+JavaScript
+
+// In your main layout/App.jsx
+import { ThemeProvider } from "next-themes";
+import { ThemeEffects } from "@/components/ThemeEffects"; // Adjust path if needed
+
+function App() {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <ThemeEffects /> {/* <-- Add it here */}
+
+      {/* ... The rest of your app (nav, main, footer) ... */}
+
+    </ThemeProvider>
+  );
+}

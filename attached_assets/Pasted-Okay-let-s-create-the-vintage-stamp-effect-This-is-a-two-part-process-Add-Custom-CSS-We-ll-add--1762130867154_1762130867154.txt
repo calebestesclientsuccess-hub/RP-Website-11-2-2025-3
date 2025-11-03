@@ -1,0 +1,62 @@
+Okay, let's create the vintage stamp effect. This is a two-part process:
+
+Add Custom CSS: We'll add a new .vintage-stamp class to your global stylesheet.
+
+Update Component: We'll apply this class and a Tailwind utility to your Shadcn <Badge> component.
+
+## Part 1: Add the Custom CSS
+Add the following code to your src/globals.css or src/index.css file (whichever one you use for Tailwind's base imports).
+
+CSS
+
+/* --- Add this to your globals.css --- */
+
+.vintage-stamp {
+  /* 1. Perforated Edges using CSS Mask */
+  /* This punches transparent "holes" around the border */
+  mask-image: radial-gradient(circle at 1px 1px, transparent 1px, black 1.5px);
+  mask-size: 6px 6px;
+  mask-position: -2px -2px; /* Adjusts the mask to align nicely with the edge */
+
+  /* 2. Subtle cross-hatch texture */
+  /* This overlays a faint line pattern on top of the badge's background color */
+  background-image: linear-gradient(45deg, hsla(0, 0%, 0%, 0.05) 25%, transparent 25%, transparent 75%, hsla(0, 0%, 0%, 0.05) 75%, hsla(0, 0%, 0%, 0.05)),
+                    linear-gradient(-45deg, hsla(0, 0%, 0%, 0.05) 25%, transparent 25%, transparent 75%, hsla(0, 0%, 0%, 0.05) 75%, hsla(0, 0%, 0%, 0.05));
+  background-size: 5px 5px; /* Adjust the size of the texture */
+}
+## Part 2: Update Your React Component
+Now, in your component where you render the badges (like "37%", "60:1", etc.), import the Shadcn Badge and apply the new class.
+
+The most important part is to use Tailwind's drop-shadow filter instead of box-shadow.
+
+JavaScript
+
+import { Badge } from "@/components/ui/badge";
+
+// ... inside your component's return ...
+
+<Badge 
+  variant="default" // Or "secondary", "destructive", etc.
+  className="
+    vintage-stamp       {/* <-- Our new custom class */}
+    drop-shadow-md      {/* <-- Use this instead of shadow-md */}
+    bg-red-600          {/* <-- Your chosen background color */}
+    text-white          {/* <-- Your chosen text color */}
+    border-none         {/* <-- Optional: removes default border */}
+  "
+>
+  37%
+</Badge>
+
+<Badge 
+  variant="default"
+  className="
+    vintage-stamp 
+    drop-shadow-md 
+    bg-primary/90 
+    text-primary-foreground
+    border-none
+  "
+>
+  60:1
+</Badge>
