@@ -5,6 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { SEO } from "@/components/SEO";
+import CinematicBridge from "@/components/CinematicBridge";
+import OrbitalPowers from "@/components/OrbitalPowers";
+import GTMTimeline from "@/components/GTMTimeline";
+import { HeroROICalculator } from "@/components/HeroROICalculator";
 import { Brain, Target, Settings, Users, Wrench, Trophy, ArrowRight, X } from "lucide-react";
 import { Link } from "wouter";
 import heroImage from "@assets/image_1762158443107.png";
@@ -40,8 +44,8 @@ const powers: Power[] = [
     ],
     value: "Saves $200,000+ in annual tool costs through volume licensing.",
     position: {
-      mobile: { top: "8%", left: "5%" },
-      desktop: { top: "15%", left: "15%" }
+      mobile: { top: "5%", left: "10%" },
+      desktop: { top: "12%", left: "18%" }
     }
   },
   {
@@ -59,8 +63,8 @@ const powers: Power[] = [
     ],
     value: "Creates a high-performance culture that drives 2.5x better results.",
     position: {
-      mobile: { top: "8%", right: "5%" },
-      desktop: { top: "15%", right: "15%" }
+      mobile: { top: "5%", right: "10%" },
+      desktop: { top: "12%", right: "18%" }
     }
   },
   {
@@ -78,8 +82,8 @@ const powers: Power[] = [
     ],
     value: "Accelerates ramp time from 3 months to 3 weeks.",
     position: {
-      mobile: { top: "50%", left: "2%" },
-      desktop: { top: "45%", left: "8%" }
+      mobile: { top: "50%", left: "5%" },
+      desktop: { top: "50%", left: "10%" }
     }
   },
   {
@@ -97,8 +101,8 @@ const powers: Power[] = [
     ],
     value: "Increases response rates by 3x through hyper-personalization.",
     position: {
-      mobile: { top: "50%", right: "2%" },
-      desktop: { top: "45%", right: "8%" }
+      mobile: { top: "50%", right: "5%" },
+      desktop: { top: "50%", right: "10%" }
     }
   },
   {
@@ -116,8 +120,8 @@ const powers: Power[] = [
     ],
     value: "Eliminates 20+ hours/week of manual tasks.",
     position: {
-      mobile: { bottom: "8%", left: "5%" },
-      desktop: { bottom: "15%", left: "18%" }
+      mobile: { bottom: "5%", left: "10%" },
+      desktop: { bottom: "12%", left: "18%" }
     }
   },
   {
@@ -135,8 +139,8 @@ const powers: Power[] = [
     ],
     value: "Reduces time to product-market fit by 6-12 months.",
     position: {
-      mobile: { bottom: "8%", right: "5%" },
-      desktop: { bottom: "15%", right: "18%" }
+      mobile: { bottom: "5%", right: "10%" },
+      desktop: { bottom: "12%", right: "18%" }
     }
   }
 ];
@@ -339,6 +343,32 @@ export default function Home() {
               </Button>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Cinematic Bridge */}
+      <CinematicBridge />
+
+      {/* Orbital Powers - Interactive Video Element */}
+      <OrbitalPowers />
+
+      {/* GTM Timeline */}
+      <GTMTimeline />
+
+      {/* ROI Calculator Section */}
+      <section className="py-16 md:py-24 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+              Do The Math
+            </h2>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+              See how the RevParty Pod delivers exceptional ROI
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <HeroROICalculator testIdSuffix="-home" />
+          </div>
         </div>
       </section>
 
