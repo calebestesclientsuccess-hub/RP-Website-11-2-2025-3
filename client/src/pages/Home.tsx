@@ -171,8 +171,6 @@ export default function Home() {
                   <Link href="/gtm-engine">See How It Works</Link>
                 </Button>
               </div>
-
-              <LeadMagnetHero />
             </div>
 
             <div className="flex justify-center lg:justify-end">
@@ -187,12 +185,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-trap">
-              The $198,000 Mistake<br />
+              The <span className="gradient-text gradient-hero">$198,000</span> Mistake<br />
               <span className="gradient-text gradient-hero">You Don't Have to Make</span>
             </h2>
             <div className="space-y-4">
               <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-trap-description">
-                Founders are forced to choose between two bad options: the slow, expensive '$198,000 Mistake' of a failed internal hire, or the 'Outsourcing Suicide Mission' that gives you zero IP and zero control.
+                Founders are forced to choose between two bad options: the slow, expensive '<span className="gradient-text gradient-hero">$198,000</span> Mistake' of a failed internal hire, or the 'Outsourcing Suicide Mission' that gives you zero IP and zero control.
               </p>
               <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-trap-disease">
                 Both are symptoms of the same disease: solving a system problem with a headcount solution.
@@ -206,6 +204,11 @@ export default function Home() {
                 Expose The Traps <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
+          </div>
+
+          {/* Lead Magnet Section */}
+          <div className="max-w-3xl mx-auto mt-16">
+            <LeadMagnetHero />
           </div>
         </div>
       </section>
@@ -325,9 +328,9 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0 }}
             >
               <Card className="p-8 text-center light-depth hover-elevate transition-all h-full" data-testid="metric-ramp">
-                <h3 className="text-6xl font-bold text-primary mb-4">3-5x</h3>
+                <h3 className="text-6xl font-bold gradient-text gradient-hero mb-4">3-5x</h3>
                 <h4 className="text-2xl font-bold mb-3">Faster Ramp</h4>
-                <p className="text-muted-foreground">Pipeline productive in 14 days, not 6 months.</p>
+                <p className="text-muted-foreground">Pipeline productive in <span className="gradient-text gradient-hero">14 days</span>, not <span className="gradient-text gradient-hero">6 months</span>.</p>
               </Card>
             </motion.div>
 
@@ -338,9 +341,9 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.1 }}
             >
               <Card className="p-8 text-center light-depth hover-elevate transition-all h-full" data-testid="metric-savings">
-                <h3 className="text-6xl font-bold text-primary mb-4">60%+</h3>
+                <h3 className="text-6xl font-bold gradient-text gradient-hero mb-4">60%+</h3>
                 <h4 className="text-2xl font-bold mb-3">Cost Savings</h4>
-                <p className="text-muted-foreground">vs. the $198k+ total cost of a failed internal hire.</p>
+                <p className="text-muted-foreground">vs. the <span className="gradient-text gradient-hero">$198k+</span> total cost of a failed internal hire.</p>
               </Card>
             </motion.div>
 
@@ -351,7 +354,7 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <Card className="p-8 text-center light-depth hover-elevate transition-all h-full" data-testid="metric-pipeline">
-                <h3 className="text-6xl font-bold text-primary mb-4">$2M</h3>
+                <h3 className="text-6xl font-bold gradient-text gradient-hero mb-4">$2M</h3>
                 <h4 className="text-2xl font-bold mb-3">Pipeline Asset</h4>
                 <p className="text-muted-foreground">Teaser from 'Antidote' case study.</p>
               </Card>
@@ -383,7 +386,7 @@ export default function Home() {
               <span className="gradient-text gradient-hero">Calculate Your True ROI.</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-roi-calculator-description">
-              A single internal hire costs over $198,000 when you factor in salary, benefits, management tax, and hiring drag. Use our calculator to see the true cost of the 'Lone Wolf' model compared to deploying a GTM Engine.
+              A single internal hire costs over <span className="gradient-text gradient-hero">$198,000</span> when you factor in salary, benefits, management tax, and hiring drag. Use our calculator to see the true cost of the 'Lone Wolf' model compared to deploying a GTM Engine.
             </p>
           </div>
 

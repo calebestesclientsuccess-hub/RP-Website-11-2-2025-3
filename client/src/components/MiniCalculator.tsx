@@ -87,7 +87,7 @@ export function MiniCalculator() {
               <label className="text-sm font-medium text-foreground">
                 Average Revenue Per New Client (annually)
               </label>
-              <span className="text-lg font-bold text-primary font-mono" data-testid="text-acv-value">
+              <span className="text-lg font-bold gradient-text gradient-hero font-mono" data-testid="text-acv-value">
                 {formatCurrency(acv[0])}
               </span>
             </div>
@@ -112,7 +112,7 @@ export function MiniCalculator() {
               <label className="text-sm font-medium text-foreground">
                 Average Close Rate from Qualified Appointment
               </label>
-              <span className="text-lg font-bold text-primary font-mono" data-testid="text-close-rate-value">
+              <span className="text-lg font-bold gradient-text gradient-hero font-mono" data-testid="text-close-rate-value">
                 {closeRate[0]}%
               </span>
             </div>
@@ -137,7 +137,7 @@ export function MiniCalculator() {
               <p className="text-sm text-muted-foreground">
                 Potential New Revenue This Year
               </p>
-              <p className="text-4xl md:text-5xl font-bold text-primary font-mono tracking-tight" data-testid="text-potential-revenue">
+              <p className="text-4xl md:text-5xl font-bold gradient-text gradient-hero font-mono tracking-tight" data-testid="text-potential-revenue">
                 {formatCurrency(potentialRevenue)}
               </p>
               <p className="text-xs text-muted-foreground">

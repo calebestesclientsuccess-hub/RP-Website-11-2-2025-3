@@ -13,7 +13,7 @@ export default function SimpleBridgeSection() {
           <p className="text-2xl md:text-3xl text-muted-foreground animate-fade-in">
             You need more than another salesperson
           </p>
-          <h2 className="text-5xl md:text-7xl font-bold text-primary animate-fade-in animation-delay-200">
+          <h2 className="text-5xl md:text-7xl font-bold gradient-text gradient-hero animate-fade-in animation-delay-200">
             You need a system
           </h2>
         </div>

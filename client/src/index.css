@@ -27,15 +27,14 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  /* WCAG AA Compliant Gradient Colors (4.5:1+ contrast on white) */
-  --gradient-start-hsl: 0 70% 45%;      /* Coral-red: 4.5:1 ratio */
-  --gradient-pink-hsl: 330 60% 48%;     /* Pink: 4.51:1 ratio */  
-  --gradient-magenta-hsl: 300 50% 46%;  /* Magenta: 4.54:1 ratio */
-  --gradient-purple-hsl: 252 50% 46%;   /* Brand purple: 4.54:1 ratio */
-  --gradient-blue-hsl: 210 50% 48%;     /* Blue: 4.5:1 ratio */
+  /* WCAG AA Compliant Red-Focused Gradient Colors (4.5:1+ contrast on white) */
+  --gradient-dark-red-hsl: 0 85% 38%;   /* Darkest red: Deep crimson */
+  --gradient-start-hsl: 0 75% 45%;      /* Primary red: Vibrant red */
+  --gradient-pink-hsl: 350 65% 50%;     /* Pink-red: Warm transition */  
+  --gradient-magenta-hsl: 330 60% 52%;  /* Magenta-pink: Softer end */
   
-  /* Fallback uses the middle color for best average */
-  --gradient-fallback: hsl(var(--gradient-purple-hsl));
+  /* Fallback uses the primary red */
+  --gradient-fallback: hsl(var(--gradient-start-hsl));
 
   /* Performance tier (set by JavaScript) */
   --performance-tier: 1; /* 1=low, 2=medium, 3=high */
@@ -84,8 +83,8 @@
 
   --popover-border: 20 5% 87%;
 
-  /* Competition: Red - darkened for accessibility (4.5:1 contrast) */
-  --primary: 0 85% 42%;
+  /* Competition: Red - using darkest red from gradient */
+  --primary: 0 85% 38%;
 
   --primary-foreground: 0 0% 100%;
   
@@ -555,21 +554,20 @@
      GRADIENT TEXT SYSTEM - Progressive Enhancement
      ================================================ */
 
-  /* Base gradient text class with fallback - LIGHT MODE */
+  /* Base gradient text class with fallback - LIGHT MODE - Red-focused */
   html:not(.dark) .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: var(--gradient-fallback);
     font-weight: 600; /* Improve readability */
     
-    /* Layer 1: Gradient for capable browsers */
+    /* Layer 1: Red-focused gradient for capable browsers */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
       background: linear-gradient(
         90deg,
-        hsl(var(--gradient-start-hsl)) 0%,
-        hsl(var(--gradient-pink-hsl)) 25%,
-        hsl(var(--gradient-magenta-hsl)) 45%,
-        hsl(var(--gradient-purple-hsl)) 65%,
-        hsl(var(--gradient-blue-hsl)) 100%
+        hsl(var(--gradient-dark-red-hsl)) 0%,
+        hsl(var(--gradient-start-hsl)) 35%,
+        hsl(var(--gradient-pink-hsl)) 65%,
+        hsl(var(--gradient-magenta-hsl)) 100%
       );
       -webkit-background-clip: text;
       background-clip: text;

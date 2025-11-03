@@ -150,7 +150,7 @@ export default function TestimonialCarousel() {
                     {currentTestimonial.title} at {currentTestimonial.company}
                   </p>
                   {currentTestimonial.metrics && (
-                    <p className="text-sm text-primary mt-1 font-semibold">
+                    <p className="text-sm gradient-text gradient-hero mt-1 font-semibold">
                       {currentTestimonial.metrics}
                     </p>
                   )}

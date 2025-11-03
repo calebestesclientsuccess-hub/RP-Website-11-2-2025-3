@@ -17,23 +17,26 @@ Revenue Party is a marketing website for a Go-to-Market (GTM) consultancy, speci
 The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js backend with PostgreSQL and Drizzle ORM. Animations are minimal and focused, with only essential scroll-triggered timeline animations retained. A single global error boundary handles all error states. The architecture prioritizes simplicity and maintainability.
 
 **UI/UX Decisions:**
-- **Color Philosophy**: Semantic color system meeting WCAG AA accessibility standards.
+- **Color Philosophy**: Semantic color system meeting WCAG AA accessibility standards. Red-focused gradient system emphasizes brand colors (darkest red #C52A2A through pink/magenta).
 - **Typography**: Inter for headings/body, JetBrains Mono for monospace, with an inverted pyramid hierarchy.
 - **Design System**: Semantic color tokens, badge variants, and consistent typography.
     - **Dark Mode (Default)**: Professional dark design with subtle gradients and clean aesthetics.
     - **Light Mode**: Sophisticated light theme with proper contrast and readability.
+    - **Gradient Text**: All numbers, metrics, and key highlights use red-focused gradient (darkest red → vibrant red → pink-red → magenta-pink) for visual emphasis.
 - **Animations**: Minimal GSAP usage - only BuildAndRampTimeline uses ScrollTrigger for essential scroll animations. All decorative animations have been removed for better performance. Respects `prefers-reduced-motion`.
-- **Theming**: WCAG AA-compliant gradient system with distinct palettes for light and dark modes. No performance tier detection - all users get the same optimized experience.
+- **Theming**: WCAG AA-compliant red-focused gradient system. Primary buttons and sliders use darkest red (hsl(0, 85%, 38%)). No performance tier detection - all users get the same optimized experience.
 - **Accessibility**: `prefers-reduced-motion`, keyboard navigation, ARIA landmarks, and WCAG AA compliance.
 
 **Technical Implementations & Feature Specifications:**
 - **Hero Section**: Features "Your Fullstack Sales Unit" with tagline and problem statement.
-- **SimpleBridgeSection**: Simple static text transition between content sections, no scroll-triggered animations.
+- **Lead Magnet System**: Positioned after "The $198,000 Mistake" section. Captures email, name, and company in exchange for downloadable playbook PDF. Includes GTM event tracking, form validation (Zod), toast notifications, and database storage.
+- **SimpleBridgeSection**: Simple static text transition between content sections, no scroll-triggered animations. Uses gradient text for emphasis.
 - **SimplifiedOrbitalPowers**: Interactive badges that gently orbit around a central video with magnetic hover effects and dynamic background color morphing. Six clickable badges that reveal detailed information about each power.
-- **Interactive ROI Calculator**: Compares in-house vs. RevParty Pod based on user inputs with real-time calculations and email capture.
+- **Interactive ROI Calculator**: Compares in-house vs. RevParty Pod based on user inputs with real-time calculations. All numbers display in red-focused gradient.
+- **Testimonial Carousel**: Auto-rotating carousel (8s intervals) with Schema.org markup, manual navigation controls, and gradient-styled metrics display.
 - **BuildAndRampTimeline**: The only component with GSAP ScrollTrigger animations. Showcases 4 GTM steps with scroll-triggered reveals.
 - **Content Management**: Database-driven blog ("Blueprints") with Markdown rendering (DOMPurify for XSS protection), testimonial display, and career listings with application forms (React Hook Form + Zod).
-- **SEO Optimizations**: Comprehensive technical foundation including `robots.txt`, `sitemap.xml`, favicons, and canonical URLs. Uses `react-helmet-async` for page-specific meta tags (Open Graph, Twitter Card), structured data (JSON-LD schemas), and performance optimizations for Core Web Vitals.
+- **SEO Optimizations**: Comprehensive technical foundation including `robots.txt`, `sitemap.xml`, favicons, and canonical URLs. Uses `react-helmet-async` for page-specific meta tags (Open Graph, Twitter Card), structured data (JSON-LD schemas including Product Reviews), and performance optimizations for Core Web Vitals.
 - **Error Handling**: Single global ErrorBoundary component at application level for consistent error handling.
 
 **System Design Choices:**
