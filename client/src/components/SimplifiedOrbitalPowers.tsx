@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { gsap } from 'gsap';
+import { prefersReducedMotion } from "@/lib/animationConfig";
 
 interface Power {
   id: string;
@@ -9,6 +12,7 @@ interface Power {
   icon: JSX.Element;
   color: string;
   glowColor: string;
+  bgColor: string;
   angle: number;
   description: string;
   details: string[];
@@ -27,6 +31,7 @@ const powers: Power[] = [
     icon: <Brain className="w-6 h-6" />,
     color: "text-purple-dark",
     glowColor: "rgba(139, 92, 246, 0.4)",
+    bgColor: "139, 92, 246",
     angle: 0,
     description: "Intelligent systems that research, personalize, and optimize at scale.",
     details: [
@@ -47,6 +52,7 @@ const powers: Power[] = [
     icon: <Target className="w-6 h-6" />,
     color: "text-primary",
     glowColor: "rgba(239, 68, 68, 0.4)",
+    bgColor: "239, 68, 68",
     angle: 60,
     description: "Expert strategists who design and refine your entire revenue playbook.",
     details: [
@@ -67,6 +73,7 @@ const powers: Power[] = [
     icon: <Settings className="w-6 h-6" />,
     color: "text-community",
     glowColor: "rgba(168, 85, 247, 0.4)",
+    bgColor: "168, 85, 247",
     angle: 120,
     description: "Full revenue operations management ensuring seamless system performance.",
     details: [
@@ -87,6 +94,7 @@ const powers: Power[] = [
     icon: <Users className="w-6 h-6" />,
     color: "text-community",
     glowColor: "rgba(168, 85, 247, 0.4)",
+    bgColor: "168, 85, 247",
     angle: 180,
     description: "World-class coaching that elevates your BDRs to top 1% performance.",
     details: [
@@ -107,6 +115,7 @@ const powers: Power[] = [
     icon: <Wrench className="w-6 h-6" />,
     color: "text-primary",
     glowColor: "rgba(239, 68, 68, 0.4)",
+    bgColor: "239, 68, 68",
     angle: 240,
     description: "Best-in-class tools integrated and optimized for maximum efficiency.",
     details: [
@@ -127,6 +136,7 @@ const powers: Power[] = [
     icon: <Trophy className="w-6 h-6" />,
     color: "text-community",
     glowColor: "rgba(168, 85, 247, 0.4)",
+    bgColor: "168, 85, 247",
     angle: 300,
     description: "A culture of collaboration and healthy competition that drives results.",
     details: [
@@ -149,17 +159,61 @@ interface SimplifiedOrbitalPowersProps {
 }
 
 /**
- * SimplifiedOrbitalPowers: Clean orbital badges around video
- * Simplified version with just the core interaction
+ * SimplifiedOrbitalPowers: Interactive orbital badges with engagement features
  */
 export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbitalPowersProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedIndex, setSelectedIndex] = useState(2); // Start with RevOps (index 2)
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const badgeRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(2);
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
   const [initialPulse, setInitialPulse] = useState(true);
+  const [viewedPowers, setViewedPowers] = useState<Set<string>>(new Set(['revops']));
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const orbitAnimationRef = useRef<gsap.core.Tween | null>(null);
+  const [orbitRotation, setOrbitRotation] = useState(0);
 
-  // Simple intersection observer to trigger video play once
+  // Track mouse position for magnetic effect
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setMousePos({
+          x: e.clientX - rect.left - rect.width / 2,
+          y: e.clientY - rect.top - rect.height / 2
+        });
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Orbital rotation animation - rotate the entire orbital system
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+
+    const rotationObj = { value: 0 };
+    
+    orbitAnimationRef.current = gsap.to(rotationObj, {
+      value: 360,
+      duration: 60,
+      ease: "none",
+      repeat: -1,
+      onUpdate: () => {
+        setOrbitRotation(rotationObj.value);
+      }
+    });
+
+    return () => {
+      orbitAnimationRef.current?.kill();
+    };
+  }, []);
+
+  // Video play and initial animations
   useEffect(() => {
     if (!videoRef.current) return;
 
@@ -169,7 +223,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           if (entry.isIntersecting && !hasPlayed) {
             videoRef.current?.play().catch(console.error);
             setHasPlayed(true);
-            // Show info box after 1 second and stop pulse after 3 seconds
             setTimeout(() => setShowInfoBox(true), 1000);
             setTimeout(() => setInitialPulse(false), 3000);
           }
@@ -185,24 +238,56 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     return () => observer.disconnect();
   }, [hasPlayed, videoRef]);
 
+  // Background color morphing
+  useEffect(() => {
+    if (!sectionRef.current || prefersReducedMotion()) return;
+
+    const selectedPower = powers[selectedIndex];
+    
+    gsap.to(sectionRef.current, {
+      background: `radial-gradient(ellipse at top, rgba(${selectedPower.bgColor}, 0.05) 0%, transparent 60%)`,
+      duration: 0.8,
+      ease: "power2.out"
+    });
+  }, [selectedIndex]);
+
   const handlePrevious = () => {
     setSelectedIndex((prev) => (prev - 1 + powers.length) % powers.length);
+    setInitialPulse(false);
   };
 
   const handleNext = () => {
     setSelectedIndex((prev) => (prev + 1) % powers.length);
+    setInitialPulse(false);
+  };
+
+  const handleBadgeClick = (index: number) => {
+    setSelectedIndex(index);
+    setShowInfoBox(true);
+    setInitialPulse(false);
+    setViewedPowers(prev => new Set([...Array.from(prev), powers[index].id]));
   };
 
   const selectedPower = powers[selectedIndex];
+  const explorationProgress = viewedPowers.size;
 
   return (
-    <section className="py-8 px-4 md:px-6 lg:px-8 bg-background" data-testid="section-orbital-powers">
+    <section 
+      ref={sectionRef}
+      className="py-8 px-4 md:px-6 lg:px-8 bg-background transition-all duration-700" 
+      data-testid="section-orbital-powers"
+    >
       <div className="max-w-7xl mx-auto">
-        {/* Section Header */}
+        {/* Section Header with Progress */}
         <div className="text-center mb-2">
-          <h2 className="text-5xl md:text-6xl font-bold mb-2 bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
-            Your Fullstack Sales Unit
-          </h2>
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
+              Your Fullstack Sales Unit
+            </h2>
+            <Badge variant="secondary" className="text-sm px-3 py-1">
+              {explorationProgress}/6 Explored
+            </Badge>
+          </div>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Not just BDRs. A complete system engineered to deliver predictable revenue.
           </p>
@@ -222,10 +307,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                   height: 'min(50vh, 360px)',
                   boxShadow: `
                     0 0 0 2px rgba(192, 192, 192, 0.3),
-                    0 0 40px rgba(59, 130, 246, 0.3),
-                    0 0 80px rgba(168, 85, 247, 0.2),
-                    0 0 120px rgba(236, 72, 153, 0.15),
-                    0 0 160px rgba(249, 115, 22, 0.1)
+                    0 0 40px rgba(${selectedPower.bgColor}, 0.3),
+                    0 0 80px rgba(${selectedPower.bgColor}, 0.2),
+                    0 0 120px rgba(${selectedPower.bgColor}, 0.15),
+                    0 0 160px rgba(${selectedPower.bgColor}, 0.1)
                   `
                 }}
               >
@@ -241,30 +326,40 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               </div>
             </div>
 
-            {/* Static Orbital Badges */}
-            <div className="absolute inset-0 pointer-events-none">
+            {/* Orbital Badges with Magnetic Effect */}
+            <div className="orbital-badges-container absolute inset-0 pointer-events-none">
               {powers.map((power, index) => {
                 const radius = 320;
-                const angleRad = (power.angle * Math.PI) / 180;
+                const totalAngle = power.angle + orbitRotation;
+                const angleRad = (totalAngle * Math.PI) / 180;
                 const x = Math.cos(angleRad) * radius;
-                const y = Math.sin(angleRad) * radius * 0.6; // Elliptical orbit
+                const y = Math.sin(angleRad) * radius * 0.6;
+                
+                // Calculate magnetic effect
+                const badgeX = x;
+                const badgeY = y;
+                const distance = Math.sqrt(
+                  Math.pow(mousePos.x - badgeX, 2) + Math.pow(mousePos.y - badgeY, 2)
+                );
+                const magneticStrength = Math.max(0, 1 - distance / 200);
+                const pullX = (mousePos.x - badgeX) * magneticStrength * 0.15;
+                const pullY = (mousePos.y - badgeY) * magneticStrength * 0.15;
+                
+                const isViewed = viewedPowers.has(power.id);
                 
                 return (
                   <div
                     key={power.id}
+                    ref={el => badgeRefs.current[index] = el}
                     className="absolute left-1/2 top-1/2 pointer-events-auto"
                     style={{
-                      transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+                      transform: `translate(calc(-50% + ${x + pullX}px), calc(-50% + ${y + pullY}px))`,
                       zIndex: 30
                     }}
                   >
                     <button
-                      onClick={() => {
-                        setSelectedIndex(index);
-                        setShowInfoBox(true);
-                        setInitialPulse(false);
-                      }}
-                      className={`group cursor-pointer transition-all duration-300 hover:scale-110 ${
+                      onClick={() => handleBadgeClick(index)}
+                      className={`group cursor-pointer transition-all duration-300 hover:scale-110 relative ${
                         index === selectedIndex && initialPulse ? 'animate-pulse' : ''
                       }`}
                       data-testid={`power-badge-${power.id}`}
@@ -284,6 +379,14 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       >
                         {power.icon}
                       </div>
+                      
+                      {/* Viewed Indicator */}
+                      {isViewed && (
+                        <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5 border-2 border-background">
+                          <Check className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                      
                       <div className={`
                         absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap
                         text-sm font-medium ${power.color}
@@ -317,7 +420,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       size="icon" 
                       variant="outline" 
                       onClick={handlePrevious}
-                      className="hover:scale-110 transition-transform animate-pulse"
+                      className={`hover:scale-110 transition-transform ${explorationProgress < 6 ? 'animate-pulse' : ''}`}
                       data-testid="button-previous-power"
                     >
                       <ChevronLeft className="h-5 w-5" />
@@ -326,7 +429,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       size="icon" 
                       variant="outline" 
                       onClick={handleNext}
-                      className="hover:scale-110 transition-transform animate-pulse"
+                      className={`hover:scale-110 transition-transform ${explorationProgress < 6 ? 'animate-pulse' : ''}`}
                       data-testid="button-next-power"
                     >
                       <ChevronRight className="h-5 w-5" />
