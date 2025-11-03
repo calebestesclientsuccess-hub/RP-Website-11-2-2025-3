@@ -71,7 +71,7 @@ export default function ProblemPage() {
               transition={{ duration: 0.6 }}
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 text-center" data-testid="heading-false-dichotomy">
-                The Two-Option Trap{" "}
+                The Two-Option Trap<br />
                 <span className="gradient-text gradient-hero">That Guarantees Failure</span>
               </h2>
               <div className="space-y-6 text-lg text-muted-foreground leading-relaxed" data-testid="text-false-dichotomy">
@@ -97,7 +97,7 @@ export default function ProblemPage() {
               className="mb-12"
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-trap-1">
-                Trap 1: The Internal Hire{" "}
+                Trap 1: The Internal Hire<br />
                 <span className="gradient-text gradient-hero">(The '$198,000 Mistake')</span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed max-w-4xl" data-testid="text-trap-1-intro">

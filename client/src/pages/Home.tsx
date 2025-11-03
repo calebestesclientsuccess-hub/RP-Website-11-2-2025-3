@@ -183,7 +183,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-trap">
-              The $198,000 Mistake{" "}
+              The $198,000 Mistake<br />
               <span className="gradient-text gradient-hero">You Don't Have to Make</span>
             </h2>
             <div className="space-y-4">
@@ -214,7 +214,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-solution">
-              Don't Hire a Rep.{" "}
+              Don't Hire a Rep.<br />
               <span className="gradient-text gradient-hero">Deploy an Engine.</span>
             </h2>
           </div>
@@ -304,7 +304,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-proof">
-              Proven Results. <span className="gradient-text gradient-hero">No Black Box.</span>
+              Proven Results.<br />
+              <span className="gradient-text gradient-hero">No Black Box.</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-proof-description">
               The GTM Engine model is built on transparency and performance.

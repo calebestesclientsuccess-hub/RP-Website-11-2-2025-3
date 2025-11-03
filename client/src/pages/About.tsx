@@ -153,7 +153,7 @@ export default function About() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-culture">
-              This is the 'Why' Behind{" "}
+              This is the 'Why' Behind<br />
               <span className="gradient-text gradient-hero">Our Elite Talent</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-culture-intro">

@@ -188,7 +188,8 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-pricing-cards">
-              Choose Your <span className="gradient-text gradient-hero">Guaranteed GTM Engine</span>
+              Choose Your<br />
+              <span className="gradient-text gradient-hero">Guaranteed GTM Engine</span>
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed" data-testid="text-pricing-description">
               All plans include the full "Fullstack Sales Unit": Elite Talent, the "Impact Selling OS" (100% IP Ownership), and the "Signal Factory" Tech Stack. All plans include the 20+ SQOs / SDR guarantee.

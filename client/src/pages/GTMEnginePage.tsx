@@ -102,7 +102,8 @@ export default function GTMEnginePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-asset-components">
-              What You Get: The 3 Core Components of <span className="gradient-text gradient-hero">Your GTM Engine</span>
+              What You Get: The 3 Core Components of<br />
+              <span className="gradient-text gradient-hero">Your GTM Engine</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-asset-description">
               A GTM Engine is not a person; it's a complete, managed system of talent, strategy, and technology designed to build a permanent pipeline asset.
