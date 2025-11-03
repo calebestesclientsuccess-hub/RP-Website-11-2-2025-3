@@ -128,7 +128,7 @@ export default function ResultsPage() {
           <div className="max-w-7xl mx-auto">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-proven-results">
-                The GTM Engine:{" "}
+                The GTM Engine:<br />
                 <span className="text-primary">Verified Performance</span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-proven-results-description">
@@ -169,7 +169,7 @@ export default function ResultsPage() {
           <div className="max-w-7xl mx-auto">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-case-studies">
-                The Antidotes:{" "}
+                The Antidotes:<br />
                 <span className="text-primary">How We Fix the Traps</span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-case-studies-description">
@@ -261,7 +261,7 @@ export default function ResultsPage() {
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-testimonials">
-                Don't Just Take{" "}
+                Don't Just Take<br />
                 <span className="text-primary">Our Word For It</span>
               </h2>
             </div>
@@ -301,7 +301,7 @@ export default function ResultsPage() {
         <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-cta">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-cta">
-              Ready to Build Your Own{" "}
+              Ready to Build Your Own<br />
               <span className="text-primary">Revenue Asset?</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed" data-testid="text-cta-description">

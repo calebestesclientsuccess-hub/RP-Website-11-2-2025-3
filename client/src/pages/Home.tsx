@@ -379,7 +379,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-roi-calculator">
-              Stop Guessing. <span className="text-primary">Calculate Your True ROI.</span>
+              Stop Guessing.<br />
+              <span className="text-primary">Calculate Your True ROI.</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-roi-calculator-description">
               A single internal hire costs over $198,000 when you factor in salary, benefits, management tax, and hiring drag. Use our calculator to see the true cost of the 'Lone Wolf' model compared to deploying a GTM Engine.
@@ -409,7 +410,7 @@ export default function Home() {
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-primary/5">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold" data-testid="heading-final-cta">
-            The Blueprint is Clear.{" "}
+            The Blueprint is Clear.<br />
             <span className="text-primary">Schedule Your GTM Audit.</span>
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-final-cta-description">
