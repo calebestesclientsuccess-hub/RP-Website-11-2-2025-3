@@ -25,15 +25,29 @@ export const ANIMATION_CONFIG = {
       initialOffset: 50, // pixels to slide up from
       stagger: 0.15,
       easing: "power2.out",
+      scrollTrigger: {
+        start: "top 85%",
+        end: "bottom 20%",
+      }
     },
     line: {
       duration: 0.4,
       stagger: 0.1,
       easing: "power2.inOut",
+      scrollTrigger: {
+        start: "top 85%",
+        end: "bottom 20%",
+      }
     },
-    trigger: {
-      start: "top 85%",
-      end: "bottom 20%",
+    result: {
+      duration: 0.8,
+      delay: 0.3,
+      initialOffset: 60,
+      easing: "power3.out",
+      scrollTrigger: {
+        start: "top 75%",
+        end: "bottom 20%",
+      }
     }
   },
 } as const;
