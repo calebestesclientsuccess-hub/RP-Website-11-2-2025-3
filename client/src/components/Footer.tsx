@@ -77,6 +77,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/resources/how-to-hire-cold-callers-guide" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-hire-cold-callers-guide">
+                  How to Hire Cold Callers (A 2026 Guide)
+                </Link>
+              </li>
+              <li>
                 <Link href="/blog/manifesto-the-lone-wolf-trap" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-manifesto">
                   The Lone Wolf Trap (Manifesto)
                 </Link>

@@ -45,6 +45,20 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 - **Database**: PostgreSQL with Drizzle ORM.
 - **Animation Strategy**: Minimal animations using GSAP only where essential (BuildAndRampTimeline). Removed complex scroll-triggered animations, performance tier detection, and decorative animations for better maintainability and performance.
 
+## Recent Changes
+
+### GTM Assessment Tool (November 2025)
+- Added new GTM Assessment tool at `/resources/gtm-assessment` with decision-tree logic (2 questions)
+- Created 4 dynamic results pages (`path-1` through `path-4`) with URL query parameter tracking (`q1`, `q2`)
+- Implemented blueprint capture system with new `blueprintCaptures` database table
+- Added email template generation for assessment results (placeholder - Resend integration pending)
+- Created article page "How to Hire Cold Callers (2026 Guide)" with embedded assessment widgets
+- Updated footer navigation with new resource link
+- Components created: `AssessmentWidget`, `DiagnosticReadoutCard`, `BlueprintCaptureForm`, `SecondaryFitCallButton`
+- Backend API: `POST /api/v1/capture-blueprint`, `GET /api/v1/blueprint-captures`
+
+**Note**: Email sending is currently a placeholder. When ready to set up, use Resend integration (connector:ccfg_resend_01K69QKYK789WN202XSE3QS17V) and update `server/routes.ts` to actually send emails using the generated templates from `server/email-templates.ts`.
+
 ## External Dependencies
 - **PostgreSQL**: Primary database (Neon-backed).
 - **Drizzle ORM**: ORM for PostgreSQL.
@@ -55,3 +69,4 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 - **DOMPurify**: HTML sanitizer.
 - **React Hook Form**: Form management and validation.
 - **Zod**: Schema validation.
+- **Resend** (pending setup): Email sending service for transactional emails.

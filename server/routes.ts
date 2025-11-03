@@ -7,9 +7,11 @@ import {
   insertTestimonialSchema,
   insertJobPostingSchema,
   insertJobApplicationSchema,
-  insertLeadCaptureSchema
+  insertLeadCaptureSchema,
+  insertBlueprintCaptureSchema
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
+import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templates";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Email Capture endpoint for ROI Calculator
@@ -236,6 +238,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(captures);
     } catch (error) {
       console.error("Error fetching lead captures:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Blueprint capture endpoint for GTM Assessment
+  app.post("/api/v1/capture-blueprint", async (req, res) => {
+    try {
+      const result = insertBlueprintCaptureSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const capture = await storage.createBlueprintCapture(result.data);
+
+      // Generate email content
+      const emailHtml = getBlueprintEmailHtml({
+        email: result.data.email,
+        path: result.data.path,
+        q1: result.data.q1,
+        q2: result.data.q2 || undefined,
+      });
+      const emailSubject = getBlueprintEmailSubject({
+        email: result.data.email,
+        path: result.data.path,
+        q1: result.data.q1,
+        q2: result.data.q2 || undefined,
+      });
+
+      // TODO: Send email via Resend when integration is set up
+      // For now, we log the email content and return success
+      console.log('Blueprint email generated:', {
+        to: result.data.email,
+        subject: emailSubject,
+        captureId: capture.id,
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: "Your assessment results have been saved! Check your email for the detailed report.",
+        id: capture.id,
+      });
+    } catch (error) {
+      console.error("Error creating blueprint capture:", error);
+      return res.status(500).json({
+        error: "Internal server error",
+        message: "Failed to save your assessment results. Please try again.",
+      });
+    }
+  });
+
+  // Get all blueprint captures (for admin/analytics purposes)
+  app.get("/api/v1/blueprint-captures", async (req, res) => {
+    try {
+      const captures = await storage.getAllBlueprintCaptures();
+      return res.json(captures);
+    } catch (error) {
+      console.error("Error fetching blueprint captures:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

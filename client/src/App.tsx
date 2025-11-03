@@ -25,6 +25,12 @@ import FAQPage from "@/pages/FAQPage";
 import InternalTrapGuide from "@/pages/resources/InternalTrapGuide";
 import AgencyTrapGuide from "@/pages/resources/AgencyTrapGuide";
 import SalesAsAServiceGuide from "@/pages/resources/SalesAsAServiceGuide";
+import HireColdCallersGuide from "@/pages/HireColdCallersGuide";
+import GtmAssessmentPage from "@/pages/GtmAssessmentPage";
+import GtmResultPath1 from "@/pages/GtmResultPath1";
+import GtmResultPath2 from "@/pages/GtmResultPath2";
+import GtmResultPath3 from "@/pages/GtmResultPath3";
+import GtmResultPath4 from "@/pages/GtmResultPath4";
 import ManifestoPost from "@/pages/blog/ManifestoPost";
 import NotFound from "@/pages/not-found";
 
@@ -48,6 +54,14 @@ function Router() {
       <Route path="/resources/how-to-build-sdr-team-guide" component={InternalTrapGuide} />
       <Route path="/resources/sdr-outsourcing-companies-guide" component={AgencyTrapGuide} />
       <Route path="/resources/guide-to-sales-as-a-service" component={SalesAsAServiceGuide} />
+      <Route path="/resources/how-to-hire-cold-callers-guide" component={HireColdCallersGuide} />
+      
+      {/* GTM Assessment Tool */}
+      <Route path="/resources/gtm-assessment" component={GtmAssessmentPage} />
+      <Route path="/resources/gtm-assessment/path-1" component={GtmResultPath1} />
+      <Route path="/resources/gtm-assessment/path-2" component={GtmResultPath2} />
+      <Route path="/resources/gtm-assessment/path-3" component={GtmResultPath3} />
+      <Route path="/resources/gtm-assessment/path-4" component={GtmResultPath4} />
       
       {/* Blog Posts */}
       <Route path="/blog/manifesto-the-lone-wolf-trap" component={ManifestoPost} />
