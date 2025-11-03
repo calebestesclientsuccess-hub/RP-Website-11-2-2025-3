@@ -86,6 +86,16 @@ export const jobApplications = pgTable("job_applications", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const blueprintCaptures = pgTable("blueprint_captures", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  path: text("path").notNull(),
+  q1: text("q1").notNull(),
+  q2: text("q2"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  emailSent: boolean("email_sent").default(false).notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -127,6 +137,16 @@ export const insertLeadCaptureSchema = createInsertSchema(leadCaptures)
     company: z.string().optional(),
   });
 
+export const insertBlueprintCaptureSchema = createInsertSchema(blueprintCaptures)
+  .omit({
+    id: true,
+    createdAt: true,
+    emailSent: true,
+  })
+  .extend({
+    email: z.string().email("Please enter a valid email address"),
+  });
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type EmailCapture = typeof emailCaptures.$inferSelect;
@@ -141,3 +161,5 @@ export type JobApplication = typeof jobApplications.$inferSelect;
 export type InsertJobApplication = z.infer<typeof insertJobApplicationSchema>;
 export type LeadCapture = typeof leadCaptures.$inferSelect;
 export type InsertLeadCapture = z.infer<typeof insertLeadCaptureSchema>;
+export type BlueprintCapture = typeof blueprintCaptures.$inferSelect;
+export type InsertBlueprintCapture = z.infer<typeof insertBlueprintCaptureSchema>;

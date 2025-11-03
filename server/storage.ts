@@ -6,7 +6,8 @@ import {
   type JobPosting, type InsertJobPosting,
   type JobApplication, type InsertJobApplication,
   type LeadCapture, type InsertLeadCapture,
-  users, emailCaptures, blogPosts, testimonials, jobPostings, jobApplications, leadCaptures
+  type BlueprintCapture, type InsertBlueprintCapture,
+  users, emailCaptures, blogPosts, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -33,6 +34,9 @@ export interface IStorage {
   
   createLeadCapture(leadCapture: InsertLeadCapture): Promise<LeadCapture>;
   getAllLeadCaptures(): Promise<LeadCapture[]>;
+  
+  createBlueprintCapture(capture: InsertBlueprintCapture): Promise<BlueprintCapture>;
+  getAllBlueprintCaptures(): Promise<BlueprintCapture[]>;
 }
 
 export class DbStorage implements IStorage {
@@ -124,6 +128,15 @@ export class DbStorage implements IStorage {
 
   async getAllLeadCaptures(): Promise<LeadCapture[]> {
     return await db.select().from(leadCaptures).orderBy(desc(leadCaptures.downloadedAt));
+  }
+
+  async createBlueprintCapture(insertCapture: InsertBlueprintCapture): Promise<BlueprintCapture> {
+    const [capture] = await db.insert(blueprintCaptures).values(insertCapture).returning();
+    return capture;
+  }
+
+  async getAllBlueprintCaptures(): Promise<BlueprintCapture[]> {
+    return await db.select().from(blueprintCaptures).orderBy(desc(blueprintCaptures.createdAt));
   }
 }
 
