@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedGradientMesh } from "@/components/AnimatedGradientMesh";
 import { HeroROICalculator } from "@/components/HeroROICalculator";
-import ScrollScaleReveal from "@/components/ScrollScaleReveal";
+import SimpleBridgeSection from "@/components/SimpleBridgeSection";
 import { OrbitalPowers } from "@/components/OrbitalPowers";
 import { AnimationErrorBoundary } from "@/components/AnimationErrorBoundary";
 import { SEO } from "@/components/SEO";
@@ -207,10 +207,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Cinematic Bridge Statement */}
-      <AnimationErrorBoundary componentName="ScrollScaleReveal">
-        <ScrollScaleReveal />
-      </AnimationErrorBoundary>
+      {/* Bridge Statement */}
+      <SimpleBridgeSection />
 
       {/* Solution Module - "The System" */}
       <section className="relative z-10 py-20 px-4 md:px-6 lg:px-8" data-testid="section-solution">
