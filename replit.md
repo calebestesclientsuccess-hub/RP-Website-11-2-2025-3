@@ -47,6 +47,26 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 
 ## Recent Changes
 
+### Vox-Style Article Layout System (November 2025)
+- **3-Column Responsive Layout**: "Cozy, app-like" reading experience inspired by Vox Media
+  - **ArticleLayout Component**: Wrapper with responsive grid (1/2/3 columns based on viewport)
+  - **FeaturedPromo Component**: Left sticky sidebar (20% width, desktop only) - promotional content with badge, title, description, and CTA
+  - **RelatedArticles Component**: Right sticky sidebar (30% tablet, 25% desktop) - 3 article cards with title, excerpt, and link
+  - **Responsive Behavior**:
+    - Desktop (≥1024px): 3-column layout (3-6-3 grid ratio: left promo + main article + right sidebar)
+    - Tablet (768-1023px): 2-column layout (8-4 grid ratio: main article + right sidebar with promo below)
+    - Mobile (<768px): 1-column stacked (article → related articles → promo)
+  - **Hardcoded Content**: Featured promo and related articles are currently hardcoded per page (future CMS enhancement planned)
+  - **Deployed on all 4 guide pages**: SDR Outsourcing, Building SDR Team, Sales as a Service, Hire Cold Callers guides
+- **ReadingProgressBar Component**: Bottom-positioned conversion widget (moved from top to avoid nav blocking)
+  - Fixed position at bottom of page (non-intrusive)
+  - Scroll-triggered engagement: Activates after 2-3 meaningful scrolls
+  - Subtle shimmer effects: Gradient transition on button text, soft glow every 30 seconds while reading
+  - Pause animations if user idle >10 seconds (respects active reading)
+  - Mobile-optimized: Simplified on mobile (no glow effects for battery efficiency)
+  - Deployed on 4 guide pages: AgencyTrapGuide, InternalTrapGuide, SalesAsAServiceGuide, HireColdCallersGuide
+  - Links to `/pipeline-assessment` for seamless conversion funnel
+
 ### Pipeline Assessment & Reading Progress Bar (November 2025)
 - **Pipeline Assessment Tool**: Netflix-style cinematic assessment at `/pipeline-assessment` with 14+ question screens
   - Database persistence: `assessment_responses` and `newsletter_signups` tables
@@ -55,13 +75,6 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
   - Admin dashboard at `/admin/assessment-dashboard` with filtering, CSV export
   - All copy uses "Revenue Blueprint" terminology (no "Architect's Audit" references)
   - Thank you page with bucket-specific messaging and newsletter signup
-- **ReadingProgressBar Component**: Graceful conversion widget on guide pages
-  - Scroll-triggered engagement: Activates after 2-3 meaningful scrolls
-  - Subtle shimmer effects: Gradient transition on button text, soft glow every 30 seconds while reading
-  - Pause animations if user idle >10 seconds (respects active reading)
-  - Mobile-optimized: Simplified on mobile (no glow effects for battery efficiency)
-  - Deployed on 4 guide pages: AgencyTrapGuide, InternalTrapGuide, SalesAsAServiceGuide, HireColdCallersGuide
-  - Links to `/pipeline-assessment` for seamless conversion funnel
 
 ### GTM Assessment Tool (November 2025)
 - Added new GTM Assessment tool at `/resources/gtm-assessment` with decision-tree logic (2 questions)
