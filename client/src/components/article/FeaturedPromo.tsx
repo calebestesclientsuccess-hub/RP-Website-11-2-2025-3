@@ -29,9 +29,9 @@ export function FeaturedPromo({ promo }: FeaturedPromoProps) {
 
   return (
     <aside className="sticky top-6">
-      <Card className="overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-background to-muted/30" data-testid="card-featured-promo">
+      <div className="overflow-hidden border border-border/50 bg-muted/20 rounded-lg p-5" data-testid="card-featured-promo">
         {promo.imageUrl && (
-          <div className="aspect-[4/3] overflow-hidden bg-muted">
+          <div className="aspect-[16/10] overflow-hidden bg-muted rounded-md mb-4">
             <img
               src={promo.imageUrl}
               alt={promo.title}
@@ -41,30 +41,31 @@ export function FeaturedPromo({ promo }: FeaturedPromoProps) {
           </div>
         )}
         
-        <div className="p-6">
+        <div>
           {promo.badge && (
-            <Badge variant="default" className="mb-4">
+            <Badge variant="outline" className="mb-3 text-xs">
               {promo.badge}
             </Badge>
           )}
           
           {!promo.imageUrl && (
-            <div className="mb-4">
-              <Icon className="w-10 h-10 text-primary mb-3" />
+            <div className="mb-3">
+              <Icon className="w-8 h-8 text-muted-foreground mb-2" />
             </div>
           )}
 
-          <h3 className="text-xl font-bold mb-3 leading-tight">
+          <h3 className="text-base font-bold mb-2 leading-snug">
             {promo.title}
           </h3>
 
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
             {promo.description}
           </p>
 
           <Button 
             asChild 
-            variant="default" 
+            variant="outline" 
+            size="sm"
             className="w-full"
             data-testid="button-featured-cta"
           >
@@ -73,7 +74,7 @@ export function FeaturedPromo({ promo }: FeaturedPromoProps) {
             </a>
           </Button>
         </div>
-      </Card>
+      </div>
     </aside>
   );
 }

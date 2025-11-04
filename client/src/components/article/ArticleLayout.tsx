@@ -25,17 +25,17 @@ export function ArticleLayout({ children, relatedArticles, featuredPromo, heroIm
         </div>
       )}
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-8">
+      <div className="container mx-auto px-4 py-8 lg:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-6 lg:gap-12">
           {/* Featured Promo - Left Sidebar (hidden on mobile/tablet, shows on desktop) */}
-          <div className="hidden lg:block lg:col-span-3">
+          <div className="hidden lg:block lg:col-span-2">
             <div className="sticky top-6">
               <FeaturedPromo promo={featuredPromo} />
             </div>
           </div>
 
-          {/* Main Article Content (full width mobile, 8 cols tablet, 6 cols desktop) */}
-          <article className="md:col-span-8 lg:col-span-6">
+          {/* Main Article Content - Wider for better reading (full width mobile, 8 cols tablet, 7 cols desktop = 58%) */}
+          <article className="md:col-span-8 lg:col-span-7 max-w-none prose prose-lg dark:prose-invert prose-headings:font-bold prose-p:leading-relaxed prose-li:leading-relaxed">
             {children}
           </article>
 

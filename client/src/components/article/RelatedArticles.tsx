@@ -15,17 +15,17 @@ interface RelatedArticlesProps {
 
 export function RelatedArticles({ articles }: RelatedArticlesProps) {
   return (
-    <aside className="space-y-4">
-      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+    <aside className="space-y-6">
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
         Related Reading
       </h3>
       
-      <div className="space-y-3">
+      <div className="space-y-5">
         {articles.map((article, index) => (
           <Link key={index} href={article.path}>
-            <Card className="overflow-hidden hover-elevate active-elevate-2 cursor-pointer group" data-testid={`card-related-article-${index}`}>
+            <div className="overflow-hidden hover-elevate active-elevate-2 cursor-pointer group border-b border-border pb-5 last:border-0" data-testid={`card-related-article-${index}`}>
               {article.imageUrl && (
-                <div className="aspect-[16/9] overflow-hidden bg-muted">
+                <div className="aspect-[21/9] overflow-hidden bg-muted rounded-md mb-3">
                   <img
                     src={article.imageUrl}
                     alt={article.title}
@@ -34,19 +34,19 @@ export function RelatedArticles({ articles }: RelatedArticlesProps) {
                   />
                 </div>
               )}
-              <div className="p-4">
-                <h4 className="font-semibold text-sm mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+              <div>
+                <h4 className="font-semibold text-sm mb-1.5 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
                   {article.title}
                 </h4>
-                <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
+                <p className="text-xs text-muted-foreground line-clamp-2 mb-2 leading-relaxed">
                   {article.excerpt}
                 </p>
-                <div className="flex items-center gap-1 text-xs text-primary">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground group-hover:text-primary transition-colors">
                   <span>Read more</span>
                   <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </div>
-            </Card>
+            </div>
           </Link>
         ))}
       </div>
