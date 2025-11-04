@@ -15,6 +15,13 @@
       "when": 1762253339622,
       "tag": "0001_flowery_ozymandias",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762297696286,
+      "tag": "0002_neat_malcolm_colcord",
+      "breakpoints": true
     }
   ]
 }
