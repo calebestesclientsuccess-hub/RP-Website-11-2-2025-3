@@ -16,17 +16,20 @@ const relatedArticles: RelatedArticle[] = [
   {
     title: "A 2025 Buyer's Guide to SDR Outsourcing",
     excerpt: "Looking for SDR outsourcing companies? Read this buyer's guide first. We expose the 3 'Black Box' traps to avoid.",
-    path: "/resources/sdr-outsourcing-companies-guide"
+    path: "/resources/sdr-outsourcing-companies-guide",
+    imageUrl: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=450&fit=crop"
   },
   {
     title: "The Complete Guide to Building an SDR Team",
     excerpt: "Avoid the $198,000 'Lone Wolf' mistake with this complete guide to building a GTM architecture that actually works.",
-    path: "/resources/how-to-build-sdr-team-guide"
+    path: "/resources/how-to-build-sdr-team-guide",
+    imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=450&fit=crop"
   },
   {
     title: "How to Hire Cold Callers (2026 Guide)",
     excerpt: "Discover the three proven paths to building a successful cold calling team in 2026 and which approach fits your value proposition.",
-    path: "/resources/how-to-hire-cold-callers-guide"
+    path: "/resources/how-to-hire-cold-callers-guide",
+    imageUrl: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800&h=450&fit=crop"
   }
 ];
 
@@ -36,7 +39,8 @@ const featuredPromo: FeaturedPromoData = {
   title: "The GTM Architecture Blueprint",
   description: "Join us for a live walkthrough of how the GTM Engine deploys in 14 days and delivers pipeline 10x faster than traditional models.",
   ctaText: "Register Now",
-  ctaUrl: "/pipeline-assessment"
+  ctaUrl: "/pipeline-assessment",
+  imageUrl: "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=600&h=450&fit=crop"
 };
 
 export default function SalesAsAServiceGuide() {
@@ -57,7 +61,12 @@ export default function SalesAsAServiceGuide() {
         dateModified="2025-01-15"
       />
       
-      <ArticleLayout relatedArticles={relatedArticles} featuredPromo={featuredPromo}>
+      <ArticleLayout 
+        relatedArticles={relatedArticles} 
+        featuredPromo={featuredPromo}
+        heroImageUrl="https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1600&h=600&fit=crop"
+        heroImageAlt="Modern sales architecture and GTM systems"
+      >
         <PillarHero
           badgeText="Definitive Guide"
           title="The Definitive Guide to Sales as a Service"

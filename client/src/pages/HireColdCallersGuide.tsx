@@ -9,17 +9,20 @@ const relatedArticles: RelatedArticle[] = [
   {
     title: "A 2025 Buyer's Guide to SDR Outsourcing",
     excerpt: "Looking for SDR outsourcing companies? Read this buyer's guide first. We expose the 3 'Black Box' traps to avoid.",
-    path: "/resources/sdr-outsourcing-companies-guide"
+    path: "/resources/sdr-outsourcing-companies-guide",
+    imageUrl: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=450&fit=crop"
   },
   {
     title: "The Complete Guide to Building an SDR Team",
     excerpt: "Avoid the $198,000 'Lone Wolf' mistake with this complete guide to building a GTM architecture that actually works.",
-    path: "/resources/how-to-build-sdr-team-guide"
+    path: "/resources/how-to-build-sdr-team-guide",
+    imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=450&fit=crop"
   },
   {
     title: "The Definitive Guide to Sales as a Service",
     excerpt: "Sales as a Service is not outsourcing. It's the end of the 'Lone Wolf' model and the solution to the 'Headcount vs. Architecture' problem.",
-    path: "/resources/guide-to-sales-as-a-service"
+    path: "/resources/guide-to-sales-as-a-service",
+    imageUrl: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=450&fit=crop"
   }
 ];
 
@@ -29,7 +32,8 @@ const featuredPromo: FeaturedPromoData = {
   title: "The Complete Cold Calling Playbook",
   description: "Get our complete step-by-step playbook for hiring, training, and scaling cold callers in 2026. Includes scripts, metrics, and hiring templates.",
   ctaText: "Download Playbook",
-  ctaUrl: "/pipeline-assessment"
+  ctaUrl: "/pipeline-assessment",
+  imageUrl: "https://images.unsplash.com/photo-1553484771-371a605b060b?w=600&h=450&fit=crop"
 };
 
 export default function HireColdCallersGuide() {
@@ -50,7 +54,12 @@ export default function HireColdCallersGuide() {
         <meta property="og:type" content="article" />
       </Helmet>
 
-      <ArticleLayout relatedArticles={relatedArticles} featuredPromo={featuredPromo}>
+      <ArticleLayout 
+        relatedArticles={relatedArticles} 
+        featuredPromo={featuredPromo}
+        heroImageUrl="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=1600&h=600&fit=crop"
+        heroImageAlt="Professional cold calling team in action"
+      >
         <header className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             The 2026 Guide to Hiring Cold Callers: The 3 Paths (And Which to Choose)
