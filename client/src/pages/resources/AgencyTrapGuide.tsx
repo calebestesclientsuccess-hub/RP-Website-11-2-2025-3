@@ -8,10 +8,12 @@ import { ClusterHub } from "@/components/pillar/ClusterHub";
 import { SpokeLink } from "@/components/pillar/SpokeLink";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { ReadingProgressBar } from "@/components/ReadingProgressBar";
 
 export default function AgencyTrapGuide() {
   return (
     <div className="min-h-screen">
+      <ReadingProgressBar />
       <SEO
         title="A 2025 Buyer's Guide to SDR Outsourcing (And the 3 'Traps' to Avoid)"
         description="Looking for SDR outsourcing companies? Read this 2025 buyer's guide first. We review the top 'Standard Model' agencies and expose the 3 'Black Box' traps to avoid."
