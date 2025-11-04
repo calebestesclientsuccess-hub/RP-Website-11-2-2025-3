@@ -8,6 +8,13 @@
       "when": 1762187900678,
       "tag": "0000_faulty_nico_minoru",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1762253339622,
+      "tag": "0001_flowery_ozymandias",
+      "breakpoints": true
     }
   ]
 }

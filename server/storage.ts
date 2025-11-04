@@ -20,6 +20,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  hasAnyUsers(): Promise<boolean>;
   createEmailCapture(emailCapture: InsertEmailCapture): Promise<EmailCapture>;
   getAllEmailCaptures(): Promise<EmailCapture[]>;
   
@@ -78,6 +79,11 @@ export class DbStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+
+  async hasAnyUsers(): Promise<boolean> {
+    const result = await db.select().from(users).limit(1);
+    return result.length > 0;
   }
 
   async createEmailCapture(insertEmailCapture: InsertEmailCapture): Promise<EmailCapture> {

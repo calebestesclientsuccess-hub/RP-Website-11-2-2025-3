@@ -1,8 +1,9 @@
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Search, 
   Calendar, 
@@ -21,208 +22,129 @@ import {
   ShieldAlert,
   AlertCircle,
   Cog,
-  Lightbulb
+  Lightbulb,
+  Play,
+  FileText,
+  Video,
+  Youtube,
+  Film
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import type { BlogPost, VideoPost } from "@shared/schema";
+import { format } from "date-fns";
 
-interface BlogArticle {
-  id: string;
-  title: string;
-  excerpt: string;
-  category: string;
-  readTime: string;
-  date: string;
-  featured?: boolean;
-  tags: string[];
-  slug: string;
-  contentHub?: string;
-}
+type CombinedPost = (BlogPost & { type: 'article' }) | (VideoPost & { type: 'video' });
 
 export default function BlogPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [contentType, setContentType] = useState<'all' | 'articles' | 'videos'>('all');
 
-  const categories = [
-    { name: "All", icon: BookOpen, count: 24 },
-    { name: "Hiring & Costs", icon: DollarSign, count: 6 },
-    { name: "Team Performance", icon: Users, count: 7 },
-    { name: "GTM Strategy", icon: Target, count: 8 },
-    { name: "Sales Methodology", icon: Brain, count: 3 }
-  ];
-
-  const articles: BlogArticle[] = [
-    {
-      title: "The 4 Paths to Hire a Cold Caller (And Which One Is Right for You)",
-      excerpt: "Hiring cold callers? This comprehensive guide maps all 4 paths—from Upwork freelancers to GTM Pods—and shows you which one matches your business complexity.",
-      path: "/resources/4-paths-hire-cold-caller",
-      imageUrl: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=450&fit=crop",
-      category: "Guides",
-      readTime: "15 min read"
-    },
-    {
-      title: "The Lone Wolf Trap: Why Hiring a Cold Caller is a $198,000 Mistake",
-      excerpt: "Discover why hiring a single cold caller without the right infrastructure is one of the most expensive mistakes a founder can make, and learn the architectural approach that actually works.",
-      path: "/blog/manifesto-the-lone-wolf-trap",
-      imageUrl: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&h=450&fit=crop",
-      category: "Strategy",
-      readTime: "8 min read"
-    },
-    // Featured Articles
-    {
-      id: "1",
-      title: "The $198k Mistake: The True All-In Cost of Your Next BDR Hire",
-      excerpt: "When you factor in recruiting costs, ramp time, management overhead, tech stack, and the 33% failure rate, that 'affordable' BDR hire actually costs you nearly $200k in year one. Here's the math nobody wants to show you.",
-      category: "Hiring & Costs",
-      readTime: "8 min read",
-      date: "Dec 15, 2024",
-      featured: true,
-      tags: ["BDR costs", "hiring economics", "ROI analysis"],
-      slug: "198k-mistake-true-cost-bdr-hire",
-      contentHub: "hiring-economics"
-    },
-    {
-      id: "2",
-      title: "Why Your SDR Isn't Booking Meetings (And It's Not Their Fault)",
-      excerpt: "Your SDR is smart, motivated, and works hard. Yet they're struggling to book meetings. The problem isn't talent—it's the system. Learn why individual contributor models fail at scale.",
-      category: "Team Performance",
-      readTime: "6 min read",
-      date: "Dec 12, 2024",
-      featured: true,
-      tags: ["SDR performance", "systems thinking", "pipeline generation"],
-      slug: "sdr-not-booking-meetings",
-      contentHub: "performance-optimization"
-    },
-    {
-      id: "3",
-      title: "The Signal Factory: How AI Changes the Outbound Game Forever",
-      excerpt: "Stop spraying and praying. The future of outbound is precision targeting based on private buying signals. Learn how AI-powered signal detection creates a 10x improvement in response rates.",
-      category: "GTM Strategy",
-      readTime: "10 min read",
-      date: "Dec 10, 2024",
-      featured: true,
-      tags: ["AI", "signal detection", "outbound strategy"],
-      slug: "signal-factory-ai-outbound",
-      contentHub: "ai-powered-gtm"
-    },
-    // Regular Articles
-    {
-      id: "4",
-      title: "Impact Selling: The Methodology That Creates Urgency Without Pressure",
-      excerpt: "Traditional sales methodologies create resistance. Impact Selling creates momentum by focusing on business outcomes, not features. Here's how to implement it in your organization.",
-      category: "Sales Methodology",
-      readTime: "7 min read",
-      date: "Dec 8, 2024",
-      tags: ["impact selling", "sales training", "methodology"],
-      slug: "impact-selling-methodology",
-      contentHub: "sales-methodology"
-    },
-    {
-      id: "5",
-      title: "The Management Tax: Why Managing One BDR Costs You $100k+",
-      excerpt: "Between hiring, onboarding, daily management, and performance reviews, you're spending 20+ hours per week on a single BDR. That's $100k+ of leadership time. There's a better way.",
-      category: "Hiring & Costs",
-      readTime: "5 min read",
-      date: "Dec 5, 2024",
-      tags: ["management overhead", "cost analysis", "efficiency"],
-      slug: "management-tax-bdr-costs",
-      contentHub: "hiring-economics"
-    },
-    {
-      id: "6",
-      title: "From 0 to 20 Meetings: The 30-Day GTM Playbook",
-      excerpt: "Most companies take 3-6 months to build a functioning outbound motion. We do it in 30 days. Here's the exact playbook we use to go from zero to pipeline velocity.",
-      category: "GTM Strategy",
-      readTime: "12 min read",
-      date: "Dec 3, 2024",
-      tags: ["playbook", "quick wins", "implementation"],
-      slug: "30-day-gtm-playbook",
-      contentHub: "gtm-playbooks"
-    },
-    {
-      id: "7",
-      title: "The Lone Wolf Fallacy: Why Single-Threaded Sales Teams Fail",
-      excerpt: "Betting your growth on individual heroes is a losing game. Learn why team-based selling systems outperform lone wolves by 3x, and how to make the transition.",
-      category: "Team Performance",
-      readTime: "6 min read",
-      date: "Nov 30, 2024",
-      tags: ["team structure", "scaling", "performance"],
-      slug: "lone-wolf-fallacy",
-      contentHub: "performance-optimization"
-    },
-    {
-      id: "8",
-      title: "Tech Stack Bloat: The Hidden $50k Annual Tax on Your Sales Team",
-      excerpt: "The average sales team uses 10+ tools that don't talk to each other. This fragmentation costs you $50k+ annually in licenses, integration, and lost productivity. Here's how to fix it.",
-      category: "GTM Strategy",
-      readTime: "8 min read",
-      date: "Nov 28, 2024",
-      tags: ["tech stack", "tools", "optimization"],
-      slug: "tech-stack-bloat",
-      contentHub: "sales-operations"
-    },
-    {
-      id: "9",
-      title: "The Ramp Time Myth: Why Your New BDR Won't Be Productive for 6 Months",
-      excerpt: "Industry average ramp time for a new BDR is 3-6 months. That's $75k-$100k in salary before they book their first qualified meeting. Learn how to cut this to 2 weeks.",
-      category: "Hiring & Costs",
-      readTime: "7 min read",
-      date: "Nov 25, 2024",
-      tags: ["onboarding", "ramp time", "productivity"],
-      slug: "ramp-time-myth",
-      contentHub: "hiring-economics"
-    },
-    {
-      id: "10",
-      title: "Data Enrichment at Scale: The Competitive Advantage Nobody Talks About",
-      excerpt: "Clean, enriched data is the difference between 2% and 20% response rates. Learn how to build a data enrichment engine that gives you an unfair advantage.",
-      category: "GTM Strategy",
-      readTime: "9 min read",
-      date: "Nov 22, 2024",
-      tags: ["data", "enrichment", "competitive advantage"],
-      slug: "data-enrichment-scale",
-      contentHub: "data-operations"
-    },
-    {
-      id: "11",
-      title: "The Weekly Strategy Session: How 2 Hours Can 10x Your Pipeline",
-      excerpt: "Most sales teams meet to review numbers. High-performance teams meet to optimize strategy. Learn the exact framework for weekly sessions that drive continuous improvement.",
-      category: "Team Performance",
-      readTime: "5 min read",
-      date: "Nov 20, 2024",
-      tags: ["strategy", "meetings", "optimization"],
-      slug: "weekly-strategy-session",
-      contentHub: "performance-optimization"
-    },
-    {
-      id: "12",
-      title: "Cold Calling is Dead. Long Live Warm Calling.",
-      excerpt: "Nobody answers cold calls anymore. But warm calls—powered by intent data and proper timing—have a 40% connect rate. Here's how to make the shift.",
-      category: "Sales Methodology",
-      readTime: "6 min read",
-      date: "Nov 18, 2024",
-      tags: ["calling", "outbound", "strategy"],
-      slug: "warm-calling-strategy",
-      contentHub: "sales-methodology"
-    }
-  ];
-
-  // Filter articles based on category and search
-  const filteredArticles = articles.filter(article => {
-    const matchesCategory = selectedCategory === "All" || article.category === selectedCategory;
-    const matchesSearch = searchQuery === "" || 
-      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
+  // Fetch blog posts
+  const { data: blogPosts, isLoading: blogLoading, error: blogError } = useQuery<BlogPost[]>({
+    queryKey: ['/api/blog-posts'],
   });
 
-  const featuredArticles = filteredArticles.filter(a => a.featured);
-  const regularArticles = filteredArticles.filter(a => !a.featured);
+  // Fetch video posts
+  const { data: videoPosts, isLoading: videoLoading, error: videoError } = useQuery<VideoPost[]>({
+    queryKey: ['/api/video-posts'],
+  });
+
+  // Filter and combine posts
+  const combinedPosts = useMemo(() => {
+    const now = new Date();
+    const posts: CombinedPost[] = [];
+
+    // Filter and add blog posts
+    if (blogPosts) {
+      const publishedBlogs = blogPosts.filter(post => {
+        // Check if published OR (scheduled and time has passed)
+        if (post.published) return true;
+        if (post.scheduledFor && new Date(post.scheduledFor) <= now) return true;
+        return false;
+      });
+      posts.push(...publishedBlogs.map(post => ({ ...post, type: 'article' as const })));
+    }
+
+    // Filter and add video posts
+    if (videoPosts) {
+      const publishedVideos = videoPosts.filter(post => {
+        if (post.published) return true;
+        if (post.scheduledFor && new Date(post.scheduledFor) <= now) return true;
+        return false;
+      });
+      posts.push(...publishedVideos.map(post => ({ ...post, type: 'video' as const })));
+    }
+
+    // Sort by publishedAt (most recent first)
+    return posts.sort((a, b) => 
+      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+    );
+  }, [blogPosts, videoPosts]);
+
+  // Extract dynamic categories from posts
+  const categories = useMemo(() => {
+    const categoryMap = new Map<string, number>();
+    
+    combinedPosts.forEach(post => {
+      if (post.category) {
+        categoryMap.set(post.category, (categoryMap.get(post.category) || 0) + 1);
+      }
+    });
+
+    const categoryIcons: Record<string, any> = {
+      "Hiring & Costs": DollarSign,
+      "Team Performance": Users,
+      "GTM Strategy": Target,
+      "Sales Methodology": Brain,
+      "Guides": BookOpen,
+      "Strategy": Lightbulb,
+    };
+
+    const categoryList = Array.from(categoryMap.entries()).map(([name, count]) => ({
+      name,
+      icon: categoryIcons[name] || BookOpen,
+      count,
+    }));
+
+    return [
+      { name: "All", icon: BookOpen, count: combinedPosts.length },
+      ...categoryList.sort((a, b) => b.count - a.count)
+    ];
+  }, [combinedPosts]);
+
+  // Filter posts based on category, search, and content type
+  const filteredPosts = useMemo(() => {
+    return combinedPosts.filter(post => {
+      // Content type filter
+      if (contentType === 'articles' && post.type !== 'article') return false;
+      if (contentType === 'videos' && post.type !== 'video') return false;
+
+      // Category filter
+      const matchesCategory = selectedCategory === "All" || post.category === selectedCategory;
+      
+      // Search filter
+      const matchesSearch = searchQuery === "" || 
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (post.type === 'article' && post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (post.type === 'video' && post.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      return matchesCategory && matchesSearch;
+    });
+  }, [combinedPosts, selectedCategory, searchQuery, contentType]);
+
+  // Featured posts (3 most recent)
+  const featuredPosts = useMemo(() => filteredPosts.slice(0, 3), [filteredPosts]);
+  const regularPosts = useMemo(() => filteredPosts.slice(3), [filteredPosts]);
+
+  const isLoading = blogLoading || videoLoading;
+  const error = blogError || videoError;
 
   // 5 Strategic Content Hubs - SEO Cluster Architecture
-  const contentHubs = [
+  const contentHubs = useMemo(() => [
     {
       name: "Theme 1: The Internal Hire Trap",
       subtitle: "The $198k Mistake",
@@ -230,7 +152,7 @@ export default function BlogPage() {
       targetKeyword: "hire cold callers",
       description: "The forensic deconstruction of the $198,000 Liability. Why the 'Hiring Drag,' 'Management Tax,' and 'Lone Wolf Fallacy' are costing you revenue.",
       icon: TrendingDown,
-      articleCount: articles.filter(a => a.contentHub === "hiring-economics").length
+      articleCount: combinedPosts.filter(p => p.category === "Hiring & Costs").length
     },
     {
       name: "Theme 2: The Outsourcing Trap",
@@ -239,7 +161,7 @@ export default function BlogPage() {
       targetKeyword: "b2b appointment setting services",
       description: "How to spot the 'Black Box Problem,' 'Zero-IP Trap,' and 'Activity Mirage' from commodity agencies (the 93% that fail).",
       icon: ShieldAlert,
-      articleCount: articles.filter(a => a.contentHub === "performance-optimization").length + articles.filter(a => a.contentHub === "sales-operations").length
+      articleCount: combinedPosts.filter(p => p.category === "GTM Strategy").length
     },
     {
       name: "Theme 3: The Symptom",
@@ -248,7 +170,7 @@ export default function BlogPage() {
       targetKeyword: "underperforming sales team",
       description: "How to diagnose if you have a talent problem or a system problem. This hub contains the '5 Red Flags' and diagnostics for fixing a broken, siloed pipeline.",
       icon: AlertCircle,
-      articleCount: articles.filter(a => a.category === "Team Performance").length
+      articleCount: combinedPosts.filter(p => p.category === "Team Performance").length
     },
     {
       name: "Theme 4: The Solution",
@@ -257,7 +179,7 @@ export default function BlogPage() {
       targetKeyword: "allbound",
       description: "The blueprint for the 'Fullstack' asset. How to combine the 'Pod Architecture,' 'Signal Factory,' and 'Impact Selling OS' into one 'Allbound' system.",
       icon: Cog,
-      articleCount: articles.filter(a => a.contentHub === "gtm-playbooks").length + articles.filter(a => a.contentHub === "ai-powered-gtm").length
+      articleCount: combinedPosts.filter(p => p.type === 'video').length
     },
     {
       name: "Theme 5: The Methodology",
@@ -266,9 +188,9 @@ export default function BlogPage() {
       targetKeyword: "sales agency",
       description: "The 'software' for the 'hardware.' How our 'verb-based' OS and 'Scene Partner' mindset turns reps into Operators.",
       icon: Brain,
-      articleCount: articles.filter(a => a.contentHub === "sales-methodology").length
+      articleCount: combinedPosts.filter(p => p.category === "Sales Methodology").length
     }
-  ];
+  ], [combinedPosts]);
 
   return (
     <div className="min-h-screen">
@@ -517,109 +439,335 @@ export default function BlogPage() {
         </div>
       </section>
 
-      {/* Featured Articles */}
-      {featuredArticles.length > 0 && (
+      {/* Content Type Filter */}
+      <section className="py-8 px-4 md:px-6 lg:px-8 bg-card/50 border-y">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <h2 className="text-2xl font-bold" data-testid="heading-content">
+              Latest Content
+            </h2>
+            <div className="flex gap-2">
+              <Button
+                variant={contentType === 'all' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setContentType('all')}
+                data-testid="button-filter-all"
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                All
+              </Button>
+              <Button
+                variant={contentType === 'articles' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setContentType('articles')}
+                data-testid="button-filter-articles"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Articles
+              </Button>
+              <Button
+                variant={contentType === 'videos' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setContentType('videos')}
+                data-testid="button-filter-videos"
+              >
+                <Video className="h-4 w-4 mr-2" />
+                Videos
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Loading State */}
+      {isLoading && (
         <section className="py-12 px-4 md:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            <h2 className="text-3xl font-bold mb-8" data-testid="heading-featured">
-              Featured Articles
-            </h2>
-            <div className="grid lg:grid-cols-3 gap-6">
-              {featuredArticles.map((article, index) => (
-                <motion.div
-                  key={article.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                >
-                  <Card className="h-full hover-elevate group cursor-pointer" data-testid={`card-featured-${article.id}`}>
-                    <div className="p-6 flex flex-col h-full">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Badge variant="default">Featured</Badge>
-                        <Badge variant="outline">{article.category}</Badge>
-                      </div>
-                      <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
-                        {article.title}
-                      </h3>
-                      <p className="text-muted-foreground mb-4 flex-grow">
-                        {article.excerpt}
-                      </p>
-                      <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {article.readTime}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {article.date}
-                          </span>
-                        </div>
-                        <ArrowRight className="h-4 w-4 group-hover:text-primary transition-colors" />
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} className="p-6" data-testid={`skeleton-card-${i}`}>
+                  <Skeleton className="h-6 w-3/4 mb-4" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-2/3 mb-4" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-20" />
+                  </div>
+                </Card>
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Regular Articles Grid */}
-      <section className="py-12 px-4 md:px-6 lg:px-8 bg-background">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold mb-8" data-testid="heading-all-articles">
-            All Articles
-          </h2>
-          {regularArticles.length === 0 ? (
-            <Card className="p-12 text-center">
-              <p className="text-muted-foreground">
-                No articles found matching your search criteria.
+      {/* Error State */}
+      {error && (
+        <section className="py-12 px-4 md:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <Card className="p-12 text-center border-destructive" data-testid="error-state">
+              <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-2">Failed to Load Content</h3>
+              <p className="text-muted-foreground mb-4">
+                We encountered an error while fetching blog posts and videos. Please try again later.
               </p>
+              <Button onClick={() => window.location.reload()} data-testid="button-retry">
+                Retry
+              </Button>
             </Card>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-6">
-              {regularArticles.map((article, index) => (
-                <motion.div
-                  key={article.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: Math.min(index * 0.1, 0.6) }}
-                >
-                  <Card className="hover-elevate group cursor-pointer" data-testid={`card-article-${article.id}`}>
-                    <div className="p-6">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Badge variant="outline">{article.category}</Badge>
-                        <span className="text-sm text-muted-foreground">{article.date}</span>
-                      </div>
-                      <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">
-                        {article.title}
-                      </h3>
-                      <p className="text-muted-foreground mb-4 text-sm">
-                        {article.excerpt}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-wrap gap-2">
-                          {article.tags.slice(0, 2).map(tag => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          {article.readTime}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Content Sections */}
+      {!isLoading && !error && (
+        <>
+          {/* Featured Posts (3 most recent) */}
+          {featuredPosts.length > 0 && (
+            <section className="py-12 px-4 md:px-6 lg:px-8">
+              <div className="max-w-7xl mx-auto">
+                <h2 className="text-3xl font-bold mb-8" data-testid="heading-featured">
+                  Featured Posts
+                </h2>
+                <div className="grid lg:grid-cols-3 gap-6">
+                  {featuredPosts.map((post, index) => (
+                    <motion.div
+                      key={post.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
+                    >
+                      {post.type === 'article' ? (
+                        <Link href={`/blog/${post.slug}`}>
+                          <Card className="h-full hover-elevate group cursor-pointer" data-testid={`card-featured-blog-${post.id}`}>
+                            <CardHeader className="gap-2 space-y-0 pb-3">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge variant="default">Featured</Badge>
+                                {post.category && <Badge variant="outline">{post.category}</Badge>}
+                              </div>
+                            </CardHeader>
+                            <CardContent className="flex flex-col gap-3 flex-1">
+                              {post.featuredImage && (
+                                <div className="aspect-video rounded-md overflow-hidden bg-muted">
+                                  <img 
+                                    src={post.featuredImage} 
+                                    alt={post.title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  />
+                                </div>
+                              )}
+                              <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-2">
+                                {post.title}
+                              </h3>
+                              <p className="text-muted-foreground text-sm line-clamp-3 flex-grow">
+                                {post.excerpt}
+                              </p>
+                            </CardContent>
+                            <CardFooter className="flex-col gap-3">
+                              <div className="flex items-center justify-between w-full text-sm text-muted-foreground">
+                                <span>{post.author}</span>
+                                <span>{format(new Date(post.publishedAt), 'MMM d, yyyy')}</span>
+                              </div>
+                              <Button variant="outline" className="w-full" data-testid="button-read-more">
+                                Read More <ArrowRight className="ml-2 h-4 w-4" />
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        </Link>
+                      ) : (
+                        <Card className="h-full hover-elevate group cursor-pointer" data-testid={`card-featured-video-${post.id}`}>
+                          <CardHeader className="gap-2 space-y-0 pb-3">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge variant="default">Featured</Badge>
+                              {post.category && <Badge variant="outline">{post.category}</Badge>}
+                              {post.platform && (
+                                <Badge variant="secondary" className="gap-1">
+                                  {post.platform === 'YouTube' ? <Youtube className="h-3 w-3" /> : <Film className="h-3 w-3" />}
+                                  {post.platform}
+                                </Badge>
+                              )}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="flex flex-col gap-3 flex-1">
+                            <div className="relative aspect-video rounded-md overflow-hidden bg-muted">
+                              <img 
+                                src={post.thumbnailUrl} 
+                                alt={post.title}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition-colors">
+                                <Play className="h-12 w-12 text-white" />
+                              </div>
+                              {post.duration && (
+                                <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+                                  {post.duration}
+                                </div>
+                              )}
+                            </div>
+                            <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-2">
+                              {post.title}
+                            </h3>
+                            <p className="text-muted-foreground text-sm line-clamp-3 flex-grow">
+                              {post.description}
+                            </p>
+                          </CardContent>
+                          <CardFooter className="flex-col gap-3">
+                            <div className="flex items-center justify-between w-full text-sm text-muted-foreground">
+                              <span>{post.author}</span>
+                              <span>{format(new Date(post.publishedAt), 'MMM d, yyyy')}</span>
+                            </div>
+                            <Button variant="outline" className="w-full" data-testid="button-watch-now">
+                              Watch Now <Play className="ml-2 h-4 w-4" />
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </section>
           )}
-        </div>
-      </section>
+
+          {/* Regular Posts Grid */}
+          {regularPosts.length > 0 && (
+            <section className="py-12 px-4 md:px-6 lg:px-8 bg-background">
+              <div className="max-w-7xl mx-auto">
+                <h2 className="text-3xl font-bold mb-8" data-testid="heading-all-posts">
+                  All Posts
+                </h2>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {regularPosts.map((post, index) => (
+                    <motion.div
+                      key={post.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: Math.min(index * 0.05, 0.6) }}
+                    >
+                      {post.type === 'article' ? (
+                        <Link href={`/blog/${post.slug}`}>
+                          <Card className="h-full hover-elevate group cursor-pointer" data-testid={`card-blog-${post.id}`}>
+                            <CardHeader className="gap-2 space-y-0 pb-3">
+                              {post.category && <Badge variant="outline">{post.category}</Badge>}
+                            </CardHeader>
+                            <CardContent className="flex flex-col gap-3 flex-1">
+                              {post.featuredImage && (
+                                <div className="aspect-video rounded-md overflow-hidden bg-muted">
+                                  <img 
+                                    src={post.featuredImage} 
+                                    alt={post.title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  />
+                                </div>
+                              )}
+                              <h3 className="text-lg font-bold group-hover:text-primary transition-colors line-clamp-2">
+                                {post.title}
+                              </h3>
+                              <p className="text-muted-foreground text-sm line-clamp-3 flex-grow">
+                                {post.excerpt}
+                              </p>
+                            </CardContent>
+                            <CardFooter className="flex-col gap-3">
+                              <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {format(new Date(post.publishedAt), 'MMM d')}
+                                </span>
+                                <span>{post.author}</span>
+                              </div>
+                              <Button variant="ghost" size="sm" className="w-full" data-testid="button-read-article">
+                                Read More <ArrowRight className="ml-2 h-3 w-3" />
+                              </Button>
+                            </CardFooter>
+                          </Card>
+                        </Link>
+                      ) : (
+                        <Card className="h-full hover-elevate group cursor-pointer" data-testid={`card-video-${post.id}`}>
+                          <CardHeader className="gap-2 space-y-0 pb-3">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {post.category && <Badge variant="outline">{post.category}</Badge>}
+                              {post.platform && (
+                                <Badge variant="secondary" className="gap-1">
+                                  {post.platform === 'YouTube' ? <Youtube className="h-3 w-3" /> : <Film className="h-3 w-3" />}
+                                  {post.platform}
+                                </Badge>
+                              )}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="flex flex-col gap-3 flex-1">
+                            <div className="relative aspect-video rounded-md overflow-hidden bg-muted">
+                              <img 
+                                src={post.thumbnailUrl} 
+                                alt={post.title}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition-colors">
+                                <Play className="h-10 w-10 text-white" />
+                              </div>
+                              {post.duration && (
+                                <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+                                  {post.duration}
+                                </div>
+                              )}
+                            </div>
+                            <h3 className="text-lg font-bold group-hover:text-primary transition-colors line-clamp-2">
+                              {post.title}
+                            </h3>
+                            <p className="text-muted-foreground text-sm line-clamp-3 flex-grow">
+                              {post.description}
+                            </p>
+                          </CardContent>
+                          <CardFooter className="flex-col gap-3">
+                            <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {format(new Date(post.publishedAt), 'MMM d')}
+                              </span>
+                              <span>{post.author}</span>
+                            </div>
+                            <Button variant="ghost" size="sm" className="w-full" data-testid="button-watch-video">
+                              Watch Now <Play className="ml-2 h-3 w-3" />
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Empty State */}
+          {filteredPosts.length === 0 && !isLoading && !error && (
+            <section className="py-16 px-4 md:px-6 lg:px-8">
+              <div className="max-w-7xl mx-auto">
+                <Card className="p-12 text-center" data-testid="empty-state">
+                  <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold mb-2">No Posts Found</h3>
+                  <p className="text-muted-foreground mb-6">
+                    {searchQuery || selectedCategory !== "All" || contentType !== 'all'
+                      ? "No posts match your current filters. Try adjusting your search criteria."
+                      : "No published posts available at this time. Check back soon!"}
+                  </p>
+                  {(searchQuery || selectedCategory !== "All" || contentType !== 'all') && (
+                    <Button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setSelectedCategory("All");
+                        setContentType('all');
+                      }}
+                      data-testid="button-clear-filters"
+                    >
+                      Clear Filters
+                    </Button>
+                  )}
+                </Card>
+              </div>
+            </section>
+          )}
+        </>
+      )}
 
       {/* CTA Section */}
       <section className="py-16 px-4 md:px-6 lg:px-8 bg-primary/5">

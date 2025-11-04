@@ -33,7 +33,7 @@ const menuItems = [
   },
   {
     title: "Widget Settings",
-    url: "/admin/widget",
+    url: "/admin/widget-config",
     icon: Settings,
   },
 ];

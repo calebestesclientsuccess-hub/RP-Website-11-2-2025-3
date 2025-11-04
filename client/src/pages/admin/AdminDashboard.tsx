@@ -1,13 +1,61 @@
+import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
+import { Info } from "lucide-react";
 
 export default function AdminDashboard() {
+  const [hasUsers, setHasUsers] = useState<boolean | null>(null);
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    const checkUsers = async () => {
+      try {
+        const response = await fetch("/api/auth/has-users");
+        const data = await response.json();
+        setHasUsers(data.hasUsers);
+        if (!data.hasUsers) {
+          setTimeout(() => {
+            setLocation("/admin/register");
+          }, 3000);
+        }
+      } catch (error) {
+        console.error("Error checking for users:", error);
+      }
+    };
+    checkUsers();
+  }, [setLocation]);
+
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
+
+  if (hasUsers === false) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background p-4">
+        <Alert className="max-w-md" data-testid="alert-no-users">
+          <Info className="h-4 w-4" />
+          <AlertDescription className="space-y-4">
+            <p>
+              No admin account detected. You'll be redirected to create your first admin account in a moment...
+            </p>
+            <Button 
+              className="w-full" 
+              onClick={() => setLocation("/admin/register")}
+              data-testid="button-setup-now"
+            >
+              Set Up Now
+            </Button>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <ProtectedRoute>

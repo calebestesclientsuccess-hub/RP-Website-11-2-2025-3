@@ -193,6 +193,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/auth/has-users", async (req, res) => {
+    try {
+      const hasUsers = await storage.hasAnyUsers();
+      return res.json({ hasUsers });
+    } catch (error) {
+      console.error("Error checking for users:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Email Capture endpoint for ROI Calculator
   app.post("/api/email-capture", async (req, res) => {
     try {
@@ -352,6 +362,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.put("/api/video-posts/:id", async (req, res) => {
+    try {
+      const result = insertVideoPostSchema.partial().safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      const post = await storage.updateVideoPost(req.params.id, result.data);
+      return res.json(post);
+    } catch (error) {
+      console.error("Error updating video post:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/video-posts/:id", async (req, res) => {
     try {
       const result = insertVideoPostSchema.partial().safeParse(req.body);
       if (!result.success) {

@@ -8,7 +8,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { AuthProvider } from "./hooks/use-auth";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
-import { FloatingCalculatorCTA } from "./components/FloatingCalculatorCTA";
+import { FloatingWidget } from "./components/FloatingWidget";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Home from "@/pages/Home";
 import ProblemPage from "@/pages/ProblemPage";
@@ -39,7 +39,13 @@ import AssessmentAdminDashboard from "@/pages/AssessmentAdminDashboard";
 import ManifestoPost from "@/pages/blog/ManifestoPost";
 import LoginPage from "@/pages/admin/LoginPage";
 import RegisterPage from "@/pages/admin/RegisterPage";
+import WelcomePage from "@/pages/admin/WelcomePage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import BlogPostsList from "@/pages/admin/BlogPostsList";
+import BlogPostForm from "@/pages/admin/BlogPostForm";
+import VideoPostsList from "@/pages/admin/VideoPostsList";
+import VideoPostForm from "@/pages/admin/VideoPostForm";
+import WidgetConfigPage from "@/pages/admin/WidgetConfigPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -63,8 +69,16 @@ function Router() {
       {/* Admin Routes */}
       <Route path="/admin/login" component={LoginPage} />
       <Route path="/admin/register" component={RegisterPage} />
+      <Route path="/admin/welcome" component={WelcomePage} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/assessments" component={AssessmentAdminDashboard} />
+      <Route path="/admin/blog-posts/new" component={BlogPostForm} />
+      <Route path="/admin/blog-posts/:id/edit" component={BlogPostForm} />
+      <Route path="/admin/blog-posts" component={BlogPostsList} />
+      <Route path="/admin/video-posts/new" component={VideoPostForm} />
+      <Route path="/admin/video-posts/:id/edit" component={VideoPostForm} />
+      <Route path="/admin/video-posts" component={VideoPostsList} />
+      <Route path="/admin/widget-config" component={WidgetConfigPage} />
       
       {/* Resource Pillar Pages */}
       <Route path="/resources/how-to-build-sdr-team-guide" component={InternalTrapGuide} />
@@ -117,7 +131,7 @@ function App() {
                 <Router />
               </main>
               <Footer />
-              <FloatingCalculatorCTA />
+              <FloatingWidget />
             </div>
             <Toaster />
             </TooltipProvider>

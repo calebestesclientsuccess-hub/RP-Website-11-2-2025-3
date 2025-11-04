@@ -45,6 +45,52 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 - **Database**: PostgreSQL with Drizzle ORM.
 - **Animation Strategy**: Minimal animations using GSAP only where essential (BuildAndRampTimeline). Removed complex scroll-triggered animations, performance tier detection, and decorative animations for better maintainability and performance.
 
+## Admin Dashboard Access & Setup
+
+### First-Time Setup
+When accessing the CMS admin dashboard for the first time, you'll need to create your first admin account:
+
+1. **Default Route**: Navigate to `/admin/register` to create your first admin account
+2. **Registration Process**:
+   - Enter a unique username (required)
+   - Create a password (minimum 8 characters)
+   - Confirm your password
+   - Submit to create your account
+3. **Automatic Login**: After registration, you'll be automatically logged in and redirected to a welcome page
+4. **Welcome Page**: Review CMS features and click "Go to Dashboard" to start managing content
+
+### Admin Routes
+- `/admin/register` - Create new admin account (accessible without authentication)
+- `/admin/login` - Login to existing admin account
+- `/admin/welcome` - Post-registration welcome page (shows CMS features)
+- `/admin` - Main admin dashboard (requires authentication)
+- `/admin/blog-posts` - Manage blog posts
+- `/admin/video-posts` - Manage video content
+- `/admin/widget-config` - Configure floating widget settings
+- `/admin/assessments` - View assessment responses
+
+### Authentication & Security
+- **Password Security**: All passwords are hashed using bcrypt before storage
+- **Session Management**: Express-session with PostgreSQL session store (30-day cookie lifetime)
+- **Protected Routes**: All admin pages (except login/register) require authentication
+- **First-Time Detection**: System automatically detects if no admin users exist and guides users to registration
+
+### Admin Features Available
+1. **Blog Post Management**: Create, edit, and publish blog posts with rich text editor (TipTap)
+2. **Video Post Management**: Upload and manage video content
+3. **Widget Configuration**: Toggle between Assessment and Calculator modes for the floating widget
+4. **Content Scheduling**: Set publish dates for future content releases
+5. **Assessment Dashboard**: View and analyze user assessment responses
+
+### Quick Start
+```
+1. Navigate to /admin
+2. If no users exist, you'll be redirected to /admin/register
+3. Create your admin account
+4. Review the welcome page features
+5. Start managing your content!
+```
+
 ## Recent Changes
 
 ### Vox-Style Article Layout System (November 2025)

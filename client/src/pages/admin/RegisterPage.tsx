@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Helmet } from "react-helmet-async";
+import { Info } from "lucide-react";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -48,10 +50,12 @@ export default function RegisterPage() {
     try {
       await register(username, password);
       toast({
-        title: "Success",
-        description: "Account created successfully",
+        title: "Success!",
+        description: "Welcome to your CMS Dashboard! Redirecting...",
       });
-      setLocation("/admin");
+      setTimeout(() => {
+        setLocation("/admin/welcome");
+      }, 500);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -67,14 +71,22 @@ export default function RegisterPage() {
     <>
       <Helmet>
         <title>Admin Registration | CMS</title>
+        <meta name="description" content="Create your admin account to access the CMS dashboard and manage your content." />
       </Helmet>
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-screen bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle data-testid="text-register-title">Create Admin Account</CardTitle>
-            <CardDescription>Set up your admin credentials</CardDescription>
+            <CardTitle data-testid="text-register-title">Create Your Admin Account</CardTitle>
+            <CardDescription>First-time setup for CMS administrators</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <Alert data-testid="alert-first-time-setup">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                This is a one-time setup to create your first admin account. You'll be able to manage blog posts, videos, and configure your site's widgets.
+              </AlertDescription>
+            </Alert>
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
@@ -84,6 +96,8 @@ export default function RegisterPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
+                  autoComplete="username"
+                  placeholder="Enter your username"
                   data-testid="input-username"
                 />
               </div>
@@ -96,8 +110,13 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
+                  autoComplete="new-password"
+                  placeholder="At least 8 characters"
                   data-testid="input-password"
                 />
+                <p className="text-xs text-muted-foreground" data-testid="text-password-hint">
+                  Password must be at least 8 characters long
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -108,11 +127,13 @@ export default function RegisterPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   minLength={8}
+                  autoComplete="new-password"
+                  placeholder="Re-enter your password"
                   data-testid="input-confirm-password"
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading} data-testid="button-register">
-                {isLoading ? "Creating account..." : "Create Account"}
+                {isLoading ? "Creating account..." : "Create Admin Account"}
               </Button>
             </form>
           </CardContent>
