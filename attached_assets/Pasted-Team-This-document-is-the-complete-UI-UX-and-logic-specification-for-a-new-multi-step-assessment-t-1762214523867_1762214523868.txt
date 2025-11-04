@@ -1,0 +1,25 @@
+Team,
+
+This document is the complete UI/UX and logic specification for a new multi-step assessment tool.
+
+Sales & Marketing Intent: The primary goal is lead generation. This tool acts as a "smart" lead magnet. It diagnoses a potential customer's pipeline problems and, in exchange for their email, provides a highly personalized, valuable PDF report. The business goal is to segment new leads by their intent and needs.
+
+UI & UX Principles (The "Netflix" Concept): The absolute top priority is a premium, cinematic feel. The user isn't taking a "quiz"; they are in an immersive "episode" about their business.
+
+Cinematic Dark Mode & Blur: The widget should launch as an overlay (not full-screen) with a dark, cinematic UI (e.g., a rich "Netflix" charcoal grey, not pure black). The background page it's on must be blurred (like a "bokeh" effect) to create a sense of depth and maintain focus.
+
+The "Horizontal Binge" (Key UX): This is the most important part of the feel. The entire assessment must move horizontally. When a user clicks an answer, the entire screen should slide smoothly to the left as the next question slides in from the right. This creates an addictive, forward-moving "binge" effect.
+
+Animation & Sound: Transitions must be fluid and smooth (e.g., "cubic-bezier" easing). Interactive elements (like the clickable cards) should "lift" slightly on hover. We need subtle, bass-heavy "swoosh" sounds on screen transitions. A "Mute" icon must be visible at all times.
+
+Key Functional Points:
+
+Placeholder Content: The final copy for the five (5) unique PDF reports and the "Thank You" page message is not included in this spec. Please use Lorem Ipsum as placeholder text for all generated PDF content and any other non-widget copy so the full flow can be tested.
+
+Conditional Logic: In Phase 2 (Screen 10), the questions shown to the user must change based on their answer to the previous question (Q9).
+
+Lead Capture Flow: The user's email (the primary goal) is captured in Phase 3. After the email is entered, the user is offered an optional calculator (Phase 4/5). This secures the lead even if they abandon the calculator.
+
+Backend Sorting: This is the most critical part. There is no simple "score." When the user submits, the backend logic must check their answers against the 5-6 specific "buckets" (defined at the end of the doc) and trigger the send of the corresponding PDF for that specific bucket.
+
+This document contains all screen-by-screen copy, UI elements, branching logic, and backend sorting rules needed for implementation. Please use this as your primary blueprint.
