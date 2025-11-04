@@ -82,20 +82,11 @@ export function ReadingProgressBar() {
 
   return (
     <div 
-      className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border"
       data-testid="reading-progress-bar"
     >
-      {/* Progress bar */}
-      <div className="h-1 bg-muted">
-        <div 
-          className="h-full bg-gradient-to-r from-red-600 via-rose-500 to-pink-500 transition-all duration-300 ease-out"
-          style={{ width: `${scrollProgress}%` }}
-          data-testid="progress-fill"
-        />
-      </div>
-
       {/* Content bar */}
-      <div className="container mx-auto px-4 py-2 flex items-center justify-between">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground hidden sm:inline">
             {Math.round(scrollProgress)}% Complete
@@ -123,6 +114,15 @@ export function ReadingProgressBar() {
             Take Assessment
           </span>
         </Button>
+      </div>
+
+      {/* Progress bar */}
+      <div className="h-1 bg-muted">
+        <div 
+          className="h-full bg-gradient-to-r from-red-600 via-rose-500 to-pink-500 transition-all duration-300 ease-out"
+          style={{ width: `${scrollProgress}%` }}
+          data-testid="progress-fill"
+        />
       </div>
 
       <style>{`
