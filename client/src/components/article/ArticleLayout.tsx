@@ -15,13 +15,14 @@ export function ArticleLayout({ children, relatedArticles, featuredPromo, heroIm
     <div className="min-h-screen pb-20">
       {/* Hero Image - Full Width Above Grid */}
       {heroImageUrl && (
-        <div className="w-full aspect-[21/9] md:aspect-[21/7] overflow-hidden bg-muted">
+        <div className="w-full aspect-[21/9] md:aspect-[21/7] overflow-hidden bg-muted relative">
           <img
             src={heroImageUrl}
             alt={heroImageAlt || "Article hero image"}
             className="w-full h-full object-cover"
             loading="eager"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-background/10 to-transparent pointer-events-none" />
         </div>
       )}
       
@@ -35,7 +36,16 @@ export function ArticleLayout({ children, relatedArticles, featuredPromo, heroIm
           </div>
 
           {/* Main Article Content - Wider for better reading (full width mobile, 8 cols tablet, 7 cols desktop = 58%) */}
-          <article className="md:col-span-8 lg:col-span-7 max-w-none prose prose-lg dark:prose-invert prose-headings:font-bold prose-p:leading-relaxed prose-li:leading-relaxed">
+          <article className="md:col-span-8 lg:col-span-7 max-w-none prose prose-lg dark:prose-invert 
+            prose-headings:font-bold prose-headings:tracking-tight
+            prose-h1:text-4xl prose-h1:md:text-5xl prose-h1:mb-6
+            prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6
+            prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-4
+            prose-p:leading-relaxed prose-p:mb-6
+            prose-li:leading-relaxed
+            prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:my-8
+            prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+            prose-strong:font-bold prose-strong:text-foreground">
             {children}
           </article>
 
