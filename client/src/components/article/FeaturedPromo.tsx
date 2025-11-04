@@ -10,6 +10,7 @@ export interface FeaturedPromoData {
   description: string;
   ctaText: string;
   ctaUrl: string;
+  imageUrl?: string;
 }
 
 interface FeaturedPromoProps {
@@ -28,35 +29,50 @@ export function FeaturedPromo({ promo }: FeaturedPromoProps) {
 
   return (
     <aside className="sticky top-6">
-      <Card className="p-6 border-2 border-primary/20 bg-gradient-to-br from-background to-muted/30" data-testid="card-featured-promo">
-        {promo.badge && (
-          <Badge variant="default" className="mb-4">
-            {promo.badge}
-          </Badge>
+      <Card className="overflow-hidden border-2 border-primary/20 bg-gradient-to-br from-background to-muted/30" data-testid="card-featured-promo">
+        {promo.imageUrl && (
+          <div className="aspect-[4/3] overflow-hidden bg-muted">
+            <img
+              src={promo.imageUrl}
+              alt={promo.title}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
         )}
         
-        <div className="mb-4">
-          <Icon className="w-10 h-10 text-primary mb-3" />
+        <div className="p-6">
+          {promo.badge && (
+            <Badge variant="default" className="mb-4">
+              {promo.badge}
+            </Badge>
+          )}
+          
+          {!promo.imageUrl && (
+            <div className="mb-4">
+              <Icon className="w-10 h-10 text-primary mb-3" />
+            </div>
+          )}
+
+          <h3 className="text-xl font-bold mb-3 leading-tight">
+            {promo.title}
+          </h3>
+
+          <p className="text-sm text-muted-foreground mb-6">
+            {promo.description}
+          </p>
+
+          <Button 
+            asChild 
+            variant="default" 
+            className="w-full"
+            data-testid="button-featured-cta"
+          >
+            <a href={promo.ctaUrl}>
+              {promo.ctaText}
+            </a>
+          </Button>
         </div>
-
-        <h3 className="text-xl font-bold mb-3 leading-tight">
-          {promo.title}
-        </h3>
-
-        <p className="text-sm text-muted-foreground mb-6">
-          {promo.description}
-        </p>
-
-        <Button 
-          asChild 
-          variant="default" 
-          className="w-full"
-          data-testid="button-featured-cta"
-        >
-          <a href={promo.ctaUrl}>
-            {promo.ctaText}
-          </a>
-        </Button>
       </Card>
     </aside>
   );

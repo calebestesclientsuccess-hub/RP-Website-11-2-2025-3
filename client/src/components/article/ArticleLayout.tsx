@@ -6,11 +6,25 @@ interface ArticleLayoutProps {
   children: ReactNode;
   relatedArticles: RelatedArticle[];
   featuredPromo: FeaturedPromoData;
+  heroImageUrl?: string;
+  heroImageAlt?: string;
 }
 
-export function ArticleLayout({ children, relatedArticles, featuredPromo }: ArticleLayoutProps) {
+export function ArticleLayout({ children, relatedArticles, featuredPromo, heroImageUrl, heroImageAlt }: ArticleLayoutProps) {
   return (
     <div className="min-h-screen pb-20">
+      {/* Hero Image - Full Width Above Grid */}
+      {heroImageUrl && (
+        <div className="w-full aspect-[21/9] md:aspect-[21/7] overflow-hidden bg-muted">
+          <img
+            src={heroImageUrl}
+            alt={heroImageAlt || "Article hero image"}
+            className="w-full h-full object-cover"
+            loading="eager"
+          />
+        </div>
+      )}
+      
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 gap-8">
           {/* Featured Promo - Left Sidebar (hidden on mobile/tablet, shows on desktop) */}
