@@ -231,7 +231,7 @@ export default function PipelineAssessmentPage() {
       case 3:
         return (
           <QuestionScreen
-            header="Phase 2: Architect's Audit (Part A)"
+            header="Phase 2: Revenue Blueprint (Part A)"
             question="How urgently do you need to see a reliable pipeline?"
             options={[
               { value: 'i', label: 'ASAP' },
@@ -247,7 +247,7 @@ export default function PipelineAssessmentPage() {
       case 4:
         return (
           <TextInputScreen
-            header="Phase 2: Architect's Audit (Part A)"
+            header="Phase 2: Revenue Blueprint (Part A)"
             question={`What happens if you don't succeed in ${
               assessmentData.q4 === 'i' ? 'ASAP' :
               assessmentData.q4 === 'ii' ? '90 Days' :
@@ -266,7 +266,7 @@ export default function PipelineAssessmentPage() {
       case 5:
         return (
           <QuestionScreen
-            header="Phase 2: Architect's Audit (Part A)"
+            header="Phase 2: Revenue Blueprint (Part A)"
             question="Who is the ultimate owner of this pipeline problem?"
             options={[
               { value: 'i', label: 'Me (The Founder / CEO).' },
@@ -281,7 +281,7 @@ export default function PipelineAssessmentPage() {
       case 6:
         return (
           <QuestionScreen
-            header="Phase 2: Architect's Audit (Part B)"
+            header="Phase 2: Revenue Blueprint (Part B)"
             question="What kind of problem is your company aiming to solve?"
             options={[
               { value: 'i', label: 'A hiring problem. (We need to hire/train good salespeople.)' },
@@ -297,7 +297,7 @@ export default function PipelineAssessmentPage() {
       case 7:
         return (
           <QuestionScreen
-            header="Phase 2: Architect's Audit (Part B)"
+            header="Phase 2: Revenue Blueprint (Part B)"
             question="Where is that budget (or your team's effort) going now?"
             options={[
               { value: 'i', label: "Nowhere. We're trying to do this ourselves.", subtext: 'The "DIY / Founder Trap"' },
@@ -312,7 +312,7 @@ export default function PipelineAssessmentPage() {
       case 8:
         return (
           <QuestionScreen
-            header="Phase 2: Architect's Audit (Part C)"
+            header="Phase 2: Revenue Blueprint (Part C)"
             question="Where in the pipeline does the trouble FIRST start?"
             options={[
               { value: 'i', label: "No Meetings. We're not booking enough new qualified meetings." },
@@ -344,7 +344,7 @@ export default function PipelineAssessmentPage() {
       case 10:
         return (
           <QuestionScreen
-            header="Phase 2: Architect's Audit (Part D)"
+            header="Phase 2: Revenue Blueprint (Part D)"
             question="What is your realistic monthly budget for this system?"
             options={[
               { value: 'i', label: '< $8,000 / month' },
@@ -534,7 +534,7 @@ function ConditionalScreen({ assessmentData, onUpdate, onNext }: ConditionalScre
     return (
       <div className="space-y-8">
         <div>
-          <p className="text-sm font-medium text-primary mb-2">Phase 2: Architect's Audit (Part C)</p>
+          <p className="text-sm font-medium text-primary mb-2">Phase 2: Revenue Blueprint (Part C)</p>
           <h2 className="text-3xl md:text-4xl font-bold mb-8">Let's find out why...</h2>
         </div>
 
@@ -577,7 +577,7 @@ function ConditionalScreen({ assessmentData, onUpdate, onNext }: ConditionalScre
     return (
       <div className="space-y-8">
         <div>
-          <p className="text-sm font-medium text-primary mb-2">Phase 2: Architect's Audit (Part C)</p>
+          <p className="text-sm font-medium text-primary mb-2">Phase 2: Revenue Blueprint (Part C)</p>
           <h2 className="text-3xl md:text-4xl font-bold mb-8">Let's find out why...</h2>
         </div>
 
@@ -646,7 +646,7 @@ function ConditionalScreen({ assessmentData, onUpdate, onNext }: ConditionalScre
     return (
       <div className="space-y-8">
         <div>
-          <p className="text-sm font-medium text-primary mb-2">Phase 2: Architect's Audit (Part C)</p>
+          <p className="text-sm font-medium text-primary mb-2">Phase 2: Revenue Blueprint (Part C)</p>
           <h2 className="text-3xl md:text-4xl font-bold mb-8">Let's find out why...</h2>
         </div>
 
