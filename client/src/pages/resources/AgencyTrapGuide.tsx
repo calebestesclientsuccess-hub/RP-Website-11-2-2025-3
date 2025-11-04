@@ -17,17 +17,20 @@ const relatedArticles: RelatedArticle[] = [
   {
     title: "The Complete Guide to Building an SDR Team",
     excerpt: "Avoid the $198,000 'Lone Wolf' mistake with this complete guide to building a GTM architecture that actually works.",
-    path: "/resources/how-to-build-sdr-team-guide"
+    path: "/resources/how-to-build-sdr-team-guide",
+    imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=450&fit=crop"
   },
   {
     title: "The Definitive Guide to Sales as a Service",
     excerpt: "Sales as a Service is not outsourcing. It's the end of the 'Lone Wolf' model and the solution to the 'Headcount vs. Architecture' problem.",
-    path: "/resources/guide-to-sales-as-a-service"
+    path: "/resources/guide-to-sales-as-a-service",
+    imageUrl: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=450&fit=crop"
   },
   {
     title: "How to Hire Cold Callers (2026 Guide)",
     excerpt: "Discover the three proven paths to building a successful cold calling team in 2026 and which approach fits your value proposition.",
-    path: "/resources/how-to-hire-cold-callers-guide"
+    path: "/resources/how-to-hire-cold-callers-guide",
+    imageUrl: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=800&h=450&fit=crop"
   }
 ];
 
@@ -37,7 +40,8 @@ const featuredPromo: FeaturedPromoData = {
   title: "Get Your Revenue Blueprint",
   description: "Take our 5-minute assessment to discover which GTM architecture fits your current stage and unlock your personalized revenue blueprint.",
   ctaText: "Start Assessment",
-  ctaUrl: "/pipeline-assessment"
+  ctaUrl: "/pipeline-assessment",
+  imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=450&fit=crop"
 };
 
 export default function AgencyTrapGuide() {
@@ -58,7 +62,12 @@ export default function AgencyTrapGuide() {
         dateModified="2025-01-15"
       />
 
-      <ArticleLayout relatedArticles={relatedArticles} featuredPromo={featuredPromo}>
+      <ArticleLayout 
+        relatedArticles={relatedArticles} 
+        featuredPromo={featuredPromo}
+        heroImageUrl="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&h=600&fit=crop"
+        heroImageAlt="Team collaboration in modern office"
+      >
         <PillarHero
         badgeText="Buyer's Guide 2025"
         title="A 2025 Buyer's Guide to SDR Outsourcing (And the 3 'Traps' to Avoid)"
