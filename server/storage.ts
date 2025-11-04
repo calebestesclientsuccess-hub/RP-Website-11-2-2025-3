@@ -7,10 +7,12 @@ import {
   type JobApplication, type InsertJobApplication,
   type LeadCapture, type InsertLeadCapture,
   type BlueprintCapture, type InsertBlueprintCapture,
-  users, emailCaptures, blogPosts, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures
+  type AssessmentResponse, type InsertAssessmentResponse,
+  type NewsletterSignup, type InsertNewsletterSignup,
+  users, emailCaptures, blogPosts, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, or, like } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -37,6 +39,14 @@ export interface IStorage {
   
   createBlueprintCapture(capture: InsertBlueprintCapture): Promise<BlueprintCapture>;
   getAllBlueprintCaptures(): Promise<BlueprintCapture[]>;
+  
+  getAssessmentBySessionId(sessionId: string): Promise<AssessmentResponse | undefined>;
+  createAssessment(assessment: InsertAssessmentResponse): Promise<AssessmentResponse>;
+  updateAssessment(sessionId: string, data: Partial<InsertAssessmentResponse>): Promise<AssessmentResponse>;
+  getAllAssessments(filters?: { bucket?: string; startDate?: Date; endDate?: Date; search?: string }): Promise<AssessmentResponse[]>;
+  
+  createNewsletterSignup(signup: InsertNewsletterSignup): Promise<NewsletterSignup>;
+  getAllNewsletterSignups(): Promise<NewsletterSignup[]>;
 }
 
 export class DbStorage implements IStorage {
@@ -137,6 +147,62 @@ export class DbStorage implements IStorage {
 
   async getAllBlueprintCaptures(): Promise<BlueprintCapture[]> {
     return await db.select().from(blueprintCaptures).orderBy(desc(blueprintCaptures.createdAt));
+  }
+
+  async getAssessmentBySessionId(sessionId: string): Promise<AssessmentResponse | undefined> {
+    const [assessment] = await db.select().from(assessmentResponses).where(eq(assessmentResponses.sessionId, sessionId));
+    return assessment;
+  }
+
+  async createAssessment(insertAssessment: InsertAssessmentResponse): Promise<AssessmentResponse> {
+    const [assessment] = await db.insert(assessmentResponses).values(insertAssessment).returning();
+    return assessment;
+  }
+
+  async updateAssessment(sessionId: string, data: Partial<InsertAssessmentResponse>): Promise<AssessmentResponse> {
+    const [assessment] = await db
+      .update(assessmentResponses)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(assessmentResponses.sessionId, sessionId))
+      .returning();
+    return assessment;
+  }
+
+  async getAllAssessments(filters?: { bucket?: string; startDate?: Date; endDate?: Date; search?: string }): Promise<AssessmentResponse[]> {
+    let query = db.select().from(assessmentResponses);
+
+    const conditions = [];
+    
+    if (filters?.bucket) {
+      conditions.push(eq(assessmentResponses.bucket, filters.bucket));
+    }
+    
+    if (filters?.startDate) {
+      conditions.push(eq(assessmentResponses.createdAt, filters.startDate));
+    }
+    
+    if (filters?.endDate) {
+      conditions.push(eq(assessmentResponses.createdAt, filters.endDate));
+    }
+    
+    if (filters?.search) {
+      conditions.push(like(assessmentResponses.q20, `%${filters.search}%`));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    return await query.orderBy(desc(assessmentResponses.createdAt));
+  }
+
+  async createNewsletterSignup(insertSignup: InsertNewsletterSignup): Promise<NewsletterSignup> {
+    const [signup] = await db.insert(newsletterSignups).values(insertSignup).returning();
+    return signup;
+  }
+
+  async getAllNewsletterSignups(): Promise<NewsletterSignup[]> {
+    return await db.select().from(newsletterSignups).orderBy(desc(newsletterSignups.createdAt));
   }
 }
 

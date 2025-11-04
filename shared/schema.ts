@@ -96,6 +96,50 @@ export const blueprintCaptures = pgTable("blueprint_captures", {
   emailSent: boolean("email_sent").default(false).notNull(),
 });
 
+export const assessmentResponses = pgTable("assessment_responses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().unique(),
+  
+  q1: text("q1"),
+  q2: text("q2"),
+  q3: text("q3"),
+  q4: text("q4"),
+  q5: text("q5"),
+  q6: text("q6"),
+  q7: text("q7"),
+  q8: text("q8"),
+  q9: text("q9"),
+  q10a1: text("q10a1"),
+  q10a2: text("q10a2"),
+  q10b1: text("q10b1"),
+  q10b2: text("q10b2"),
+  q10c1: text("q10c1"),
+  q10c2: text("q10c2"),
+  q11: text("q11"),
+  q13: text("q13"),
+  q14: text("q14"),
+  q15: text("q15"),
+  q16: text("q16"),
+  q17: text("q17"),
+  q18: text("q18"),
+  q19: text("q19"),
+  q20: text("q20"),
+  
+  bucket: text("bucket"),
+  completed: boolean("completed").default(false).notNull(),
+  usedCalculator: boolean("used_calculator").default(false).notNull(),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const newsletterSignups = pgTable("newsletter_signups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  source: text("source").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -147,6 +191,22 @@ export const insertBlueprintCaptureSchema = createInsertSchema(blueprintCaptures
     email: z.string().email("Please enter a valid email address"),
   });
 
+export const insertAssessmentResponseSchema = createInsertSchema(assessmentResponses)
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+  });
+
+export const insertNewsletterSignupSchema = createInsertSchema(newsletterSignups)
+  .omit({
+    id: true,
+    createdAt: true,
+  })
+  .extend({
+    email: z.string().email("Please enter a valid email address"),
+  });
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type EmailCapture = typeof emailCaptures.$inferSelect;
@@ -163,3 +223,7 @@ export type LeadCapture = typeof leadCaptures.$inferSelect;
 export type InsertLeadCapture = z.infer<typeof insertLeadCaptureSchema>;
 export type BlueprintCapture = typeof blueprintCaptures.$inferSelect;
 export type InsertBlueprintCapture = z.infer<typeof insertBlueprintCaptureSchema>;
+export type AssessmentResponse = typeof assessmentResponses.$inferSelect;
+export type InsertAssessmentResponse = z.infer<typeof insertAssessmentResponseSchema>;
+export type NewsletterSignup = typeof newsletterSignups.$inferSelect;
+export type InsertNewsletterSignup = z.infer<typeof insertNewsletterSignupSchema>;
