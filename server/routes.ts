@@ -8,10 +8,39 @@ import {
   insertJobPostingSchema,
   insertJobApplicationSchema,
   insertLeadCaptureSchema,
-  insertBlueprintCaptureSchema
+  insertBlueprintCaptureSchema,
+  insertAssessmentResponseSchema,
+  insertNewsletterSignupSchema,
+  type InsertAssessmentResponse
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templates";
+
+function calculateBucket(data: Partial<InsertAssessmentResponse>): string {
+  const { q1, q2, q3, q11 } = data;
+  
+  if (q3 === 'a') {
+    return 'person-trap';
+  }
+  
+  if (q1 === 'b' && q2 === 'b' && q3 === 'e' && q11 === 'ii') {
+    return 'hot-mql-architect';
+  }
+  
+  if (q1 === 'b' && q2 === 'b' && q3 === 'e' && q11 === 'i') {
+    return 'architecture-gap';
+  }
+  
+  if (q1 === 'a' && q2 === 'a') {
+    return 'agency';
+  }
+  
+  if (q1 === 'b' && q2 === 'a') {
+    return 'freelancer';
+  }
+  
+  return 'architecture-gap';
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Email Capture endpoint for ROI Calculator
@@ -300,6 +329,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(captures);
     } catch (error) {
       console.error("Error fetching blueprint captures:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Assessment endpoints
+  app.post("/api/assessments/init", async (req, res) => {
+    try {
+      const { sessionId } = req.body;
+      
+      if (!sessionId) {
+        return res.status(400).json({ error: "Session ID is required" });
+      }
+
+      const existing = await storage.getAssessmentBySessionId(sessionId);
+      
+      if (existing) {
+        return res.json(existing);
+      }
+
+      const assessment = await storage.createAssessment({
+        sessionId,
+        completed: false,
+        usedCalculator: false,
+      });
+
+      return res.status(201).json(assessment);
+    } catch (error) {
+      console.error("Error initializing assessment:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/assessments/:sessionId", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const updates = req.body;
+
+      const assessment = await storage.updateAssessment(sessionId, updates);
+      
+      return res.json(assessment);
+    } catch (error) {
+      console.error("Error updating assessment:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/assessments/:sessionId/submit", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const data = req.body;
+
+      const bucket = calculateBucket(data);
+
+      const assessment = await storage.updateAssessment(sessionId, {
+        ...data,
+        bucket,
+        completed: true,
+      });
+
+      return res.json({
+        success: true,
+        bucket,
+        assessment,
+      });
+    } catch (error) {
+      console.error("Error submitting assessment:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/assessments", async (req, res) => {
+    try {
+      const { bucket, startDate, endDate, search } = req.query;
+      
+      const filters = {
+        bucket: bucket as string | undefined,
+        startDate: startDate ? new Date(startDate as string) : undefined,
+        endDate: endDate ? new Date(endDate as string) : undefined,
+        search: search as string | undefined,
+      };
+
+      const assessments = await storage.getAllAssessments(filters);
+      
+      return res.json(assessments);
+    } catch (error) {
+      console.error("Error fetching assessments:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/newsletter-signups", async (req, res) => {
+    try {
+      const result = insertNewsletterSignupSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const signup = await storage.createNewsletterSignup(result.data);
+
+      return res.status(201).json({
+        success: true,
+        id: signup.id,
+      });
+    } catch (error) {
+      console.error("Error creating newsletter signup:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/newsletter-signups", async (req, res) => {
+    try {
+      const signups = await storage.getAllNewsletterSignups();
+      return res.json(signups);
+    } catch (error) {
+      console.error("Error fetching newsletter signups:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });
