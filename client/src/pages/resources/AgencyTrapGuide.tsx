@@ -9,10 +9,40 @@ import { SpokeLink } from "@/components/pillar/SpokeLink";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ReadingProgressBar } from "@/components/ReadingProgressBar";
+import { ArticleLayout } from "@/components/article/ArticleLayout";
+import type { RelatedArticle } from "@/components/article/RelatedArticles";
+import type { FeaturedPromoData } from "@/components/article/FeaturedPromo";
+
+const relatedArticles: RelatedArticle[] = [
+  {
+    title: "The Complete Guide to Building an SDR Team",
+    excerpt: "Avoid the $198,000 'Lone Wolf' mistake with this complete guide to building a GTM architecture that actually works.",
+    path: "/resources/how-to-build-sdr-team-guide"
+  },
+  {
+    title: "The Definitive Guide to Sales as a Service",
+    excerpt: "Sales as a Service is not outsourcing. It's the end of the 'Lone Wolf' model and the solution to the 'Headcount vs. Architecture' problem.",
+    path: "/resources/guide-to-sales-as-a-service"
+  },
+  {
+    title: "How to Hire Cold Callers (2026 Guide)",
+    excerpt: "Discover the three proven paths to building a successful cold calling team in 2026 and which approach fits your value proposition.",
+    path: "/resources/how-to-hire-cold-callers-guide"
+  }
+];
+
+const featuredPromo: FeaturedPromoData = {
+  type: "assessment",
+  badge: "Free Assessment",
+  title: "Get Your Revenue Blueprint",
+  description: "Take our 5-minute assessment to discover which GTM architecture fits your current stage and unlock your personalized revenue blueprint.",
+  ctaText: "Start Assessment",
+  ctaUrl: "/pipeline-assessment"
+};
 
 export default function AgencyTrapGuide() {
   return (
-    <div className="min-h-screen">
+    <>
       <ReadingProgressBar />
       <SEO
         title="A 2025 Buyer's Guide to SDR Outsourcing (And the 3 'Traps' to Avoid)"
@@ -27,8 +57,9 @@ export default function AgencyTrapGuide() {
         datePublished="2025-01-15"
         dateModified="2025-01-15"
       />
-      
-      <PillarHero
+
+      <ArticleLayout relatedArticles={relatedArticles} featuredPromo={featuredPromo}>
+        <PillarHero
         badgeText="Buyer's Guide 2025"
         title="A 2025 Buyer's Guide to SDR Outsourcing (And the 3 'Traps' to Avoid)"
         subtitle="Choosing an outsourced SDR partner is a high-stakes decision. We've reviewed the top companies and the 'Standard Model' they use, exposing the three hidden traps you must ask about before you sign a contract."
@@ -187,32 +218,33 @@ export default function AgencyTrapGuide() {
         }}
       />
       
-      <ClusterHub
-        heading="Explore the 'Agency Trap' Cluster"
-        description="Go deeper into the analysis of the 'Standard Model.'"
-        links={[
-          {
-            href: "/blog/black-box-questions",
-            title: "3 'Black Box' Questions You Must Ask a B2B Appointment Setting Service"
-          },
-          {
-            href: "/blog/activity-vs-progress",
-            title: "'Activity' vs. 'Progress': 5 SDR Vanity Metrics to Ignore"
-          },
-          {
-            href: "/blog/sales-ip",
-            title: "What is 'Sales IP' and Why Don't Most Outsourced SDR Agencies Let You Keep It?"
-          },
-          {
-            href: "/blog/fire-sales-agency",
-            title: "What Happens When You Fire a Sales Agency? (The 'Zero-IP' Exit)"
-          },
-          {
-            href: "/blog/belkins-vs-cience",
-            title: "Belkins vs. CIENCE vs. Revenue Party: A 2025 Comparison"
-          }
-        ]}
-      />
-    </div>
+        <ClusterHub
+          heading="Explore the 'Agency Trap' Cluster"
+          description="Go deeper into the analysis of the 'Standard Model.'"
+          links={[
+            {
+              href: "/blog/black-box-questions",
+              title: "3 'Black Box' Questions You Must Ask a B2B Appointment Setting Service"
+            },
+            {
+              href: "/blog/activity-vs-progress",
+              title: "'Activity' vs. 'Progress': 5 SDR Vanity Metrics to Ignore"
+            },
+            {
+              href: "/blog/sales-ip",
+              title: "What is 'Sales IP' and Why Don't Most Outsourced SDR Agencies Let You Keep It?"
+            },
+            {
+              href: "/blog/fire-sales-agency",
+              title: "What Happens When You Fire a Sales Agency? (The 'Zero-IP' Exit)"
+            },
+            {
+              href: "/blog/belkins-vs-cience",
+              title: "Belkins vs. CIENCE vs. Revenue Party: A 2025 Comparison"
+            }
+          ]}
+        />
+      </ArticleLayout>
+    </>
   );
 }
