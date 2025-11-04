@@ -189,8 +189,8 @@ export default function PipelineAssessmentPage() {
             header="Phase 1: Core Philosophy"
             question="When it comes to your pipeline, what is your core philosophy?"
             options={[
-              { value: 'a', label: 'I want to RENT a managed service.', subtext: 'I want to outsource this problem. I need a vendor to handle it.' },
-              { value: 'b', label: 'I want to OWN the asset/capability.', subtext: 'I want to build an internal capability, whether I hire or partner.' },
+              { value: 'a', label: 'I want to RENT a managed service.', subtext: 'I need to hire a person or vendor to do a task.' },
+              { value: 'b', label: 'I want to OWN the asset/capability.', subtext: 'I need to build a permanent system that generates revenue.' },
             ]}
             onSelect={(value) => handleAnswer('q1', value)}
             selected={assessmentData.q1}
@@ -217,11 +217,11 @@ export default function PipelineAssessmentPage() {
             header="Phase 1: Core Philosophy"
             question="When building a new revenue function, what do you believe is the most critical piece to get right first?"
             options={[
-              { value: 'a', label: "The Person (e.g., a 'star' cold caller)" },
+              { value: 'a', label: "The Person (e.g., a 'star' cold caller)", subtext: '(The "Lone Wolf" Hire)' },
               { value: 'b', label: 'Pricing' },
               { value: 'c', label: 'Technology' },
               { value: 'd', label: 'Brand' },
-              { value: 'e', label: 'The System (The GTM Engine)' },
+              { value: 'e', label: 'The System (The GTM Engine)', subtext: '(The Playbook, Tech, & Process)' },
             ]}
             onSelect={(value) => handleAnswer('q3', value)}
             selected={assessmentData.q3}
@@ -711,10 +711,7 @@ function EmailCaptureScreen({ assessmentData, onUpdate, onNext }: EmailCaptureSc
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl md:text-4xl font-bold mb-4">Your Architect's Blueprint is ready.</h2>
-        <p className="text-lg text-muted-foreground">
-          We'll send you a personalized 'Pipeline Diagnosis & Reframe' PDF based on your responses.
-        </p>
+        <h2 className="text-3xl md:text-4xl font-bold mb-4">Your Revenue Blueprint is ready.</h2>
       </div>
 
       <div className="space-y-6">
@@ -733,7 +730,7 @@ function EmailCaptureScreen({ assessmentData, onUpdate, onNext }: EmailCaptureSc
 
         <div>
           <label className="block text-sm font-medium mb-2">
-            Where should we send your full, personalized 'Pipeline Diagnosis & Reframe' PDF? *
+            Where should we send your GTM Architecture Blueprint? *
           </label>
           <Input
             type="email"
@@ -768,11 +765,22 @@ function BranchingScreen({ onChoice }: BranchingScreenProps) {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl md:text-4xl font-bold mb-4">One Last Question...</h2>
-        <p className="text-xl text-muted-foreground">How much should I pay per meeting?</p>
+        <h2 className="text-3xl md:text-4xl font-bold mb-4">Your Blueprint is Ready.</h2>
+        <p className="text-xl text-muted-foreground">
+          Before we send your diagnosis, do you want to add a full financial ROI projection comparing your current model to a Revenue Engine?
+        </p>
       </div>
 
       <div className="flex flex-col gap-4 max-w-md mx-auto">
+        <Button
+          onClick={() => onChoice(false)}
+          size="lg"
+          className="w-full text-lg py-8"
+          data-testid="button-get-results"
+        >
+          Get My Blueprint Now
+        </Button>
+
         <Button
           onClick={() => onChoice(true)}
           size="lg"
@@ -780,16 +788,7 @@ function BranchingScreen({ onChoice }: BranchingScreenProps) {
           className="w-full text-lg py-6"
           data-testid="button-calculate"
         >
-          Calculate
-        </Button>
-
-        <Button
-          onClick={() => onChoice(false)}
-          size="lg"
-          className="w-full text-lg py-8"
-          data-testid="button-get-results"
-        >
-          Get My Results
+          Yes, Add the Full ROI Breakdown
         </Button>
       </div>
     </div>

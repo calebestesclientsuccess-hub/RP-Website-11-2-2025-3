@@ -100,8 +100,7 @@ export default function PipelineAssessmentThankYou() {
               Thank You!
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Your personalized 'Pipeline Diagnosis & Reframe' PDF is being generated. 
-              It will arrive in your inbox in the next 5-10 minutes.
+              Your personalized GTM Architecture Blueprint is being generated. It will arrive in your inbox in the next 5-10 minutes.
             </p>
           </div>
 
