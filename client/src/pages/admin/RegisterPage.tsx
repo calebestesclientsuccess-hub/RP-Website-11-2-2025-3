@@ -12,6 +12,7 @@ import { Info } from "lucide-react";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +49,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await register(username, password);
+      await register(username, email, password);
       toast({
         title: "Success!",
         description: "Welcome to your CMS Dashboard! Redirecting...",
@@ -100,6 +101,22 @@ export default function RegisterPage() {
                   placeholder="Enter your username"
                   data-testid="input-username"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  placeholder="admin@example.com"
+                  data-testid="input-email"
+                />
+                <p className="text-xs text-muted-foreground" data-testid="text-email-hint">
+                  You'll use this email for password recovery
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>

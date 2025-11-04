@@ -7,6 +7,16 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  email: text("email").notNull().unique(),
+});
+
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  token: text("token").notNull().unique(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const emailCaptures = pgTable("email_captures", {
@@ -173,6 +183,20 @@ export const newsletterSignups = pgTable("newsletter_signups", {
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  email: true,
+}).extend({
+  email: z.string().email("Please enter a valid email address"),
+});
+
+export const loginSchema = z.object({
+  username: z.string(),
+  password: z.string(),
+});
+
+export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens).omit({
+  id: true,
+  createdAt: true,
+  used: true,
 });
 
 export const insertEmailCaptureSchema = createInsertSchema(emailCaptures).omit({
@@ -250,6 +274,8 @@ export const insertNewsletterSignupSchema = createInsertSchema(newsletterSignups
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertPasswordResetToken = z.infer<typeof insertPasswordResetTokenSchema>;
 export type EmailCapture = typeof emailCaptures.$inferSelect;
 export type InsertEmailCapture = z.infer<typeof insertEmailCaptureSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;

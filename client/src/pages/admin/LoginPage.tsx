@@ -101,6 +101,13 @@ export default function LoginPage() {
                 {isLoading ? "Logging in..." : "Login"}
               </Button>
             </form>
+            <div className="mt-4 text-center">
+              <Link href="/admin/forgot-password">
+                <Button variant="ghost" className="text-sm" data-testid="link-forgot-password">
+                  Forgot your password?
+                </Button>
+              </Link>
+            </div>
           </CardContent>
           {hasUsers === false && (
             <CardFooter className="flex-col gap-2 border-t pt-4">

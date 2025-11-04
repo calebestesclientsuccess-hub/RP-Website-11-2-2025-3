@@ -1,6 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { storage } from "./storage";
 import { 
   insertEmailCaptureSchema, 
@@ -15,10 +16,13 @@ import {
   insertAssessmentResponseSchema,
   insertNewsletterSignupSchema,
   insertUserSchema,
+  loginSchema,
   type InsertAssessmentResponse
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
+import { z } from "zod";
 import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templates";
+import { getUncachableResendClient } from "./utils/resend-client";
 
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -92,12 +96,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const { username, password } = result.data;
+      const { username, email, password } = result.data;
 
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
         return res.status(400).json({ error: "Username already exists" });
+      }
+
+      // Check if email already exists
+      const existingEmail = await storage.getUserByEmail(email);
+      if (existingEmail) {
+        return res.status(400).json({ error: "Email already exists" });
       }
 
       // Hash password
@@ -106,6 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create user
       const user = await storage.createUser({
         username,
+        email,
         password: hashedPassword,
       });
 
@@ -124,7 +135,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const result = insertUserSchema.safeParse(req.body);
+      const result = loginSchema.safeParse(req.body);
       if (!result.success) {
         const validationError = fromZodError(result.error);
         return res.status(400).json({
@@ -199,6 +210,187 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({ hasUsers });
     } catch (error) {
       console.error("Error checking for users:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Password reset endpoints
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const emailSchema = z.object({
+        email: z.string().email("Invalid email address"),
+      });
+
+      const result = emailSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const { email } = result.data;
+
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+      
+      // Always return success to prevent email enumeration
+      if (!user) {
+        return res.json({
+          success: true,
+          message: "If an account exists with this email, a password reset link has been sent.",
+        });
+      }
+
+      // Generate secure random token
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+      // Store token in database
+      await storage.createPasswordResetToken({
+        token,
+        userId: user.id,
+        expiresAt,
+      });
+
+      // Get the base URL from request
+      const protocol = req.protocol;
+      const host = req.get('host');
+      const resetLink = `${protocol}://${host}/admin/reset-password/${token}`;
+
+      // Send password reset email via Resend
+      try {
+        const { client, fromEmail } = await getUncachableResendClient();
+        
+        await client.emails.send({
+          from: fromEmail,
+          to: email,
+          subject: "Reset Your Admin Password",
+          html: `
+            <html>
+              <body style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2>Password Reset Request</h2>
+                <p>You requested to reset your admin password. Click the link below to reset your password:</p>
+                <p style="margin: 30px 0;">
+                  <a href="${resetLink}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                    Reset Password
+                  </a>
+                </p>
+                <p style="color: #6B7280; font-size: 14px;">
+                  This link will expire in 1 hour.
+                </p>
+                <p style="color: #6B7280; font-size: 14px;">
+                  If you didn't request this, you can safely ignore this email.
+                </p>
+                <p style="color: #6B7280; font-size: 14px;">
+                  Or copy and paste this link: ${resetLink}
+                </p>
+              </body>
+            </html>
+          `,
+        });
+      } catch (emailError) {
+        console.error("Error sending password reset email:", emailError);
+        // Return success anyway to prevent information leakage
+        return res.json({
+          success: true,
+          message: "If an account exists with this email, a password reset link has been sent.",
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: "If an account exists with this email, a password reset link has been sent.",
+      });
+    } catch (error) {
+      console.error("Error in forgot password:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/auth/verify-reset-token/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+
+      const resetToken = await storage.getPasswordResetToken(token);
+
+      if (!resetToken) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: "Invalid reset token" 
+        });
+      }
+
+      if (resetToken.used) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: "This reset link has already been used" 
+        });
+      }
+
+      if (new Date() > new Date(resetToken.expiresAt)) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: "This reset link has expired" 
+        });
+      }
+
+      return res.json({ valid: true });
+    } catch (error) {
+      console.error("Error verifying reset token:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const resetPasswordSchema = z.object({
+        token: z.string(),
+        password: z.string().min(8, "Password must be at least 8 characters"),
+      });
+
+      const result = resetPasswordSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const { token, password } = result.data;
+
+      // Verify token
+      const resetToken = await storage.getPasswordResetToken(token);
+
+      if (!resetToken) {
+        return res.status(400).json({ error: "Invalid reset token" });
+      }
+
+      if (resetToken.used) {
+        return res.status(400).json({ error: "This reset link has already been used" });
+      }
+
+      if (new Date() > new Date(resetToken.expiresAt)) {
+        return res.status(400).json({ error: "This reset link has expired" });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Update user password
+      await storage.updateUserPassword(resetToken.userId, hashedPassword);
+
+      // Mark token as used
+      await storage.markPasswordResetTokenAsUsed(token);
+
+      return res.json({
+        success: true,
+        message: "Password has been reset successfully",
+      });
+    } catch (error) {
+      console.error("Error resetting password:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

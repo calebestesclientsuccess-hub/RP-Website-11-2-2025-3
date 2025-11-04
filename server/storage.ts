@@ -11,7 +11,8 @@ import {
   type BlueprintCapture, type InsertBlueprintCapture,
   type AssessmentResponse, type InsertAssessmentResponse,
   type NewsletterSignup, type InsertNewsletterSignup,
-  users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups
+  type PasswordResetToken, type InsertPasswordResetToken,
+  users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like } from "drizzle-orm";
@@ -19,8 +20,13 @@ import { eq, desc, and, or, like } from "drizzle-orm";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserPassword(userId: string, password: string): Promise<User>;
   hasAnyUsers(): Promise<boolean>;
+  createPasswordResetToken(token: InsertPasswordResetToken): Promise<PasswordResetToken>;
+  getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
+  markPasswordResetTokenAsUsed(token: string): Promise<void>;
   createEmailCapture(emailCapture: InsertEmailCapture): Promise<EmailCapture>;
   getAllEmailCaptures(): Promise<EmailCapture[]>;
   
@@ -76,14 +82,45 @@ export class DbStorage implements IStorage {
     return user;
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+
+  async updateUserPassword(userId: string, password: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ password })
+      .where(eq(users.id, userId))
+      .returning();
     return user;
   }
 
   async hasAnyUsers(): Promise<boolean> {
     const result = await db.select().from(users).limit(1);
     return result.length > 0;
+  }
+
+  async createPasswordResetToken(insertToken: InsertPasswordResetToken): Promise<PasswordResetToken> {
+    const [token] = await db.insert(passwordResetTokens).values(insertToken).returning();
+    return token;
+  }
+
+  async getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
+    const [resetToken] = await db.select().from(passwordResetTokens).where(eq(passwordResetTokens.token, token));
+    return resetToken;
+  }
+
+  async markPasswordResetTokenAsUsed(token: string): Promise<void> {
+    await db
+      .update(passwordResetTokens)
+      .set({ used: true })
+      .where(eq(passwordResetTokens.token, token));
   }
 
   async createEmailCapture(insertEmailCapture: InsertEmailCapture): Promise<EmailCapture> {

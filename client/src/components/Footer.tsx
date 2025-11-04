@@ -125,6 +125,11 @@ export function Footer() {
                   Contact Us / Careers
                 </Link>
               </li>
+              <li>
+                <Link href="/admin/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-admin-login">
+                  Admin Login
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

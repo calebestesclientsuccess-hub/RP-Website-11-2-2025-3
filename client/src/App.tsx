@@ -39,6 +39,8 @@ import AssessmentAdminDashboard from "@/pages/AssessmentAdminDashboard";
 import ManifestoPost from "@/pages/blog/ManifestoPost";
 import LoginPage from "@/pages/admin/LoginPage";
 import RegisterPage from "@/pages/admin/RegisterPage";
+import ForgotPasswordPage from "@/pages/admin/ForgotPasswordPage";
+import ResetPasswordPage from "@/pages/admin/ResetPasswordPage";
 import WelcomePage from "@/pages/admin/WelcomePage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import BlogPostsList from "@/pages/admin/BlogPostsList";
@@ -69,6 +71,8 @@ function Router() {
       {/* Admin Routes */}
       <Route path="/admin/login" component={LoginPage} />
       <Route path="/admin/register" component={RegisterPage} />
+      <Route path="/admin/forgot-password" component={ForgotPasswordPage} />
+      <Route path="/admin/reset-password/:token" component={ResetPasswordPage} />
       <Route path="/admin/welcome" component={WelcomePage} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/assessments" component={AssessmentAdminDashboard} />
