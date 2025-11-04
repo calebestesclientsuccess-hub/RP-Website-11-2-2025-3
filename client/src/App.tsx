@@ -5,6 +5,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "./components/ThemeProvider";
+import { AuthProvider } from "./hooks/use-auth";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { FloatingCalculatorCTA } from "./components/FloatingCalculatorCTA";
@@ -36,6 +37,9 @@ import PipelineAssessmentPage from "@/pages/PipelineAssessmentPage";
 import PipelineAssessmentThankYou from "@/pages/PipelineAssessmentThankYou";
 import AssessmentAdminDashboard from "@/pages/AssessmentAdminDashboard";
 import ManifestoPost from "@/pages/blog/ManifestoPost";
+import LoginPage from "@/pages/admin/LoginPage";
+import RegisterPage from "@/pages/admin/RegisterPage";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -55,6 +59,11 @@ function Router() {
       <Route path="/assessment" component={AssessmentPage} />
       <Route path="/pipeline-assessment" component={PipelineAssessmentPage} />
       <Route path="/pipeline-assessment/thank-you" component={PipelineAssessmentThankYou} />
+      
+      {/* Admin Routes */}
+      <Route path="/admin/login" component={LoginPage} />
+      <Route path="/admin/register" component={RegisterPage} />
+      <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/assessments" component={AssessmentAdminDashboard} />
       
       {/* Resource Pillar Pages */}
@@ -91,6 +100,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <HelmetProvider>
           <ThemeProvider defaultTheme="dark">
+            <AuthProvider>
             <TooltipProvider>
             {/* Skip to content link for accessibility */}
             <a 
@@ -111,6 +121,7 @@ function App() {
             </div>
             <Toaster />
             </TooltipProvider>
+            </AuthProvider>
           </ThemeProvider>
         </HelmetProvider>
       </QueryClientProvider>

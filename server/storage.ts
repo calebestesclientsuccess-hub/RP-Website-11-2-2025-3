@@ -2,6 +2,8 @@ import {
   type User, type InsertUser, 
   type EmailCapture, type InsertEmailCapture,
   type BlogPost, type InsertBlogPost,
+  type VideoPost, type InsertVideoPost,
+  type WidgetConfig, type InsertWidgetConfig,
   type Testimonial, type InsertTestimonial,
   type JobPosting, type InsertJobPosting,
   type JobApplication, type InsertJobApplication,
@@ -9,7 +11,7 @@ import {
   type BlueprintCapture, type InsertBlueprintCapture,
   type AssessmentResponse, type InsertAssessmentResponse,
   type NewsletterSignup, type InsertNewsletterSignup,
-  users, emailCaptures, blogPosts, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups
+  users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like } from "drizzle-orm";
@@ -23,7 +25,20 @@ export interface IStorage {
   
   getAllBlogPosts(publishedOnly?: boolean): Promise<BlogPost[]>;
   getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
+  getBlogPostById(id: string): Promise<BlogPost | undefined>;
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(id: string, post: Partial<InsertBlogPost>): Promise<BlogPost>;
+  deleteBlogPost(id: string): Promise<void>;
+  
+  getAllVideoPosts(publishedOnly?: boolean): Promise<VideoPost[]>;
+  getVideoPostBySlug(slug: string): Promise<VideoPost | undefined>;
+  getVideoPostById(id: string): Promise<VideoPost | undefined>;
+  createVideoPost(post: InsertVideoPost): Promise<VideoPost>;
+  updateVideoPost(id: string, post: Partial<InsertVideoPost>): Promise<VideoPost>;
+  deleteVideoPost(id: string): Promise<void>;
+  
+  getActiveWidgetConfig(): Promise<WidgetConfig | undefined>;
+  createOrUpdateWidgetConfig(config: InsertWidgetConfig): Promise<WidgetConfig>;
   
   getAllTestimonials(featuredOnly?: boolean): Promise<Testimonial[]>;
   createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
@@ -88,9 +103,88 @@ export class DbStorage implements IStorage {
     return post;
   }
 
+  async getBlogPostById(id: string): Promise<BlogPost | undefined> {
+    const [post] = await db.select().from(blogPosts).where(eq(blogPosts.id, id));
+    return post;
+  }
+
   async createBlogPost(insertPost: InsertBlogPost): Promise<BlogPost> {
     const [post] = await db.insert(blogPosts).values(insertPost).returning();
     return post;
+  }
+
+  async updateBlogPost(id: string, updatePost: Partial<InsertBlogPost>): Promise<BlogPost> {
+    const [post] = await db
+      .update(blogPosts)
+      .set({ ...updatePost, updatedAt: new Date() })
+      .where(eq(blogPosts.id, id))
+      .returning();
+    return post;
+  }
+
+  async deleteBlogPost(id: string): Promise<void> {
+    await db.delete(blogPosts).where(eq(blogPosts.id, id));
+  }
+
+  async getAllVideoPosts(publishedOnly = true): Promise<VideoPost[]> {
+    if (publishedOnly) {
+      return await db.select().from(videoPosts)
+        .where(eq(videoPosts.published, true))
+        .orderBy(desc(videoPosts.publishedAt));
+    }
+    return await db.select().from(videoPosts).orderBy(desc(videoPosts.publishedAt));
+  }
+
+  async getVideoPostBySlug(slug: string): Promise<VideoPost | undefined> {
+    const [post] = await db.select().from(videoPosts).where(eq(videoPosts.slug, slug));
+    return post;
+  }
+
+  async getVideoPostById(id: string): Promise<VideoPost | undefined> {
+    const [post] = await db.select().from(videoPosts).where(eq(videoPosts.id, id));
+    return post;
+  }
+
+  async createVideoPost(insertPost: InsertVideoPost): Promise<VideoPost> {
+    const [post] = await db.insert(videoPosts).values(insertPost).returning();
+    return post;
+  }
+
+  async updateVideoPost(id: string, updatePost: Partial<InsertVideoPost>): Promise<VideoPost> {
+    const [post] = await db
+      .update(videoPosts)
+      .set({ ...updatePost, updatedAt: new Date() })
+      .where(eq(videoPosts.id, id))
+      .returning();
+    return post;
+  }
+
+  async deleteVideoPost(id: string): Promise<void> {
+    await db.delete(videoPosts).where(eq(videoPosts.id, id));
+  }
+
+  async getActiveWidgetConfig(): Promise<WidgetConfig | undefined> {
+    const [config] = await db.select().from(widgetConfig)
+      .where(eq(widgetConfig.enabled, true))
+      .orderBy(desc(widgetConfig.updatedAt))
+      .limit(1);
+    return config;
+  }
+
+  async createOrUpdateWidgetConfig(insertConfig: InsertWidgetConfig): Promise<WidgetConfig> {
+    const existing = await db.select().from(widgetConfig).limit(1);
+    
+    if (existing.length > 0) {
+      const [config] = await db
+        .update(widgetConfig)
+        .set({ ...insertConfig, updatedAt: new Date() })
+        .where(eq(widgetConfig.id, existing[0].id))
+        .returning();
+      return config;
+    } else {
+      const [config] = await db.insert(widgetConfig).values(insertConfig).returning();
+      return config;
+    }
   }
 
   async getAllTestimonials(featuredOnly = false): Promise<Testimonial[]> {

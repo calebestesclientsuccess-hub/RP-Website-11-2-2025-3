@@ -1,0 +1,87 @@
+import { Link, useLocation } from "wouter";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
+} from "@/components/ui/sidebar";
+import { FileText, Video, Settings, LogOut, LayoutDashboard } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+
+const menuItems = [
+  {
+    title: "Dashboard",
+    url: "/admin",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Blog Posts",
+    url: "/admin/blog-posts",
+    icon: FileText,
+  },
+  {
+    title: "Video Posts",
+    url: "/admin/video-posts",
+    icon: Video,
+  },
+  {
+    title: "Widget Settings",
+    url: "/admin/widget",
+    icon: Settings,
+  },
+];
+
+export function AdminSidebar() {
+  const [location] = useLocation();
+  const { logout, user } = useAuth();
+
+  return (
+    <Sidebar>
+      <SidebarHeader className="p-4 border-b">
+        <h2 className="text-lg font-semibold" data-testid="text-cms-title">CMS Dashboard</h2>
+        {user && (
+          <p className="text-sm text-muted-foreground" data-testid="text-username">
+            {user.username}
+          </p>
+        )}
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Content Management</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {menuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild isActive={location === item.url}>
+                    <Link href={item.url} data-testid={`link-${item.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                      <item.icon className="w-4 h-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter className="p-4 border-t">
+        <Button
+          variant="outline"
+          onClick={logout}
+          className="w-full"
+          data-testid="button-logout"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Logout
+        </Button>
+      </SidebarFooter>
+    </Sidebar>
+  );
+}

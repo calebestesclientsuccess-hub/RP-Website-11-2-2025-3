@@ -27,9 +27,37 @@ export const blogPosts = pgTable("blog_posts", {
   excerpt: text("excerpt").notNull(),
   content: text("content").notNull(),
   author: text("author").notNull(),
+  featuredImage: text("featured_image"),
+  videoUrl: text("video_url"),
+  category: text("category"),
+  scheduledFor: timestamp("scheduled_for"),
   publishedAt: timestamp("published_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   published: boolean("published").default(true).notNull(),
+});
+
+export const videoPosts = pgTable("video_posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description").notNull(),
+  videoUrl: text("video_url").notNull(),
+  thumbnailUrl: text("thumbnail_url"),
+  author: text("author").notNull(),
+  category: text("category"),
+  scheduledFor: timestamp("scheduled_for"),
+  publishedAt: timestamp("published_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  published: boolean("published").default(true).notNull(),
+});
+
+export const widgetConfig = pgTable("widget_config", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  widgetType: text("widget_type").notNull(),
+  enabled: boolean("enabled").default(true).notNull(),
+  position: text("position").default("bottom-right").notNull(),
+  settings: text("settings"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const testimonials = pgTable("testimonials", {
@@ -156,6 +184,17 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
   updatedAt: true,
 });
 
+export const insertVideoPostSchema = createInsertSchema(videoPosts).omit({
+  id: true,
+  publishedAt: true,
+  updatedAt: true,
+});
+
+export const insertWidgetConfigSchema = createInsertSchema(widgetConfig).omit({
+  id: true,
+  updatedAt: true,
+});
+
 export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
   id: true,
   createdAt: true,
@@ -213,6 +252,10 @@ export type EmailCapture = typeof emailCaptures.$inferSelect;
 export type InsertEmailCapture = z.infer<typeof insertEmailCaptureSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+export type VideoPost = typeof videoPosts.$inferSelect;
+export type InsertVideoPost = z.infer<typeof insertVideoPostSchema>;
+export type WidgetConfig = typeof widgetConfig.$inferSelect;
+export type InsertWidgetConfig = z.infer<typeof insertWidgetConfigSchema>;
 export type Testimonial = typeof testimonials.$inferSelect;
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 export type JobPosting = typeof jobPostings.$inferSelect;
