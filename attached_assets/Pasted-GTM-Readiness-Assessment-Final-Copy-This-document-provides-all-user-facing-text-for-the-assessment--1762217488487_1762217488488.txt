@@ -1,0 +1,230 @@
+GTM Readiness Assessment: Final Copy
+This document provides all user-facing text for the assessment flow, from the first question to the final "Thank You" screen.
+
+Phase 1: Core Philosophy
+Screen 1
+
+Header: Phase 1: Core Philosophy
+
+Question: "When it comes to your pipeline, what is your core philosophy?"
+
+Option a: "I want to RENT a managed service."
+
+(Sub-text): "I need to hire a person or vendor to do a task."
+
+Option b: "I want to OWN the asset/capability."
+
+(Sub-text): "I need to build a permanent system that generates revenue."
+
+Screen 2
+
+Header: Phase 1: Core Philosophy
+
+Question: "How does your ideal customer typically buy?"
+
+Option a: "It's a Transactional Sale."
+
+(Sub-text): "They already know they have a problem and are shopping for a known solution."
+
+Option b: "It's a Consultative Sale."
+
+(Sub-text): "They often don't know the scope of their problem. We have to educate them."
+
+Screen 3
+
+Header: Phase 1: Core Philosophy
+
+Question: "When building a new revenue function, what do you believe is the most critical piece to get right first?"
+
+Option a: "The Person (e.g., a 'star' cold caller)"
+
+(Sub-text): (The "Lone Wolf" Hire)
+
+Option b: "Pricing"
+
+Option c: "Technology"
+
+Option d: "Brand"
+
+Option e: "The System (The GTM Engine)"
+
+(Sub-text): (The Playbook, Tech, & Process)
+
+Phase 2: The Architect's Audit
+Screen 4
+
+Header: Phase 2: Architect's Audit (Part A)
+
+Question: "How urgently do you need to see a reliable pipeline?"
+
+Option i: "ASAP"
+
+Option ii: "90 Days"
+
+Option iii: "180 Days"
+
+Option iv: "1+ Year"
+
+Screen 5
+
+Header: Phase 2: Architect's Audit (Part A)
+
+Question (Dynamic): "What happens if you don't succeed in [User's Q4 Answer]?"
+
+Button: [ Next ]
+
+Screen 6
+
+Header: Phase 2: Architect's Audit (Part A)
+
+Question: "Who is the ultimate owner of this pipeline problem?"
+
+Option i: "Me (The Founder / CEO)."
+
+Option ii: "Our Head of Sales / CRO."
+
+Option iii: "A committee (Sales, Marketing, Ops)."
+
+Screen 7
+
+Header: Phase 2: Architect's Audit (Part B)
+
+Question: "What kind of problem is your company aiming to solve?"
+
+Option i: "A hiring problem. (We need to hire/train good salespeople.)"
+
+Option ii: "A branding problem. (Our brand needs to better support sales.)"
+
+Option iii: "A pricing problem. (We are not competitive.)"
+
+Option iv: "A holistic revenue problem. (We need a full system.)"
+
+Screen 8
+
+Header: Phase 2: Architect's Audit (Part B)
+
+Question: "Where is that budget (or your team's effort) going now?"
+
+Option i: "Nowhere. We're trying to do this ourselves."
+
+(Sub-text): (The "DIY / Founder Trap")
+
+Option ii: "To an internal 'Lone Wolf' hire."
+
+(Sub-text): (The "$198k Mistake")
+
+Option iii: "To a commodity agency or freelancers."
+
+(Sub-text): (The "Black Box Trap")
+
+Screen 9
+
+Header: Phase 2: Architect's Audit (Part C)
+
+Question: "Where in the pipeline does the trouble FIRST start?"
+
+Option i: "No Meetings. We're not booking enough new qualified meetings."
+
+Option ii: "Low-Quality Meetings. We get meetings, but they are low-quality, no-shows, or not with the right person."
+
+Option iii: "Low Close Rate. Our meetings are good, but they don't close."
+
+Screen 10 (Conditional)
+
+Header: Phase 2: Architect's Audit (Part C)
+
+Question: "Let's find out why..."
+
+(IF Q9 = "No Meetings")
+
+Question 10.a.1: "How many full-time appointment setters (SDRs/BDRs) do you have?"
+
+Question 10.a.2: "How many other people have this responsibility (e.g., AEs, Founders)?"
+
+(IF Q9 = "Low-Quality Meetings")
+
+Question 10.b.1: "How is data (accounts, contacts) provided to your appointment setters?"
+
+Option 1: "They build their own lists"
+
+Option 2: "We provide lists from a data provider"
+
+Option 3: "We have an ops team that builds enriched lists"
+
+Question 10.b.2: "Do you have a crystal-clear, written ICP (Ideal Customer Profile)?"
+
+Option 1: "Yes, and it is rigorously enforced"
+
+Option 2: "Yes, but it's not really enforced"
+
+Option 3: "No, we don't have a formal ICP"
+
+(IF Q9 = "Low Close Rate")
+
+Question 10.c.1: "Is there at least one video of your sales cycle being successfully carried out in a standardized way, that you use for training?"
+
+Option 1: "Yes, we have a clear, repeatable process"
+
+Option 2: "No, every rep does their own thing"
+
+Question 10.c.2: "What is your actual lead-to-close/win rate (as a %)? (e.g., '5' for 5%)"
+
+Button: [ Next ]
+
+Screen 11
+
+Header: Phase 2: Architect's Audit (Part D)
+
+Question: "What is your realistic monthly budget for this system?"
+
+Option i: "< $8,000 / month"
+
+Option ii: "$8,000+ / month"
+
+Phase 3: Final Capture
+Screen 12
+
+Header: Your Architect's Blueprint is ready.
+
+Prompt 1 (Q19): "Optional: Add any other context about your goals or challenges here."
+
+Prompt 2 (Q20): "Where should we send your GTM Architecture Blueprint?"
+
+Phase 4: The Final Choice (Calculator Branch)
+Screen 13
+
+Header: Your Blueprint is Ready.
+
+Prompt: "Before we send your diagnosis, do you want to add a full financial ROI projection comparing your current model to a Revenue Engine?"
+
+Button A: [ Get My Blueprint Now ]
+
+Button B: [ Yes, Add the Full ROI Breakdown ]
+
+Phase 5: Optional Financial Calculator
+Screen 14
+
+Header: Optional: Pipeline ROI Calculator
+
+Prompt: "Fill in your numbers to add a detailed ROI projection to your report."
+
+Question 13: "Average LTV (Lifetime Value)?"
+
+Question 14: "Average Close/Win Rate (from qualified meeting, as %)"
+
+Question 15: "Average Contract Term (in months)?"
+
+Question 16: "Gross Margin (as %)"
+
+Question 17: "Average Sales Cycle Length (in days)?"
+
+Question 18: "Average Deal Size (ACV)?"
+
+Final Button: [ Get My Results ]
+
+Phase 6: Submission & Thank You
+"Thank You" Page
+
+Header: "Thank You!"
+
+Message: "Your personalized GTM Architecture Blueprint is being generated. It will arrive in your inbox in the next 5-10 minutes."
