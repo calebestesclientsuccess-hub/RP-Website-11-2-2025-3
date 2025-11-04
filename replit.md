@@ -47,6 +47,22 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 
 ## Recent Changes
 
+### Pipeline Assessment & Reading Progress Bar (November 2025)
+- **Pipeline Assessment Tool**: Netflix-style cinematic assessment at `/pipeline-assessment` with 14+ question screens
+  - Database persistence: `assessment_responses` and `newsletter_signups` tables
+  - Horizontal sliding transitions with progress persistence (localStorage sessionId)
+  - Bucket-based lead segmentation (5 buckets: quick-win, architecture-gap, process-problem, system-stuck, not-ready)
+  - Admin dashboard at `/admin/assessment-dashboard` with filtering, CSV export
+  - All copy uses "Revenue Blueprint" terminology (no "Architect's Audit" references)
+  - Thank you page with bucket-specific messaging and newsletter signup
+- **ReadingProgressBar Component**: Graceful conversion widget on guide pages
+  - Scroll-triggered engagement: Activates after 2-3 meaningful scrolls
+  - Subtle shimmer effects: Gradient transition on button text, soft glow every 30 seconds while reading
+  - Pause animations if user idle >10 seconds (respects active reading)
+  - Mobile-optimized: Simplified on mobile (no glow effects for battery efficiency)
+  - Deployed on 4 guide pages: AgencyTrapGuide, InternalTrapGuide, SalesAsAServiceGuide, HireColdCallersGuide
+  - Links to `/pipeline-assessment` for seamless conversion funnel
+
 ### GTM Assessment Tool (November 2025)
 - Added new GTM Assessment tool at `/resources/gtm-assessment` with decision-tree logic (2 questions)
 - Created 4 dynamic results pages (`path-1` through `path-4`) with URL query parameter tracking (`q1`, `q2`)
