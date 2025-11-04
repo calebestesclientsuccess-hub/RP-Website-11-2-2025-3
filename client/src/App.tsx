@@ -26,6 +26,7 @@ import InternalTrapGuide from "@/pages/resources/InternalTrapGuide";
 import AgencyTrapGuide from "@/pages/resources/AgencyTrapGuide";
 import SalesAsAServiceGuide from "@/pages/resources/SalesAsAServiceGuide";
 import HireColdCallersGuide from "@/pages/HireColdCallersGuide";
+import FourPathsToHireColdCaller from "@/pages/resources/FourPathsToHireColdCaller";
 import GtmAssessmentPage from "@/pages/GtmAssessmentPage";
 import GtmResultPath1 from "@/pages/GtmResultPath1";
 import GtmResultPath2 from "@/pages/GtmResultPath2";
@@ -61,6 +62,7 @@ function Router() {
       <Route path="/resources/sdr-outsourcing-companies-guide" component={AgencyTrapGuide} />
       <Route path="/resources/guide-to-sales-as-a-service" component={SalesAsAServiceGuide} />
       <Route path="/resources/how-to-hire-cold-callers-guide" component={HireColdCallersGuide} />
+      <Route path="/resources/4-paths-hire-cold-caller" component={FourPathsToHireColdCaller} />
       
       {/* GTM Assessment Tool */}
       <Route path="/resources/gtm-assessment" component={GtmAssessmentPage} />
