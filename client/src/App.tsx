@@ -31,6 +31,9 @@ import GtmResultPath1 from "@/pages/GtmResultPath1";
 import GtmResultPath2 from "@/pages/GtmResultPath2";
 import GtmResultPath3 from "@/pages/GtmResultPath3";
 import GtmResultPath4 from "@/pages/GtmResultPath4";
+import PipelineAssessmentPage from "@/pages/PipelineAssessmentPage";
+import PipelineAssessmentThankYou from "@/pages/PipelineAssessmentThankYou";
+import AssessmentAdminDashboard from "@/pages/AssessmentAdminDashboard";
 import ManifestoPost from "@/pages/blog/ManifestoPost";
 import NotFound from "@/pages/not-found";
 
@@ -49,6 +52,9 @@ function Router() {
       {/* Tools & Resources */}
       <Route path="/roi-calculator" component={ROICalculator} />
       <Route path="/assessment" component={AssessmentPage} />
+      <Route path="/pipeline-assessment" component={PipelineAssessmentPage} />
+      <Route path="/pipeline-assessment/thank-you" component={PipelineAssessmentThankYou} />
+      <Route path="/admin/assessments" component={AssessmentAdminDashboard} />
       
       {/* Resource Pillar Pages */}
       <Route path="/resources/how-to-build-sdr-team-guide" component={InternalTrapGuide} />

@@ -16,29 +16,54 @@ import {
 import { fromZodError } from "zod-validation-error";
 import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templates";
 
+/**
+ * Calculate assessment bucket based on core philosophy answers
+ * Bucket assignment is determined by Q1 (Own vs Rent), Q2 (Sale Type), 
+ * Q3 (Critical Piece), and Q11 (Budget)
+ * 
+ * Priority order (highest to lowest):
+ * 1. Person Trap (q3='a') - overrides all other combinations
+ * 2. Hot MQL Architect - Own + Consultative + System + $8k+ budget
+ * 3. Architecture Gap - Own + Consultative + System + <$8k budget  
+ * 4. Agency - Rent + Transactional
+ * 5. Freelancer - Own + Transactional
+ * 6. Default: Architecture Gap (catch-all for nurture)
+ */
 function calculateBucket(data: Partial<InsertAssessmentResponse>): string {
   const { q1, q2, q3, q11 } = data;
   
+  // Priority 1: Person Trap (selecting "The Person" as critical piece)
+  // This overrides all other combinations
   if (q3 === 'a') {
     return 'person-trap';
   }
   
+  // Priority 2: Hot MQL Architect 
+  // Own + Consultative + System + High Budget = Ready for GTM Pod
   if (q1 === 'b' && q2 === 'b' && q3 === 'e' && q11 === 'ii') {
     return 'hot-mql-architect';
   }
   
+  // Priority 3: Architecture Gap (specific)
+  // Own + Consultative + System + Low Budget = Need to nurture
   if (q1 === 'b' && q2 === 'b' && q3 === 'e' && q11 === 'i') {
     return 'architecture-gap';
   }
   
+  // Priority 4: Agency
+  // Rent + Transactional = Black Box Trap
   if (q1 === 'a' && q2 === 'a') {
     return 'agency';
   }
   
+  // Priority 5: Freelancer
+  // Own + Transactional = Freelancer approach  
   if (q1 === 'b' && q2 === 'a') {
     return 'freelancer';
   }
   
+  // Default: Architecture Gap (catch-all for any other combination)
+  // This is the safest nurture-focused PDF for unclear profiles
   return 'architecture-gap';
 }
 
