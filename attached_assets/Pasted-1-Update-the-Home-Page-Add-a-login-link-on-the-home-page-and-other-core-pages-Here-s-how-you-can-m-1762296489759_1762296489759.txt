@@ -1,0 +1,109 @@
+1. Update the Home Page
+Add a login link on the home page and other core pages. Here's how you can modify the Footer.tsx to include the login:
+
+<div>
+  <h3 className="font-semibold text-foreground mb-4">Explore</h3>
+  <ul className="space-y-2">
+    {/* Other links */}
+    <li>
+      <Link href="/admin/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="footer-link-login">
+        Admin Login
+      </Link>
+    </li>
+  </ul>
+</div>
+2. Login Page
+Ensure the LoginPage.tsx is set up to handle login with standard form validation (as previously provided).
+
+3. Register Page
+Create a RegisterPage.tsx:
+
+import { useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Label, Input, Button } from "@/components/ui/form";
+export default function RegisterPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Implement your registration logic here (e.g., API call)
+  };
+  return (
+    <>
+      <Helmet>
+        <title>Admin Register | CMS</title>
+      </Helmet>
+      <div className="flex items-center justify-center min-h-screen bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Admin Registration</CardTitle>
+            <CardDescription>Create your admin account</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              </div>
+              <Button type="submit" className="w-full">Register</Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+}
+4. Magic Link & Save Password
+For sending a magic link and saving passwords, you need to integrate with your backend. You will need API endpoints in your routes.ts to handle these functionalities, likely using libraries such as nodemailer for sending magic links and bcrypt for saving passwords securely.
+
+5. Forgot Password
+Create a ForgotPasswordPage.tsx:
+
+import { useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Label, Input, Button } from "@/components/ui/form";
+export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState("");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Implement logic to send a password reset link
+  };
+  return (
+    <>
+      <Helmet>
+        <title>Forgot Password | CMS</title>
+      </Helmet>
+      <div className="flex items-center justify-center min-h-screen bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Forgot Password</CardTitle>
+            <CardDescription>Enter your email to receive a password reset link</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              </div>
+              <Button type="submit" className="w-full">Send Magic Link</Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+}
+Integration into Your App
+Make sure to add routing in your App.tsx to connect these pages:
+
+<Route path="/admin/login" component={LoginPage} />
+<Route path="/admin/register" component={RegisterPage} />
+<Route path="/admin/forgot-password" component={ForgotPasswordPage} />
+Conclusion
+With these enhancements, your admin experience will include standard features for logging in, registering, sending magic links for authentication, and managing forgotten passwords, ensuring functionality while remaining within MVP constraints. If you need specific implementations for backend logic (e.g., sending emails), let me know!
