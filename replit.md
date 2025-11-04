@@ -1,7 +1,7 @@
 # Revenue Party - GTM Systems Website
 
 ## Overview
-Revenue Party is a marketing website for a Go-to-Market (GTM) consultancy, specializing in deploying comprehensive revenue generation systems. The site showcases services like "Your Fullstack Sales Unit" through a dark-mode design with minimal animations, focusing on conversion over visual complexity. It targets a B2B SaaS audience (founders and GTM leaders) with an emphasis on data-driven decision-making. The project prioritizes SEO optimization, maintainability, and fast performance.
+Revenue Party is a marketing website for a Go-to-Market (GTM) consultancy, specializing in deploying comprehensive revenue generation systems. The site showcases services like "Your Fullstack Sales Unit" through a dark-mode design, focusing on conversion over visual complexity. It targets a B2B SaaS audience (founders and GTM leaders) with an emphasis on data-driven decision-making. The project prioritizes SEO optimization, maintainability, and fast performance. The platform includes a comprehensive CMS for managing blog posts, video content, and site configurations.
 
 ## User Preferences
 - Dark mode is the default theme
@@ -14,134 +14,39 @@ Revenue Party is a marketing website for a Go-to-Market (GTM) consultancy, speci
 - Easy to run and maintain codebase
 
 ## System Architecture
-The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js backend with PostgreSQL and Drizzle ORM. Animations are minimal and focused, with only essential scroll-triggered timeline animations retained. A single global error boundary handles all error states. The architecture prioritizes simplicity and maintainability.
+The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js backend with PostgreSQL and Drizzle ORM. Animations are minimal and focused, with essential scroll-triggered timeline animations retained. A single global error boundary handles all error states. The architecture prioritizes simplicity and maintainability, including a full-featured Content Management System (CMS).
 
 **UI/UX Decisions:**
-- **Color Philosophy**: Semantic color system meeting WCAG AA accessibility standards. Red-focused gradient system emphasizes brand colors (darkest red #C52A2A through pink/magenta).
+- **Color Philosophy**: Semantic color system meeting WCAG AA accessibility standards, featuring a red-focused gradient system.
 - **Typography**: Inter for headings/body, JetBrains Mono for monospace, with an inverted pyramid hierarchy.
-- **Design System**: Semantic color tokens, badge variants, and consistent typography.
-    - **Dark Mode (Default)**: Professional dark design with subtle gradients and clean aesthetics.
-    - **Light Mode**: Sophisticated light theme with proper contrast and readability.
-    - **Gradient Text**: All numbers, metrics, and key highlights use red-focused gradient (darkest red → vibrant red → pink-red → magenta-pink) for visual emphasis.
-- **Animations**: Minimal GSAP usage - only BuildAndRampTimeline uses ScrollTrigger for essential scroll animations. All decorative animations have been removed for better performance. Respects `prefers-reduced-motion`.
-- **Theming**: WCAG AA-compliant red-focused gradient system. Primary buttons and sliders use darkest red (hsl(0, 85%, 38%)). No performance tier detection - all users get the same optimized experience.
+- **Design System**: Semantic color tokens, badge variants, and consistent typography, supporting both dark (default) and sophisticated light themes. Gradient text is used for numbers and key highlights.
+- **Animations**: Minimal GSAP usage (only for `BuildAndRampTimeline`) respecting `prefers-reduced-motion`. Decorative animations are removed.
 - **Accessibility**: `prefers-reduced-motion`, keyboard navigation, ARIA landmarks, and WCAG AA compliance.
 
 **Technical Implementations & Feature Specifications:**
-- **Hero Section**: Features "Your Fullstack Sales Unit" with tagline and problem statement.
-- **Lead Magnet System**: Positioned after "The $198,000 Mistake" section. Captures email, name, and company in exchange for downloadable playbook PDF. Includes GTM event tracking, form validation (Zod), toast notifications, and database storage.
-- **SimpleBridgeSection**: Simple static text transition between content sections, no scroll-triggered animations. Uses gradient text for emphasis.
-- **SimplifiedOrbitalPowers**: Interactive badges that gently orbit around a central video with magnetic hover effects and dynamic background color morphing. Six clickable badges that reveal detailed information about each power.
-- **Interactive ROI Calculator**: Compares in-house vs. RevParty Pod based on user inputs with real-time calculations. All numbers display in red-focused gradient.
-- **Testimonial Carousel**: Auto-rotating carousel (8s intervals) with Schema.org markup, manual navigation controls, and gradient-styled metrics display.
-- **BuildAndRampTimeline**: The only component with GSAP ScrollTrigger animations. Showcases 4 GTM steps with scroll-triggered reveals.
-- **Content Management**: Database-driven blog ("Blueprints") with Markdown rendering (DOMPurify for XSS protection), testimonial display, and career listings with application forms (React Hook Form + Zod).
-- **SEO Optimizations**: Comprehensive technical foundation including `robots.txt`, `sitemap.xml`, favicons, and canonical URLs. Uses `react-helmet-async` for page-specific meta tags (Open Graph, Twitter Card), structured data (JSON-LD schemas including Product Reviews), and performance optimizations for Core Web Vitals.
-- **Error Handling**: Single global ErrorBoundary component at application level for consistent error handling.
+- **Core Sections**: Includes a Hero Section, Lead Magnet System, `SimpleBridgeSection`, `SimplifiedOrbitalPowers` (interactive badges), Interactive ROI Calculator, Testimonial Carousel, and `BuildAndRampTimeline` (with GSAP ScrollTrigger).
+- **Content Management System (CMS)**:
+    - Database-driven blog ("Blueprints") with Markdown rendering (DOMPurify for XSS protection).
+    - Management of testimonials and career listings with application forms (React Hook Form + Zod).
+    - Admin dashboard for managing blog posts, video content, and widget configuration.
+    - Features rich text editor (TipTap), content scheduling, authentication with bcrypt and PostgreSQL session store.
+- **SEO Optimizations**: Comprehensive technical SEO foundation including `robots.txt`, `sitemap.xml`, favicons, canonical URLs, `react-helmet-async` for meta tags (Open Graph, Twitter Card), structured data (JSON-LD), and Core Web Vitals optimization.
+- **Error Handling**: Single global `ErrorBoundary` component.
+- **Article Layout System**: 3-column responsive layout for articles with `FeaturedPromo` and `RelatedArticles` sidebars. Includes `ReadingProgressBar` conversion widget.
+- **Assessment Tools**:
+    - **Pipeline Assessment Tool**: A multi-screen assessment at `/pipeline-assessment` with database persistence, lead segmentation, and an admin dashboard for responses.
+    - **GTM Assessment Tool**: A decision-tree based assessment at `/resources/gtm-assessment` with dynamic results pages and a blueprint capture system.
 
 **System Design Choices:**
 - **Frontend**: React 18 (Vite), Tailwind CSS, Wouter (routing), React Query (data fetching), Shadcn UI.
 - **Backend**: Express.js for RESTful API endpoints.
 - **Database**: PostgreSQL with Drizzle ORM.
-- **Animation Strategy**: Minimal animations using GSAP only where essential (BuildAndRampTimeline). Removed complex scroll-triggered animations, performance tier detection, and decorative animations for better maintainability and performance.
-
-## Admin Dashboard Access & Setup
-
-### First-Time Setup
-When accessing the CMS admin dashboard for the first time, you'll need to create your first admin account:
-
-1. **Default Route**: Navigate to `/admin/register` to create your first admin account
-2. **Registration Process**:
-   - Enter a unique username (required)
-   - Create a password (minimum 8 characters)
-   - Confirm your password
-   - Submit to create your account
-3. **Automatic Login**: After registration, you'll be automatically logged in and redirected to a welcome page
-4. **Welcome Page**: Review CMS features and click "Go to Dashboard" to start managing content
-
-### Admin Routes
-- `/admin/register` - Create new admin account (accessible without authentication)
-- `/admin/login` - Login to existing admin account
-- `/admin/welcome` - Post-registration welcome page (shows CMS features)
-- `/admin` - Main admin dashboard (requires authentication)
-- `/admin/blog-posts` - Manage blog posts
-- `/admin/video-posts` - Manage video content
-- `/admin/widget-config` - Configure floating widget settings
-- `/admin/assessments` - View assessment responses
-
-### Authentication & Security
-- **Password Security**: All passwords are hashed using bcrypt before storage
-- **Session Management**: Express-session with PostgreSQL session store (30-day cookie lifetime)
-- **Protected Routes**: All admin pages (except login/register) require authentication
-- **First-Time Detection**: System automatically detects if no admin users exist and guides users to registration
-
-### Admin Features Available
-1. **Blog Post Management**: Create, edit, and publish blog posts with rich text editor (TipTap)
-2. **Video Post Management**: Upload and manage video content
-3. **Widget Configuration**: Toggle between Assessment and Calculator modes for the floating widget
-4. **Content Scheduling**: Set publish dates for future content releases
-5. **Assessment Dashboard**: View and analyze user assessment responses
-
-### Quick Start
-```
-1. Navigate to /admin
-2. If no users exist, you'll be redirected to /admin/register
-3. Create your admin account
-4. Review the welcome page features
-5. Start managing your content!
-```
-
-## Recent Changes
-
-### Vox-Style Article Layout System (November 2025)
-- **3-Column Responsive Layout**: Content-first reading experience with subtle sidebars
-  - **ArticleLayout Component**: Wrapper with responsive grid optimized for reading (1/2/3 columns based on viewport)
-  - **FeaturedPromo Component**: Left sticky sidebar (17% width, desktop only) - subtle promotional content with outline badge, muted colors, and small CTA
-  - **RelatedArticles Component**: Right sticky sidebar (25% desktop, 33% tablet) - border-separated article list with thumbnail images and hover effects
-  - **Responsive Behavior**:
-    - Desktop (≥1024px): 3-column layout (2-7-3 grid ratio: 17% left promo + 58% main article + 25% right sidebar)
-    - Tablet (768-1023px): 2-column layout (8-4 grid ratio: main article + right sidebar with promo below)
-    - Mobile (<768px): 1-column stacked (article → related articles → promo)
-  - **Typography Enhancements**: Main content uses prose-lg with relaxed leading for optimal long-form reading
-  - **Complete Image System**: Hero images (21:9 aspect ratio), related article thumbnails with hover zoom, optional promo images
-  - **Widget Support**: ArticleWidget component with .not-prose wrapper for embedding interactive calculators, graphs, and charts without conflicting with prose styles
-  - **Demo Calculator**: SimpleCalculator component embedded in AgencyTrapGuide showing pipeline requirements calculation
-  - **Hardcoded Content**: Featured promo and related articles are currently hardcoded per page (future CMS enhancement planned)
-  - **Deployed on all 4 guide pages**: SDR Outsourcing, Building SDR Team, Sales as a Service, Hire Cold Callers guides
-- **ReadingProgressBar Component**: Bottom-positioned conversion widget (moved from top to avoid nav blocking)
-  - Fixed position at bottom of page (non-intrusive)
-  - Scroll-triggered engagement: Activates after 2-3 meaningful scrolls
-  - Subtle shimmer effects: Gradient transition on button text, soft glow every 30 seconds while reading
-  - Pause animations if user idle >10 seconds (respects active reading)
-  - Mobile-optimized: Simplified on mobile (no glow effects for battery efficiency)
-  - Deployed on 4 guide pages: AgencyTrapGuide, InternalTrapGuide, SalesAsAServiceGuide, HireColdCallersGuide
-  - Links to `/pipeline-assessment` for seamless conversion funnel
-
-### Pipeline Assessment & Reading Progress Bar (November 2025)
-- **Pipeline Assessment Tool**: Netflix-style cinematic assessment at `/pipeline-assessment` with 14+ question screens
-  - Database persistence: `assessment_responses` and `newsletter_signups` tables
-  - Horizontal sliding transitions with progress persistence (localStorage sessionId)
-  - Bucket-based lead segmentation (5 buckets: quick-win, architecture-gap, process-problem, system-stuck, not-ready)
-  - Admin dashboard at `/admin/assessment-dashboard` with filtering, CSV export
-  - All copy uses "Revenue Blueprint" terminology (no "Architect's Audit" references)
-  - Thank you page with bucket-specific messaging and newsletter signup
-
-### GTM Assessment Tool (November 2025)
-- Added new GTM Assessment tool at `/resources/gtm-assessment` with decision-tree logic (2 questions)
-- Created 4 dynamic results pages (`path-1` through `path-4`) with URL query parameter tracking (`q1`, `q2`)
-- Implemented blueprint capture system with new `blueprintCaptures` database table
-- Added email template generation for assessment results (placeholder - Resend integration pending)
-- Created article page "How to Hire Cold Callers (2026 Guide)" with embedded assessment widgets
-- Updated footer navigation with new resource link
-- Components created: `AssessmentWidget`, `DiagnosticReadoutCard`, `BlueprintCaptureForm`, `SecondaryFitCallButton`
-- Backend API: `POST /api/v1/capture-blueprint`, `GET /api/v1/blueprint-captures`
-
-**Note**: Email sending is currently a placeholder. When ready to set up, use Resend integration (connector:ccfg_resend_01K69QKYK789WN202XSE3QS17V) and update `server/routes.ts` to actually send emails using the generated templates from `server/email-templates.ts`.
+- **Animation Strategy**: Minimal and performance-focused, utilizing GSAP only for essential timeline animations.
 
 ## External Dependencies
 - **PostgreSQL**: Primary database (Neon-backed).
 - **Drizzle ORM**: ORM for PostgreSQL.
-- **GSAP**: Animation library (minimal usage - only ScrollTrigger for timeline).
+- **GSAP**: Animation library (minimal usage for ScrollTrigger).
 - **TanStack Query (React Query)**: Data fetching and state management.
 - **Shadcn UI**: UI component library.
 - **Marked**: Markdown parser.
