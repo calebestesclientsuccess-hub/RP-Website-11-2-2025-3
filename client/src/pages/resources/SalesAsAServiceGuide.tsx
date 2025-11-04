@@ -8,10 +8,40 @@ import { ClusterHub } from "@/components/pillar/ClusterHub";
 import { SpokeLink } from "@/components/pillar/SpokeLink";
 import { Badge } from "@/components/ui/badge";
 import { ReadingProgressBar } from "@/components/ReadingProgressBar";
+import { ArticleLayout } from "@/components/article/ArticleLayout";
+import type { RelatedArticle } from "@/components/article/RelatedArticles";
+import type { FeaturedPromoData } from "@/components/article/FeaturedPromo";
+
+const relatedArticles: RelatedArticle[] = [
+  {
+    title: "A 2025 Buyer's Guide to SDR Outsourcing",
+    excerpt: "Looking for SDR outsourcing companies? Read this buyer's guide first. We expose the 3 'Black Box' traps to avoid.",
+    path: "/resources/sdr-outsourcing-companies-guide"
+  },
+  {
+    title: "The Complete Guide to Building an SDR Team",
+    excerpt: "Avoid the $198,000 'Lone Wolf' mistake with this complete guide to building a GTM architecture that actually works.",
+    path: "/resources/how-to-build-sdr-team-guide"
+  },
+  {
+    title: "How to Hire Cold Callers (2026 Guide)",
+    excerpt: "Discover the three proven paths to building a successful cold calling team in 2026 and which approach fits your value proposition.",
+    path: "/resources/how-to-hire-cold-callers-guide"
+  }
+];
+
+const featuredPromo: FeaturedPromoData = {
+  type: "webinar",
+  badge: "Featured Webinar",
+  title: "The GTM Architecture Blueprint",
+  description: "Join us for a live walkthrough of how the GTM Engine deploys in 14 days and delivers pipeline 10x faster than traditional models.",
+  ctaText: "Register Now",
+  ctaUrl: "/pipeline-assessment"
+};
 
 export default function SalesAsAServiceGuide() {
   return (
-    <div className="min-h-screen">
+    <>
       <ReadingProgressBar />
       <SEO
         title="The Definitive Guide to Sales as a Service (The Antidote to the 'Lone Wolf' Trap)"
@@ -27,11 +57,12 @@ export default function SalesAsAServiceGuide() {
         dateModified="2025-01-15"
       />
       
-      <PillarHero
-        badgeText="Definitive Guide"
-        title="The Definitive Guide to Sales as a Service"
-        subtitle="'Sales as a Service' is not 'outsourcing.' It is the end of the 'Lone Wolf' model and the solution to the 'Headcount vs. Architecture' problem. This is the definitive guide to the new model for GTM."
-      />
+      <ArticleLayout relatedArticles={relatedArticles} featuredPromo={featuredPromo}>
+        <PillarHero
+          badgeText="Definitive Guide"
+          title="The Definitive Guide to Sales as a Service"
+          subtitle="'Sales as a Service' is not 'outsourcing.' It is the end of the 'Lone Wolf' model and the solution to the 'Headcount vs. Architecture' problem. This is the definitive guide to the new model for GTM."
+        />
       
       <ContentSection heading="'Sales as a Service' vs. 'Outsourcing': The Critical Distinction">
         <p className="text-lg mb-6">
@@ -178,32 +209,33 @@ export default function SalesAsAServiceGuide() {
         }}
       />
       
-      <ClusterHub
-        heading="Explore the 'Solution & Methodology' Cluster"
-        description="Go deeper into the architecture of the GTM Engine."
-        links={[
-          {
-            href: "/blog/gtm-engine-explained",
-            title: "What is a 'GTM Engine' (And How Is It Different from a 'Sales Team')?"
-          },
-          {
-            href: "/blog/signal-factory",
-            title: "The 'Signal Factory': How We Use AI to Find Buyers Before They're 'In-Market'"
-          },
-          {
-            href: "/blog/impact-selling",
-            title: "Killing 'Sales Pressure': The Core Principles of the 'Impact Selling OS'"
-          },
-          {
-            href: "/blog/community-competition",
-            title: "'Community + Competition': Why Our BDR Pods Outperform 'Lone Wolf' Reps"
-          },
-          {
-            href: "/blog/allbound-guide",
-            title: "What is 'Allbound'? A 5-Minute Guide"
-          }
-        ]}
-      />
-    </div>
+        <ClusterHub
+          heading="Explore the 'Solution & Methodology' Cluster"
+          description="Go deeper into the architecture of the GTM Engine."
+          links={[
+            {
+              href: "/blog/gtm-engine-explained",
+              title: "What is a 'GTM Engine' (And How Is It Different from a 'Sales Team')?"
+            },
+            {
+              href: "/blog/signal-factory",
+              title: "The 'Signal Factory': How We Use AI to Find Buyers Before They're 'In-Market'"
+            },
+            {
+              href: "/blog/impact-selling",
+              title: "Killing 'Sales Pressure': The Core Principles of the 'Impact Selling OS'"
+            },
+            {
+              href: "/blog/community-competition",
+              title: "'Community + Competition': Why Our BDR Pods Outperform 'Lone Wolf' Reps"
+            },
+            {
+              href: "/blog/allbound-guide",
+              title: "What is 'Allbound'? A 5-Minute Guide"
+            }
+          ]}
+        />
+      </ArticleLayout>
+    </>
   );
 }
