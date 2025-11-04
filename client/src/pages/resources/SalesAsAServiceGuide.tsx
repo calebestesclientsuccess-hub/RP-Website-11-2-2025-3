@@ -7,10 +7,12 @@ import { CTASection } from "@/components/pillar/CTASection";
 import { ClusterHub } from "@/components/pillar/ClusterHub";
 import { SpokeLink } from "@/components/pillar/SpokeLink";
 import { Badge } from "@/components/ui/badge";
+import { ReadingProgressBar } from "@/components/ReadingProgressBar";
 
 export default function SalesAsAServiceGuide() {
   return (
     <div className="min-h-screen">
+      <ReadingProgressBar />
       <SEO
         title="The Definitive Guide to Sales as a Service (The Antidote to the 'Lone Wolf' Trap)"
         description="'Sales as a Service' is not outsourcing. It's the end of the 'Lone Wolf' model. This is the definitive guide to the new 'Architecture-first' model for GTM."

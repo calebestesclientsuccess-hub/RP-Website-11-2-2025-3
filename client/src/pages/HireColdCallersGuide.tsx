@@ -1,9 +1,11 @@
 import { Helmet } from "react-helmet-async";
 import { AssessmentWidget } from "@/components/AssessmentWidget";
+import { ReadingProgressBar } from "@/components/ReadingProgressBar";
 
 export default function HireColdCallersGuide() {
   return (
     <>
+      <ReadingProgressBar />
       <Helmet>
         <title>The 2026 Guide to Hiring Cold Callers | Revenue Party</title>
         <meta

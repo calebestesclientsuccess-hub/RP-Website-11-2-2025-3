@@ -9,10 +9,12 @@ import { ClusterHub } from "@/components/pillar/ClusterHub";
 import { SpokeLink } from "@/components/pillar/SpokeLink";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { ReadingProgressBar } from "@/components/ReadingProgressBar";
 
 export default function InternalTrapGuide() {
   return (
     <div className="min-h-screen">
+      <ReadingProgressBar />
       <SEO
         title="The Complete Guide to Building an SDR Team (And the 3 'Traps' That Cause 90% of Failure)"
         description="Hiring an SDR seems simple, but 90% of new programs fail. Avoid the $198,000 'Lone Wolf' Mistake with this complete guide to building a GTM architecture."
