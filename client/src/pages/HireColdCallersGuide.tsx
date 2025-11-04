@@ -1,6 +1,36 @@
 import { Helmet } from "react-helmet-async";
 import { AssessmentWidget } from "@/components/AssessmentWidget";
 import { ReadingProgressBar } from "@/components/ReadingProgressBar";
+import { ArticleLayout } from "@/components/article/ArticleLayout";
+import type { RelatedArticle } from "@/components/article/RelatedArticles";
+import type { FeaturedPromoData } from "@/components/article/FeaturedPromo";
+
+const relatedArticles: RelatedArticle[] = [
+  {
+    title: "A 2025 Buyer's Guide to SDR Outsourcing",
+    excerpt: "Looking for SDR outsourcing companies? Read this buyer's guide first. We expose the 3 'Black Box' traps to avoid.",
+    path: "/resources/sdr-outsourcing-companies-guide"
+  },
+  {
+    title: "The Complete Guide to Building an SDR Team",
+    excerpt: "Avoid the $198,000 'Lone Wolf' mistake with this complete guide to building a GTM architecture that actually works.",
+    path: "/resources/how-to-build-sdr-team-guide"
+  },
+  {
+    title: "The Definitive Guide to Sales as a Service",
+    excerpt: "Sales as a Service is not outsourcing. It's the end of the 'Lone Wolf' model and the solution to the 'Headcount vs. Architecture' problem.",
+    path: "/resources/guide-to-sales-as-a-service"
+  }
+];
+
+const featuredPromo: FeaturedPromoData = {
+  type: "guide",
+  badge: "Free Download",
+  title: "The Complete Cold Calling Playbook",
+  description: "Get our complete step-by-step playbook for hiring, training, and scaling cold callers in 2026. Includes scripts, metrics, and hiring templates.",
+  ctaText: "Download Playbook",
+  ctaUrl: "/pipeline-assessment"
+};
 
 export default function HireColdCallersGuide() {
   return (
@@ -20,18 +50,17 @@ export default function HireColdCallersGuide() {
         <meta property="og:type" content="article" />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <article className="max-w-4xl mx-auto px-4 py-16 md:py-24">
-          <header className="mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              The 2026 Guide to Hiring Cold Callers: The 3 Paths (And Which to Choose)
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </p>
-          </header>
+      <ArticleLayout relatedArticles={relatedArticles} featuredPromo={featuredPromo}>
+        <header className="mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            The 2026 Guide to Hiring Cold Callers: The 3 Paths (And Which to Choose)
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          </p>
+        </header>
 
-          <div className="prose prose-lg prose-invert max-w-none space-y-8">
+        <div className="prose prose-lg max-w-none space-y-8">
             <p>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
               Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
@@ -121,12 +150,11 @@ export default function HireColdCallersGuide() {
               Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
             </p>
 
-            <p>
-              At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
-            </p>
-          </div>
-        </article>
-      </div>
+          <p>
+            At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.
+          </p>
+        </div>
+      </ArticleLayout>
     </>
   );
 }
