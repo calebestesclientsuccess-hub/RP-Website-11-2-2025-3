@@ -10,10 +10,40 @@ import { SpokeLink } from "@/components/pillar/SpokeLink";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ReadingProgressBar } from "@/components/ReadingProgressBar";
+import { ArticleLayout } from "@/components/article/ArticleLayout";
+import type { RelatedArticle } from "@/components/article/RelatedArticles";
+import type { FeaturedPromoData } from "@/components/article/FeaturedPromo";
+
+const relatedArticles: RelatedArticle[] = [
+  {
+    title: "A 2025 Buyer's Guide to SDR Outsourcing",
+    excerpt: "Looking for SDR outsourcing companies? Read this buyer's guide first. We expose the 3 'Black Box' traps to avoid.",
+    path: "/resources/sdr-outsourcing-companies-guide"
+  },
+  {
+    title: "The Definitive Guide to Sales as a Service",
+    excerpt: "Sales as a Service is not outsourcing. It's the end of the 'Lone Wolf' model and the solution to the 'Headcount vs. Architecture' problem.",
+    path: "/resources/guide-to-sales-as-a-service"
+  },
+  {
+    title: "How to Hire Cold Callers (2026 Guide)",
+    excerpt: "Discover the three proven paths to building a successful cold calling team in 2026 and which approach fits your value proposition.",
+    path: "/resources/how-to-hire-cold-callers-guide"
+  }
+];
+
+const featuredPromo: FeaturedPromoData = {
+  type: "assessment",
+  badge: "Free Assessment",
+  title: "Get Your Revenue Blueprint",
+  description: "Take our 5-minute assessment to discover which GTM architecture fits your current stage and unlock your personalized revenue blueprint.",
+  ctaText: "Start Assessment",
+  ctaUrl: "/pipeline-assessment"
+};
 
 export default function InternalTrapGuide() {
   return (
-    <div className="min-h-screen">
+    <>
       <ReadingProgressBar />
       <SEO
         title="The Complete Guide to Building an SDR Team (And the 3 'Traps' That Cause 90% of Failure)"
@@ -52,8 +82,9 @@ export default function InternalTrapGuide() {
         ]}
         totalTime="P6M"
       />
-      
-      <PillarHero
+
+      <ArticleLayout relatedArticles={relatedArticles} featuredPromo={featuredPromo}>
+        <PillarHero
         badgeText="Complete Guide"
         title="The Complete Guide to Building an SDR Team (And the 3 'Traps' That Cause 90% of Failure)"
         subtitle="Hiring an SDR seems simple. But most new programs fail within 6 months. Here is a realistic guide to avoid the '$198,000 Mistake' and build a system that actually generates pipeline."
@@ -209,32 +240,33 @@ export default function InternalTrapGuide() {
         }}
       />
       
-      <ClusterHub
-        heading="Explore the 'Internal Trap' Cluster"
-        description="Go deeper into the analysis of the 'Lone Wolf' model."
-        links={[
-          {
-            href: "/blog/198k-mistake",
-            title: "The $198,000 Mistake: Why You Can't Just Hire Cold Callers"
-          },
-          {
-            href: "/blog/management-tax",
-            title: "The Hidden 'Management Tax': What Your SDR Hire Really Costs You"
-          },
-          {
-            href: "/blog/sdr-churn-rate",
-            title: "The 34% SDR Churn Rate Isn't a Talent Problem—It's a System Problem"
-          },
-          {
-            href: "/blog/sdr-ramp-time",
-            title: "Why SDR Ramp Time Is Actually Architecture-Building Time"
-          },
-          {
-            href: "/blog/sales-hiring-architecture",
-            title: "Why Sales Hiring Fails: The Architecture Before Headcount Framework"
-          }
-        ]}
-      />
-    </div>
+        <ClusterHub
+          heading="Explore the 'Internal Trap' Cluster"
+          description="Go deeper into the analysis of the 'Lone Wolf' model."
+          links={[
+            {
+              href: "/blog/198k-mistake",
+              title: "The $198,000 Mistake: Why You Can't Just Hire Cold Callers"
+            },
+            {
+              href: "/blog/management-tax",
+              title: "The Hidden 'Management Tax': What Your SDR Hire Really Costs You"
+            },
+            {
+              href: "/blog/sdr-churn-rate",
+              title: "The 34% SDR Churn Rate Isn't a Talent Problem—It's a System Problem"
+            },
+            {
+              href: "/blog/sdr-ramp-time",
+              title: "Why SDR Ramp Time Is Actually Architecture-Building Time"
+            },
+            {
+              href: "/blog/sales-hiring-architecture",
+              title: "Why Sales Hiring Fails: The Architecture Before Headcount Framework"
+            }
+          ]}
+        />
+      </ArticleLayout>
+    </>
   );
 }
