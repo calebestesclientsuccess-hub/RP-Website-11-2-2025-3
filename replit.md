@@ -48,14 +48,18 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 ## Recent Changes
 
 ### Vox-Style Article Layout System (November 2025)
-- **3-Column Responsive Layout**: "Cozy, app-like" reading experience inspired by Vox Media
-  - **ArticleLayout Component**: Wrapper with responsive grid (1/2/3 columns based on viewport)
-  - **FeaturedPromo Component**: Left sticky sidebar (20% width, desktop only) - promotional content with badge, title, description, and CTA
-  - **RelatedArticles Component**: Right sticky sidebar (30% tablet, 25% desktop) - 3 article cards with title, excerpt, and link
+- **3-Column Responsive Layout**: Content-first reading experience with subtle sidebars
+  - **ArticleLayout Component**: Wrapper with responsive grid optimized for reading (1/2/3 columns based on viewport)
+  - **FeaturedPromo Component**: Left sticky sidebar (17% width, desktop only) - subtle promotional content with outline badge, muted colors, and small CTA
+  - **RelatedArticles Component**: Right sticky sidebar (25% desktop, 33% tablet) - border-separated article list with thumbnail images and hover effects
   - **Responsive Behavior**:
-    - Desktop (≥1024px): 3-column layout (3-6-3 grid ratio: left promo + main article + right sidebar)
+    - Desktop (≥1024px): 3-column layout (2-7-3 grid ratio: 17% left promo + 58% main article + 25% right sidebar)
     - Tablet (768-1023px): 2-column layout (8-4 grid ratio: main article + right sidebar with promo below)
     - Mobile (<768px): 1-column stacked (article → related articles → promo)
+  - **Typography Enhancements**: Main content uses prose-lg with relaxed leading for optimal long-form reading
+  - **Complete Image System**: Hero images (21:9 aspect ratio), related article thumbnails with hover zoom, optional promo images
+  - **Widget Support**: ArticleWidget component with .not-prose wrapper for embedding interactive calculators, graphs, and charts without conflicting with prose styles
+  - **Demo Calculator**: SimpleCalculator component embedded in AgencyTrapGuide showing pipeline requirements calculation
   - **Hardcoded Content**: Featured promo and related articles are currently hardcoded per page (future CMS enhancement planned)
   - **Deployed on all 4 guide pages**: SDR Outsourcing, Building SDR Team, Sales as a Service, Hire Cold Callers guides
 - **ReadingProgressBar Component**: Bottom-positioned conversion widget (moved from top to avoid nav blocking)
