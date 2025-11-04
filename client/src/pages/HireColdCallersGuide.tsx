@@ -21,10 +21,10 @@ const relatedArticles: RelatedArticle[] = [
     imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=450&fit=crop"
   },
   {
-    title: "The Definitive Guide to Sales as a Service",
-    excerpt: "Sales as a Service is not outsourcing. It's the end of the 'Lone Wolf' model and the solution to the 'Headcount vs. Architecture' problem.",
-    path: "/resources/guide-to-sales-as-a-service",
-    imageUrl: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=450&fit=crop"
+    title: "The 4 Paths to Hire a Cold Caller",
+    excerpt: "A comprehensive guide mapping all 4 hiring paths and which one matches your business complexity.",
+    path: "/resources/4-paths-hire-cold-caller",
+    imageUrl: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=450&fit=crop"
   }
 ];
 
@@ -48,7 +48,7 @@ export default function HireColdCallersGuide() {
         keywords="hire cold callers, cold calling team, outbound sales reps, hire bdr, cold calling best practices, sales development reps"
         canonical="/resources/how-to-hire-cold-callers-guide"
       />
-      
+
       <ArticleSchema
         headline="The 2026 Guide to Hiring Cold Callers: The 3 Paths (And Which to Choose)"
         description="Discover the three proven paths to building a successful cold calling team in 2026. Learn which approach fits your value proposition and budget."
@@ -75,7 +75,7 @@ export default function HireColdCallersGuide() {
         </header>
 
         <h2>Path 1: The "Simple Value Prop" Solution</h2>
-        
+
         <p>
           If your product has a simple, easy-to-explain value proposition, you can hire junior cold callers and scale quickly with a "volume-first" approach. This path prioritizes dial volume and basic qualification over complex discovery.
         </p>
@@ -187,7 +187,7 @@ export default function HireColdCallersGuide() {
         </p>
 
         <h2>Further Reading</h2>
-        
+
         <ul>
           <li><a href="/blog/cold-calling-scripts">5 Cold Calling Scripts That Actually Work in 2026</a></li>
           <li><a href="/blog/cold-caller-interview-questions">The 10 Interview Questions to Assess Cold Calling Skill</a></li>

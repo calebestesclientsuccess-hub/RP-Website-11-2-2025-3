@@ -53,6 +53,22 @@ export default function BlogPage() {
   ];
 
   const articles: BlogArticle[] = [
+    {
+      title: "The 4 Paths to Hire a Cold Caller (And Which One Is Right for You)",
+      excerpt: "Hiring cold callers? This comprehensive guide maps all 4 paths—from Upwork freelancers to GTM Pods—and shows you which one matches your business complexity.",
+      path: "/resources/4-paths-hire-cold-caller",
+      imageUrl: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=450&fit=crop",
+      category: "Guides",
+      readTime: "15 min read"
+    },
+    {
+      title: "The Lone Wolf Trap: Why Hiring a Cold Caller is a $198,000 Mistake",
+      excerpt: "Discover why hiring a single cold caller without the right infrastructure is one of the most expensive mistakes a founder can make, and learn the architectural approach that actually works.",
+      path: "/blog/manifesto-the-lone-wolf-trap",
+      imageUrl: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&h=450&fit=crop",
+      category: "Strategy",
+      readTime: "8 min read"
+    },
     // Featured Articles
     {
       id: "1",
@@ -281,7 +297,7 @@ export default function BlogPage() {
             <p className="text-lg text-muted-foreground/80 mb-8 max-w-3xl" data-testid="text-blog-body">
               This isn't a blog. It's an open-source library of the strategic frameworks, financial models, and execution playbooks we use to build high-performance revenue engines. We deconstruct the hidden costs of traditional GTM and provide a clear blueprint for systematic scale.
             </p>
-            
+
             {/* Search Bar */}
             <div className="relative max-w-xl">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
@@ -336,7 +352,7 @@ export default function BlogPage() {
               Navigate our SEO cluster architecture. Each hub is a forensic deep-dive into the systems that drive (or destroy) revenue growth.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {contentHubs.map((hub, index) => {
               const Icon = hub.icon;
@@ -394,7 +410,7 @@ export default function BlogPage() {
               In-depth guides to help you navigate the modern GTM landscape
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-6">
             {/* Card 1: Internal Trap */}
             <motion.div
