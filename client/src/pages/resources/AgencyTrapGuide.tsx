@@ -12,6 +12,8 @@ import { ReadingProgressBar } from "@/components/ReadingProgressBar";
 import { ArticleLayout } from "@/components/article/ArticleLayout";
 import type { RelatedArticle } from "@/components/article/RelatedArticles";
 import type { FeaturedPromoData } from "@/components/article/FeaturedPromo";
+import { ArticleWidget } from "@/components/article/ArticleWidget";
+import { SimpleCalculator } from "@/components/article/SimpleCalculator";
 
 const relatedArticles: RelatedArticle[] = [
   {
@@ -203,6 +205,13 @@ export default function AgencyTrapGuide() {
           Renting a 'service' will never build you an 'asset.' The only antidote is to change the model."
         </p>
       </ContentSection>
+      
+      <ArticleWidget title="Interactive Calculator: Pipeline Requirements">
+        <p className="text-sm text-muted-foreground mb-6">
+          Calculate how many sales and opportunities you need to hit your revenue targets. This demonstrates how interactive widgets, calculators, and charts can be seamlessly embedded in articles.
+        </p>
+        <SimpleCalculator />
+      </ArticleWidget>
       
       <SocialProof
         heading="How GrowthCorp Escaped the 'Black Box' Trap"
