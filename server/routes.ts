@@ -22,7 +22,7 @@ import {
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templates";
-import { getUncachableResendClient } from "./utils/resend-client";
+import { sendGmailEmail } from "./utils/gmail-client";
 
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -265,12 +265,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const host = req.get('host');
       const resetLink = `${protocol}://${host}/admin/reset-password/${token}`;
 
-      // Send password reset email via Resend
+      // Send password reset email via Gmail
       try {
-        const { client, fromEmail } = await getUncachableResendClient();
-        
-        await client.emails.send({
-          from: fromEmail,
+        await sendGmailEmail({
           to: email,
           subject: "Reset Your Admin Password",
           html: `

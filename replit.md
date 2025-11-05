@@ -53,4 +53,41 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 - **DOMPurify**: HTML sanitizer.
 - **React Hook Form**: Form management and validation.
 - **Zod**: Schema validation.
-- **Resend** (pending setup): Email sending service for transactional emails.
+- **Gmail Connector**: Email sending service for transactional emails (configured with caleb@revenueparty.com).
+
+## Authentication & User Management
+
+**Multi-User System:**
+The application includes a comprehensive authentication system with role-based access control and password reset functionality.
+
+**User Accounts:**
+- **Super User**: Caleb@RevenueParty.com (role: super_user)
+- **Managers**: admin@RevenueParty.com, mariya@RevenueParty.com, muneeb@RevenueParty.com, danyal@RevenueParty.com, sofia@RevenueParty.com (role: manager)
+- **Temporary Password**: RevenueParty2024! (all accounts should change passwords via forgot password flow)
+
+**Features:**
+- Login with username OR email (case-insensitive email matching)
+- Password reset via email with time-limited one-time tokens (1 hour expiration)
+- Email delivery via Gmail API integration
+- Bcrypt password hashing for security
+- PostgreSQL session store for session management
+- Email enumeration prevention (neutral success messages)
+
+**Email Integration:**
+- Uses Replit's Gmail connector (authenticated with caleb@revenueparty.com)
+- Sends password reset emails with RFC 2822 compliant formatting
+- Proper error handling and logging for email delivery monitoring
+- Reset link format: `https://{domain}/admin/reset-password/{token}`
+
+**Database Schema:**
+- **users table**: id, username, email (unique, nullable), password (hashed), role (super_user/manager)
+- **passwordResetTokens table**: id, token (unique), userId, expiresAt, used (single-use flag)
+
+**Security Best Practices:**
+- Time-limited tokens (1 hour expiration)
+- Single-use tokens (marked as used after password reset)
+- Case-insensitive email matching for better UX
+- No email enumeration (always returns success message)
+- Comprehensive error logging for monitoring
+
+**Note**: For production deployment, consider adding rate limiting to authentication endpoints to prevent brute-force attacks.
