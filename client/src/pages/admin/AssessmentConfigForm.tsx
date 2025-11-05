@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertAssessmentConfigSchema, type AssessmentConfig } from "@shared/schema";
 import { z } from "zod";
+import { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -61,15 +62,17 @@ export default function AssessmentConfigForm() {
     },
   });
 
-  if (config && !form.formState.isDirty) {
-    form.reset({
-      title: config.title,
-      slug: config.slug,
-      description: config.description || "",
-      scoringMethod: config.scoringMethod,
-      published: config.published,
-    });
-  }
+  useEffect(() => {
+    if (config && isEdit) {
+      form.reset({
+        title: config.title,
+        slug: config.slug,
+        description: config.description || "",
+        scoringMethod: config.scoringMethod,
+        published: config.published,
+      });
+    }
+  }, [config, isEdit, form]);
 
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
