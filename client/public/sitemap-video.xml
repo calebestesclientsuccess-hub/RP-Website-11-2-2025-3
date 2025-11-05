@@ -1,25 +1,30 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   <url>
     <loc>https://revenueparty.com/</loc>
     <video:video>
-      <video:thumbnail_loc>https://revenueparty.com/video-thumbnail.jpg</video:thumbnail_loc>
-      <video:title>Your Fullstack Sales Unit - Revenue Party GTM System</video:title>
-      <video:description>Watch how Revenue Party's GTM Engine deploys elite BDR talent with AI-powered systems to deliver 20+ qualified appointments monthly.</video:description>
-      <video:content_loc>https://revenueparty.com/hero-video.mp4</video:content_loc>
-      <video:player_loc>https://revenueparty.com/</video:player_loc>
+      <video:thumbnail_loc>https://revenueparty.com/apple-touch-icon.png</video:thumbnail_loc>
+      <video:title>Your Fullstack Sales Unit - GTM Engine in Action</video:title>
+      <video:description>Watch how Revenue Party's GTM Engine combines elite BDR pods with AI-powered systems to deliver guaranteed qualified appointments.</video:description>
+      <video:content_loc>https://revenueparty.com/bdr-pod-video.mp4</video:content_loc>
       <video:duration>120</video:duration>
-      <video:publication_date>2024-10-01T08:00:00+00:00</video:publication_date>
+      <video:publication_date>2024-10-01T00:00:00+00:00</video:publication_date>
       <video:family_friendly>yes</video:family_friendly>
-      <video:tag>GTM</video:tag>
-      <video:tag>Sales</video:tag>
-      <video:tag>BDR</video:tag>
-      <video:tag>Revenue Generation</video:tag>
-      <video:tag>B2B SaaS</video:tag>
-      <video:category>Business</video:category>
-      <video:uploader info="https://revenueparty.com">Revenue Party</video:uploader>
-      <video:live>no</video:live>
+      <video:uploader info="https://revenueparty.com/why-us">Revenue Party</video:uploader>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://revenueparty.com/gtm-engine</loc>
+    <video:video>
+      <video:thumbnail_loc>https://revenueparty.com/apple-touch-icon.png</video:thumbnail_loc>
+      <video:title>The GTM Engine Explained</video:title>
+      <video:description>Complete walkthrough of the Revenue Party GTM Engine system architecture and how it delivers 3-5x pipeline growth.</video:description>
+      <video:content_loc>https://revenueparty.com/bdr-pod-video.mp4</video:content_loc>
+      <video:duration>120</video:duration>
+      <video:publication_date>2024-10-01T00:00:00+00:00</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
     </video:video>
   </url>
 </urlset>
