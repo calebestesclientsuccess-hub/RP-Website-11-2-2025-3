@@ -53,8 +53,8 @@ import AssessmentConfigsList from "@/pages/admin/AssessmentConfigsList";
 import AssessmentConfigForm from "@/pages/admin/AssessmentConfigForm";
 import NotFound from "@/pages/not-found";
 import GtmResultPage from "@/pages/GtmResultPage"; // Assuming this is a new import needed for the changes
-import ServiceWorker from "@/components/ServiceWorker"; // Assuming this is a new import needed for the changes
-import ProtectedRoute from "@/components/ProtectedRoute"; // Assuming this is a new import needed for the changes
+import { ServiceWorker } from "@/components/ServiceWorker";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 
 function Router() {
@@ -125,39 +125,37 @@ function Router() {
 
 function App() {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <HelmetProvider>
-          <ThemeProvider defaultTheme="dark">
-            <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <HelmetProvider>
+        <ThemeProvider defaultTheme="dark">
+          <AuthProvider>
             <TooltipProvider>
-            {/* Skip to content link for accessibility */}
-            <a
-              href="#main-content"
-              className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg"
-              data-testid="skip-to-content"
-            >
-              Skip to main content
-            </a>
-
-            <div className="min-h-screen bg-background text-foreground">
               <ErrorBoundary>
-                <Navbar />
-                <main id="main-content" role="main" aria-label="Main content">
-                  <Router />
-                </main>
-                <Footer />
+                {/* Skip to content link for accessibility */}
+                <a
+                  href="#main-content"
+                  className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg"
+                  data-testid="skip-to-content"
+                >
+                  Skip to main content
+                </a>
+
+                <div className="min-h-screen bg-background text-foreground">
+                  <Navbar />
+                  <main id="main-content" role="main" aria-label="Main content">
+                    <Router />
+                  </main>
+                  <Footer />
+                  <FloatingWidget />
+                </div>
+                <Toaster />
+                <ServiceWorker />
               </ErrorBoundary>
-              <FloatingWidget />
-            </div>
-            <Toaster />
-            <ServiceWorker />
             </TooltipProvider>
-            </AuthProvider>
-          </ThemeProvider>
-        </HelmetProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+          </AuthProvider>
+        </ThemeProvider>
+      </HelmetProvider>
+    </QueryClientProvider>
   );
 }
 
