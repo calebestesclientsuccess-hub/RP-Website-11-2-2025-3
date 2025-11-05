@@ -91,3 +91,117 @@ The application includes a comprehensive authentication system with role-based a
 - Comprehensive error logging for monitoring
 
 **Note**: For production deployment, consider adding rate limiting to authentication endpoints to prevent brute-force attacks.
+
+## Testing Summary & UI/UX Issues
+
+### Testing Completed (November 5, 2025)
+
+**✅ Fully Working Features:**
+
+1. **Blog Posts CRUD** - Complete create, read, update, delete workflow
+   - Admin can create both draft and published blog posts
+   - Edit form loads existing posts correctly
+   - Updates persist correctly
+   - Draft/published state filtering works
+   - Public page shows only published posts
+   
+2. **Video Posts CRUD** - Complete create, read, update, delete workflow
+   - Admin can create both draft and published video posts
+   - Edit form loads existing posts correctly  
+   - Updates persist correctly
+   - Draft/published state filtering works
+   - Public page shows only published videos
+
+3. **Assessment Configs CRUD** - Basic assessment metadata management
+   - Admin can create assessment configurations (title, slug, description, scoring method)
+   - Edit form loads existing configs correctly
+   - Updates persist correctly
+   - Fixed: Infinite re-render loop in edit form (moved form.reset to useEffect)
+
+4. **GTM Assessment** - Public-facing assessment tool
+   - 2-question decision tree assessment working at /gtm-assessment
+   - ConfigurableAssessment widget renders correctly
+   - Answer routing logic works (nextQuestionId and resultBucketKey)
+   - Result buckets display properly
+
+### Critical Bugs Fixed
+
+1. **Blog/Video Posts**: Fixed missing `publishedOnly=false` query parameter
+   - Issue: Admin list only showed published content, breaking edit flows
+   - Fix: Added `?publishedOnly=false` query param to admin endpoints
+   - Added separate `/by-id/:id` routes for fetching by UUID
+
+2. **Cache Invalidation**: Changed from `invalidateQueries` to `removeQueries`
+   - Issue: Stale cache preventing fresh data after updates
+   - Fix: Force cache removal after mutations to ensure fresh fetches
+
+3. **Assessment Form**: Fixed infinite re-render loop
+   - Issue: `form.reset()` called during render causing infinite loop
+   - Fix: Moved `form.reset()` to `useEffect` hook
+
+### Known Limitations & Missing Features
+
+**🔴 Critical Limitation: Assessment Admin UI Incomplete**
+
+The assessment admin interface only supports basic configuration management. To create a fully functional assessment, admins need to manually manage:
+
+- **Questions**: No UI to add/edit questions for an assessment
+- **Answers**: No UI to add/edit answer choices for questions
+- **Result Buckets**: No UI to add/edit result categories
+- **Answer Routing**: No UI to configure nextQuestionId or resultBucketKey logic
+
+Current workaround: GTM assessment was created via direct database inserts or migration scripts.
+
+**Impact**: Non-technical users cannot create new assessments through the admin UI.
+
+**Recommended Fix**: Build comprehensive admin pages for:
+1. Questions management (linked to assessment config)
+2. Answers management (linked to questions, with routing logic)
+3. Result buckets management (linked to assessment config)
+4. Visual decision tree builder for routing logic
+
+### Minor UI/UX Issues
+
+1. **ROI Calculator CTA Overlay**
+   - Issue: Floating ROI Calculator CTA can obstruct admin forms
+   - Severity: Low - can be dismissed with Escape key
+   - Recommendation: Exclude ROI Calculator from admin pages
+
+2. **Slug Auto-generation**
+   - Current: Slugs auto-generate from titles
+   - Works well for most use cases
+   - No validation for slug uniqueness in UI (only DB constraint)
+
+3. **Form Validation Messages**
+   - Some validation errors could be more descriptive
+   - Generally acceptable for admin users
+
+### API Consistency Patterns Established
+
+All content endpoints follow consistent patterns:
+
+```
+GET /api/{resource}?publishedOnly=false  // Admin list (all items)
+GET /api/{resource}?publishedOnly=true   // Public list (published only, default)
+GET /api/{resource}/by-id/:id           // Fetch by UUID for editing
+GET /api/{resource}/:slug               // Fetch by slug for public display
+POST /api/{resource}                    // Create
+PUT /api/{resource}/:id                 // Update
+DELETE /api/{resource}/:id              // Delete
+```
+
+### Testing Credentials
+
+- **Email**: Caleb@RevenueParty.com
+- **Password**: RevenueParty2024!
+- **Role**: super_user
+
+Additional manager accounts available (see Authentication section).
+
+### Next Steps for Production Readiness
+
+1. **High Priority**: Build complete assessment admin UI (questions, answers, results)
+2. **Medium Priority**: Add form field validation for slug uniqueness
+3. **Low Priority**: Hide ROI Calculator widget on admin pages
+4. **Polish**: Improve error messages and form validation feedback
+5. **Testing**: Add automated e2e tests for critical admin workflows
