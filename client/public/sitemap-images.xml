@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
@@ -7,6 +8,11 @@
       <image:loc>https://revenueparty.com/apple-touch-icon.png</image:loc>
       <image:title>Revenue Party Logo</image:title>
       <image:caption>Revenue Party - GTM Systems That Multiply Your Pipeline</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://revenueparty.com/og-image.png</image:loc>
+      <image:title>Revenue Party Open Graph Image</image:title>
+      <image:caption>Deploy Elite BDR Pods with AI-Powered Systems</image:caption>
     </image:image>
   </url>
   <url>
@@ -39,6 +45,38 @@
       <image:loc>https://revenueparty.com/apple-touch-icon.png</image:loc>
       <image:title>Why Revenue Party</image:title>
       <image:caption>Community Plus Competition Equals Culture</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://revenueparty.com/blog</loc>
+    <image:image>
+      <image:loc>https://revenueparty.com/apple-touch-icon.png</image:loc>
+      <image:title>Revenue Party Blog</image:title>
+      <image:caption>The Lone Wolf Trap and GTM Architecture Insights</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://revenueparty.com/resources/how-to-build-sdr-team-guide</loc>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&amp;h=450&amp;fit=crop</image:loc>
+      <image:title>How to Build an SDR Team Guide</image:title>
+      <image:caption>Complete guide to building a revenue-generating SDR team</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://revenueparty.com/resources/sdr-outsourcing-companies-guide</loc>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&amp;h=600&amp;fit=crop</image:loc>
+      <image:title>SDR Outsourcing Companies Guide</image:title>
+      <image:caption>2025 buyer's guide to SDR outsourcing and avoiding the 3 traps</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://revenueparty.com/resources/guide-to-sales-as-a-service</loc>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&amp;h=450&amp;fit=crop</image:loc>
+      <image:title>Guide to Sales as a Service</image:title>
+      <image:caption>What is Sales as a Service and how it solves the Lone Wolf trap</image:caption>
     </image:image>
   </url>
 </urlset>

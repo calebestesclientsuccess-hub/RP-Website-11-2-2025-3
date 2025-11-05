@@ -198,7 +198,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     if (prefersReducedMotion()) return;
 
     const rotationObj = { value: 0 };
-    
+
     orbitAnimationRef.current = gsap.to(rotationObj, {
       value: 360,
       duration: 60,
@@ -289,10 +289,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               setShowPlayButton(true);
             });
         };
-        
+
         video.addEventListener('loadeddata', playHandler, { once: true });
         video.addEventListener('canplay', playHandler, { once: true });
-        
+
         // Timeout fallback for error detection
         setTimeout(() => {
           if (video.readyState === 0 && video.networkState === 3) {
@@ -328,7 +328,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     if (!sectionRef.current || prefersReducedMotion()) return;
 
     const selectedPower = powers[selectedIndex];
-    
+
     gsap.to(sectionRef.current, {
       background: `radial-gradient(ellipse at top, rgba(${selectedPower.bgColor}, 0.05) 0%, transparent 60%)`,
       duration: 0.8,
@@ -377,7 +377,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         <div ref={containerRef} className="relative mx-auto" style={{ maxWidth: '900px' }}>
           {/* Orbital Container */}
           <div className="relative mx-auto h-[550px] md:h-[650px] flex items-center justify-center">
-            
+
             {/* Central Video */}
             <div className="relative z-20">
               <div 
@@ -406,7 +406,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                   <source src="/bdr-pod-video.webm" type="video/webm" />
                   <source src={videoSrc} type="video/mp4" />
                 </video>
-                
+
                 {/* Play button overlay for when autoplay is blocked */}
                 {showPlayButton && !videoError && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
@@ -420,7 +420,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                     </Button>
                   </div>
                 )}
-                
+
                 {/* Error message when video can't load */}
                 {videoError && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm p-8">
@@ -444,7 +444,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 const angleRad = (totalAngle * Math.PI) / 180;
                 const x = Math.cos(angleRad) * radius;
                 const y = Math.sin(angleRad) * radius * 0.6;
-                
+
                 // Calculate magnetic effect
                 const badgeX = x;
                 const badgeY = y;
@@ -454,7 +454,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 const magneticStrength = Math.max(0, 1 - distance / 200);
                 const pullX = (mousePos.x - badgeX) * magneticStrength * 0.15;
                 const pullY = (mousePos.y - badgeY) * magneticStrength * 0.15;
-                
+
                 return (
                   <div
                     key={power.id}
@@ -487,7 +487,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       >
                         {power.icon}
                       </div>
-                      
+
                       <div className={`
                         absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap
                         text-sm font-medium ${power.color}

@@ -88,7 +88,7 @@ export default function BlogPage() {
   // Extract dynamic categories from posts
   const categories = useMemo(() => {
     const categoryMap = new Map<string, number>();
-    
+
     combinedPosts.forEach(post => {
       if (post.category) {
         categoryMap.set(post.category, (categoryMap.get(post.category) || 0) + 1);
@@ -125,13 +125,13 @@ export default function BlogPage() {
 
       // Category filter
       const matchesCategory = selectedCategory === "All" || post.category === selectedCategory;
-      
+
       // Search filter
       const matchesSearch = searchQuery === "" || 
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (post.type === 'article' && post.excerpt.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (post.type === 'video' && post.description.toLowerCase().includes(searchQuery.toLowerCase()));
-      
+
       return matchesCategory && matchesSearch;
     });
   }, [combinedPosts, selectedCategory, searchQuery, contentType]);
@@ -200,7 +200,7 @@ export default function BlogPage() {
         keywords="hire cold callers, b2b appointment setting services, underperforming sales team, allbound, sales agency, GTM blog, SDR outsourcing, BDR hiring costs, revenue generation system"
         canonical="/blog"
       />
-      
+
       <FAQSchema 
         faqs={contentHubs.map(hub => ({
           question: `What is ${hub.name}?`,
@@ -558,7 +558,7 @@ export default function BlogPage() {
                                 <div className="aspect-video rounded-md overflow-hidden bg-muted">
                                   <img 
                                     src={post.featuredImage} 
-                                    alt={post.title}
+                                    alt={`Featured image for ${post.title} - Revenue Party blog post`}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                   />
                                 </div>
@@ -662,7 +662,7 @@ export default function BlogPage() {
                                 <div className="aspect-video rounded-md overflow-hidden bg-muted">
                                   <img 
                                     src={post.featuredImage} 
-                                    alt={post.title}
+                                    alt={`Featured image for ${post.title} - Revenue Party blog post`}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                   />
                                 </div>
