@@ -1,28 +1,50 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://revenueparty.com/</loc>
     <image:image>
+      <image:loc>https://revenueparty.com/og-image.png</image:loc>
+      <image:title>Revenue Party - GTM Engine System</image:title>
+      <image:caption>Deploy elite BDR pods with AI-powered systems for guaranteed pipeline growth</image:caption>
+    </image:image>
+    <image:image>
       <image:loc>https://revenueparty.com/apple-touch-icon.png</image:loc>
-      <image:title>Revenue Party GTM Engine Logo</image:title>
-      <image:caption>Elite BDR pods with AI-powered systems for B2B revenue generation</image:caption>
+      <image:title>Revenue Party Logo</image:title>
+      <image:caption>Revenue Party brand logo and icon</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://revenueparty.com/gtm-engine</loc>
     <image:image>
-      <image:loc>https://revenueparty.com/apple-touch-icon.png</image:loc>
+      <image:loc>https://revenueparty.com/og-image.png</image:loc>
       <image:title>GTM Engine System Architecture</image:title>
-      <image:caption>Complete revenue generation system combining talent, strategy, and AI</image:caption>
+      <image:caption>Complete revenue generation system combining elite talent, proven strategy, and AI technology</image:caption>
     </image:image>
   </url>
   <url>
     <loc>https://revenueparty.com/problem</loc>
     <image:image>
-      <image:loc>https://revenueparty.com/apple-touch-icon.png</image:loc>
-      <image:title>The $198k Internal Hire Trap</image:title>
-      <image:caption>Why traditional SDR hiring fails and costs more than you think</image:caption>
+      <image:loc>https://revenueparty.com/og-image.png</image:loc>
+      <image:title>The Internal Hire Trap</image:title>
+      <image:caption>Why traditional SDR hiring fails and costs 3-5x more than expected</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://revenueparty.com/results</loc>
+    <image:image>
+      <image:loc>https://revenueparty.com/og-image.png</image:loc>
+      <image:title>Revenue Party Results and Case Studies</image:title>
+      <image:caption>Real client success stories delivering 20+ qualified appointments monthly</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://revenueparty.com/pricing</loc>
+    <image:image>
+      <image:loc>https://revenueparty.com/og-image.png</image:loc>
+      <image:title>Revenue Party Pricing</image:title>
+      <image:caption>Transparent pricing for complete GTM system deployment</image:caption>
     </image:image>
   </url>
 </urlset>

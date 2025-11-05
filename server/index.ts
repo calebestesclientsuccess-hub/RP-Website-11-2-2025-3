@@ -107,6 +107,14 @@ app.use((req, res, next) => {
 import sitemapRouter from './routes/sitemap';
 app.use('/', sitemapRouter);
 
+// Add X-Robots-Tag for SEO
+app.use((req, res, next) => {
+  if (!req.path.includes('/admin')) {
+    res.setHeader('X-Robots-Tag', 'index, follow');
+  }
+  next();
+});
+
 (async () => {
   const server = await registerRoutes(app);
 

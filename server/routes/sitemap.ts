@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import { db } from '../db';
 import { blogPosts } from '../../shared/schema';
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 const router = Router();
 

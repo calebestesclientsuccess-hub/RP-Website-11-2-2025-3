@@ -13,7 +13,7 @@ export function SEO({
   title = "Revenue Party - GTM Systems That Multiply Your Pipeline",
   description = "Deploy a complete GTM system with elite BDRs, AI tech, and proven strategy. Get 20+ qualified appointments monthly.",
   canonical,
-  ogImage = "https://revenueparty.com/apple-touch-icon.png",
+  ogImage = "https://revenueparty.com/og-image.png",
   keywords = "GTM system, sales development, BDR pod, revenue generation, pipeline growth"
 }: SEOProps) {
   const siteUrl = 'https://revenueparty.com';
