@@ -27,6 +27,7 @@ import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templates";
 import { sendGmailEmail } from "./utils/gmail-client";
+import { db, eq, asc, resultBuckets } from "@shared/db";
 
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -51,37 +52,37 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
  */
 function calculateBucket(data: Partial<InsertAssessmentResponse>): string {
   const { q1, q2, q3, q11 } = data;
-  
+
   // Priority 1: Person Trap (selecting "The Person" as critical piece)
   // This overrides all other combinations
   if (q3 === 'a') {
     return 'person-trap';
   }
-  
+
   // Priority 2: Hot MQL Architect 
   // Own + Consultative + System + High Budget = Ready for GTM Pod
   if (q1 === 'b' && q2 === 'b' && q3 === 'e' && q11 === 'ii') {
     return 'hot-mql-architect';
   }
-  
+
   // Priority 3: Architecture Gap (specific)
   // Own + Consultative + System + Low Budget = Need to nurture
   if (q1 === 'b' && q2 === 'b' && q3 === 'e' && q11 === 'i') {
     return 'architecture-gap';
   }
-  
+
   // Priority 4: Agency
   // Rent + Transactional = Black Box Trap
   if (q1 === 'a' && q2 === 'a') {
     return 'agency';
   }
-  
+
   // Priority 5: Freelancer
   // Own + Transactional = Freelancer approach  
   if (q1 === 'b' && q2 === 'a') {
     return 'freelancer';
   }
-  
+
   // Default: Architecture Gap (catch-all for any other combination)
   // This is the safest nurture-focused PDF for unclear profiles
   return 'architecture-gap';
@@ -152,12 +153,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Try to find user by username first, then by email (case-insensitive)
       let user = await storage.getUserByUsername(username);
-      
+
       // If not found by username, try by email (case-insensitive)
       if (!user && username.includes('@')) {
         user = await storage.getUserByEmail(username.toLowerCase());
       }
-      
+
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
@@ -244,7 +245,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Find user by email
       const user = await storage.getUserByEmail(email);
-      
+
       // Always return success to prevent email enumeration
       if (!user) {
         return res.json({
@@ -407,7 +408,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Validate request body
       const result = insertEmailCaptureSchema.safeParse(req.body);
-      
+
       if (!result.success) {
         const validationError = fromZodError(result.error);
         return res.status(400).json({
@@ -767,7 +768,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/lead-magnets/download", async (req, res) => {
     try {
       const result = insertLeadCaptureSchema.safeParse(req.body);
-      
+
       if (!result.success) {
         const validationError = fromZodError(result.error);
         return res.status(400).json({
@@ -811,7 +812,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/v1/capture-blueprint", async (req, res) => {
     try {
       const result = insertBlueprintCaptureSchema.safeParse(req.body);
-      
+
       if (!result.success) {
         const validationError = fromZodError(result.error);
         return res.status(400).json({
@@ -873,13 +874,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/assessments/init", async (req, res) => {
     try {
       const { sessionId } = req.body;
-      
+
       if (!sessionId) {
         return res.status(400).json({ error: "Session ID is required" });
       }
 
       const existing = await storage.getAssessmentBySessionId(sessionId);
-      
+
       if (existing) {
         return res.json(existing);
       }
@@ -903,7 +904,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updates = req.body;
 
       const assessment = await storage.updateAssessment(sessionId, updates);
-      
+
       return res.json(assessment);
     } catch (error) {
       console.error("Error updating assessment:", error);
@@ -938,7 +939,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/assessments", async (req, res) => {
     try {
       const { bucket, startDate, endDate, search } = req.query;
-      
+
       const filters = {
         bucket: bucket as string | undefined,
         startDate: startDate ? new Date(startDate as string) : undefined,
@@ -947,7 +948,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const assessments = await storage.getAllAssessments(filters);
-      
+
       return res.json(assessments);
     } catch (error) {
       console.error("Error fetching assessments:", error);
@@ -958,7 +959,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/newsletter-signups", async (req, res) => {
     try {
       const result = insertNewsletterSignupSchema.safeParse(req.body);
-      
+
       if (!result.success) {
         const validationError = fromZodError(result.error);
         return res.status(400).json({
@@ -1267,6 +1268,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting bucket:", error);
       return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get result buckets for a specific assessment config
+  app.get("/api/assessment-configs/:id/results", async (req, res) => {
+    try {
+      const results = await db.query.resultBuckets.findMany({
+        where: eq(resultBuckets.configId, req.params.id),
+        orderBy: [asc(resultBuckets.order)]
+      });
+      res.json(results);
+    } catch (error) {
+      console.error('Error fetching result buckets:', error);
+      res.status(500).json({ error: 'Failed to fetch result buckets' });
+    }
+  });
+
+  // Create a new result bucket
+  app.post("/api/assessment-configs/:id/results", async (req, res) => {
+    try {
+      const [result] = await db.insert(resultBuckets).values({
+        configId: req.params.id,
+        ...req.body
+      }).returning();
+      res.json(result);
+    } catch (error) {
+      console.error('Error creating result bucket:', error);
+      res.status(500).json({ error: 'Failed to create result bucket' });
+    }
+  });
+
+  // Update a result bucket
+  app.put("/api/assessment-configs/:configId/results/:id", async (req, res) => {
+    try {
+      const [result] = await db.update(resultBuckets)
+        .set(req.body)
+        .where(eq(resultBuckets.id, req.params.id))
+        .returning();
+      res.json(result);
+    } catch (error) {
+      console.error('Error updating result bucket:', error);
+      res.status(500).json({ error: 'Failed to update result bucket' });
+    }
+  });
+
+  // Delete a result bucket
+  app.delete("/api/assessment-configs/:configId/results/:id", async (req, res) => {
+    try {
+      await db.delete(resultBuckets).where(eq(resultBuckets.id, req.params.id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting result bucket:', error);
+      res.status(500).json({ error: 'Failed to delete result bucket' });
     }
   });
 
