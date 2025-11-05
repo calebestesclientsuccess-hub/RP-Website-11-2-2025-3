@@ -21,6 +21,7 @@ import {
   insertAssessmentQuestionSchema,
   insertAssessmentAnswerSchema,
   insertAssessmentResultBucketSchema,
+  assessmentResultBuckets,
   type InsertAssessmentResponse
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
@@ -1275,9 +1276,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get result buckets for a specific assessment config
   app.get("/api/assessment-configs/:id/results", async (req, res) => {
     try {
-      const results = await db.query.resultBuckets.findMany({
-        where: eq(resultBuckets.configId, req.params.id),
-        orderBy: [asc(resultBuckets.order)]
+      const results = await db.query.assessmentResultBuckets.findMany({
+        where: eq(assessmentResultBuckets.assessmentId, req.params.id),
+        orderBy: [asc(assessmentResultBuckets.order)]
       });
       res.json(results);
     } catch (error) {
@@ -1289,8 +1290,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new result bucket
   app.post("/api/assessment-configs/:id/results", async (req, res) => {
     try {
-      const [result] = await db.insert(resultBuckets).values({
-        configId: req.params.id,
+      const [result] = await db.insert(assessmentResultBuckets).values({
+        assessmentId: req.params.id,
         ...req.body
       }).returning();
       res.json(result);
@@ -1303,9 +1304,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update a result bucket
   app.put("/api/assessment-configs/:configId/results/:id", async (req, res) => {
     try {
-      const [result] = await db.update(resultBuckets)
+      const [result] = await db.update(assessmentResultBuckets)
         .set(req.body)
-        .where(eq(resultBuckets.id, req.params.id))
+        .where(eq(assessmentResultBuckets.id, req.params.id))
         .returning();
       res.json(result);
     } catch (error) {
@@ -1317,7 +1318,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete a result bucket
   app.delete("/api/assessment-configs/:configId/results/:id", async (req, res) => {
     try {
-      await db.delete(resultBuckets).where(eq(resultBuckets.id, req.params.id));
+      await db.delete(assessmentResultBuckets).where(eq(assessmentResultBuckets.id, req.params.id));
       res.json({ success: true });
     } catch (error) {
       console.error('Error deleting result bucket:', error);
