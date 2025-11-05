@@ -32,6 +32,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { QuestionsManager } from "@/components/admin/QuestionsManager";
+import { AnswersManager } from "@/components/admin/AnswersManager";
+import { ResultBucketsManager } from "@/components/admin/ResultBucketsManager";
 
 const formSchema = insertAssessmentConfigSchema;
 
@@ -79,13 +83,13 @@ export default function AssessmentConfigForm() {
       const response = await apiRequest("POST", "/api/assessment-configs", data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/assessment-configs"] });
       toast({
         title: "Success",
-        description: "Assessment created successfully",
+        description: "Assessment created successfully. Now add questions and answers!",
       });
-      setLocation("/admin/assessments");
+      setLocation(`/admin/assessments/${data.id}/edit`);
     },
     onError: (error: Error) => {
       toast({
@@ -180,144 +184,316 @@ export default function AssessmentConfigForm() {
             </header>
             <main className="flex-1 overflow-auto p-6">
               <div className="max-w-4xl mx-auto">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Title</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="GTM Assessment Tool"
-                              data-testid="input-title"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                {isEdit ? (
+                  <Tabs defaultValue="basic" className="w-full">
+                    <TabsList className="grid w-full grid-cols-4">
+                      <TabsTrigger value="basic" data-testid="tab-basic">
+                        Basic Info
+                      </TabsTrigger>
+                      <TabsTrigger value="questions" data-testid="tab-questions">
+                        Questions
+                      </TabsTrigger>
+                      <TabsTrigger value="answers" data-testid="tab-answers">
+                        Answers
+                      </TabsTrigger>
+                      <TabsTrigger value="results" data-testid="tab-results">
+                        Results
+                      </TabsTrigger>
+                    </TabsList>
 
-                    <FormField
-                      control={form.control}
-                      name="slug"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Slug</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="gtm-assessment"
-                              data-testid="input-slug"
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Used in the URL: /assessments/your-slug
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <TabsContent value="basic" className="mt-6">
+                      <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                          <FormField
+                            control={form.control}
+                            name="title"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Title</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="GTM Assessment Tool"
+                                    data-testid="input-title"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              value={field.value || ""}
-                              placeholder="Brief description of this assessment"
-                              data-testid="input-description"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                          <FormField
+                            control={form.control}
+                            name="slug"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Slug</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="gtm-assessment"
+                                    data-testid="input-slug"
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  Used in the URL: /assessments/your-slug
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                    <FormField
-                      control={form.control}
-                      name="scoringMethod"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Scoring Method</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-scoring-method">
-                                <SelectValue placeholder="Select scoring method" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="decision-tree" data-testid="option-decision-tree">
-                                Decision Tree (rule-based)
-                              </SelectItem>
-                              <SelectItem value="points" data-testid="option-points">
-                                Points-based
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            How should the assessment calculate results?
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                          <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Description</FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    {...field}
+                                    value={field.value || ""}
+                                    placeholder="Brief description of this assessment"
+                                    data-testid="input-description"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                    <FormField
-                      control={form.control}
-                      name="published"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base">Published</FormLabel>
-                            <FormDescription>
-                              Make this assessment available to the public
-                            </FormDescription>
+                          <FormField
+                            control={form.control}
+                            name="scoringMethod"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Scoring Method</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger data-testid="select-scoring-method">
+                                      <SelectValue placeholder="Select scoring method" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="decision-tree" data-testid="option-decision-tree">
+                                      Decision Tree (rule-based)
+                                    </SelectItem>
+                                    <SelectItem value="points" data-testid="option-points">
+                                      Points-based
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormDescription>
+                                  How should the assessment calculate results?
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="published"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                <div className="space-y-0.5">
+                                  <FormLabel className="text-base">Published</FormLabel>
+                                  <FormDescription>
+                                    Make this assessment available to the public
+                                  </FormDescription>
+                                </div>
+                                <FormControl>
+                                  <Switch
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    data-testid="switch-published"
+                                  />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
+
+                          <div className="flex gap-4">
+                            <Button
+                              type="submit"
+                              disabled={isPending}
+                              data-testid="button-submit"
+                            >
+                              {isPending ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Updating...
+                                </>
+                              ) : (
+                                "Update Assessment"
+                              )}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setLocation("/admin/assessments")}
+                              disabled={isPending}
+                              data-testid="button-cancel"
+                            >
+                              Cancel
+                            </Button>
                           </div>
-                          <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              data-testid="switch-published"
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                        </form>
+                      </Form>
+                    </TabsContent>
 
-                    <div className="flex gap-4">
-                      <Button
-                        type="submit"
-                        disabled={isPending}
-                        data-testid="button-submit"
-                      >
-                        {isPending ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            {isEdit ? "Updating..." : "Creating..."}
-                          </>
-                        ) : (
-                          isEdit ? "Update Assessment" : "Create Assessment"
+                    <TabsContent value="questions" className="mt-6">
+                      <QuestionsManager assessmentId={params?.id!} />
+                    </TabsContent>
+
+                    <TabsContent value="answers" className="mt-6">
+                      <AnswersManager assessmentId={params?.id!} />
+                    </TabsContent>
+
+                    <TabsContent value="results" className="mt-6">
+                      <ResultBucketsManager assessmentId={params?.id!} />
+                    </TabsContent>
+                  </Tabs>
+                ) : (
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                      <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Title</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="GTM Assessment Tool"
+                                data-testid="input-title"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setLocation("/admin/assessments")}
-                        disabled={isPending}
-                        data-testid="button-cancel"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="slug"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Slug</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                placeholder="gtm-assessment"
+                                data-testid="input-slug"
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Used in the URL: /assessments/your-slug
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                value={field.value || ""}
+                                placeholder="Brief description of this assessment"
+                                data-testid="input-description"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="scoringMethod"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Scoring Method</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger data-testid="select-scoring-method">
+                                  <SelectValue placeholder="Select scoring method" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="decision-tree" data-testid="option-decision-tree">
+                                  Decision Tree (rule-based)
+                                </SelectItem>
+                                <SelectItem value="points" data-testid="option-points">
+                                  Points-based
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              How should the assessment calculate results?
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="published"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base">Published</FormLabel>
+                              <FormDescription>
+                                Make this assessment available to the public
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                data-testid="switch-published"
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="flex gap-4">
+                        <Button
+                          type="submit"
+                          disabled={isPending}
+                          data-testid="button-submit"
+                        >
+                          {isPending ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Creating...
+                            </>
+                          ) : (
+                            "Create Assessment"
+                          )}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setLocation("/admin/assessments")}
+                          disabled={isPending}
+                          data-testid="button-cancel"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                )}
               </div>
             </main>
           </div>
