@@ -1,8 +1,8 @@
+import React, { useState } from 'react';
 import { Link, useLocation } from "wouter";
 import { Moon, Sun, Menu, X } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import logoWhite from "@assets/rev-white_1760952720792.png";
 
 export function Navbar() {
@@ -112,7 +112,7 @@ export function Navbar() {
                 Schedule GTM Audit
               </Button>
             </Link>
-            
+
             <Button
               size="icon"
               variant="ghost"
