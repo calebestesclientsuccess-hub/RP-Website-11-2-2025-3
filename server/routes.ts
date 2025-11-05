@@ -17,6 +17,10 @@ import {
   insertNewsletterSignupSchema,
   insertUserSchema,
   loginSchema,
+  insertAssessmentConfigSchema,
+  insertAssessmentQuestionSchema,
+  insertAssessmentAnswerSchema,
+  insertAssessmentResultBucketSchema,
   type InsertAssessmentResponse
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
@@ -949,6 +953,293 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(signups);
     } catch (error) {
       console.error("Error fetching newsletter signups:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Assessment Config Management API
+  app.get("/api/assessment-configs", requireAuth, async (req, res) => {
+    try {
+      const configs = await storage.getAllAssessmentConfigs();
+      return res.json(configs);
+    } catch (error) {
+      console.error("Error fetching assessment configs:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/assessment-configs/:id", requireAuth, async (req, res) => {
+    try {
+      const config = await storage.getAssessmentConfigById(req.params.id);
+      if (!config) {
+        return res.status(404).json({ error: "Assessment config not found" });
+      }
+      return res.json(config);
+    } catch (error) {
+      console.error("Error fetching assessment config:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/assessment-configs", requireAuth, async (req, res) => {
+    try {
+      const result = insertAssessmentConfigSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const config = await storage.createAssessmentConfig(result.data);
+      return res.status(201).json(config);
+    } catch (error) {
+      console.error("Error creating assessment config:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/assessment-configs/:id", requireAuth, async (req, res) => {
+    try {
+      const result = insertAssessmentConfigSchema.partial().safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const config = await storage.updateAssessmentConfig(req.params.id, result.data);
+      return res.json(config);
+    } catch (error) {
+      console.error("Error updating assessment config:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/assessment-configs/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deleteAssessmentConfig(req.params.id);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting assessment config:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Assessment Questions API
+  app.get("/api/assessment-configs/:assessmentId/questions", requireAuth, async (req, res) => {
+    try {
+      const questions = await storage.getQuestionsByAssessmentId(req.params.assessmentId);
+      return res.json(questions);
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/assessment-configs/:assessmentId/questions", requireAuth, async (req, res) => {
+    try {
+      const result = insertAssessmentQuestionSchema.safeParse({
+        ...req.body,
+        assessmentId: req.params.assessmentId,
+      });
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const question = await storage.createAssessmentQuestion(result.data);
+      return res.status(201).json(question);
+    } catch (error) {
+      console.error("Error creating question:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/assessment-questions/:id", requireAuth, async (req, res) => {
+    try {
+      const result = insertAssessmentQuestionSchema.partial().safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const question = await storage.updateAssessmentQuestion(req.params.id, result.data);
+      return res.json(question);
+    } catch (error) {
+      console.error("Error updating question:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/assessment-questions/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deleteAssessmentQuestion(req.params.id);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting question:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Assessment Answers API
+  app.get("/api/assessment-questions/:questionId/answers", requireAuth, async (req, res) => {
+    try {
+      const answers = await storage.getAnswersByQuestionId(req.params.questionId);
+      return res.json(answers);
+    } catch (error) {
+      console.error("Error fetching answers:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/assessment-questions/:questionId/answers", requireAuth, async (req, res) => {
+    try {
+      const result = insertAssessmentAnswerSchema.safeParse({
+        ...req.body,
+        questionId: req.params.questionId,
+      });
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const answer = await storage.createAssessmentAnswer(result.data);
+      return res.status(201).json(answer);
+    } catch (error) {
+      console.error("Error creating answer:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/assessment-answers/:id", requireAuth, async (req, res) => {
+    try {
+      const result = insertAssessmentAnswerSchema.partial().safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const answer = await storage.updateAssessmentAnswer(req.params.id, result.data);
+      return res.json(answer);
+    } catch (error) {
+      console.error("Error updating answer:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/assessment-answers/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deleteAssessmentAnswer(req.params.id);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting answer:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Assessment Result Buckets API
+  app.get("/api/assessment-configs/:assessmentId/buckets", requireAuth, async (req, res) => {
+    try {
+      const buckets = await storage.getBucketsByAssessmentId(req.params.assessmentId);
+      return res.json(buckets);
+    } catch (error) {
+      console.error("Error fetching buckets:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/assessment-configs/:assessmentId/buckets", requireAuth, async (req, res) => {
+    try {
+      const result = insertAssessmentResultBucketSchema.safeParse({
+        ...req.body,
+        assessmentId: req.params.assessmentId,
+      });
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const bucket = await storage.createAssessmentResultBucket(result.data);
+      return res.status(201).json(bucket);
+    } catch (error) {
+      console.error("Error creating bucket:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/assessment-buckets/:id", requireAuth, async (req, res) => {
+    try {
+      const result = insertAssessmentResultBucketSchema.partial().safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const bucket = await storage.updateAssessmentResultBucket(req.params.id, result.data);
+      return res.json(bucket);
+    } catch (error) {
+      console.error("Error updating bucket:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/assessment-buckets/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deleteAssessmentResultBucket(req.params.id);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting bucket:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Public assessment config endpoint (for frontend widget)
+  app.get("/api/public/assessments/:slug", async (req, res) => {
+    try {
+      const config = await storage.getAssessmentConfigBySlug(req.params.slug);
+      if (!config || !config.published) {
+        return res.status(404).json({ error: "Assessment not found" });
+      }
+
+      const questions = await storage.getQuestionsByAssessmentId(config.id);
+      const questionsWithAnswers = await Promise.all(
+        questions.map(async (q) => ({
+          ...q,
+          answers: await storage.getAnswersByQuestionId(q.id),
+        }))
+      );
+
+      const buckets = await storage.getBucketsByAssessmentId(config.id);
+
+      return res.json({
+        config,
+        questions: questionsWithAnswers,
+        buckets,
+      });
+    } catch (error) {
+      console.error("Error fetching public assessment:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

@@ -49,6 +49,8 @@ import BlogPostForm from "@/pages/admin/BlogPostForm";
 import VideoPostsList from "@/pages/admin/VideoPostsList";
 import VideoPostForm from "@/pages/admin/VideoPostForm";
 import WidgetConfigPage from "@/pages/admin/WidgetConfigPage";
+import AssessmentConfigsList from "@/pages/admin/AssessmentConfigsList";
+import AssessmentConfigForm from "@/pages/admin/AssessmentConfigForm";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -77,7 +79,10 @@ function Router() {
       <Route path="/admin/reset-password/:token" component={ResetPasswordPage} />
       <Route path="/admin/welcome" component={WelcomePage} />
       <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin/assessments" component={AssessmentAdminDashboard} />
+      <Route path="/admin/assessment-submissions" component={AssessmentAdminDashboard} />
+      <Route path="/admin/assessments/new" component={AssessmentConfigForm} />
+      <Route path="/admin/assessments/:id/edit" component={AssessmentConfigForm} />
+      <Route path="/admin/assessments" component={AssessmentConfigsList} />
       <Route path="/admin/blog-posts/new" component={BlogPostForm} />
       <Route path="/admin/blog-posts/:id/edit" component={BlogPostForm} />
       <Route path="/admin/blog-posts" component={BlogPostsList} />

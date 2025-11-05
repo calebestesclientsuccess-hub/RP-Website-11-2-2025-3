@@ -12,7 +12,12 @@ import {
   type AssessmentResponse, type InsertAssessmentResponse,
   type NewsletterSignup, type InsertNewsletterSignup,
   type PasswordResetToken, type InsertPasswordResetToken,
-  users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens
+  type AssessmentConfig, type InsertAssessmentConfig,
+  type AssessmentQuestion, type InsertAssessmentQuestion,
+  type AssessmentAnswer, type InsertAssessmentAnswer,
+  type AssessmentResultBucket, type InsertAssessmentResultBucket,
+  users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens,
+  assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, ilike, sql } from "drizzle-orm";
@@ -69,6 +74,28 @@ export interface IStorage {
   
   createNewsletterSignup(signup: InsertNewsletterSignup): Promise<NewsletterSignup>;
   getAllNewsletterSignups(): Promise<NewsletterSignup[]>;
+  
+  getAllAssessmentConfigs(): Promise<AssessmentConfig[]>;
+  getAssessmentConfigById(id: string): Promise<AssessmentConfig | undefined>;
+  getAssessmentConfigBySlug(slug: string): Promise<AssessmentConfig | undefined>;
+  createAssessmentConfig(config: InsertAssessmentConfig): Promise<AssessmentConfig>;
+  updateAssessmentConfig(id: string, config: Partial<InsertAssessmentConfig>): Promise<AssessmentConfig>;
+  deleteAssessmentConfig(id: string): Promise<void>;
+  
+  getQuestionsByAssessmentId(assessmentId: string): Promise<AssessmentQuestion[]>;
+  createAssessmentQuestion(question: InsertAssessmentQuestion): Promise<AssessmentQuestion>;
+  updateAssessmentQuestion(id: string, question: Partial<InsertAssessmentQuestion>): Promise<AssessmentQuestion>;
+  deleteAssessmentQuestion(id: string): Promise<void>;
+  
+  getAnswersByQuestionId(questionId: string): Promise<AssessmentAnswer[]>;
+  createAssessmentAnswer(answer: InsertAssessmentAnswer): Promise<AssessmentAnswer>;
+  updateAssessmentAnswer(id: string, answer: Partial<InsertAssessmentAnswer>): Promise<AssessmentAnswer>;
+  deleteAssessmentAnswer(id: string): Promise<void>;
+  
+  getBucketsByAssessmentId(assessmentId: string): Promise<AssessmentResultBucket[]>;
+  createAssessmentResultBucket(bucket: InsertAssessmentResultBucket): Promise<AssessmentResultBucket>;
+  updateAssessmentResultBucket(id: string, bucket: Partial<InsertAssessmentResultBucket>): Promise<AssessmentResultBucket>;
+  deleteAssessmentResultBucket(id: string): Promise<void>;
 }
 
 export class DbStorage implements IStorage {
@@ -340,6 +367,104 @@ export class DbStorage implements IStorage {
 
   async getAllNewsletterSignups(): Promise<NewsletterSignup[]> {
     return await db.select().from(newsletterSignups).orderBy(desc(newsletterSignups.createdAt));
+  }
+
+  async getAllAssessmentConfigs(): Promise<AssessmentConfig[]> {
+    return await db.select().from(assessmentConfigs).orderBy(desc(assessmentConfigs.createdAt));
+  }
+
+  async getAssessmentConfigById(id: string): Promise<AssessmentConfig | undefined> {
+    const [config] = await db.select().from(assessmentConfigs).where(eq(assessmentConfigs.id, id));
+    return config;
+  }
+
+  async getAssessmentConfigBySlug(slug: string): Promise<AssessmentConfig | undefined> {
+    const [config] = await db.select().from(assessmentConfigs).where(eq(assessmentConfigs.slug, slug));
+    return config;
+  }
+
+  async createAssessmentConfig(insertConfig: InsertAssessmentConfig): Promise<AssessmentConfig> {
+    const [config] = await db.insert(assessmentConfigs).values(insertConfig).returning();
+    return config;
+  }
+
+  async updateAssessmentConfig(id: string, data: Partial<InsertAssessmentConfig>): Promise<AssessmentConfig> {
+    const [config] = await db
+      .update(assessmentConfigs)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(assessmentConfigs.id, id))
+      .returning();
+    return config;
+  }
+
+  async deleteAssessmentConfig(id: string): Promise<void> {
+    await db.delete(assessmentConfigs).where(eq(assessmentConfigs.id, id));
+  }
+
+  async getQuestionsByAssessmentId(assessmentId: string): Promise<AssessmentQuestion[]> {
+    return await db.select().from(assessmentQuestions).where(eq(assessmentQuestions.assessmentId, assessmentId)).orderBy(assessmentQuestions.order);
+  }
+
+  async createAssessmentQuestion(insertQuestion: InsertAssessmentQuestion): Promise<AssessmentQuestion> {
+    const [question] = await db.insert(assessmentQuestions).values(insertQuestion).returning();
+    return question;
+  }
+
+  async updateAssessmentQuestion(id: string, data: Partial<InsertAssessmentQuestion>): Promise<AssessmentQuestion> {
+    const [question] = await db
+      .update(assessmentQuestions)
+      .set(data)
+      .where(eq(assessmentQuestions.id, id))
+      .returning();
+    return question;
+  }
+
+  async deleteAssessmentQuestion(id: string): Promise<void> {
+    await db.delete(assessmentQuestions).where(eq(assessmentQuestions.id, id));
+  }
+
+  async getAnswersByQuestionId(questionId: string): Promise<AssessmentAnswer[]> {
+    return await db.select().from(assessmentAnswers).where(eq(assessmentAnswers.questionId, questionId)).orderBy(assessmentAnswers.order);
+  }
+
+  async createAssessmentAnswer(insertAnswer: InsertAssessmentAnswer): Promise<AssessmentAnswer> {
+    const [answer] = await db.insert(assessmentAnswers).values(insertAnswer).returning();
+    return answer;
+  }
+
+  async updateAssessmentAnswer(id: string, data: Partial<InsertAssessmentAnswer>): Promise<AssessmentAnswer> {
+    const [answer] = await db
+      .update(assessmentAnswers)
+      .set(data)
+      .where(eq(assessmentAnswers.id, id))
+      .returning();
+    return answer;
+  }
+
+  async deleteAssessmentAnswer(id: string): Promise<void> {
+    await db.delete(assessmentAnswers).where(eq(assessmentAnswers.id, id));
+  }
+
+  async getBucketsByAssessmentId(assessmentId: string): Promise<AssessmentResultBucket[]> {
+    return await db.select().from(assessmentResultBuckets).where(eq(assessmentResultBuckets.assessmentId, assessmentId)).orderBy(assessmentResultBuckets.order);
+  }
+
+  async createAssessmentResultBucket(insertBucket: InsertAssessmentResultBucket): Promise<AssessmentResultBucket> {
+    const [bucket] = await db.insert(assessmentResultBuckets).values(insertBucket).returning();
+    return bucket;
+  }
+
+  async updateAssessmentResultBucket(id: string, data: Partial<InsertAssessmentResultBucket>): Promise<AssessmentResultBucket> {
+    const [bucket] = await db
+      .update(assessmentResultBuckets)
+      .set(data)
+      .where(eq(assessmentResultBuckets.id, id))
+      .returning();
+    return bucket;
+  }
+
+  async deleteAssessmentResultBucket(id: string): Promise<void> {
+    await db.delete(assessmentResultBuckets).where(eq(assessmentResultBuckets.id, id));
   }
 }
 

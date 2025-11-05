@@ -181,6 +181,49 @@ export const newsletterSignups = pgTable("newsletter_signups", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const assessmentConfigs = pgTable("assessment_configs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  scoringMethod: text("scoring_method").notNull().default("decision-tree"),
+  published: boolean("published").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const assessmentQuestions = pgTable("assessment_questions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  assessmentId: varchar("assessment_id").notNull().references(() => assessmentConfigs.id, { onDelete: "cascade" }),
+  questionText: text("question_text").notNull(),
+  description: text("description"),
+  order: integer("order").notNull(),
+  questionType: text("question_type").notNull().default("single-choice"),
+  conditionalLogic: text("conditional_logic"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const assessmentAnswers = pgTable("assessment_answers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  questionId: varchar("question_id").notNull().references(() => assessmentQuestions.id, { onDelete: "cascade" }),
+  answerText: text("answer_text").notNull(),
+  answerValue: text("answer_value").notNull(),
+  order: integer("order").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const assessmentResultBuckets = pgTable("assessment_result_buckets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  assessmentId: varchar("assessment_id").notNull().references(() => assessmentConfigs.id, { onDelete: "cascade" }),
+  bucketName: text("bucket_name").notNull(),
+  bucketKey: text("bucket_key").notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  routingRules: text("routing_rules"),
+  order: integer("order").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -273,6 +316,27 @@ export const insertNewsletterSignupSchema = createInsertSchema(newsletterSignups
     email: z.string().email("Please enter a valid email address"),
   });
 
+export const insertAssessmentConfigSchema = createInsertSchema(assessmentConfigs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertAssessmentQuestionSchema = createInsertSchema(assessmentQuestions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAssessmentAnswerSchema = createInsertSchema(assessmentAnswers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAssessmentResultBucketSchema = createInsertSchema(assessmentResultBuckets).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
@@ -299,3 +363,11 @@ export type AssessmentResponse = typeof assessmentResponses.$inferSelect;
 export type InsertAssessmentResponse = z.infer<typeof insertAssessmentResponseSchema>;
 export type NewsletterSignup = typeof newsletterSignups.$inferSelect;
 export type InsertNewsletterSignup = z.infer<typeof insertNewsletterSignupSchema>;
+export type AssessmentConfig = typeof assessmentConfigs.$inferSelect;
+export type InsertAssessmentConfig = z.infer<typeof insertAssessmentConfigSchema>;
+export type AssessmentQuestion = typeof assessmentQuestions.$inferSelect;
+export type InsertAssessmentQuestion = z.infer<typeof insertAssessmentQuestionSchema>;
+export type AssessmentAnswer = typeof assessmentAnswers.$inferSelect;
+export type InsertAssessmentAnswer = z.infer<typeof insertAssessmentAnswerSchema>;
+export type AssessmentResultBucket = typeof assessmentResultBuckets.$inferSelect;
+export type InsertAssessmentResultBucket = z.infer<typeof insertAssessmentResultBucketSchema>;
