@@ -1,0 +1,223 @@
+Assessment Configuration Tool - Comprehensive Plan
+After reviewing your notes (rag://rag_source_9, rag://rag_source_10, rag://rag_source_11), here's what we need to build:
+
+Core Requirements
+1. Assessment Configuration System
+
+Configurable questions with multiple answer options
+Conditional logic (questions shown based on previous answers)
+Two scoring methods:
+Points-based: Each answer has a score, results determined by total score ranges
+Decision-tree: Results determined by specific answer combinations
+Configurable results pages with unique content for each bucket
+2. Admin UI Requirements
+
+Question management (CRUD)
+Answer options with scoring/routing logic
+Conditional question setup
+Results page content editor
+Bucket/pathway configuration
+Preview mode
+Database Schema
+// Assessment Configuration Tables
+assessmentConfigs (main assessment settings)
+  - id, title, description, slug
+  - scoringMethod: 'points' | 'decision-tree'
+  - published, createdAt, updatedAt
+assessmentQuestions
+  - id, assessmentId, order, phase
+  - questionText, description, headerText
+  - questionType: 'single-choice' | 'multi-choice' | 'text' | 'number'
+  - conditionalParentQuestionId (nullable)
+  - conditionalParentAnswerId (nullable)
+assessmentAnswers
+  - id, questionId, order
+  - answerText, subText
+  - pointValue (for points-based)
+  - routingKey (for decision-tree)
+assessmentBuckets (results pages)
+  - id, assessmentId
+  - bucketName, bucketKey
+  - title, diagnosis, recommendations
+  - ctaText, ctaUrl
+  - minScore, maxScore (for points-based, nullable)
+assessmentBucketRules (for decision-tree)
+  - id, bucketId
+  - ruleLogic (JSON: [{questionId, answerIds, operator: 'AND'|'OR'}])
+  - priority (higher priority rules checked first)
+assessmentResponses (submissions)
+  - id, assessmentId, sessionId
+  - responses (JSON), calculatedBucket
+  - email, completed, createdAt
+Admin Interface Structure
+1. Assessment List Page (/admin/assessments)
+
+Table of all assessments
+Create new, edit, duplicate, delete
+Publish/unpublish toggle
+Preview link
+2. Assessment Editor (/admin/assessments/:id/edit)
+
+Tab 1: Settings
+
+Assessment title, slug, description
+Scoring method selector
+Global settings (show progress bar, allow back navigation, etc.)
+Tab 2: Questions
+
+Drag-to-reorder question list
+Add question button
+For each question:
+Question text, description, header
+Question type
+Conditional logic setup:
+"Show this question only if..."
+Parent question selector
+Parent answer selector
+Answer options editor:
+Add/remove answers
+Answer text, sub-text
+Point value (if points-based)
+Routing key (if decision-tree)
+Drag to reorder
+Tab 3: Results/Buckets
+
+List of result buckets
+Add bucket button
+For each bucket:
+Bucket name, key
+Content editor (rich text):
+Title
+Diagnosis text
+Strengths section
+Gaps section
+Recommendations (immediate, short-term, long-term)
+CTA text and URL
+If Points-Based: Score range (min/max)
+If Decision-Tree: Rule builder
+Add rule group
+"User gets this result if..."
+Question + Answer combinations
+AND/OR logic
+Priority order
+Tab 4: Preview & Test
+
+Full assessment preview
+Test mode (fill out and see which bucket you get)
+Bucket routing debug view
+Frontend Widget Component
+// Client-side assessment widget
+<ConfigurableAssessmentWidget 
+  assessmentId="uuid"
+  mode="inline" | "modal" | "standalone"
+/>
+Features:
+
+Fetches configuration from API
+Renders questions based on order and conditional logic
+Handles navigation (next/previous)
+Calculates bucket based on scoring method
+Submits responses to API
+Displays results page
+API Endpoints
+// Public endpoints
+GET /api/assessments/:slug/config
+POST /api/assessments/:slug/submit
+GET /api/assessments/:slug/result/:bucketKey
+// Admin endpoints
+GET /api/admin/assessments
+POST /api/admin/assessments
+GET /api/admin/assessments/:id
+PATCH /api/admin/assessments/:id
+DELETE /api/admin/assessments/:id
+GET /api/admin/assessments/:id/questions
+POST /api/admin/assessments/:id/questions
+PATCH /api/admin/assessments/:id/questions/:questionId
+DELETE /api/admin/assessments/:id/questions/:questionId
+GET /api/admin/assessments/:id/buckets
+POST /api/admin/assessments/:id/buckets
+PATCH /api/admin/assessments/:id/buckets/:bucketId
+DELETE /api/admin/assessments/:id/buckets/:bucketId
+Bucket Calculation Logic
+Points-Based:
+
+function calculateBucket(responses, buckets) {
+  const totalScore = responses.reduce((sum, r) => sum + r.pointValue, 0);
+  return buckets.find(b => 
+    totalScore >= b.minScore && totalScore <= b.maxScore
+  );
+}
+Decision-Tree:
+
+function calculateBucket(responses, buckets) {
+  // Sort by priority (highest first)
+  const sortedBuckets = buckets.sort((a, b) => b.priority - a.priority);
+  
+  for (const bucket of sortedBuckets) {
+    if (matchesRules(responses, bucket.rules)) {
+      return bucket;
+    }
+  }
+  return defaultBucket;
+}
+function matchesRules(responses, rules) {
+  return rules.every(ruleGroup => {
+    // Check if this rule group matches
+    const matches = ruleGroup.conditions.map(cond => {
+      const response = responses.find(r => r.questionId === cond.questionId);
+      return cond.answerIds.includes(response?.answerId);
+    });
+    
+    return ruleGroup.operator === 'AND' 
+      ? matches.every(m => m)
+      : matches.some(m => m);
+  });
+}
+Migration from Current Assessment
+We can migrate your existing Pipeline Assessment (PipelineAssessmentPage.tsx) to this system:
+
+Create an assessment config with 14 questions
+Set scoring method to "decision-tree"
+Configure the 5 buckets with their routing rules
+Replace hardcoded component with <ConfigurableAssessmentWidget assessmentId="pipeline" />
+Implementation Order
+Phase 1: Foundation (Database & API)
+
+Create database schema and migrations
+Build CRUD API endpoints for assessments, questions, buckets
+Phase 2: Admin UI
+3. Assessment list page
+
+Settings tab
+Questions tab with conditional logic
+Buckets tab with rule builder (both scoring methods)
+Preview tab
+Phase 3: Frontend Widget
+8. ConfigurableAssessmentWidget component
+
+Question rendering with conditional logic
+Bucket calculation (both methods)
+Results page rendering
+Phase 4: Migration
+12. Migrate Pipeline Assessment to use new system
+
+Test and refine
+Key Differentiators from Calculator
+Similarities:
+
+Both are configurable tools for lead generation
+Both have admin UI for configuration
+Both capture email before showing results
+Differences:
+
+Assessment has complex multi-step flow with conditional logic
+Assessment has two different scoring methods (points vs. decision-tree)
+Assessment results are content-rich pages, not just calculations
+Calculator is simpler: just input fields + formula + result
+Next Steps
+Would you like me to:
+
+Start with database schema - Create the migration files
+Build admin UI first - Start with the assessment configuration interface
+Build widget first - Create the user-facing assessment component
+Migrate current assessment - Convert Pipeline Assessment to use this system

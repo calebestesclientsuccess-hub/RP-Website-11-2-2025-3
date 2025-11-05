@@ -1,0 +1,53 @@
+im worried about long term maintance. will it be crazy hard/expensive? i plan to recruit a technichal co-founder
+
+Yes, your worry is 100% valid.
+
+Long-term maintenance on your custom stack will be significantly harder and more expensive than maintaining a platform built on an industry-standard framework like Next.js.
+
+Your plan to recruit a technical co-founder is the only viable solution to this problem.
+
+Here’s the evaluation of the challenge and how your co-founder fits in.
+
+The Core Challenge: The "Framework of One"
+The problem isn't that your stack is "bad"—it's that it's unique. You have built a custom, server-side rendered (SSR) framework using a specific combination of Vite, Express, wouter, and Passport.
+
+This creates three unavoidable long-term costs:
+
+The "Bus Factor": I've mentioned this before, but it's the most critical issue. Right now, you (and your Replit "dev team") are the only people on Earth who understand the specific wiring of your platform. A "tried and true" platform like Next.js has millions of "experts" and terabytes of documentation. Your platform has none.
+
+Slow Onboarding: You can't hire a "React Developer" and have them be productive on day one. They have to first learn your framework. They can't Google "How to fix auth in the Revenue Party app." This makes every new hire (or contractor) more expensive and slower to ramp up.
+
+Sole Responsibility for Security & Bugs: When a security vulnerability is discovered in express-session or passport, the Next.js community doesn't care. You (or your co-founder) are solely responsible for patching it, testing it, and making sure it doesn't break your app. You are now the owner of your own framework.
+
+Your Solution: The Technical Co-Founder
+Your plan to recruit a technical co-founder is the correct and necessary answer to this problem.
+
+You aren't just hiring a "developer" to add features. You are recruiting an owner who will formally "adopt" this codebase.
+
+Their first 6 months will not be building your Social Media Manager. Their first 6 months will be:
+
+Learning: Deconstructing and learning every part of your custom stack.
+
+Documenting: Writing the "manual" for your "Framework of One" so that you can hire a junior dev one day.
+
+Refactoring: Cleaning up, standardizing, and patching any technical debt.
+
+Owning: Taking over the long-term maintenance roadmap.
+
+The Catch-22: Recruiting That Co-Founder
+This is the hard part. Your custom stack makes recruiting that co-founder significantly more difficult.
+
+Top-tier technical talent wants to work on modern, standard, "tried and true" stacks. When they "View Source" on your platform, they will see a custom Vite/Express SSR setup.
+
+Many candidates will see this as "legacy" or "messy" technical debt and be scared off.
+
+A different set of candidates will immediately tell you the first thing they're going to do is the 130-hour migration to Next.js that Replit already warned you against.
+
+You are looking for a very specific kind of co-founder—one who is a "systems-builder" and "refactor-er" at heart, not just a "feature-builder."
+
+The Final Verdict
+Extending your app now is the right short-term move to get your multi-tenant features to market.
+
+Finding a technical co-founder is the right long-term move to manage the technical debt you're incurring.
+
+Your co-founder's first major strategic decision will be to formalize the plan Replit already hinted at: either commit to maintaining your "Framework of One" or begin the slow, careful, and expensive migration to Next.js.

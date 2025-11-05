@@ -1,0 +1,45 @@
+Questions for Replit (Our Dev Team) - Project "Revenue Party" Migration
+Category 1: Authentication (Passport -> Supabase Auth)
+Password Migration: The current app uses bcryptjs. Can Supabase Auth be configured to import and use existing bcryptjs hashes, or will we be forced to trigger a password reset for all existing admin users?
+
+Session Logic: The current app uses express-session and connect-pg-simple. My plan is to delete this and use Supabase's JWT-based auth. Can you confirm that Next.js middleware (with Supabase) can 1:1 replace all protected route logic from the old Express app?
+
+Password Reset: The existing app uses a custom passwordResetTokens table and Resend. My plan is to replace this with Supabase's built-in sendPasswordResetEmail and updateUser functions. Are there any custom logic points in the current flow that this built-in Supabase function cannot replicate?
+
+First-time Admin Setup: The current app has a /api/auth/has-users check to redirect to /admin/register. How would you recommend replicating this "first-time setup" logic using Supabase Auth (e.g., with a Supabase Edge Function)?
+
+Category 2: Database Migration (Drizzle + Supabase)
+Data Transfer: What is the recommended, zero-downtime method to migrate the data from the current Neon Postgres DB to the new Supabase Postgres DB? Can we use Supabase's migration tools, or will you need to write a custom pg_dump script?
+
+Drizzle + Supabase: The current app uses Drizzle ORM. The plan is to keep using Drizzle. How complex is it to point the existing Drizzle schemas and Drizzle Kit to the new Supabase DB? Is this a simple connection string change?
+
+Schema Parity: Are there any schemas in the current DB (besides passwordResetTokens and the session table) that are tightly coupled to the Express server that we should not or cannot migrate 1:1?
+
+Category 3: Backend Logic (Express -> Next.js)
+Endpoint Rewrite: I've documented ~30 custom Express API endpoints. My plan is to rewrite them as Next.js Server Actions or Route Handlers. Does Replit have a best-practice preference? Are Server Actions mature enough for all this, including file uploads?
+
+File Uploads: The current app handles job application resumes. My plan is to replace this with file uploads to Supabase Storage. Does this require a rewrite of both the frontend form-handling and the backend logic?
+
+Complex Logic (Assessments): The assessment tool (/api/assessments/:sessionId/submit) has business logic for "calculating a bucket." This is the most complex endpoint. What's your estimate (in hours) for just porting this single piece of logic to a Next.js Server Action?
+
+WebSockets: The current app has the ws library installed for real-time. This is not supported on Vercel's serverless functions. What is the recommended replacement? (e.g., Supabase Realtime, Pusher, Ably).
+
+Category 4: Frontend & SEO (Vite -> Next.js)
+Routing: The current app uses wouter for client-side routing. My plan is to replace this with the Next.js App Router. Given the list of ~40 frontend routes, what is your time estimate (in hours) for this "grunt work" of creating the new app/ folder structure?
+
+Data Fetching: The current app uses TanStack Query. In the new app, many components will fetch data directly in Server Components (RSC). Will this require a significant refactor of the components, or can we keep TanStack Query for client-side data fetching where needed?
+
+Tiptap Editor: The admin panel uses Tiptap. Are there any known issues with migrating a complex Tiptap implementation from a Vite/React SPA to a Next.js App Router (Server/Client Component) environment?
+
+SEO Components: The current app has 15+ dedicated Schema components and a main <SEO> component. Next.js has its own generateMetadata function. Should we port the logic from our custom components into generateMetadata, or can we re-use the components directly?
+
+Security Headers: The existing security-headers.ts file is for Express. My plan is to replace this with the headers() function in a Next.js middleware. Can you confirm this will provide the same level of CSP and HSTS protection?
+
+Category 5: Estimation & Phasing
+Phase 1 Estimate: What is your total estimated time (in hours or weeks) for Phase 1 (Migration MVP)? (This includes Admin Auth, CMS Data/Functionality migration, and Public Site/SEO migration).
+
+Phase 2 Estimate: What is your total estimated time for Phase 2 (SaaS Feature Migration)? (This is migrating the more complex assessments, calculators, and lead-gen forms).
+
+The "Strangle" Strategy: My plan assumes we can run the old (Express) and new (Next.js) platforms in parallel during migration. For Phase 1, the new Next.js app would handle the blog, and any links to /assessment would just point to the old platform. Do you see any session/cookie/CORS conflicts with this approach?
+
+Biggest Unknown: From a development perspective, what is the single biggest risk or unknown in this entire migration plan that I have not accounted for?
