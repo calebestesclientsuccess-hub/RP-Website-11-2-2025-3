@@ -52,7 +52,7 @@ export function ResultBucketsManager({ assessmentId }: ResultBucketsManagerProps
   const [deleteConfirmBucket, setDeleteConfirmBucket] = useState<AssessmentResultBucket | null>(null);
 
   const { data: buckets = [], isLoading } = useQuery<AssessmentResultBucket[]>({
-    queryKey: [`/api/assessment-configs/${assessmentId}/buckets`],
+    queryKey: [`/api/assessment-configs/${assessmentId}/results`],
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -69,14 +69,14 @@ export function ResultBucketsManager({ assessmentId }: ResultBucketsManagerProps
 
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const response = await apiRequest("POST", `/api/assessment-configs/${assessmentId}/buckets`, {
+      const response = await apiRequest("POST", `/api/assessment-configs/${assessmentId}/results`, {
         ...data,
         assessmentId,
       });
       return response.json();
     },
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: [`/api/assessment-configs/${assessmentId}/buckets`] });
+      queryClient.removeQueries({ queryKey: [`/api/assessment-configs/${assessmentId}/results`] });
       toast({
         title: "Success",
         description: "Result bucket created successfully",
@@ -102,11 +102,14 @@ export function ResultBucketsManager({ assessmentId }: ResultBucketsManagerProps
 
   const updateMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const response = await apiRequest("PUT", `/api/assessment-buckets/${editingBucket?.id}`, data);
+      const response = await apiRequest("PUT", `/api/assessment-configs/${assessmentId}/results/${editingBucket?.id}`, {
+        ...data,
+        assessmentId,
+      });
       return response.json();
     },
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: [`/api/assessment-configs/${assessmentId}/buckets`] });
+      queryClient.removeQueries({ queryKey: [`/api/assessment-configs/${assessmentId}/results`] });
       toast({
         title: "Success",
         description: "Result bucket updated successfully",
@@ -125,11 +128,11 @@ export function ResultBucketsManager({ assessmentId }: ResultBucketsManagerProps
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const response = await apiRequest("DELETE", `/api/assessment-buckets/${id}`);
+      const response = await apiRequest("DELETE", `/api/assessment-configs/${assessmentId}/results/${id}`);
       return response;
     },
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: [`/api/assessment-configs/${assessmentId}/buckets`] });
+      queryClient.removeQueries({ queryKey: [`/api/assessment-configs/${assessmentId}/results`] });
       toast({
         title: "Success",
         description: "Result bucket deleted successfully",

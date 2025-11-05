@@ -73,7 +73,7 @@ export function AnswersManager({ assessmentId }: AnswersManagerProps) {
   });
 
   const { data: buckets = [] } = useQuery<AssessmentResultBucket[]>({
-    queryKey: [`/api/assessment-configs/${assessmentId}/buckets`],
+    queryKey: [`/api/assessment-configs/${assessmentId}/results`],
   });
 
   const { data: allAnswers = [] } = useQuery<AssessmentAnswer[]>({
