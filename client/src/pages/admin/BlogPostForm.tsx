@@ -67,7 +67,7 @@ export default function BlogPostForm() {
   };
 
   const { data: post, isLoading } = useQuery<BlogPost>({
-    queryKey: ["/api/blog-posts", postId],
+    queryKey: ["/api/blog-posts/by-id", postId],
     enabled: isEdit && !!postId,
   });
 
@@ -128,7 +128,7 @@ export default function BlogPostForm() {
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/blog-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog-posts?publishedOnly=false"] });
       toast({
         title: "Success",
         description: "Blog post created successfully",
@@ -146,12 +146,12 @@ export default function BlogPostForm() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<InsertBlogPost>) => {
-      const response = await apiRequest("PATCH", `/api/blog-posts/${postId}`, data);
+      const response = await apiRequest("PUT", `/api/blog-posts/${postId}`, data);
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/blog-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/blog-posts", postId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog-posts?publishedOnly=false"] });
+      queryClient.removeQueries({ queryKey: ["/api/blog-posts/by-id", postId] });
       toast({
         title: "Success",
         description: "Blog post updated successfully",

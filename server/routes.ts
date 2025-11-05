@@ -451,10 +451,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Blog posts endpoints
   app.get("/api/blog-posts", async (req, res) => {
     try {
-      const posts = await storage.getAllBlogPosts(true);
+      // Support ?publishedOnly=false query param for admin to see all posts (including drafts)
+      const publishedOnly = req.query.publishedOnly !== 'false';
+      const posts = await storage.getAllBlogPosts(publishedOnly);
       return res.json(posts);
     } catch (error) {
       console.error("Error fetching blog posts:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get blog post by ID (route must come before :slug to avoid conflicts)
+  app.get("/api/blog-posts/by-id/:id", async (req, res) => {
+    try {
+      const post = await storage.getBlogPostById(req.params.id);
+      if (!post) {
+        return res.status(404).json({ error: "Blog post not found" });
+      }
+      return res.json(post);
+    } catch (error) {
+      console.error("Error fetching blog post by ID:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

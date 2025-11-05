@@ -52,7 +52,7 @@ export default function BlogPostsList() {
   };
 
   const { data: posts, isLoading } = useQuery<BlogPost[]>({
-    queryKey: ["/api/blog-posts"],
+    queryKey: ["/api/blog-posts?publishedOnly=false"],
   });
 
   const deleteMutation = useMutation({
@@ -60,7 +60,7 @@ export default function BlogPostsList() {
       await apiRequest("DELETE", `/api/blog-posts/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/blog-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog-posts?publishedOnly=false"] });
       toast({
         title: "Success",
         description: "Blog post deleted successfully",
