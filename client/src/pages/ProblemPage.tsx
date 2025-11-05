@@ -12,19 +12,19 @@ export default function ProblemPage() {
   return (
     <>
       <SEO 
-        title="Stop Solving Systems Problems with Headcount Solutions | Revenue Party"
-        description="The Lone Wolf Trap: Why hiring SDRs and outsourcing to agencies both fail. The $198k internal hire vs $120k agency black box. Learn why you need a system, not another person."
-        keywords="why sdr programs fail, problems with sales outsourcing, hire cold callers, cost of a bad sdr hire, sdr hiring problems, agency outsourcing failure, sales team building costs, lone wolf trap"
+        title="The $198K Lone Wolf Trap: Why Internal SDR Hiring Fails"
+        description="Hiring an internal SDR costs $198,000+ with 34% failure rate. Learn the 3 traps of traditional sales hiring and the system-based alternative."
+        keywords="internal sdr hiring cost, sales hiring mistakes, lone wolf trap, sdr failure rate, cost of bad sales hire"
         canonical="/problem"
       />
       <Breadcrumbs items={[]} currentPage="The Problem" />
-      
+
       <div className="min-h-screen">
         {/* Hero Module */}
         <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
           {/* Light grid dots pattern (light mode only) */}
           <div className="light-grid-dots" />
-          
+
           <div className="max-w-5xl mx-auto text-center relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -266,7 +266,7 @@ export default function ProblemPage() {
                 You Are Not Alone<br />
                 <span className="gradient-text gradient-hero">in This Trap</span>
               </h2>
-              
+
               <Card className="p-8 light-depth hover-elevate transition-all" data-testid="card-testimonial">
                 <div className="relative">
                   <div className="absolute -top-4 -left-4 text-6xl text-primary/20 font-serif">"</div>

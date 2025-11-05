@@ -17,6 +17,7 @@ import ResultsPage from "@/pages/ResultsPage";
 import WhyRevPartyPage from "@/pages/WhyRevPartyPage";
 import About from "@/pages/About";
 import BlogPage from "@/pages/BlogPage";
+import BlogPostPage from "@/pages/blog/BlogPostPage";
 import AuditPage from "@/pages/AuditPage";
 import ROICalculator from "@/pages/ROICalculator";
 import AssessmentPage from "@/pages/AssessmentPage";
@@ -60,6 +61,7 @@ function Router() {
       <Route path="/results" component={ResultsPage} />
       <Route path="/why-us" component={About} />
       <Route path="/blog" component={BlogPage} />
+          <Route path="/blog/:slug" component={BlogPostPage} />
       <Route path="/audit" component={AuditPage} />
       
       {/* Tools & Resources */}

@@ -1,13 +1,19 @@
-# Revenue Party - robots.txt
-# Allow all search engines to crawl the entire site
 
 User-agent: *
 Allow: /
 
-# Sitemap locations
+# Sitemaps
 Sitemap: https://revenueparty.com/sitemap.xml
 Sitemap: https://revenueparty.com/sitemap-images.xml
 Sitemap: https://revenueparty.com/sitemap-video.xml
 
-# Crawl-delay (optional, helps manage server load)
-Crawl-delay: 1
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /api/
+
+# Crawl-delay (optional, for aggressive bots)
+User-agent: Googlebot
+Crawl-delay: 0
+
+User-agent: Bingbot
+Crawl-delay: 0

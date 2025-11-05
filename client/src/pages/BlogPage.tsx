@@ -558,7 +558,7 @@ export default function BlogPage() {
                                 <div className="aspect-video rounded-md overflow-hidden bg-muted">
                                   <img 
                                     src={post.featuredImage} 
-                                    alt={`Featured image for ${post.title} - Revenue Party blog post`}
+                                    alt={`${post.title} - ${post.category} guide for B2B sales teams and GTM strategy`}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                   />
                                 </div>
@@ -662,7 +662,7 @@ export default function BlogPage() {
                                 <div className="aspect-video rounded-md overflow-hidden bg-muted">
                                   <img 
                                     src={post.featuredImage} 
-                                    alt={`Featured image for ${post.title} - Revenue Party blog post`}
+                                    alt={`${post.title} - ${post.category} guide for B2B sales teams and GTM strategy`}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                   />
                                 </div>

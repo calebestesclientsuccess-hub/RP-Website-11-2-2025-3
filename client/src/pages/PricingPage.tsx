@@ -1,3 +1,6 @@
+
+import { Helmet } from 'react-helmet-async';
+
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

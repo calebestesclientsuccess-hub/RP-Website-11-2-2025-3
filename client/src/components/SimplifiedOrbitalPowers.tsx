@@ -161,6 +161,8 @@ interface SimplifiedOrbitalPowersProps {
 /**
  * SimplifiedOrbitalPowers: Interactive orbital badges with engagement features
  */
+import VideoSchema from "@/components/VideoSchema";
+
 export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbitalPowersProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -357,7 +359,16 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const selectedPower = powers[selectedIndex];
 
   return (
-    <section 
+    <>
+      <VideoSchema 
+        name="Your Fullstack Sales Unit - GTM Engine in Action"
+        description="Watch how Revenue Party's GTM Engine combines elite BDR pods with AI-powered systems to deliver guaranteed qualified appointments."
+        thumbnailUrl="https://revenueparty.com/video-thumbnail.jpg"
+        uploadDate="2024-10-01"
+        duration="PT2M"
+        contentUrl={`https://revenueparty.com${videoSrc}`}
+      />
+      <section 
       ref={sectionRef}
       className="py-8 px-4 md:px-6 lg:px-8 bg-background transition-all duration-700" 
       data-testid="section-orbital-powers"

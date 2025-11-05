@@ -82,8 +82,8 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Your Next Sales Hire Shouldn't Be a Person. It Should Be a System. | Revenue Party"
-        description="Building a sales team is expensive. The 'Lone Wolf' model is a $198,000 liability. We build, operate, and guarantee your GTM Engine. You own the asset. 20+ guaranteed SQOs monthly."
+        title="GTM Engine: Deploy Elite BDR Pods | Revenue Party"
+        description="Stop hiring lone wolf SDRs. Deploy a complete GTM Engine with elite BDR pods, AI-powered Signal Factory, and guaranteed 20+ qualified appointments monthly. Own the system, not rent headcount."
         keywords="Revenue Generation System, GTM Engine, Fullstack Sales Unit, white-labeled sales, guaranteed sales appointments, BDR pod, sales system"
         canonical="/"
       />
@@ -148,7 +148,7 @@ export default function Home() {
                   transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
                   data-testid="text-hero-body"
                 >
-                  We build self-sustaining GTM Engines that deliver 3-5x the pipeline at 60%+ of the cost of a traditional internal hire. This isn't an SDR. It's your entire revenue architecture.
+                  We build self-sustaining <Link href="/gtm-engine" className="text-primary hover:underline">GTM Engines</Link> that deliver 3-5x the pipeline at 60%+ of the cost of a <Link href="/problem" className="text-primary hover:underline">traditional internal hire</Link>. This isn't an SDR. It's your entire revenue architecture.
                 </motion.p>
               </div>
 

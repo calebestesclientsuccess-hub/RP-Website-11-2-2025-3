@@ -71,20 +71,20 @@ export default function ResultsPage() {
 
   return (
     <>
-      <SEO 
+      <SEO
         title="The Numbers Don't Lie. The Results Are Guaranteed. | Revenue Party"
         description="Revenue Party case studies: See guaranteed 20+ SQOs/SDR monthly floor, 80+ SQO ceiling, and 0% pipeline risk. Real outsourced SDR results from our GTM engine."
         keywords="Revenue Party case studies, outsourced SDR case study, GTM engine results, guaranteed sales appointments, SDR performance, sales system results"
         canonical="/results"
       />
       <Breadcrumbs items={[]} currentPage="Results & Case Studies" />
-      
+
       <div className="min-h-screen">
         {/* Hero Module */}
         <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
           {/* Light grid dots pattern (light mode only) */}
           <div className="light-grid-dots" />
-          
+
           <div className="max-w-7xl mx-auto relative z-10">
             <div className="text-center max-w-4xl mx-auto space-y-6">
               <motion.div
@@ -93,7 +93,7 @@ export default function ResultsPage() {
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 className="mb-6 flex justify-center"
               >
-                <Badge 
+                <Badge
                   className="badge-texture bg-primary text-white border-primary text-sm px-4 py-1.5"
                   data-testid="badge-hero-results"
                 >

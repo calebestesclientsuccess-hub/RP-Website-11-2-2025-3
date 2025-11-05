@@ -22,12 +22,12 @@ import { Helmet } from 'react-helmet-async';
 
 export default function GTMEnginePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  
+
   const productSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": "GTM Engine - Complete Revenue Generation System",
-    "description": "Deploy elite BDR talent with AI-powered systems and strategic frameworks to deliver 20+ qualified appointments monthly.",
+    "description": "Deploy elite BDR pods with AI-powered systems. Guaranteed 20+ qualified appointments monthly. Own the GTM Engine, not rent headcount.",
     "brand": {
       "@type": "Brand",
       "name": "Revenue Party"
@@ -70,24 +70,24 @@ export default function GTMEnginePage() {
     <>
       <SEO 
         title="The Fullstack Sales Unit - Your Complete GTM Engine | Revenue Party"
-        description="Not a sales team. A complete, managed system of elite talent, proprietary strategic framework, and AI-powered tech stack. The architecture that guarantees 20+ SQOs monthly."
+        description="Deploy elite BDR pods with AI-powered systems. Guaranteed 20+ qualified appointments monthly. Own the GTM Engine, not rent headcount."
         keywords="GTM Engine, Fullstack Sales Unit, revenue generation system, allbound, sales as a service, Impact Selling OS, Signal Factory, BDR pod, guaranteed sales appointments"
         canonical="/gtm-engine"
       />
-      
+
       <Helmet>
         <script type="application/ld+json">
           {JSON.stringify(productSchema)}
         </script>
       </Helmet>
-      
+
       <Breadcrumbs items={[]} currentPage="The GTM Engine" />
-      
+
       {/* Hero Module */}
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
         {/* Light grid dots pattern (light mode only) */}
         <div className="light-grid-dots" />
-        
+
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <motion.div
