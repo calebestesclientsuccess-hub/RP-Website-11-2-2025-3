@@ -453,9 +453,9 @@ export default function AssessmentPage() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="GTM Readiness Assessment - Is Your GTM Engine Ready to Scale? | Revenue Party"
-        description="Take our 7-question assessment to evaluate your GTM maturity. Get personalized recommendations to optimize your revenue generation system."
-        keywords="GTM assessment, sales readiness quiz, revenue system audit, GTM maturity assessment"
+        title="Free GTM Readiness Assessment - Diagnose Your Revenue System | Revenue Party"
+        description="Take our free 7-question GTM assessment to identify pipeline bottlenecks, evaluate sales team readiness, and get a personalized action plan. Discover if you're stuck in the Lone Wolf or Agency Trap."
+        keywords="GTM readiness assessment, sales readiness quiz, pipeline bottleneck diagnostic, revenue system audit, GTM maturity assessment, sales team evaluation, lead generation assessment"
         canonical="/assessment"
       />
 

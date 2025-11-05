@@ -50,9 +50,9 @@ export default function AuditPage() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Schedule Free GTM Leverage Audit - Revenue Party"
-        description="Get a 30-minute strategic workshop with a GTM Architect to design your guaranteed revenue blueprint. Not a sales call - a diagnostic session to identify your #1 bottleneck."
-        keywords="GTM audit, free consultation, sales assessment, pipeline analysis, revenue blueprint, GTM architect"
+        title="Free GTM Audit - 30-Min Blueprint Session | Revenue Party"
+        description="Book your free 30-minute GTM Leverage Audit with expert architects. Get a custom revenue blueprint, diagnose your #1 bottleneck, and receive transparent ROI projections. No sales pitch - just strategic insights."
+        keywords="free GTM audit, GTM leverage audit, revenue blueprint, sales bottleneck diagnosis, GTM architect consultation, pipeline audit, revenue system assessment"
         canonical="/audit"
       />
 

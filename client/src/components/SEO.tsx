@@ -10,8 +10,8 @@ interface SEOProps {
 }
 
 export function SEO({
-  title = "Revenue Party - GTM Systems That Multiply Your Pipeline",
-  description = "Deploy a complete GTM system with elite BDRs, AI tech, and proven strategy. Get 20+ qualified appointments monthly.",
+  title = "Revenue Party - GTM Systems That Multiply Your Pipeline 3-5x",
+  description = "Stop the hiring/firing cycle. Deploy a complete GTM system with elite BDRs, AI technology, and proven strategy. Get 20+ qualified appointments monthly. 80x ROI guaranteed.",
   canonical,
   ogImage = "https://revenueparty.com/og-image.png",
   keywords = "GTM system, sales development, BDR pod, revenue generation, pipeline growth"
