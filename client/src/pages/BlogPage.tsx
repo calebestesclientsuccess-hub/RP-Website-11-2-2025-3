@@ -203,6 +203,11 @@ export default function BlogPage() {
         keywords="hire cold callers, b2b appointment setting services, underperforming sales team, allbound, sales agency, GTM blog, SDR outsourcing, BDR hiring costs, revenue generation system"
         canonical="/blog"
       />
+      
+      <Helmet>
+        <meta property="og:type" content="website" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+      </Helmet>
 
       <FAQSchema 
         faqs={contentHubs.map(hub => ({

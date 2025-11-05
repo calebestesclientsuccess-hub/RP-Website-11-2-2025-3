@@ -363,7 +363,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       <VideoSchema 
         name="Your Fullstack Sales Unit - GTM Engine in Action"
         description="Watch how Revenue Party's GTM Engine combines elite BDR pods with AI-powered systems to deliver guaranteed qualified appointments."
-        thumbnailUrl="https://revenueparty.com/video-thumbnail.jpg"
+        thumbnailUrl="https://revenueparty.com/apple-touch-icon.png"
         uploadDate="2024-10-01"
         duration="PT2M"
         contentUrl={`https://revenueparty.com${videoSrc}`}

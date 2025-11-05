@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Home, AlertCircle, ArrowRight, Search } from "lucide-react";
 import { useEffect } from "react";
 import { SEO } from "@/components/SEO";
+import { Helmet } from 'react-helmet-async';
 
 export default function NotFound() {
   useEffect(() => {
@@ -24,8 +25,22 @@ export default function NotFound() {
     };
   }, []);
 
+  const notFoundSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Page Not Found",
+    "description": "The requested page could not be found on Revenue Party.",
+    "url": typeof window !== 'undefined' ? window.location.href : 'https://revenueparty.com/404'
+  };
+
   return (
     <>
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(notFoundSchema)}
+        </script>
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       <SEO 
         title="Page Not Found - 404 | Revenue Party"
         description="The page you're looking for doesn't exist. Explore our GTM Engine solutions or schedule a free GTM audit."
