@@ -537,10 +537,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Video posts endpoints
   app.get("/api/video-posts", async (req, res) => {
     try {
-      const posts = await storage.getAllVideoPosts(true);
+      // Support ?publishedOnly=false query param for admin to see all posts (including drafts)
+      const publishedOnly = req.query.publishedOnly !== 'false';
+      const posts = await storage.getAllVideoPosts(publishedOnly);
       return res.json(posts);
     } catch (error) {
       console.error("Error fetching video posts:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get video post by ID (route must come before :slug to avoid conflicts)
+  app.get("/api/video-posts/by-id/:id", async (req, res) => {
+    try {
+      const post = await storage.getVideoPostById(req.params.id);
+      if (!post) {
+        return res.status(404).json({ error: "Video post not found" });
+      }
+      return res.json(post);
+    } catch (error) {
+      console.error("Error fetching video post by ID:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

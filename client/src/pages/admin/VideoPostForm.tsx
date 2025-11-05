@@ -67,7 +67,7 @@ export default function VideoPostForm() {
   };
 
   const { data: post, isLoading } = useQuery<VideoPost>({
-    queryKey: ["/api/video-posts", postId],
+    queryKey: ["/api/video-posts/by-id", postId],
     enabled: isEdit && !!postId,
   });
 
@@ -130,7 +130,7 @@ export default function VideoPostForm() {
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/video-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/video-posts?publishedOnly=false"] });
       toast({
         title: "Success",
         description: "Video post created successfully",
@@ -148,12 +148,12 @@ export default function VideoPostForm() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<InsertVideoPost>) => {
-      const response = await apiRequest("PATCH", `/api/video-posts/${postId}`, data);
+      const response = await apiRequest("PUT", `/api/video-posts/${postId}`, data);
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/video-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/video-posts", postId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/video-posts?publishedOnly=false"] });
+      queryClient.removeQueries({ queryKey: ["/api/video-posts/by-id", postId] });
       toast({
         title: "Success",
         description: "Video post updated successfully",

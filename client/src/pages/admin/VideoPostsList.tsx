@@ -52,7 +52,7 @@ export default function VideoPostsList() {
   };
 
   const { data: posts, isLoading } = useQuery<VideoPost[]>({
-    queryKey: ["/api/video-posts"],
+    queryKey: ["/api/video-posts?publishedOnly=false"],
   });
 
   const deleteMutation = useMutation({
@@ -60,7 +60,7 @@ export default function VideoPostsList() {
       await apiRequest("DELETE", `/api/video-posts/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/video-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/video-posts?publishedOnly=false"] });
       toast({
         title: "Success",
         description: "Video post deleted successfully",
