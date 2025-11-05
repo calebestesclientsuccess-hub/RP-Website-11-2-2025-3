@@ -22,21 +22,35 @@ export function ArticleSchema({
     "@type": "Article",
     "headline": title,
     "description": description,
-    "image": image,
+    "image": {
+      "@type": "ImageObject",
+      "url": image,
+      "width": 1200,
+      "height": 630
+    },
     "author": {
       "@type": "Person",
-      "name": author
+      "name": author,
+      "url": "https://revenueparty.com/about"
     },
     "publisher": {
       "@type": "Organization",
       "name": "Revenue Party",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://revenueparty.com/favicon.png"
+        "url": "https://revenueparty.com/apple-touch-icon.png",
+        "width": 180,
+        "height": 180
       }
     },
     "datePublished": datePublished,
-    "dateModified": dateModified || datePublished
+    "dateModified": dateModified || datePublished,
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": typeof window !== 'undefined' ? window.location.href : "https://revenueparty.com"
+    },
+    "inLanguage": "en-US",
+    "isAccessibleForFree": true
   };
 
   return (

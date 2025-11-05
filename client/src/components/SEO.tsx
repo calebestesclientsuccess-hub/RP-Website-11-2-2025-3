@@ -25,6 +25,7 @@ export function SEO({
       <HrefLangMeta pathname={pathname} />
       <Helmet>
         {/* Basic Meta Tags */}
+        <html lang="en" />
         <title>{title}</title>
         <meta name="description" content={description} />
         <meta name="keywords" content={keywords} />
@@ -36,7 +37,11 @@ export function SEO({
         <meta property="og:type" content="website" />
         <meta property="og:url" content={fullCanonical} />
         <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={title} />
         <meta property="og:site_name" content="Revenue Party" />
+        <meta property="og:locale" content="en_US" />
 
         {/* Twitter Card Meta Tags */}
         <meta name="twitter:card" content="summary_large_image" />
@@ -45,12 +50,17 @@ export function SEO({
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:image:alt" content={title} />
 
         {/* Additional SEO Meta Tags */}
-        <meta name="robots" content="index, follow" />
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow" />
+        <meta name="bingbot" content="index, follow" />
         <meta name="language" content="English" />
         <meta name="revisit-after" content="7 days" />
         <meta name="author" content="Revenue Party" />
+        <meta name="rating" content="general" />
+        <meta name="distribution" content="global" />
       </Helmet>
     </>
   );

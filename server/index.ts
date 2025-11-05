@@ -4,10 +4,14 @@ import connectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { sessionPool } from "./db";
+import { securityHeaders } from "./middleware/security-headers";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Apply security headers for SEO trust signals
+app.use(securityHeaders);
 
 // Session configuration
 const PgSession = connectPgSimple(session);
@@ -33,22 +37,22 @@ app.use(
 app.use((req, res, next) => {
   // Prevent clickjacking attacks
   res.setHeader('X-Frame-Options', 'DENY');
-  
+
   // Prevent MIME type sniffing
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  
+
   // Enable XSS filter (legacy but still useful for older browsers)
   res.setHeader('X-XSS-Protection', '1; mode=block');
-  
+
   // Control referrer information
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  
+
   // Restrict browser features
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=(), usb=()');
-  
+
   // HTTP Strict Transport Security (HSTS) - enforce HTTPS for 1 year
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-  
+
   // Content Security Policy (CSP) - comprehensive security policy
   const cspDirectives = [
     "default-src 'self'",
@@ -65,7 +69,7 @@ app.use((req, res, next) => {
     "worker-src 'self' blob:"
   ];
   res.setHeader('Content-Security-Policy', cspDirectives.join('; '));
-  
+
   next();
 });
 
