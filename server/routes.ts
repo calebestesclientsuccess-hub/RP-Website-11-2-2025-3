@@ -27,7 +27,8 @@ import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templates";
 import { sendGmailEmail } from "./utils/gmail-client";
-import { db, eq, asc, resultBuckets } from "@shared/db";
+import { db } from "./db";
+import { eq, asc } from "drizzle-orm";
 
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
