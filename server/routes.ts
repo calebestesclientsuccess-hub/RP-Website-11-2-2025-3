@@ -968,6 +968,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/assessment-configs/slug/:slug", async (req, res) => {
+    try {
+      const config = await storage.getAssessmentConfigBySlug(req.params.slug);
+      if (!config) {
+        return res.status(404).json({ error: "Assessment config not found" });
+      }
+      return res.json(config);
+    } catch (error) {
+      console.error("Error fetching assessment config by slug:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/assessment-configs/:id", requireAuth, async (req, res) => {
     try {
       const config = await storage.getAssessmentConfigById(req.params.id);
@@ -1030,7 +1043,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Assessment Questions API
-  app.get("/api/assessment-configs/:assessmentId/questions", requireAuth, async (req, res) => {
+  app.get("/api/assessment-configs/:assessmentId/questions", async (req, res) => {
     try {
       const questions = await storage.getQuestionsByAssessmentId(req.params.assessmentId);
       return res.json(questions);
@@ -1092,6 +1105,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Assessment Answers API
+  app.get("/api/assessment-configs/:assessmentId/answers", async (req, res) => {
+    try {
+      const answers = await storage.getAnswersByAssessmentId(req.params.assessmentId);
+      return res.json(answers);
+    } catch (error) {
+      console.error("Error fetching answers:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/assessment-questions/:questionId/answers", requireAuth, async (req, res) => {
     try {
       const answers = await storage.getAnswersByQuestionId(req.params.questionId);

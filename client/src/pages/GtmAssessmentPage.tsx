@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { AssessmentWidget } from "@/components/AssessmentWidget";
+import { ConfigurableAssessment } from "@/components/ConfigurableAssessment";
 
 export default function GtmAssessmentPage() {
   return (
@@ -37,7 +37,7 @@ export default function GtmAssessmentPage() {
             </p>
           </div>
 
-          <AssessmentWidget mode="standalone" />
+          <ConfigurableAssessment configSlug="gtm-assessment" mode="standalone" />
         </div>
       </div>
     </>

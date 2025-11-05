@@ -29,6 +29,13 @@
       "when": 1762300004104,
       "tag": "0003_jittery_tyger_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1762335344289,
+      "tag": "0004_short_loa",
+      "breakpoints": true
     }
   ]
 }

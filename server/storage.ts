@@ -88,6 +88,7 @@ export interface IStorage {
   deleteAssessmentQuestion(id: string): Promise<void>;
   
   getAnswersByQuestionId(questionId: string): Promise<AssessmentAnswer[]>;
+  getAnswersByAssessmentId(assessmentId: string): Promise<AssessmentAnswer[]>;
   createAssessmentAnswer(answer: InsertAssessmentAnswer): Promise<AssessmentAnswer>;
   updateAssessmentAnswer(id: string, answer: Partial<InsertAssessmentAnswer>): Promise<AssessmentAnswer>;
   deleteAssessmentAnswer(id: string): Promise<void>;
@@ -425,6 +426,18 @@ export class DbStorage implements IStorage {
 
   async getAnswersByQuestionId(questionId: string): Promise<AssessmentAnswer[]> {
     return await db.select().from(assessmentAnswers).where(eq(assessmentAnswers.questionId, questionId)).orderBy(assessmentAnswers.order);
+  }
+
+  async getAnswersByAssessmentId(assessmentId: string): Promise<AssessmentAnswer[]> {
+    const questions = await this.getQuestionsByAssessmentId(assessmentId);
+    if (questions.length === 0) return [];
+    
+    const questionIds = questions.map(q => q.id);
+    const answers = await db.select()
+      .from(assessmentAnswers)
+      .where(sql`${assessmentAnswers.questionId} IN (${sql.join(questionIds.map(id => sql`${id}`), sql`, `)})`)
+      .orderBy(assessmentAnswers.order);
+    return answers;
   }
 
   async createAssessmentAnswer(insertAnswer: InsertAssessmentAnswer): Promise<AssessmentAnswer> {
