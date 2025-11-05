@@ -62,8 +62,11 @@ export function ThemeProvider({
     localStorage.setItem("theme", theme);
   }, [theme]);
 
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = { theme, setTheme };
+
   return (
-    <ThemeProviderContext.Provider value={{ theme, setTheme }}>
+    <ThemeProviderContext.Provider value={value}>
       {children}
     </ThemeProviderContext.Provider>
   );
@@ -72,8 +75,10 @@ export function ThemeProvider({
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
 
-  if (context === undefined)
+  if (context === undefined) {
+    console.error("ThemeProvider context is undefined. Provider may not be wrapping component tree properly.");
     throw new Error("useTheme must be used within a ThemeProvider");
+  }
 
   return context;
 };
