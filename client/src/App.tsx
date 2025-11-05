@@ -52,6 +52,10 @@ import WidgetConfigPage from "@/pages/admin/WidgetConfigPage";
 import AssessmentConfigsList from "@/pages/admin/AssessmentConfigsList";
 import AssessmentConfigForm from "@/pages/admin/AssessmentConfigForm";
 import NotFound from "@/pages/not-found";
+import GtmResultPage from "@/pages/GtmResultPage"; // Assuming this is a new import needed for the changes
+import ServiceWorker from "@/components/ServiceWorker"; // Assuming this is a new import needed for the changes
+import ProtectedRoute from "@/components/ProtectedRoute"; // Assuming this is a new import needed for the changes
+
 
 function Router() {
   return (
@@ -65,13 +69,13 @@ function Router() {
       <Route path="/blog" component={BlogPage} />
           <Route path="/blog/:slug" component={BlogPostPage} />
       <Route path="/audit" component={AuditPage} />
-      
+
       {/* Tools & Resources */}
       <Route path="/roi-calculator" component={ROICalculator} />
       <Route path="/assessment" component={AssessmentPage} />
       <Route path="/pipeline-assessment" component={PipelineAssessmentPage} />
       <Route path="/pipeline-assessment/thank-you" component={PipelineAssessmentThankYou} />
-      
+
       {/* Admin Routes */}
       <Route path="/admin/login" component={LoginPage} />
       <Route path="/admin/register" component={RegisterPage} />
@@ -90,24 +94,24 @@ function Router() {
       <Route path="/admin/video-posts/:id/edit" component={VideoPostForm} />
       <Route path="/admin/video-posts" component={VideoPostsList} />
       <Route path="/admin/widget-config" component={WidgetConfigPage} />
-      
+
       {/* Resource Pillar Pages */}
       <Route path="/resources/how-to-build-sdr-team-guide" component={InternalTrapGuide} />
       <Route path="/resources/sdr-outsourcing-companies-guide" component={AgencyTrapGuide} />
       <Route path="/resources/guide-to-sales-as-a-service" component={SalesAsAServiceGuide} />
       <Route path="/resources/how-to-hire-cold-callers-guide" component={HireColdCallersGuide} />
       <Route path="/resources/4-paths-hire-cold-caller" component={FourPathsToHireColdCaller} />
-      
+
       {/* GTM Assessment Tool */}
       <Route path="/resources/gtm-assessment" component={GtmAssessmentPage} />
       <Route path="/resources/gtm-assessment/path-1" component={GtmResultPath1} />
       <Route path="/resources/gtm-assessment/path-2" component={GtmResultPath2} />
       <Route path="/resources/gtm-assessment/path-3" component={GtmResultPath3} />
       <Route path="/resources/gtm-assessment/path-4" component={GtmResultPath4} />
-      
+
       {/* Blog Posts */}
       <Route path="/blog/manifesto-the-lone-wolf-trap" component={ManifestoPost} />
-      
+
       {/* Company */}
       <Route path="/pricing" component={PricingPage} />
       <Route path="/faq" component={FAQPage} />
@@ -128,23 +132,26 @@ function App() {
             <AuthProvider>
             <TooltipProvider>
             {/* Skip to content link for accessibility */}
-            <a 
-              href="#main-content" 
+            <a
+              href="#main-content"
               className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg"
               data-testid="skip-to-content"
             >
               Skip to main content
             </a>
-            
+
             <div className="min-h-screen bg-background text-foreground">
-              <Navbar />
-              <main id="main-content" role="main" aria-label="Main content">
-                <Router />
-              </main>
-              <Footer />
+              <ErrorBoundary>
+                <Navbar />
+                <main id="main-content" role="main" aria-label="Main content">
+                  <Router />
+                </main>
+                <Footer />
+              </ErrorBoundary>
               <FloatingWidget />
             </div>
             <Toaster />
+            <ServiceWorker />
             </TooltipProvider>
             </AuthProvider>
           </ThemeProvider>
