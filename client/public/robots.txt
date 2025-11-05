@@ -1,19 +1,26 @@
 
+# Revenue Party - robots.txt
 User-agent: *
 Allow: /
+Crawl-delay: 1
 
 # Sitemaps
 Sitemap: https://revenueparty.com/sitemap.xml
 Sitemap: https://revenueparty.com/sitemap-images.xml
 Sitemap: https://revenueparty.com/sitemap-video.xml
 
-# Disallow admin areas
+# Block admin and internal tools
+User-agent: *
 Disallow: /admin/
 Disallow: /api/
+Disallow: /_vite/
+Disallow: /src/
 
-# Crawl-delay (optional, for aggressive bots)
+# Allow important crawlers with no delay
 User-agent: Googlebot
 Crawl-delay: 0
+Allow: /
 
 User-agent: Bingbot
 Crawl-delay: 0
+Allow: /

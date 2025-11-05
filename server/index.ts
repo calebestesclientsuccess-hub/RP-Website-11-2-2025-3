@@ -103,6 +103,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// Dynamic sitemap route
+import sitemapRouter from './routes/sitemap';
+app.use('/', sitemapRouter);
+
 (async () => {
   const server = await registerRoutes(app);
 
