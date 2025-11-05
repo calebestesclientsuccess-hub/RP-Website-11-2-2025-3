@@ -1,0 +1,302 @@
+Project Brief: "The Campaigns" Engine (MVP)
+Date: Wednesday, November 5, 2025
+Project Owner: Revenue Party
+Development Partner: Replit
+
+Part 1: Executive Summary & Core Strategy
+
+1.1. Project Goal
+
+This document outlines the MVP for the "Campaigns" Engine. The goal is to build a single, unified tool within our existing Admin Panel that allows a non-technical team to create, configure, and deploy all dynamic content (Smart Widgets, Popups, and existing Content Collections) across the site without touching the codebase.
+
+1.2. Core Strategy: "Extend, Don't Migrate"
+
+This project is an extension of our current, production-ready Vite/Express/Drizzle platform. We are not migrating the stack. We are building on top of this proven foundation.
+
+1.3. Core Architectural Prerequisite: The "Stubbed Tenant" Pattern
+
+To ensure this MVP is future-proof for multi-tenancy without the overhead of building it now, all work must adhere to the following "Conscious Foundation." This is the non-negotiable prerequisite for all subsequent epics.
+
+Epic
+
+User Story & Acceptance Criteria
+
+Foundation: Schema
+
+User Story 1.1: Create tenants Table
+
+
+
+ As a Developer, I want to add a tenants table to the Drizzle schema so that all future data has a master record to link to.
+
+
+
+ AC:
+
+
+
+ 1.1.1. Create a tenants table in shared/schema.ts (tenant_id, client_name, subdomain).
+
+
+
+ 1.1.2. Insert one row into this table: { tenant_id: 'tnt_revenueparty_default', client_name: 'Revenue Party (Default)', subdomain: 'www' }.
+
+
+
+
+
+ User Story 1.2: Make Data Tables Tenant-Aware
+
+
+
+ As a Developer, I want to add a tenant_id column to all new and existing client-facing data tables so that all data is associated with a tenant.
+
+
+
+ AC:
+
+
+
+ 1.2.1. Add a tenant_id column to all new tables created for this MVP (e.g., campaigns).
+
+
+
+ 1.2.2. Add a tenant_id column to the following existing data tables: blogPosts, leadCaptures, assessmentResponses, widgetConfig, testimonials, videoPosts, jobPostings, jobApplications, etc.
+
+
+
+ 1.2.3. This column must be set to default('tnt_revenueparty_default') to tag all existing and new data to our default tenant.
+
+
+
+ 1.2.4. Crucially, do not add tenant_id to system-level tables like users or passwordResetTokens.
+
+Foundation: Logic
+
+User Story 1.3: Implement "Stub" Middleware
+
+
+
+ As a Developer, I want to create a simple Express middleware that hard-codes the tenant_id for every request so that all our API queries function correctly.
+
+
+
+ AC:
+
+
+
+ 1.3.1. Add a new middleware to server/index.ts before the main API routes.
+
+
+
+ 1.3.2. This middleware must perform only one function: req.tenantId = 'tnt_revenueparty_default'; next();
+
+
+
+
+
+ User Story 1.4: Enforce "Conscious" Querying
+
+
+
+ As a Developer, I want to ensure all new database queries for the "Campaigns" Engine are tenant-aware.
+
+
+
+ AC:
+
+
+
+ 1.4.1. All new Drizzle queries must be written with a WHERE clause that filters by req.tenantId (which is being provided by the "Stub" Middleware).
+
+
+
+ 1.4.2. Correct: db.select().from(campaigns).where(eq(campaigns.tenantId, req.tenantId)).
+
+Part 2: The "Campaigns" Engine (MVP Build)
+
+Goal: To build the "Campaigns" wizard, the JSON-powered "Widget Factory," and the frontend rendering engine.
+
+Epic 2.1: The "Campaigns" Admin UI & Schema
+
+User Story 2.1.1: Create "Campaigns" Admin UI & Schema
+
+As an: Admin
+
+I want to: Have a new "Campaigns" section in the Admin Panel (e.g., /admin/campaigns) to create, edit, and manage all my widgets.
+
+So that: I have a single, unified workflow.
+
+AC:
+
+(AC 2.1.1.1) Create new admin routes for "Campaigns" (List, New, Edit) using the existing admin UI patterns (Tiptap, Shadcn, etc.).
+
+(AC 2.1.1.2) Create a new campaigns table in the Drizzle schema.
+
+(AC 2.1.1.3) The campaigns table must have a tenant_id column (per AC 1.2.1).
+
+(AC 2.1.1.4) The table must include performance fields: isActive (boolean, default true), startDate (timestamp, nullable), endDate (timestamp, nullable).
+
+User Story 2.1.2: Define Campaign Content (Section 1: "What is this?")
+
+As an: Admin
+
+I want to: Define the name and content type of my new campaign from a single form.
+
+AC:
+
+(AC 2.1.2.1) The "New Campaign" form must have a "Campaign Name" text field (e.g., "E-book Download - Homepage Popup").
+
+(AC 2.1.2.2) A "Content Type" radio button group must be present:
+
+( ) Smart Widget (for JSON-built Calculators, Forms)
+
+( ) Content Collection (for existing CMS content)
+
+User Story 2.1.3: Define "Smart Widget" Content (Conditional UI)
+
+As an: Admin
+
+I want to: Use a "Smart Prompt Builder" form to generate a perfect LLM prompt when I select "Smart Widget."
+
+So that: I can easily get the safe, valid JSON config I need.
+
+AC:
+
+(AC 2.1.3.1) If "Content Type: Smart Widget" is selected, a new form section must appear.
+
+(AC 2.1.3.2) This section must include a "Widget Type" radio: ( ) Form, ( ) Calculator. (Note: "Assessment" is excluded, see US 2.1.4).
+
+(AC 2.1.3.3) Conditionally display repeater fields based on the "Widget Type" (e.g., "Inputs" & "Formulas" for Calculator; "Inputs" & "Result Message" for Form).
+
+(AC 2.1.3.4) A read-only "Magic Prompt" text area must update in real-time as I fill out these fields.
+
+(AC 2.1.3.5) A "Copy Prompt" button must be provided.
+
+(AC 2.1.3.6) A final "Paste JSON Config" text area must be present.
+
+(AC 2.1.3.7) The save endpoint must validate this JSON with Zod. If validation fails, the UI must show a user-friendly error message (e.g., "JSON is invalid. Please check your format.") and prevent saving.
+
+User Story 2.1.4: Define "Content Collection" Content (Conditional UI)
+
+As an: Admin
+
+I want to: Select from my existing, hard-coded CMS content when I select "Content Collection."
+
+So that: I can easily place my Testimonial Carousel or existing Assessment tools.
+
+AC:
+
+(AC 2.1.4.1) If "Content Type: Content Collection" is selected, a new dropdown must appear.
+
+(AC 2.1.4.2) The dropdown must be labeled "Select Collection" and include: Testimonial Carousel, Video Gallery, Blog Feed, and Embed Assessment.
+
+(AC 2.1.4.3) If "Embed Assessment" is selected, a second dropdown must appear, populated with the list of assessments from the existing assessmentConfigs (or equivalent) table.
+
+User Story 2.1.5: Define Campaign Display ("Section 2: How?")
+
+As an: Admin
+
+I want to: Control the visual appearance and behavior of my campaign.
+
+AC:
+
+(AC 2.1.5.1) A "Display As" radio button must be present: ( ) In-Page Section, ( ) Overlay (Popup).
+
+(AC 2.1.5.2) A "Select Theme" (low-hanging fruit) dropdown must be present: Light (Default), Dark, Brand Accent, Transparent.
+
+(AC 2.1.5.3) If "In-Page Section" is selected, a "Select Size" radio must appear: ( ) Full Width, ( ) Small (Constrained).
+
+(AC 2.1.5.4) If "Overlay (Popup)" is selected, the following fields must appear:
+
+Placement: "Pop-up (Center)", "Pop-up (Bottom-Right)", "Pop-off (Right Side)"
+
+Trigger: "On Page Load (after X seconds)", "On Scroll (after X %)"
+
+Dismissal: "Static (User clicks 'X')", "Fade Out (after X seconds)"
+
+User Story 2.1.6: Define Campaign Targeting ("Section 3: Where?")
+
+As an: Admin
+
+I want to: Control exactly which pages my campaign runs on.
+
+AC:
+
+(AC 2.1.6.1) A "Target Pages" checklist (or similar UI) must be present, listing all static pages (Homepage, /problem) and page types (/blog).
+
+(AC 2.1.6.2) If "In-Page Section" is selected, a "Select Zone" dropdown must appear: [Dropdown: Hero, Section 1, Section 2, ... Section 10].
+
+(AC 2.1.6.3) The "Select Zone" dropdown must enforce a 1-to-1 relationship. A zone can only be assigned one active campaign at a time. The UI should show if a zone is "Already in use."
+
+Epic 2.2: The "Widget Factory" (The Frontend Renderers)
+
+User Story 2.2.1: Build "Smart Widget" Renderers
+
+As a: Developer
+
+I want to: Build the frontend React components that can read and render the "Smart Widget" JSON config.
+
+AC:
+
+(AC 2.2.1.1) Create new dynamic components: <DynamicCalculator /> and <DynamicForm />.
+
+(AC 2.2.1.2) These components must accept a jsonConfig prop and parse it to render themselves.
+
+(AC 2.2.1.3) These components must also accept theme and size props and use CVA to apply the correct styling.
+
+User Story 2.2.2: Build "Collection" Renderers
+
+As a: Developer
+
+I want to: Build hard-coded React components for our "Content Collections."
+
+So that: The "Campaigns" engine can render our standard CMS content.
+
+AC:
+
+(AC 2.2.2.1) Create <TestimonialCarousel />. This component must fetch and render data from the testimonials table (for the req.tenantId).
+
+(AC 2.2.2.2) Create <VideoGallery />. This component must fetch and render data from the videoPosts table.
+
+(AC 2.2.2.3) Create <BlogFeed />. This component must fetch the 3 most recent posts from blogPosts.
+
+(AC 2.2.2.4) Create <AssessmentEmbed />. This component must accept an assessmentId prop and render the existing assessment tool.
+
+(AC 2.2.2.5) All these components must also accept the theme and size props.
+
+Epic 2.3: Frontend Placement (Consuming the Campaigns)
+
+User Story 2.3.1: Implement "In-Page Section" (Widget Zones)
+
+As a: Developer
+
+I want to: Dynamically render all "In-Page Section" campaigns in their designated zones.
+
+AC:
+
+(AC 2.3.1.1) Modify the main page templates (e.g., Home.tsx).
+
+(AC 2.3.1.2) The page component must fetch all active campaigns for the current page and req.tenantId (using the new isActive, startDate, endDate fields for performance).
+
+(AC 2.3.1.3) The page will loop from 1 to 10, rendering a <WidgetZone /> for each "Section."
+
+(AC 2.3.1.4) The <WidgetZone /> component must find the correct campaign assigned to its zone (e.g., "Section 1") and render the correct component (e.g., <DynamicCalculator /> or <TestimonialCarousel />) with the correct props.
+
+User Story 2.3.2: Implement "Overlay" (Popup) Engine
+
+As a: Developer
+
+I want to: Build a global, site-wide engine to handle all "Overlay (Popup)" campaigns.
+
+AC:
+
+(AC 2.3.2.1) Build a new, single <PopupEngine /> component and ensure it runs on every page (e.g., in App.tsx).
+
+(AC 2.3.2.2) <PopupEngine /> must fetch all active "Overlay" campaigns for the current URL and req.tenantId (using the new isActive and date fields).
+
+(AC 2.3.2.3) It must use useEffect, setTimeout, and scroll listeners (or IntersectionObserver) to manage all "Trigger" and "Dismissal" logic.
+
+(AC 2.3.2.4) It must use Framer Motion (already in stack) to handle all "pop-up" and "fade-out" animations.
+
+(AC 2.3.2.5) It must render the correct "Smart Widget" (e.g., <DynamicForm />) inside the popup with the correct jsonConfig and theme.
