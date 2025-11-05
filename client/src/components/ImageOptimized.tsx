@@ -1,4 +1,3 @@
-
 import { ImgHTMLAttributes } from 'react';
 
 interface ImageOptimizedProps extends ImgHTMLAttributes<HTMLImageElement> {

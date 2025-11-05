@@ -33,6 +33,13 @@ export default function NotFound() {
     "url": typeof window !== 'undefined' ? window.location.href : 'https://revenueparty.com/404'
   };
 
+  const popularPages = [
+    { title: 'GTM Engine', href: '/gtm-engine', description: 'Learn about our complete GTM system' },
+    { title: 'Free GTM Audit', href: '/audit', description: 'Schedule your 30-minute strategy session' },
+    { title: 'Pricing', href: '/pricing', description: 'Transparent pricing for GTM systems' },
+    { title: 'Results', href: '/results', description: 'See real client success stories' }
+  ];
+
   return (
     <>
       <Helmet>
@@ -41,7 +48,7 @@ export default function NotFound() {
         </script>
         <meta name="robots" content="noindex, follow" />
       </Helmet>
-      <SEO 
+      <SEO
         title="Page Not Found - 404 | Revenue Party"
         description="The page you're looking for doesn't exist. Explore our GTM Engine solutions or schedule a free GTM audit."
         canonical="/404"
@@ -73,8 +80,8 @@ export default function NotFound() {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Link href="/">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-start"
                     data-testid="button-home"
                   >
@@ -83,8 +90,8 @@ export default function NotFound() {
                   </Button>
                 </Link>
                 <Link href="/problem">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-start"
                     data-testid="button-problem"
                   >
@@ -93,8 +100,8 @@ export default function NotFound() {
                   </Button>
                 </Link>
                 <Link href="/gtm-engine">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-start"
                     data-testid="button-gtm-engine"
                   >
@@ -103,8 +110,8 @@ export default function NotFound() {
                   </Button>
                 </Link>
                 <Link href="/results">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-start"
                     data-testid="button-results"
                   >
@@ -113,8 +120,8 @@ export default function NotFound() {
                   </Button>
                 </Link>
                 <Link href="/roi-calculator">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-start"
                     data-testid="button-roi-calculator"
                   >
@@ -123,8 +130,8 @@ export default function NotFound() {
                   </Button>
                 </Link>
                 <Link href="/contact">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full justify-start"
                     data-testid="button-contact"
                   >
@@ -142,7 +149,7 @@ export default function NotFound() {
               Still not finding what you need?
             </p>
             <Link href="/audit">
-              <Button 
+              <Button
                 size="lg"
                 className="text-base px-8"
                 data-testid="button-schedule-audit"
