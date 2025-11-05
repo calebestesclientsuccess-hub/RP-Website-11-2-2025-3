@@ -36,6 +36,9 @@ import { useQuery } from "@tanstack/react-query";
 import type { BlogPost, VideoPost } from "@shared/schema";
 import { format } from "date-fns";
 
+// Placeholder for FAQSchema component if it's not imported elsewhere
+const FAQSchema = ({ faqs }: { faqs: { question: string; answer: string }[] }) => null;
+
 type CombinedPost = (BlogPost & { type: 'article' }) | (VideoPost & { type: 'video' });
 
 export default function BlogPage() {
@@ -558,8 +561,9 @@ export default function BlogPage() {
                                 <div className="aspect-video rounded-md overflow-hidden bg-muted">
                                   <img 
                                     src={post.featuredImage} 
-                                    alt={`${post.title} - ${post.category} guide for B2B sales teams and GTM strategy`}
+                                    alt={`${post.title} - ${post.category || 'GTM strategy'} guide for B2B sales teams and revenue generation`}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    loading="lazy"
                                   />
                                 </div>
                               )}
@@ -601,6 +605,7 @@ export default function BlogPage() {
                                 src={post.thumbnailUrl} 
                                 alt={post.title}
                                 className="w-full h-full object-cover"
+                                loading="lazy"
                               />
                               <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition-colors">
                                 <Play className="h-12 w-12 text-white" />
@@ -662,8 +667,9 @@ export default function BlogPage() {
                                 <div className="aspect-video rounded-md overflow-hidden bg-muted">
                                   <img 
                                     src={post.featuredImage} 
-                                    alt={`${post.title} - ${post.category} guide for B2B sales teams and GTM strategy`}
+                                    alt={`${post.title} - ${post.category || 'GTM strategy'} guide for B2B sales teams and revenue generation`}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    loading="lazy"
                                   />
                                 </div>
                               )}
@@ -707,6 +713,7 @@ export default function BlogPage() {
                                 src={post.thumbnailUrl} 
                                 alt={post.title}
                                 className="w-full h-full object-cover"
+                                loading="lazy"
                               />
                               <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition-colors">
                                 <Play className="h-10 w-10 text-white" />

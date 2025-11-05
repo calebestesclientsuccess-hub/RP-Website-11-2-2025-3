@@ -5,25 +5,17 @@ interface HrefLangMetaProps {
 }
 
 export default function HrefLangMeta({ pathname }: HrefLangMetaProps) {
-  // Base domain for the site
-  const baseDomain = 'https://revenueparty.com';
-  
-  // Currently only English, but structured for easy expansion
-  const languages = [
-    { code: 'en', url: baseDomain },
-    { code: 'x-default', url: baseDomain } // Default for unmatched languages
-  ];
+  const siteUrl = 'https://revenueparty.com';
+  const fullUrl = `${siteUrl}${pathname}`;
 
   return (
     <Helmet>
-      {languages.map(lang => (
-        <link
-          key={lang.code}
-          rel="alternate"
-          hrefLang={lang.code}
-          href={`${lang.url}${pathname}`}
-        />
-      ))}
+      {/* Primary language version */}
+      <link rel="alternate" hrefLang="en" href={fullUrl} />
+      <link rel="alternate" hrefLang="x-default" href={fullUrl} />
+
+      {/* Add more language versions here as needed */}
+      {/* Example: <link rel="alternate" hrefLang="es" href={`${siteUrl}/es${pathname}`} /> */}
     </Helmet>
   );
 }

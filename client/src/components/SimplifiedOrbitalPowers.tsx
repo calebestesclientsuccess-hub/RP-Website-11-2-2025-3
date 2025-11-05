@@ -575,5 +575,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         </div>
       </div>
     </section>
+  </>
   );
 }
