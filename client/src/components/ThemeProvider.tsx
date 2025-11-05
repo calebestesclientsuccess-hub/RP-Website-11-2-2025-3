@@ -20,9 +20,18 @@ export function ThemeProvider({
   children,
   defaultTheme = "dark",
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(
-    () => (localStorage.getItem("theme") as Theme) || defaultTheme
-  );
+  const [theme, setThemeState] = useState<Theme>(() => {
+    // Initialize from localStorage or use default
+    const stored = localStorage.getItem("theme") as Theme;
+    const initialTheme = stored || defaultTheme;
+    
+    // Apply theme immediately during initialization (before first render)
+    const root = document.documentElement;
+    root.classList.remove("light", "dark");
+    root.classList.add(initialTheme);
+    
+    return initialTheme;
+  });
 
   // Enhanced theme toggle with smooth transitions
   const setTheme = (newTheme: Theme) => {
@@ -48,13 +57,10 @@ export function ThemeProvider({
     }, 200);
   };
 
-  // Initial theme setup (no transition)
+  // Persist theme to localStorage when it changes
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(theme);
     localStorage.setItem("theme", theme);
-  }, []);
+  }, [theme]);
 
   return (
     <ThemeProviderContext.Provider value={{ theme, setTheme }}>
