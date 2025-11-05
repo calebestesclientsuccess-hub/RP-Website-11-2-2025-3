@@ -200,6 +200,13 @@ export default function BlogPage() {
         keywords="hire cold callers, b2b appointment setting services, underperforming sales team, allbound, sales agency, GTM blog, SDR outsourcing, BDR hiring costs, revenue generation system"
         canonical="/blog"
       />
+      
+      <FAQSchema 
+        faqs={contentHubs.map(hub => ({
+          question: `What is ${hub.name}?`,
+          answer: hub.description
+        }))}
+      />
 
       {/* Hero Section */}
       <section className="pt-32 pb-12 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-primary/5 to-background">

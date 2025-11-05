@@ -38,6 +38,8 @@ const featuredPromo: FeaturedPromoData = {
   imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=450&fit=crop"
 };
 
+import { BreadcrumbSchema } from "@/components/BreadcrumbSchema";
+
 export default function AgencyTrapGuide() {
   return (
     <>
@@ -47,6 +49,14 @@ export default function AgencyTrapGuide() {
         description="Looking for SDR outsourcing companies? Read this 2025 buyer's guide first. We review the top 'Standard Model' agencies and expose the 3 'Black Box' traps to avoid."
         keywords="sdr outsourcing companies, b2b appointment setting services, outsourced bdr, belkins vs cience, sdr agency, sales outsourcing"
         canonical="/resources/sdr-outsourcing-companies-guide"
+      />
+      
+      <BreadcrumbSchema 
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Resources", url: "/resources" },
+          { name: "SDR Outsourcing Guide", url: "/resources/sdr-outsourcing-companies-guide" }
+        ]}
       />
       
       <ArticleSchema

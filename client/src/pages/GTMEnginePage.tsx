@@ -18,8 +18,33 @@ import { useRef } from "react";
 
 const podVideo = "/bdr-pod-video.mp4";
 
+import { Helmet } from 'react-helmet-async';
+
 export default function GTMEnginePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "GTM Engine - Complete Revenue Generation System",
+    "description": "Deploy elite BDR talent with AI-powered systems and strategic frameworks to deliver 20+ qualified appointments monthly.",
+    "brand": {
+      "@type": "Brand",
+      "name": "Revenue Party"
+    },
+    "offers": {
+      "@type": "AggregateOffer",
+      "lowPrice": "12500",
+      "highPrice": "15000",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "47"
+    }
+  };
   const impactSellingTenets = [
     {
       id: 'scene-partner',
@@ -49,6 +74,13 @@ export default function GTMEnginePage() {
         keywords="GTM Engine, Fullstack Sales Unit, revenue generation system, allbound, sales as a service, Impact Selling OS, Signal Factory, BDR pod, guaranteed sales appointments"
         canonical="/gtm-engine"
       />
+      
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(productSchema)}
+        </script>
+      </Helmet>
+      
       <Breadcrumbs items={[]} currentPage="The GTM Engine" />
       
       {/* Hero Module */}
