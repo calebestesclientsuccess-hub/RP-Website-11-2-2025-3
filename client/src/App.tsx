@@ -54,8 +54,9 @@ import AssessmentConfigsList from "@/pages/admin/AssessmentConfigsList";
 import AssessmentConfigForm from "@/pages/admin/AssessmentConfigForm";
 import CampaignsList from "@/pages/admin/CampaignsList";
 import CampaignForm from "@/pages/admin/CampaignForm";
+import AssessmentRuntime from "@/pages/AssessmentRuntime";
+import AssessmentResult from "@/pages/AssessmentResult";
 import NotFound from "@/pages/not-found";
-import GtmResultPage from "@/pages/GtmResultPage"; // Assuming this is a new import needed for the changes
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
@@ -78,6 +79,10 @@ function Router() {
       <Route path="/assessment" component={AssessmentPage} />
       <Route path="/pipeline-assessment" component={PipelineAssessmentPage} />
       <Route path="/pipeline-assessment/thank-you" component={PipelineAssessmentThankYou} />
+
+      {/* Configurable Assessments (Public Runtime) */}
+      <Route path="/assessments/:slug" component={AssessmentRuntime} />
+      <Route path="/assessments/results/:sessionId" component={AssessmentResult} />
 
       {/* Admin Routes */}
       <Route path="/admin/login" component={LoginPage} />
