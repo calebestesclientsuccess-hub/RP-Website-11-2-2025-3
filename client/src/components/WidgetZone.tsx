@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { trackEvent } from "@/lib/trackEvent";
 import type { Campaign, CalculatorConfig, FormConfig, SeoMetadata } from "@shared/schema";
+import { cn } from "@/lib/utils";
+import { PopupEngine } from "./PopupEngine";
 
 interface WidgetZoneProps {
   zone: string;
@@ -39,19 +41,19 @@ const pathToPageName: Record<string, string> = {
 // Determine all page names that apply to the current path
 const getPageNames = (path: string): string[] => {
   const names: string[] = [];
-  
+
   // Add specific page name if it exists in the static map
   if (pathToPageName[path]) {
     names.push(pathToPageName[path]);
   }
-  
+
   // Check for wildcard matches
-  
+
   // Blog posts: /blog/:slug (but not /blog itself)
   if (path.startsWith("/blog/") && path !== "/blog") {
     names.push("all-blog-posts");
   }
-  
+
   // Assessment pages
   if (
     path.startsWith("/resources/gtm-assessment") ||
@@ -59,7 +61,7 @@ const getPageNames = (path: string): string[] => {
     path === "/assessment"
   ) {
     names.push("all-assessment-pages");
-    
+
     // Also add specific assessment page names
     if (path === "/resources/gtm-assessment") {
       names.push("gtm-assessment");
@@ -67,12 +69,12 @@ const getPageNames = (path: string): string[] => {
       names.push("pipeline-assessment");
     }
   }
-  
+
   // Default to "home" if no names found
   if (names.length === 0) {
     names.push("home");
   }
-  
+
   return names;
 };
 
@@ -106,7 +108,7 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
 
   // Determine all page names that apply to the current path
   const pageNames = getPageNames(location);
-  
+
   // Use first page name as primary (for tracking purposes)
   const currentPage = pageNames[0];
 
@@ -127,14 +129,19 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
       return response.json();
     },
   });
-  
+
   // Filter campaigns to match current page names
   const campaigns = allCampaigns?.filter(campaign => 
     campaign.targetPages?.some(targetPage => pageNames.includes(targetPage))
   );
 
+  // Separate inline and popup campaigns
+  const inlineCampaigns = campaigns?.filter((c: Campaign) => c.displayAs === 'inline') || [];
+  const popupCampaigns = campaigns?.filter((c: Campaign) => c.displayAs === 'popup') || [];
+
   // Get the first matching campaign (or null if none)
-  const campaign = campaigns?.[0] || null;
+  const campaign = inlineCampaigns?.[0] || null;
+
 
   // Track campaign_viewed event when campaign is loaded
   // IMPORTANT: This must be called before any conditional returns (Rules of Hooks)
@@ -248,7 +255,7 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
           console.error(`[WidgetZone] No config found for form widget`);
           return null;
         }
-        
+
         // Check if this is raw HTML mode
         if (parsedConfig.type === "html") {
           // Sanitize HTML with DOMPurify for security
@@ -274,7 +281,7 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
             // Allow data-* attributes for form providers
             ALLOW_DATA_ATTR: true,
           });
-          
+
           return (
             <div 
               dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
@@ -282,7 +289,7 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
             />
           );
         }
-        
+
         // Otherwise use the DynamicForm builder
         return (
           <DynamicForm
@@ -359,8 +366,32 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
           data-testid={`widget-zone-${zone}`}
         >
           {widget}
+          {/* Render inline campaigns */}
+          {inlineCampaigns.map((campaign: Campaign) => (
+            <div key={campaign.id} className="campaign-inline-content my-8">
+              {campaign.contentType === 'calculator' && campaign.calculatorType && (
+                <DynamicCalculator type={campaign.calculatorType} />
+              )}
+              {campaign.contentType === 'form' && campaign.formType && (
+                <DynamicForm type={campaign.formType} />
+              )}
+              {campaign.contentType === 'collection' && campaign.collectionType === 'blog' && (
+                <BlogFeed limit={campaign.collectionLimit} />
+              )}
+              {campaign.contentType === 'collection' && campaign.collectionType === 'video' && (
+                <VideoGallery limit={campaign.collectionLimit} />
+              )}
+              {campaign.contentType === 'collection' && campaign.collectionType === 'testimonial' && (
+                <TestimonialCarousel />
+              )}
+              {campaign.contentType === 'embeddedAssessment' && campaign.assessmentId && (
+                <AssessmentEmbed assessmentId={campaign.assessmentId} />
+              )}
+            </div>
+          ))}
         </div>
       </ErrorBoundary>
+      <PopupEngine campaigns={popupCampaigns} />
     </>
   );
 }
