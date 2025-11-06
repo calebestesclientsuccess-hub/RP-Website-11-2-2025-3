@@ -82,23 +82,23 @@ const getPageNames = (path: string): string[] => {
 const getDisplaySizeClasses = (displaySize?: string | null): string => {
   switch (displaySize) {
     case "inline":
-      // Compact styling - smaller padding, tighter layout
-      return "p-2 space-y-2";
+      // Compact styling - smaller padding, tighter layout, constrained width
+      return "max-w-md mx-auto p-2 space-y-2";
     case "standard":
-      // Default styling
-      return "p-4 space-y-4";
+      // Default styling - comfortable width, centered
+      return "max-w-2xl mx-auto p-4 space-y-4";
     case "large":
-      // Larger padding and spacing
-      return "p-6 md:p-8 space-y-6";
+      // Larger padding and spacing, wider container
+      return "max-w-4xl mx-auto p-6 md:p-8 space-y-6";
     case "hero":
       // Full-width, banner-style layout
-      return "w-full p-8 md:p-12 space-y-6 md:space-y-8";
+      return "w-full max-w-7xl mx-auto p-8 md:p-12 space-y-6 md:space-y-8";
     case "takeover":
       // Maximum size, dominates the section
       return "w-full min-h-[60vh] p-12 md:p-16 space-y-8 md:space-y-12";
     default:
       // Default to standard
-      return "p-4 space-y-4";
+      return "max-w-2xl mx-auto p-4 space-y-4";
   }
 };
 
