@@ -6,10 +6,18 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, Download, Loader2, Star } from "lucide-react";
 import { Helmet } from "react-helmet-async";
+import { PDFPreview } from "@/components/PDFPreview";
 
-// Validate if a URL is a valid HTTP/HTTPS URL
+// Validate if a URL is a valid HTTP/HTTPS URL or relative path
 const isValidUrl = (url: string | null | undefined): boolean => {
   if (!url || typeof url !== 'string') return false;
+  
+  // Accept relative paths (e.g., "/uploads/pdfs/file.pdf")
+  if (url.startsWith('/')) {
+    return url.length > 1; // Must be more than just "/"
+  }
+  
+  // Validate absolute URLs
   try {
     const parsed = new URL(url);
     return parsed.protocol === 'http:' || parsed.protocol === 'https:';
@@ -153,7 +161,14 @@ export default function AssessmentResult() {
               </div>
             </CardHeader>
 
-            <CardContent className="pt-6">
+            <CardContent className="pt-6 space-y-6">
+              {/* PDF Preview (if available) */}
+              {hasValidPdfUrl && (
+                <div className="mb-8">
+                  <PDFPreview pdfUrl={result.pdfUrl!} showDownload={true} />
+                </div>
+              )}
+
               {/* Result Content */}
               <div 
                 className="prose prose-slate dark:prose-invert max-w-none"

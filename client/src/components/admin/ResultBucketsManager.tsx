@@ -189,6 +189,48 @@ export function ResultBucketsManager({ assessmentId, scoringMethod = "decision-t
     setIsDialogOpen(true);
   };
 
+  const handlePdfUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingPdf(true);
+      const formData = new FormData();
+      formData.append('pdf', file);
+
+      const response = await fetch('/api/upload/pdf', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload PDF');
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        form.setValue('pdfUrl', data.url);
+        toast({
+          title: "Success",
+          description: "PDF uploaded successfully",
+        });
+      }
+    } catch (error) {
+      console.error('Failed to upload PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingPdf(false);
+      if (pdfInputRef.current) {
+        pdfInputRef.current.value = '';
+      }
+    }
+  };
+
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     if (editingBucket) {
       updateMutation.mutate(data);
@@ -366,15 +408,14 @@ export function ResultBucketsManager({ assessmentId, scoringMethod = "decision-t
                   <FormItem>
                     <FormLabel>Result Content</FormLabel>
                     <FormControl>
-                      <Textarea
-                        {...field}
+                      <RichTextEditor
+                        content={field.value}
+                        onChange={field.onChange}
                         placeholder="Based on your responses, we recommend..."
-                        rows={6}
-                        data-testid="input-bucket-content"
                       />
                     </FormControl>
                     <FormDescription>
-                      Detailed message or recommendations for this result
+                      Detailed message or recommendations for this result (supports rich text, images, and headings)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -386,17 +427,66 @@ export function ResultBucketsManager({ assessmentId, scoringMethod = "decision-t
                 name="pdfUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>PDF URL (optional)</FormLabel>
+                    <FormLabel>PDF Resource (optional)</FormLabel>
                     <FormControl>
-                      <Input
-                        {...field}
-                        value={field.value || ""}
-                        placeholder="https://example.com/resources/guide.pdf"
-                        data-testid="input-pdf-url"
-                      />
+                      <div className="space-y-3">
+                        <div className="flex gap-2">
+                          <Input
+                            {...field}
+                            value={field.value || ""}
+                            placeholder="/uploads/pdfs/your-file.pdf"
+                            data-testid="input-pdf-url"
+                            readOnly
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => pdfInputRef.current?.click()}
+                            disabled={uploadingPdf}
+                            data-testid="button-upload-pdf"
+                          >
+                            {uploadingPdf ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Uploading...
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload PDF
+                              </>
+                            )}
+                          </Button>
+                          {field.value && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => field.onChange('')}
+                              data-testid="button-remove-pdf"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                        {field.value && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <FileText className="h-4 w-4" />
+                            <span className="truncate">{field.value}</span>
+                          </div>
+                        )}
+                        <input
+                          ref={pdfInputRef}
+                          type="file"
+                          accept="application/pdf"
+                          className="hidden"
+                          onChange={handlePdfUpload}
+                          data-testid="input-pdf-file"
+                        />
+                      </div>
                     </FormControl>
                     <FormDescription>
-                      Link to downloadable PDF resource for this outcome
+                      Upload a PDF that will be previewed on the results page
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
