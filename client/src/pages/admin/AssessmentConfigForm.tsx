@@ -63,6 +63,7 @@ export default function AssessmentConfigForm() {
       slug: "",
       description: "",
       scoringMethod: "decision-tree",
+      gateBehavior: "UNGATED",
       published: false,
     },
   });
@@ -74,6 +75,7 @@ export default function AssessmentConfigForm() {
         slug: config.slug,
         description: config.description || "",
         scoringMethod: config.scoringMethod,
+        gateBehavior: config.gateBehavior,
         published: config.published,
       });
     }
@@ -293,6 +295,38 @@ export default function AssessmentConfigForm() {
 
                           <FormField
                             control={form.control}
+                            name="gateBehavior"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Gate Behavior</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger data-testid="select-gate-behavior">
+                                      <SelectValue placeholder="Select gate behavior" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="UNGATED" data-testid="option-ungated">
+                                      Ungated (No email required)
+                                    </SelectItem>
+                                    <SelectItem value="PRE_GATED" data-testid="option-pre-gated">
+                                      Pre-Gated (Email before questions)
+                                    </SelectItem>
+                                    <SelectItem value="POST_GATED" data-testid="option-post-gated">
+                                      Post-Gated (Email after questions)
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormDescription>
+                                  Control when users provide their email: before starting the assessment, after completing it, or not at all
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
                             name="published"
                             render={({ field }) => (
                               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
@@ -458,6 +492,38 @@ export default function AssessmentConfigForm() {
                             </Select>
                             <FormDescription>
                               How should the assessment calculate results?
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="gateBehavior"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Gate Behavior</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger data-testid="select-gate-behavior">
+                                  <SelectValue placeholder="Select gate behavior" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="UNGATED" data-testid="option-ungated">
+                                  Ungated (No email required)
+                                </SelectItem>
+                                <SelectItem value="PRE_GATED" data-testid="option-pre-gated">
+                                  Pre-Gated (Email before questions)
+                                </SelectItem>
+                                <SelectItem value="POST_GATED" data-testid="option-post-gated">
+                                  Post-Gated (Email after questions)
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Control when users provide their email: before starting the assessment, after completing it, or not at all
                             </FormDescription>
                             <FormMessage />
                           </FormItem>

@@ -63,6 +63,7 @@ export function ResultBucketsManager({ assessmentId, scoringMethod = "decision-t
       bucketKey: "",
       title: "",
       content: "",
+      pdfUrl: "",
       routingRules: "",
       minScore: undefined,
       maxScore: undefined,
@@ -90,6 +91,7 @@ export function ResultBucketsManager({ assessmentId, scoringMethod = "decision-t
         bucketKey: "",
         title: "",
         content: "",
+        pdfUrl: "",
         routingRules: "",
         minScore: undefined,
         maxScore: undefined,
@@ -160,6 +162,7 @@ export function ResultBucketsManager({ assessmentId, scoringMethod = "decision-t
       bucketKey: "",
       title: "",
       content: "",
+      pdfUrl: "",
       routingRules: "",
       minScore: undefined,
       maxScore: undefined,
@@ -175,6 +178,7 @@ export function ResultBucketsManager({ assessmentId, scoringMethod = "decision-t
       bucketKey: bucket.bucketKey,
       title: bucket.title,
       content: bucket.content,
+      pdfUrl: bucket.pdfUrl || "",
       routingRules: bucket.routingRules || "",
       minScore: bucket.minScore !== null ? bucket.minScore : undefined,
       maxScore: bucket.maxScore !== null ? bucket.maxScore : undefined,
@@ -369,6 +373,28 @@ export function ResultBucketsManager({ assessmentId, scoringMethod = "decision-t
                     </FormControl>
                     <FormDescription>
                       Detailed message or recommendations for this result
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="pdfUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>PDF URL (optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value || ""}
+                        placeholder="https://example.com/resources/guide.pdf"
+                        data-testid="input-pdf-url"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Link to downloadable PDF resource for this outcome
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
