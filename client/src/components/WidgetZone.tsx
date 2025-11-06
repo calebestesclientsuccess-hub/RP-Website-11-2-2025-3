@@ -328,6 +328,8 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
           return null;
         }
         
+        console.log(`[WidgetZone] Rendering collection type: ${parsedConfig.collectionType}`);
+        
         switch (parsedConfig.collectionType) {
           case "testimonials":
             return <TestimonialCarousel theme={theme} size={size} />;
@@ -341,7 +343,10 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
         }
 
       default:
-        console.warn(`[WidgetZone] Unknown content type: ${campaign.contentType}`);
+        console.error(`[WidgetZone] Unknown content type: ${campaign.contentType}`, { 
+          campaign, 
+          parsedConfig 
+        });
         return null;
     }
   };
