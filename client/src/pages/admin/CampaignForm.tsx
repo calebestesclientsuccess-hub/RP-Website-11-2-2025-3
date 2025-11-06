@@ -525,6 +525,32 @@ export default function CampaignForm() {
     );
   }
 
+  if (!form.control) {
+    return (
+      <ProtectedRoute>
+        <Helmet>
+          <title>Loading... | Admin Dashboard</title>
+        </Helmet>
+        <SidebarProvider style={style as React.CSSProperties}>
+          <div className="flex h-screen w-full">
+            <AdminSidebar />
+            <div className="flex flex-col flex-1">
+              <header className="flex items-center gap-4 p-4 border-b">
+                <SidebarTrigger data-testid="button-sidebar-toggle" />
+                <h1 className="text-xl font-semibold">Loading...</h1>
+              </header>
+              <main className="flex-1 overflow-auto p-6">
+                <div className="flex justify-center items-center py-12" data-testid="loading-form-control">
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                </div>
+              </main>
+            </div>
+          </div>
+        </SidebarProvider>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute>
       <Helmet>
@@ -550,16 +576,16 @@ export default function CampaignForm() {
             </header>
             <main className="flex-1 overflow-auto p-6">
               <div className="max-w-4xl mx-auto space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Campaign Details</CardTitle>
-                    <CardDescription>
-                      Configure the basic settings for your campaign
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Campaign Details</CardTitle>
+                        <CardDescription>
+                          Configure the basic settings for your campaign
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
                         <FormField
                           control={form.control}
                           name="campaignName"
@@ -655,7 +681,7 @@ export default function CampaignForm() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Target Zone</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
+                              <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-target-zone">
                                     <SelectValue placeholder="Select a zone" />
@@ -703,30 +729,8 @@ export default function CampaignForm() {
                             </FormItem>
                           )}
                         />
-
-                        <div className="flex gap-4">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setLocation("/admin/campaigns")}
-                            disabled={isPending}
-                            data-testid="button-cancel"
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            type="submit"
-                            disabled={isPending}
-                            data-testid="button-submit"
-                          >
-                            {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                            {isEdit ? "Update Campaign" : "Create Campaign"}
-                          </Button>
-                        </div>
-                      </form>
-                    </Form>
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </Card>
 
                 {contentType === "calculator" && (
                   <Card data-testid="calculator-builder">
@@ -1644,7 +1648,7 @@ export default function CampaignForm() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Target Zone</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value}>
+                              <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-target-zone-targeting">
                                     <SelectValue placeholder="Select a zone" />
@@ -1754,6 +1758,28 @@ export default function CampaignForm() {
                     </CardContent>
                   </Card>
                 )}
+
+                    <div className="flex gap-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setLocation("/admin/campaigns")}
+                        disabled={isPending}
+                        data-testid="button-cancel"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={isPending}
+                        data-testid="button-submit"
+                      >
+                        {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        {isEdit ? "Update Campaign" : "Create Campaign"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
               </div>
             </main>
           </div>
