@@ -3,6 +3,15 @@ import { pgTable, text, varchar, timestamp, boolean, integer } from "drizzle-orm
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Tenants table for multi-tenant architecture
+export const tenants = pgTable("tenants", {
+  id: varchar("id").primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
@@ -33,6 +42,7 @@ export const emailCaptures = pgTable("email_captures", {
 
 export const blogPosts = pgTable("blog_posts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   excerpt: text("excerpt").notNull(),
@@ -49,6 +59,7 @@ export const blogPosts = pgTable("blog_posts", {
 
 export const videoPosts = pgTable("video_posts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description").notNull(),
@@ -66,6 +77,7 @@ export const videoPosts = pgTable("video_posts", {
 
 export const widgetConfig = pgTable("widget_config", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
   widgetType: text("widget_type").notNull(),
   enabled: boolean("enabled").default(true).notNull(),
   position: text("position").default("bottom-right").notNull(),
@@ -75,6 +87,7 @@ export const widgetConfig = pgTable("widget_config", {
 
 export const testimonials = pgTable("testimonials", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
   name: text("name").notNull(),
   title: text("title").notNull(),
   company: text("company").notNull(),
@@ -91,6 +104,7 @@ export const testimonials = pgTable("testimonials", {
 
 export const leadCaptures = pgTable("lead_captures", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
   email: text("email").notNull(),
   firstName: text("first_name"),
   lastName: text("last_name"),
@@ -105,6 +119,7 @@ export const leadCaptures = pgTable("lead_captures", {
 
 export const jobPostings = pgTable("job_postings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
   title: text("title").notNull(),
   department: text("department").notNull(),
   location: text("location").notNull(),
@@ -117,6 +132,7 @@ export const jobPostings = pgTable("job_postings", {
 
 export const jobApplications = pgTable("job_applications", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
   jobId: varchar("job_id").notNull().references(() => jobPostings.id),
   name: text("name").notNull(),
   email: text("email").notNull(),
@@ -139,6 +155,7 @@ export const blueprintCaptures = pgTable("blueprint_captures", {
 
 export const assessmentResponses = pgTable("assessment_responses", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
   sessionId: varchar("session_id").notNull().unique(),
   
   q1: text("q1"),
@@ -183,10 +200,12 @@ export const newsletterSignups = pgTable("newsletter_signups", {
 
 export const assessmentConfigs = pgTable("assessment_configs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description"),
   scoringMethod: text("scoring_method").notNull().default("decision-tree"),
+  entryQuestionId: varchar("entry_question_id"),
   published: boolean("published").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -208,6 +227,7 @@ export const assessmentAnswers = pgTable("assessment_answers", {
   questionId: varchar("question_id").notNull().references(() => assessmentQuestions.id, { onDelete: "cascade" }),
   answerText: text("answer_text").notNull(),
   answerValue: text("answer_value").notNull(),
+  points: integer("points"),
   order: integer("order").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -220,8 +240,15 @@ export const assessmentResultBuckets = pgTable("assessment_result_buckets", {
   title: text("title").notNull(),
   content: text("content").notNull(),
   routingRules: text("routing_rules"),
+  minScore: integer("min_score"),
+  maxScore: integer("max_score"),
   order: integer("order").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertTenantSchema = createInsertSchema(tenants).omit({
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -250,39 +277,46 @@ export const insertEmailCaptureSchema = createInsertSchema(emailCaptures).omit({
 
 export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
   id: true,
+  tenantId: true,
   publishedAt: true,
   updatedAt: true,
 });
 
 export const insertVideoPostSchema = createInsertSchema(videoPosts).omit({
   id: true,
+  tenantId: true,
   publishedAt: true,
   updatedAt: true,
 });
 
 export const insertWidgetConfigSchema = createInsertSchema(widgetConfig).omit({
   id: true,
+  tenantId: true,
   updatedAt: true,
 });
 
 export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
   id: true,
+  tenantId: true,
   createdAt: true,
 });
 
 export const insertJobPostingSchema = createInsertSchema(jobPostings).omit({
   id: true,
+  tenantId: true,
   createdAt: true,
 });
 
 export const insertJobApplicationSchema = createInsertSchema(jobApplications).omit({
   id: true,
+  tenantId: true,
   createdAt: true,
 });
 
 export const insertLeadCaptureSchema = createInsertSchema(leadCaptures)
   .omit({
     id: true,
+    tenantId: true,
   })
   .extend({
     email: z.string().email("Please enter a valid email address"),
@@ -303,6 +337,7 @@ export const insertBlueprintCaptureSchema = createInsertSchema(blueprintCaptures
 export const insertAssessmentResponseSchema = createInsertSchema(assessmentResponses)
   .omit({
     id: true,
+    tenantId: true,
     createdAt: true,
     updatedAt: true,
   });
@@ -318,6 +353,7 @@ export const insertNewsletterSignupSchema = createInsertSchema(newsletterSignups
 
 export const insertAssessmentConfigSchema = createInsertSchema(assessmentConfigs).omit({
   id: true,
+  tenantId: true,
   createdAt: true,
   updatedAt: true,
 });
@@ -337,6 +373,8 @@ export const insertAssessmentResultBucketSchema = createInsertSchema(assessmentR
   createdAt: true,
 });
 
+export type InsertTenant = z.infer<typeof insertTenantSchema>;
+export type Tenant = typeof tenants.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;

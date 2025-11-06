@@ -456,7 +456,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Support ?publishedOnly=false query param for admin to see all posts (including drafts)
       const publishedOnly = req.query.publishedOnly !== 'false';
-      const posts = await storage.getAllBlogPosts(publishedOnly);
+      const posts = await storage.getAllBlogPosts(req.tenantId, publishedOnly);
       return res.json(posts);
     } catch (error) {
       console.error("Error fetching blog posts:", error);
@@ -467,7 +467,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get blog post by ID (route must come before :slug to avoid conflicts)
   app.get("/api/blog-posts/by-id/:id", async (req, res) => {
     try {
-      const post = await storage.getBlogPostById(req.params.id);
+      const post = await storage.getBlogPostById(req.tenantId, req.params.id);
       if (!post) {
         return res.status(404).json({ error: "Blog post not found" });
       }
@@ -480,7 +480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/blog-posts/:slug", async (req, res) => {
     try {
-      const post = await storage.getBlogPostBySlug(req.params.slug);
+      const post = await storage.getBlogPostBySlug(req.tenantId, req.params.slug);
       if (!post) {
         return res.status(404).json({ error: "Blog post not found" });
       }
@@ -501,7 +501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      const post = await storage.createBlogPost(result.data);
+      const post = await storage.createBlogPost(req.tenantId, result.data);
       return res.status(201).json(post);
     } catch (error) {
       console.error("Error creating blog post:", error);
@@ -519,7 +519,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      const post = await storage.updateBlogPost(req.params.id, result.data);
+      const post = await storage.updateBlogPost(req.tenantId, req.params.id, result.data);
       return res.json(post);
     } catch (error) {
       console.error("Error updating blog post:", error);
@@ -529,7 +529,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/blog-posts/:id", async (req, res) => {
     try {
-      await storage.deleteBlogPost(req.params.id);
+      await storage.deleteBlogPost(req.tenantId, req.params.id);
       return res.status(204).send();
     } catch (error) {
       console.error("Error deleting blog post:", error);
@@ -542,7 +542,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Support ?publishedOnly=false query param for admin to see all posts (including drafts)
       const publishedOnly = req.query.publishedOnly !== 'false';
-      const posts = await storage.getAllVideoPosts(publishedOnly);
+      const posts = await storage.getAllVideoPosts(req.tenantId, publishedOnly);
       return res.json(posts);
     } catch (error) {
       console.error("Error fetching video posts:", error);
@@ -553,7 +553,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get video post by ID (route must come before :slug to avoid conflicts)
   app.get("/api/video-posts/by-id/:id", async (req, res) => {
     try {
-      const post = await storage.getVideoPostById(req.params.id);
+      const post = await storage.getVideoPostById(req.tenantId, req.params.id);
       if (!post) {
         return res.status(404).json({ error: "Video post not found" });
       }
@@ -566,7 +566,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/video-posts/:slug", async (req, res) => {
     try {
-      const post = await storage.getVideoPostBySlug(req.params.slug);
+      const post = await storage.getVideoPostBySlug(req.tenantId, req.params.slug);
       if (!post) {
         return res.status(404).json({ error: "Video post not found" });
       }
@@ -587,7 +587,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      const post = await storage.createVideoPost(result.data);
+      const post = await storage.createVideoPost(req.tenantId, result.data);
       return res.status(201).json(post);
     } catch (error) {
       console.error("Error creating video post:", error);
@@ -605,7 +605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      const post = await storage.updateVideoPost(req.params.id, result.data);
+      const post = await storage.updateVideoPost(req.tenantId, req.params.id, result.data);
       return res.json(post);
     } catch (error) {
       console.error("Error updating video post:", error);
@@ -623,7 +623,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      const post = await storage.updateVideoPost(req.params.id, result.data);
+      const post = await storage.updateVideoPost(req.tenantId, req.params.id, result.data);
       return res.json(post);
     } catch (error) {
       console.error("Error updating video post:", error);
@@ -633,7 +633,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/video-posts/:id", async (req, res) => {
     try {
-      await storage.deleteVideoPost(req.params.id);
+      await storage.deleteVideoPost(req.tenantId, req.params.id);
       return res.status(204).send();
     } catch (error) {
       console.error("Error deleting video post:", error);
@@ -644,7 +644,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Widget configuration endpoints
   app.get("/api/widget-config", async (req, res) => {
     try {
-      const config = await storage.getActiveWidgetConfig();
+      const config = await storage.getActiveWidgetConfig(req.tenantId);
       return res.json(config);
     } catch (error) {
       console.error("Error fetching widget config:", error);
@@ -662,7 +662,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      const config = await storage.createOrUpdateWidgetConfig(result.data);
+      const config = await storage.createOrUpdateWidgetConfig(req.tenantId, result.data);
       return res.json(config);
     } catch (error) {
       console.error("Error saving widget config:", error);
@@ -674,7 +674,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/testimonials", async (req, res) => {
     try {
       const featured = req.query.featured === 'true';
-      const testimonials = await storage.getAllTestimonials(featured);
+      const testimonials = await storage.getAllTestimonials(req.tenantId, featured);
       return res.json(testimonials);
     } catch (error) {
       console.error("Error fetching testimonials:", error);
@@ -692,7 +692,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      const testimonial = await storage.createTestimonial(result.data);
+      const testimonial = await storage.createTestimonial(req.tenantId, result.data);
       return res.status(201).json(testimonial);
     } catch (error) {
       console.error("Error creating testimonial:", error);
@@ -704,7 +704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/job-postings", async (req, res) => {
     try {
       const active = req.query.active !== 'false';
-      const jobs = await storage.getAllJobPostings(active);
+      const jobs = await storage.getAllJobPostings(req.tenantId, active);
       return res.json(jobs);
     } catch (error) {
       console.error("Error fetching job postings:", error);
@@ -714,7 +714,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/job-postings/:id", async (req, res) => {
     try {
-      const job = await storage.getJobPosting(req.params.id);
+      const job = await storage.getJobPosting(req.tenantId, req.params.id);
       if (!job) {
         return res.status(404).json({ error: "Job posting not found" });
       }
@@ -735,7 +735,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      const job = await storage.createJobPosting(result.data);
+      const job = await storage.createJobPosting(req.tenantId, result.data);
       return res.status(201).json(job);
     } catch (error) {
       console.error("Error creating job posting:", error);
@@ -754,7 +754,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      const application = await storage.createJobApplication(result.data);
+      const application = await storage.createJobApplication(req.tenantId, result.data);
       return res.status(201).json({
         success: true,
         message: "Application submitted successfully! We'll be in touch soon.",
@@ -779,7 +779,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const leadCapture = await storage.createLeadCapture(result.data);
+      const leadCapture = await storage.createLeadCapture(req.tenantId, result.data);
 
       const downloadUrl = `/downloads/${result.data.resourceDownloaded}.pdf`;
 
@@ -802,7 +802,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all lead captures (for admin/analytics purposes)
   app.get("/api/lead-captures", async (req, res) => {
     try {
-      const captures = await storage.getAllLeadCaptures();
+      const captures = await storage.getAllLeadCaptures(req.tenantId);
       return res.json(captures);
     } catch (error) {
       console.error("Error fetching lead captures:", error);
@@ -881,13 +881,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Session ID is required" });
       }
 
-      const existing = await storage.getAssessmentBySessionId(sessionId);
+      const existing = await storage.getAssessmentBySessionId(req.tenantId, sessionId);
 
       if (existing) {
         return res.json(existing);
       }
 
-      const assessment = await storage.createAssessment({
+      const assessment = await storage.createAssessment(req.tenantId, {
         sessionId,
         completed: false,
         usedCalculator: false,
@@ -905,7 +905,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { sessionId } = req.params;
       const updates = req.body;
 
-      const assessment = await storage.updateAssessment(sessionId, updates);
+      const assessment = await storage.updateAssessment(req.tenantId, sessionId, updates);
 
       return res.json(assessment);
     } catch (error) {
@@ -921,7 +921,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const bucket = calculateBucket(data);
 
-      const assessment = await storage.updateAssessment(sessionId, {
+      const assessment = await storage.updateAssessment(req.tenantId, sessionId, {
         ...data,
         bucket,
         completed: true,
@@ -949,7 +949,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         search: search as string | undefined,
       };
 
-      const assessments = await storage.getAllAssessments(filters);
+      const assessments = await storage.getAllAssessments(req.tenantId, filters);
 
       return res.json(assessments);
     } catch (error) {
@@ -995,7 +995,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Assessment Config Management API
   app.get("/api/assessment-configs", requireAuth, async (req, res) => {
     try {
-      const configs = await storage.getAllAssessmentConfigs();
+      const configs = await storage.getAllAssessmentConfigs(req.tenantId);
       return res.json(configs);
     } catch (error) {
       console.error("Error fetching assessment configs:", error);
@@ -1005,7 +1005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/assessment-configs/slug/:slug", async (req, res) => {
     try {
-      const config = await storage.getAssessmentConfigBySlug(req.params.slug);
+      const config = await storage.getAssessmentConfigBySlug(req.tenantId, req.params.slug);
       if (!config) {
         return res.status(404).json({ error: "Assessment config not found" });
       }
@@ -1018,7 +1018,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/assessment-configs/:id", requireAuth, async (req, res) => {
     try {
-      const config = await storage.getAssessmentConfigById(req.params.id);
+      const config = await storage.getAssessmentConfigById(req.tenantId, req.params.id);
       if (!config) {
         return res.status(404).json({ error: "Assessment config not found" });
       }
@@ -1040,7 +1040,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const config = await storage.createAssessmentConfig(result.data);
+      const config = await storage.createAssessmentConfig(req.tenantId, result.data);
       return res.status(201).json(config);
     } catch (error) {
       console.error("Error creating assessment config:", error);
@@ -1059,7 +1059,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const config = await storage.updateAssessmentConfig(req.params.id, result.data);
+      const config = await storage.updateAssessmentConfig(req.tenantId, req.params.id, result.data);
       return res.json(config);
     } catch (error) {
       console.error("Error updating assessment config:", error);
@@ -1069,7 +1069,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/assessment-configs/:id", requireAuth, async (req, res) => {
     try {
-      await storage.deleteAssessmentConfig(req.params.id);
+      await storage.deleteAssessmentConfig(req.tenantId, req.params.id);
       return res.json({ success: true });
     } catch (error) {
       console.error("Error deleting assessment config:", error);
@@ -1329,7 +1329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public assessment config endpoint (for frontend widget)
   app.get("/api/public/assessments/:slug", async (req, res) => {
     try {
-      const config = await storage.getAssessmentConfigBySlug(req.params.slug);
+      const config = await storage.getAssessmentConfigBySlug(req.tenantId, req.params.slug);
       if (!config || !config.published) {
         return res.status(404).json({ error: "Assessment not found" });
       }

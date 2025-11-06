@@ -5,10 +5,14 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { sessionPool } from "./db";
 import { securityHeaders } from "./middleware/security-headers";
+import { tenantMiddleware } from "./middleware/tenant";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Apply tenant middleware (must be early in the chain)
+app.use(tenantMiddleware);
 
 // Apply security headers for SEO trust signals
 app.use(securityHeaders);
