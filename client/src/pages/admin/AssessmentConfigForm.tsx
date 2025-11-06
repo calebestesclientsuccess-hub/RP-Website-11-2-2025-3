@@ -36,6 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FlowBuilder } from "@/components/admin/FlowBuilder";
 import { ResultBucketsManager } from "@/components/admin/ResultBucketsManager";
 import { DecisionTreeVisualization } from "@/components/admin/DecisionTreeVisualization";
+import { SubmissionsTable } from "@/components/admin/SubmissionsTable";
 
 const formSchema = insertAssessmentConfigSchema;
 
@@ -191,7 +192,7 @@ export default function AssessmentConfigForm() {
                   {/* Left Column - 70% */}
                   <div className="flex-1 min-w-0" style={{ flex: "0 0 68%" }}>
                     <Tabs defaultValue="basic" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-4">
                       <TabsTrigger value="basic" data-testid="tab-basic">
                         Basic Info
                       </TabsTrigger>
@@ -200,6 +201,9 @@ export default function AssessmentConfigForm() {
                       </TabsTrigger>
                       <TabsTrigger value="results" data-testid="tab-results">
                         Results
+                      </TabsTrigger>
+                      <TabsTrigger value="submissions" data-testid="tab-submissions">
+                        Submissions
                       </TabsTrigger>
                     </TabsList>
 
@@ -390,6 +394,10 @@ export default function AssessmentConfigForm() {
                         assessmentId={params?.id!} 
                         scoringMethod={form.watch("scoringMethod") || config?.scoringMethod}
                       />
+                    </TabsContent>
+
+                    <TabsContent value="submissions" className="mt-6">
+                      <SubmissionsTable assessmentId={params?.id!} />
                     </TabsContent>
                   </Tabs>
                   </div>
