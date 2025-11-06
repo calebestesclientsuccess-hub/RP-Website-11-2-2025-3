@@ -23,7 +23,9 @@ export default function LoginPage() {
     meta.name = 'robots';
     meta.content = 'noindex, nofollow';
     document.head.appendChild(meta);
-    return () => document.head.removeChild(meta);
+    return () => {
+      document.head.removeChild(meta);
+    };
   }, []);
 
   useEffect(() => {
@@ -39,8 +41,13 @@ export default function LoginPage() {
     checkUsers();
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      setLocation("/admin");
+    }
+  }, [user, setLocation]);
+
   if (user) {
-    setLocation("/admin");
     return null;
   }
 
