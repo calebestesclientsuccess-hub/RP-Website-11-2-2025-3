@@ -348,8 +348,13 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
 
   const widget = renderWidget();
 
-  // If widget rendering failed, return null
+  // If widget rendering failed, return null (don't render empty space)
   if (!widget) {
+    console.error(`[WidgetZone] Failed to render widget for campaign ${campaign.id}`, {
+      contentType: campaign.contentType,
+      hasConfig: !!campaign.widgetConfig,
+      configPreview: campaign.widgetConfig?.substring(0, 100),
+    });
     return null;
   }
 
