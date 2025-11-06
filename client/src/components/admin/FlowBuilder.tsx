@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -62,10 +62,13 @@ const answerFormSchema = insertAssessmentAnswerSchema.omit({ questionId: true })
 interface FlowBuilderProps {
   assessmentId: string;
   scoringMethod?: string;
+  openQuestionId?: string;
+  onOpenQuestion?: (questionId: string | undefined) => void;
 }
 
-export function FlowBuilder({ assessmentId, scoringMethod = "decision-tree" }: FlowBuilderProps) {
+export function FlowBuilder({ assessmentId, scoringMethod = "decision-tree", openQuestionId, onOpenQuestion }: FlowBuilderProps) {
   const { toast } = useToast();
+  const accordionRef = useRef<HTMLDivElement>(null);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [editingAnswerId, setEditingAnswerId] = useState<string | null>(null);
   const [deleteConfirmQuestion, setDeleteConfirmQuestion] = useState<AssessmentQuestion | null>(null);
@@ -87,6 +90,17 @@ export function FlowBuilder({ assessmentId, scoringMethod = "decision-tree" }: F
   const { data: buckets = [] } = useQuery<AssessmentResultBucket[]>({
     queryKey: [`/api/assessment-configs/${assessmentId}/results`],
   });
+
+  useEffect(() => {
+    if (openQuestionId && accordionRef.current) {
+      setTimeout(() => {
+        const accordionItem = accordionRef.current?.querySelector(`[data-testid="question-accordion-${openQuestionId}"]`);
+        if (accordionItem) {
+          accordionItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+    }
+  }, [openQuestionId]);
 
   const questionForm = useForm<z.infer<typeof questionFormSchema>>({
     resolver: zodResolver(questionFormSchema),
@@ -431,8 +445,15 @@ export function FlowBuilder({ assessmentId, scoringMethod = "decision-tree" }: F
           </CardContent>
         </Card>
       ) : (
-        <Accordion type="single" collapsible className="w-full space-y-3">
-          {questions.map((question) => {
+        <div ref={accordionRef}>
+          <Accordion 
+            type="single" 
+            collapsible 
+            className="w-full space-y-3"
+            value={openQuestionId}
+            onValueChange={onOpenQuestion}
+          >
+            {questions.map((question) => {
             const isStartQuestion = assessmentConfig?.entryQuestionId === question.id;
             const answers = getAnswersForQuestion(question.id);
             const isEditing = editingQuestionId === question.id;
@@ -1085,7 +1106,8 @@ export function FlowBuilder({ assessmentId, scoringMethod = "decision-tree" }: F
               </CardContent>
             </Card>
           )}
-        </Accordion>
+          </Accordion>
+        </div>
       )}
 
       {questions.length > 0 && editingQuestionId !== "new" && (

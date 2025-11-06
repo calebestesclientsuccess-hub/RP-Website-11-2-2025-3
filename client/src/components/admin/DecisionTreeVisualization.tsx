@@ -10,9 +10,10 @@ import { computeDecisionTree } from "@/lib/decisionTreeUtils";
 interface DecisionTreeVisualizationProps {
   assessmentId: string;
   config: AssessmentConfig;
+  onQuestionClick?: (questionId: string) => void;
 }
 
-export function DecisionTreeVisualization({ assessmentId, config }: DecisionTreeVisualizationProps) {
+export function DecisionTreeVisualization({ assessmentId, config, onQuestionClick }: DecisionTreeVisualizationProps) {
   const { data: questions = [], isLoading: isLoadingQuestions } = useQuery<AssessmentQuestion[]>({
     queryKey: [`/api/assessment-configs/${assessmentId}/questions`],
   });
@@ -134,7 +135,7 @@ export function DecisionTreeVisualization({ assessmentId, config }: DecisionTree
                 return (
                   <div key={node.id} className="space-y-1">
                     <Card 
-                      className="border-l-4"
+                      className="border-l-4 cursor-pointer hover-elevate transition-all"
                       style={{
                         borderLeftColor: node.isEntry 
                           ? 'hsl(var(--primary))' 
@@ -142,6 +143,7 @@ export function DecisionTreeVisualization({ assessmentId, config }: DecisionTree
                           ? 'hsl(var(--destructive))'
                           : 'hsl(var(--border))'
                       }}
+                      onClick={() => onQuestionClick?.(node.id)}
                       data-testid={`tree-node-${node.id}`}
                     >
                       <CardHeader className="p-3">
@@ -214,7 +216,8 @@ export function DecisionTreeVisualization({ assessmentId, config }: DecisionTree
                 {orphanedNodes.map(node => (
                   <Card 
                     key={node.id}
-                    className="border-l-4 border-l-muted-foreground/30"
+                    className="border-l-4 border-l-muted-foreground/30 cursor-pointer hover-elevate transition-all"
+                    onClick={() => onQuestionClick?.(node.id)}
                     data-testid={`orphaned-node-${node.id}`}
                   >
                     <CardHeader className="p-2">

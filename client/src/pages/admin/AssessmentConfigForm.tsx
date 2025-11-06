@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertAssessmentConfigSchema, type AssessmentConfig } from "@shared/schema";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Form,
   FormControl,
@@ -44,6 +44,7 @@ export default function AssessmentConfigForm() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/admin/assessments/:id/edit");
   const isEdit = !!params?.id;
+  const [openQuestionId, setOpenQuestionId] = useState<string | undefined>();
 
   const style = {
     "--sidebar-width": "16rem",
@@ -345,6 +346,8 @@ export default function AssessmentConfigForm() {
                       <FlowBuilder 
                         assessmentId={params?.id!} 
                         scoringMethod={form.watch("scoringMethod") || config?.scoringMethod}
+                        openQuestionId={openQuestionId}
+                        onOpenQuestion={setOpenQuestionId}
                       />
                     </TabsContent>
 
@@ -364,6 +367,7 @@ export default function AssessmentConfigForm() {
                         <DecisionTreeVisualization 
                           assessmentId={params?.id!} 
                           config={config}
+                          onQuestionClick={setOpenQuestionId}
                         />
                       )}
                     </div>
