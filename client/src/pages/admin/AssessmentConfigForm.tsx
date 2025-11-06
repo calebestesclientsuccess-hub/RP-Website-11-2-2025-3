@@ -36,6 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QuestionsManager } from "@/components/admin/QuestionsManager";
 import { AnswersManager } from "@/components/admin/AnswersManager";
 import { ResultBucketsManager } from "@/components/admin/ResultBucketsManager";
+import { DecisionTreeVisualization } from "@/components/admin/DecisionTreeVisualization";
 
 const formSchema = insertAssessmentConfigSchema;
 
@@ -183,9 +184,11 @@ export default function AssessmentConfigForm() {
               </h1>
             </header>
             <main className="flex-1 overflow-auto p-6">
-              <div className="max-w-4xl mx-auto">
-                {isEdit ? (
-                  <Tabs defaultValue="basic" className="w-full">
+              {isEdit ? (
+                <div className="flex gap-6 max-w-7xl mx-auto">
+                  {/* Left Column - 70% */}
+                  <div className="flex-1 min-w-0" style={{ flex: "0 0 68%" }}>
+                    <Tabs defaultValue="basic" className="w-full">
                     <TabsList className="grid w-full grid-cols-4">
                       <TabsTrigger value="basic" data-testid="tab-basic">
                         Basic Info
@@ -360,7 +363,22 @@ export default function AssessmentConfigForm() {
                       />
                     </TabsContent>
                   </Tabs>
-                ) : (
+                  </div>
+
+                  {/* Right Column - 30% - Decision Tree Visualization */}
+                  <div className="hidden lg:block" style={{ flex: "0 0 30%" }}>
+                    <div className="sticky top-6">
+                      {config && (
+                        <DecisionTreeVisualization 
+                          assessmentId={params?.id!} 
+                          config={config}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="max-w-4xl mx-auto">
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                       <FormField
@@ -499,8 +517,8 @@ export default function AssessmentConfigForm() {
                       </div>
                     </form>
                   </Form>
-                )}
-              </div>
+                </div>
+              )}
             </main>
           </div>
         </div>
