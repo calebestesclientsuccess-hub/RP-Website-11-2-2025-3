@@ -1,13 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Loader2, Plus, Trash2, Edit2, GripVertical } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Loader2, Plus, Trash2, Edit2, GripVertical, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { insertAssessmentQuestionSchema, type AssessmentQuestion } from "@shared/schema";
+import {
+  insertAssessmentQuestionSchema,
+  type AssessmentQuestion,
+  type AssessmentAnswer,
+  type AssessmentConfig,
+} from "@shared/schema";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -50,9 +64,24 @@ export function QuestionsManager({ assessmentId }: QuestionsManagerProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<AssessmentQuestion | null>(null);
   const [deleteConfirmQuestion, setDeleteConfirmQuestion] = useState<AssessmentQuestion | null>(null);
+  
+  // Conditional logic state
+  const [enableConditionalLogic, setEnableConditionalLogic] = useState(false);
+  const [selectedQuestionId, setSelectedQuestionId] = useState<string>("");
+  const [selectedAnswerId, setSelectedAnswerId] = useState<string>("");
+
+  const { data: assessmentConfig, isLoading: isLoadingConfig } = useQuery<AssessmentConfig>({
+    queryKey: [`/api/assessment-configs/${assessmentId}`],
+  });
 
   const { data: questions = [], isLoading } = useQuery<AssessmentQuestion[]>({
     queryKey: [`/api/assessment-configs/${assessmentId}/questions`],
+  });
+
+  // Fetch answers for selected question (for conditional logic)
+  const { data: availableAnswers = [], isLoading: isLoadingAnswers } = useQuery<AssessmentAnswer[]>({
+    queryKey: [`/api/assessment-questions/${selectedQuestionId}/answers`],
+    enabled: !!selectedQuestionId && enableConditionalLogic,
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -65,6 +94,35 @@ export function QuestionsManager({ assessmentId }: QuestionsManagerProps) {
       conditionalLogic: "",
     },
   });
+
+  // Parse conditional logic when editing
+  useEffect(() => {
+    if (editingQuestion && editingQuestion.conditionalLogic) {
+      try {
+        const parsed = JSON.parse(editingQuestion.conditionalLogic);
+        if (parsed.questionId && parsed.answerId) {
+          setEnableConditionalLogic(true);
+          setSelectedQuestionId(parsed.questionId);
+          setSelectedAnswerId(parsed.answerId);
+        }
+      } catch (e) {
+        // Invalid JSON, ignore
+      }
+    }
+  }, [editingQuestion]);
+
+  // Update conditionalLogic field when selections change
+  useEffect(() => {
+    if (enableConditionalLogic && selectedQuestionId && selectedAnswerId) {
+      const logic = JSON.stringify({
+        questionId: selectedQuestionId,
+        answerId: selectedAnswerId,
+      });
+      form.setValue("conditionalLogic", logic);
+    } else {
+      form.setValue("conditionalLogic", "");
+    }
+  }, [enableConditionalLogic, selectedQuestionId, selectedAnswerId, form]);
 
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
@@ -80,14 +138,7 @@ export function QuestionsManager({ assessmentId }: QuestionsManagerProps) {
         title: "Success",
         description: "Question created successfully",
       });
-      setIsDialogOpen(false);
-      form.reset({
-        questionText: "",
-        description: "",
-        order: questions.length + 2,
-        questionType: "single-choice",
-        conditionalLogic: "",
-      });
+      handleDialogClose();
     },
     onError: (error: Error) => {
       toast({
@@ -109,8 +160,7 @@ export function QuestionsManager({ assessmentId }: QuestionsManagerProps) {
         title: "Success",
         description: "Question updated successfully",
       });
-      setIsDialogOpen(false);
-      setEditingQuestion(null);
+      handleDialogClose();
     },
     onError: (error: Error) => {
       toast({
@@ -143,8 +193,49 @@ export function QuestionsManager({ assessmentId }: QuestionsManagerProps) {
     },
   });
 
+  const setEntryQuestionMutation = useMutation({
+    mutationFn: async (questionId: string) => {
+      const response = await apiRequest("PUT", `/api/assessment-configs/${assessmentId}`, {
+        entryQuestionId: questionId,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: [`/api/assessment-configs/${assessmentId}`] });
+      toast({
+        title: "Success",
+        description: "Start question updated successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to set start question",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDialogClose = () => {
+    setIsDialogOpen(false);
+    setEditingQuestion(null);
+    setEnableConditionalLogic(false);
+    setSelectedQuestionId("");
+    setSelectedAnswerId("");
+    form.reset({
+      questionText: "",
+      description: "",
+      order: questions.length + 1,
+      questionType: "single-choice",
+      conditionalLogic: "",
+    });
+  };
+
   const handleAddQuestion = () => {
     setEditingQuestion(null);
+    setEnableConditionalLogic(false);
+    setSelectedQuestionId("");
+    setSelectedAnswerId("");
     form.reset({
       questionText: "",
       description: "",
@@ -167,6 +258,10 @@ export function QuestionsManager({ assessmentId }: QuestionsManagerProps) {
     setIsDialogOpen(true);
   };
 
+  const handleSetStartQuestion = (questionId: string) => {
+    setEntryQuestionMutation.mutate(questionId);
+  };
+
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     if (editingQuestion) {
       updateMutation.mutate(data);
@@ -177,7 +272,11 @@ export function QuestionsManager({ assessmentId }: QuestionsManagerProps) {
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  if (isLoading) {
+  // Get list of other questions for conditional logic (exclude current question)
+  const otherQuestions = questions.filter(q => q.id !== editingQuestion?.id);
+  const hasOtherQuestions = otherQuestions.length > 0;
+
+  if (isLoading || isLoadingConfig) {
     return (
       <div className="flex justify-center items-center py-12" data-testid="loading-questions">
         <Loader2 className="w-8 h-8 animate-spin" />
@@ -210,51 +309,91 @@ export function QuestionsManager({ assessmentId }: QuestionsManagerProps) {
         </Card>
       ) : (
         <div className="space-y-3">
-          {questions.map((question) => (
-            <Card key={question.id} data-testid={`question-card-${question.id}`}>
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex gap-3 flex-1">
-                    <GripVertical className="w-5 h-5 text-muted-foreground mt-0.5" />
-                    <div className="flex-1">
-                      <CardTitle className="text-base font-medium">
-                        Question {question.order}
-                      </CardTitle>
-                      <p className="text-sm mt-1">{question.questionText}</p>
-                      {question.description && (
-                        <p className="text-sm text-muted-foreground mt-2">
-                          {question.description}
-                        </p>
-                      )}
+          {questions.map((question) => {
+            const isStartQuestion = assessmentConfig?.entryQuestionId === question.id;
+            const hasConditionalLogic = !!question.conditionalLogic;
+            
+            return (
+              <Card key={question.id} data-testid={`question-card-${question.id}`}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex gap-3 flex-1">
+                      <GripVertical className="w-5 h-5 text-muted-foreground mt-0.5" />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <CardTitle className="text-base font-medium">
+                            Question {question.order}
+                          </CardTitle>
+                          {isStartQuestion && (
+                            <Badge variant="default" className="gap-1" data-testid={`badge-start-question-${question.id}`}>
+                              <Star className="w-3 h-3" />
+                              Start Question
+                            </Badge>
+                          )}
+                          {hasConditionalLogic && (
+                            <Badge variant="secondary" data-testid={`badge-conditional-${question.id}`}>
+                              Conditional
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm mt-1">{question.questionText}</p>
+                        {question.description && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            {question.description}
+                          </p>
+                        )}
+                        {!isStartQuestion && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="mt-2 h-auto py-1 px-2"
+                            onClick={() => handleSetStartQuestion(question.id)}
+                            disabled={setEntryQuestionMutation.isPending}
+                            data-testid={`button-set-start-${question.id}`}
+                          >
+                            {setEntryQuestionMutation.isPending ? (
+                              <>
+                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                Setting...
+                              </>
+                            ) : (
+                              <>
+                                <Star className="w-3 h-3 mr-1" />
+                                Set as Start Question
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditQuestion(question)}
+                        data-testid={`button-edit-question-${question.id}`}
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteConfirmQuestion(question)}
+                        data-testid={`button-delete-question-${question.id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditQuestion(question)}
-                      data-testid={`button-edit-question-${question.id}`}
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setDeleteConfirmQuestion(question)}
-                      data-testid={`button-delete-question-${question.id}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          ))}
+                </CardHeader>
+              </Card>
+            );
+          })}
         </div>
       )}
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+      <Dialog open={isDialogOpen} onOpenChange={(open) => !open && handleDialogClose()}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingQuestion ? "Edit Question" : "Add Question"}
@@ -329,11 +468,100 @@ export function QuestionsManager({ assessmentId }: QuestionsManagerProps) {
                 )}
               />
 
+              {/* Conditional Logic Section */}
+              <div className="border rounded-lg p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <FormLabel>Conditional Logic</FormLabel>
+                    <FormDescription>
+                      Only show this question based on a previous answer
+                    </FormDescription>
+                  </div>
+                  <Switch
+                    checked={enableConditionalLogic}
+                    onCheckedChange={(checked) => {
+                      setEnableConditionalLogic(checked);
+                      if (!checked) {
+                        setSelectedQuestionId("");
+                        setSelectedAnswerId("");
+                      }
+                    }}
+                    disabled={!hasOtherQuestions}
+                    data-testid="switch-conditional-logic"
+                  />
+                </div>
+
+                {!hasOtherQuestions && (
+                  <p className="text-sm text-muted-foreground">
+                    Add more questions to enable conditional logic
+                  </p>
+                )}
+
+                {enableConditionalLogic && hasOtherQuestions && (
+                  <div className="space-y-4 pt-2">
+                    <div className="space-y-2">
+                      <FormLabel>If question...</FormLabel>
+                      <Select
+                        value={selectedQuestionId}
+                        onValueChange={(value) => {
+                          setSelectedQuestionId(value);
+                          setSelectedAnswerId(""); // Reset answer when question changes
+                        }}
+                      >
+                        <SelectTrigger data-testid="select-conditional-question">
+                          <SelectValue placeholder="Select a question" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {otherQuestions.map((q) => (
+                            <SelectItem key={q.id} value={q.id}>
+                              Q{q.order}: {q.questionText.substring(0, 50)}
+                              {q.questionText.length > 50 ? "..." : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {selectedQuestionId && (
+                      <div className="space-y-2">
+                        <FormLabel>...has answer...</FormLabel>
+                        {isLoadingAnswers ? (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Loading answers...
+                          </div>
+                        ) : availableAnswers.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">
+                            No answers found for this question. Add answers first.
+                          </p>
+                        ) : (
+                          <Select
+                            value={selectedAnswerId}
+                            onValueChange={setSelectedAnswerId}
+                          >
+                            <SelectTrigger data-testid="select-conditional-answer">
+                              <SelectValue placeholder="Select an answer" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {availableAnswers.map((answer) => (
+                                <SelectItem key={answer.id} value={answer.id}>
+                                  {answer.answerText}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <DialogFooter>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
+                  onClick={handleDialogClose}
                   disabled={isPending}
                   data-testid="button-cancel-question"
                 >
