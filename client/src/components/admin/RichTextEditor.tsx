@@ -4,6 +4,10 @@ import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Youtube from '@tiptap/extension-youtube';
 import Placeholder from '@tiptap/extension-placeholder';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
 import { Button } from '@/components/ui/button';
 import { 
   Bold, 
@@ -23,7 +27,11 @@ import {
   Redo, 
   Link as LinkIcon, 
   ImageIcon, 
-  Youtube as YoutubeIcon 
+  Youtube as YoutubeIcon,
+  Table as TableIcon,
+  TableProperties,
+  Columns,
+  Rows
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
@@ -79,6 +87,23 @@ export function RichTextEditor({ content, onChange, placeholder = 'Start writing
       }),
       Placeholder.configure({
         placeholder,
+      }),
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class: 'border-collapse table-auto w-full my-4',
+        },
+      }),
+      TableRow,
+      TableHeader.configure({
+        HTMLAttributes: {
+          class: 'border border-border bg-muted/50 font-semibold p-2 text-left',
+        },
+      }),
+      TableCell.configure({
+        HTMLAttributes: {
+          class: 'border border-border p-2',
+        },
       }),
     ],
     content,
@@ -327,6 +352,78 @@ export function RichTextEditor({ content, onChange, placeholder = 'Start writing
           data-testid="button-add-youtube"
         >
           <YoutubeIcon className="h-4 w-4" />
+        </Button>
+
+        <div className="w-px h-6 bg-border mx-1" />
+
+        {/* Table */}
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+          data-testid="button-insert-table"
+          title="Insert table"
+        >
+          <TableIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          onClick={() => editor.chain().focus().addColumnBefore().run()}
+          disabled={!editor.can().addColumnBefore()}
+          data-testid="button-add-column-before"
+          title="Add column before"
+        >
+          <Columns className="h-4 w-4" />
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          onClick={() => editor.chain().focus().addRowBefore().run()}
+          disabled={!editor.can().addRowBefore()}
+          data-testid="button-add-row-before"
+          title="Add row before"
+        >
+          <Rows className="h-4 w-4" />
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          onClick={() => editor.chain().focus().deleteColumn().run()}
+          disabled={!editor.can().deleteColumn()}
+          data-testid="button-delete-column"
+          title="Delete column"
+          className="text-destructive"
+        >
+          <Columns className="h-4 w-4" />
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          onClick={() => editor.chain().focus().deleteRow().run()}
+          disabled={!editor.can().deleteRow()}
+          data-testid="button-delete-row"
+          title="Delete row"
+          className="text-destructive"
+        >
+          <Rows className="h-4 w-4" />
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          type="button"
+          onClick={() => editor.chain().focus().deleteTable().run()}
+          disabled={!editor.can().deleteTable()}
+          data-testid="button-delete-table"
+          title="Delete table"
+          className="text-destructive"
+        >
+          <TableProperties className="h-4 w-4" />
         </Button>
 
         <div className="w-px h-6 bg-border mx-1" />
