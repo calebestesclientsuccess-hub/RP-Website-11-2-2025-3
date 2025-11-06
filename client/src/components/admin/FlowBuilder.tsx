@@ -53,11 +53,32 @@ import {
 } from "@/components/ui/form";
 
 const questionFormSchema = insertAssessmentQuestionSchema.omit({ assessmentId: true });
-const answerFormSchema = insertAssessmentAnswerSchema.omit({ questionId: true }).extend({
+
+// Base answer form schema (without routing validation)
+const baseAnswerFormSchema = insertAssessmentAnswerSchema.omit({ questionId: true }).extend({
   routingType: z.enum(["question", "result"]),
   nextQuestionId: z.string().optional(),
   resultBucketKey: z.string().optional(),
 });
+
+// Type for answer form data
+type AnswerFormData = z.infer<typeof baseAnswerFormSchema>;
+
+// Create validated answer schema for decision-tree (adds routing validation)
+const createDecisionTreeAnswerSchema = () => {
+  return baseAnswerFormSchema.refine((data) => {
+    if (data.routingType === "question" && !data.nextQuestionId) {
+      return false;
+    }
+    if (data.routingType === "result" && !data.resultBucketKey) {
+      return false;
+    }
+    return true;
+  }, {
+    message: "Please select a routing target for decision-tree assessments",
+    path: ["routingType"],
+  });
+};
 
 interface FlowBuilderProps {
   assessmentId: string;
@@ -113,7 +134,12 @@ export function FlowBuilder({ assessmentId, scoringMethod = "decision-tree", ope
     },
   });
 
-  const answerForm = useForm<z.infer<typeof answerFormSchema>>({
+  // Use conditional schema based on scoring method
+  const answerFormSchema = scoringMethod === "decision-tree" 
+    ? createDecisionTreeAnswerSchema() 
+    : baseAnswerFormSchema;
+
+  const answerForm = useForm<AnswerFormData>({
     resolver: zodResolver(answerFormSchema),
     defaultValues: {
       answerText: "",
@@ -198,12 +224,13 @@ export function FlowBuilder({ assessmentId, scoringMethod = "decision-tree", ope
   });
 
   const createAnswerMutation = useMutation({
-    mutationFn: async ({ questionId, data }: { questionId: string; data: z.infer<typeof answerFormSchema> }) => {
+    mutationFn: async ({ questionId, data }: { questionId: string; data: AnswerFormData }) => {
       const { routingType, nextQuestionId, resultBucketKey, ...answerData } = data;
       
+      // Build routing JSON based on type
       const routingValue = routingType === "question"
-        ? JSON.stringify({ nextQuestionId })
-        : JSON.stringify({ resultBucketKey });
+        ? JSON.stringify({ nextQuestionId: nextQuestionId || "" })
+        : JSON.stringify({ resultBucketKey: resultBucketKey || "" });
 
       const response = await apiRequest("POST", `/api/assessment-questions/${questionId}/answers`, {
         ...answerData,
@@ -230,12 +257,13 @@ export function FlowBuilder({ assessmentId, scoringMethod = "decision-tree", ope
   });
 
   const updateAnswerMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: z.infer<typeof answerFormSchema> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: AnswerFormData }) => {
       const { routingType, nextQuestionId, resultBucketKey, ...answerData } = data;
       
+      // Build routing JSON based on type
       const routingValue = routingType === "question"
-        ? JSON.stringify({ nextQuestionId })
-        : JSON.stringify({ resultBucketKey });
+        ? JSON.stringify({ nextQuestionId: nextQuestionId || "" })
+        : JSON.stringify({ resultBucketKey: resultBucketKey || "" });
 
       const response = await apiRequest("PUT", `/api/assessment-answers/${id}`, {
         ...answerData,
