@@ -1,0 +1,134 @@
+The Final Corrected Plan (For Agent 3)
+Objective: Refactor the configurable assessment builder using a "Wizard-to-Create, Tabs-to-Edit" pattern. This plan is corrected to include configurable gating and a new, separate table for storing submissions, ensuring no conflict with the legacy Pipeline Assessment.
+
+1. Database Schema Changes (Final)
+Instruct Agent 3 to add/modify the following in shared/schema.ts:
+
+1. (NEW) Create configurable_assessment_responses table:
+
+This is the most critical change. This table will store all submissions from the new builder, keeping them separate from the legacy assessmentResponses table.
+
+Fields:
+
+id (primary key)
+
+assessmentConfigId (foreign key to assessmentConfigs.id)
+
+sessionId (text, unique)
+
+answers (json, to store the user's [ { qId, aId } ] selections)
+
+finalScore (integer, nullable, for Points-Based)
+
+finalBucketKey (text, nullable, for Decision-Tree)
+
+name (text, nullable)
+
+email (text, nullable)
+
+company (text, nullable)
+
+resultUrl (text, nullable, for the unique tracked link)
+
+createdAt, updatedAt (timestamps)
+
+2. (MODIFY) assessmentConfigs table:
+
+Add gateBehavior (Type: text, default: UNGATED): This new field will store the gating preference (UNGATED, PRE_GATED, POST_GATED).
+
+3. (MODIFY) assessmentResultBuckets table:
+
+Add pdfUrl (Type: text, nullable: true): The static PDF link (e.g., /public/downloads/my-ebook.pdf).
+
+Add minScore (Type: integer, nullable: true): For "Points-Based" buckets.
+
+Add maxScore (Type: integer, nullable: true): For "Points-Based" buckets.
+
+4. (MODIFY) assessmentAnswers table:
+
+Add routingBucketKey (Type: text, nullable: true): Stores the bucketKey this answer terminates to (Decision-Tree only).
+
+Add routingQuestionId (Type: text, nullable: true): Stores the id of the next question this answer routes to (Decision-Tree only).
+
+2. The "New Assessment" Wizard (For Creation)
+When the admin clicks "Add New Assessment," they will be shown this wizard:
+
+Step 1: Setup & Method
+
+Title, Slug.
+
+Scoring Method (Required Radio): "Points-Based" or "Decision-Tree".
+
+Gate Behavior (Required Radio):
+
+UNGATED (Show results immediately).
+
+PRE_GATED (Show lead form before questions).
+
+POST_GATED (Show lead form after questions, before results).
+
+Step 2: Define Result Buckets
+
+The admin will create the assessmentResultBuckets.
+
+If "Points-Based": Modal requires Bucket Name, Result Title, pdfUrl, Min Score, Max Score.
+
+If "Decision-Tree": Modal requires Bucket Name, Bucket Key, Result Title, pdfUrl.
+
+Step 3: Build the Flow
+
+The admin will build the assessmentQuestions and assessmentAnswers.
+
+If "Points-Based": A simple list of Question Cards. Each answer has one input: Points.
+
+If "Decision-Tree": The "Flow Builder" with the Routing: dropdown next to each answer.
+
+The Interactive Visualizer will be on the right, highlighting the active question.
+
+Step 4: Save & Finish
+
+This commits the new assessment and takes the admin to the "Edit" interface.
+
+3. The "Edit Assessment" Interface (For Editing)
+When editing an existing assessment, the admin will see these tabs:
+
+Tab 1: Basic Info
+
+Title, Slug, and Gate Behavior.
+
+The Scoring Method will be locked and read-only.
+
+Tab 2: Result Buckets
+
+The editor for assessmentResultBuckets.
+
+Tab 3: Flow Builder
+
+The editor for assessmentQuestions and assessmentAnswers.
+
+Tab 4: Submissions (Your "CRM-for-now")
+
+A data grid pulling from the new configurable_assessment_responses table.
+
+A single "Export to CSV" button.
+
+4. The Public User Flow (New Feature)
+The frontend will now read the gateBehavior to determine the user's flow:
+
+If PRE_GATED: Show lead form -> User submits (data saved to configurable_assessment_responses) -> User sees questions.
+
+If UNGATED: User sees questions -> User finishes -> Server calculates -> Redirect to the static result URL (e.g., /results/path-1). (No lead is captured).
+
+If POST_GATED (Your new "tracked link" feature):
+
+User sees questions -> User finishes.
+
+Server calculates result and creates a new row in configurable_assessment_responses with the finalBucketKey and a unique sessionId.
+
+Redirect to a "gate" page (e.g., /assessment/[slug]/gate/[sessionId]).
+
+User submits lead form. The API UPDATEs their row with contact info and generates the resultUrl.
+
+Redirect to the final, unique, trackable resultUrl (e.g., /assessment/results/[sessionId]).
+
+This page shows the result and the pdfUrl link.

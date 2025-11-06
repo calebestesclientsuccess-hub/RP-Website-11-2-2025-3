@@ -1,0 +1,38 @@
+Here is an exhaustive list of the assumptions I am making that are not explicitly detailed in your technical documentation.
+
+## 1. PDF & E-book Functionality
+
+* **Assumption:** You have static PDF e-books/guides hosted somewhere, and you just need to store the **URL** to that file (e.g., a link to an S3 bucket or a file uploaded to your server).
+* **Reasoning:** Your tech doc mentions a `leadCaptures` table for "Resource selection (guides, whitepapers)", but it doesn't specify *how* these resources are stored or delivered. My plan assumes we are just linking to a URL, not building a new "file upload" system.
+
+## 2. CSV Export
+
+* **Assumption:** A simple, client-side CSV export of the `assessmentResponses` table, downloaded directly from the browser, is sufficient for your "CRM-for-now" needs.
+* **Reasoning:** This feature is **entirely new**. The tech docs do not mention any CSV export functionality. I am assuming we don't need a server-side process that emails the CSV, but rather a simple "Export" button in the admin panel.
+
+## 3. The Public User Flow (The Gate)
+
+* **Assumption:** The *default* behavior for *all* assessments is to **gate the results**. A user completes the assessment, is *then* shown a lead-capture form, and *only* sees their result after submitting their contact information.
+* **Reasoning:** Your tech doc shows that the `assessmentResponses` table has nullable `name`, `email`, and `company` fields, which implies a user can be anonymous for part of the flow. My plan assumes this two-step "Gate -> Result" flow is the desired business logic.
+
+## 4. Unique Result URL
+
+* **Assumption:** To satisfy your "tracked link" requirement, we will generate a unique, shareable URL for each user's result (e.g., `/assessment/results/[sessionId]`).
+* **Reasoning:** The tech docs do not specify how a user would access their results after capture. This unique URL is the simplest, "tried and true" way to deliver the result *and* make it shareable and trackable.
+
+## 5. UI/UX Refactor
+
+* **Assumption:** You are willing to **refactor the existing admin UI** (seen in the screenshots) to implement the "Wizard-to-Create, Tabs-to-Edit" pattern.
+* **Reasoning:** The wizard is a new UI/UX pattern. I am assuming the current, confusing tab-based-only interface is what we are fixing, not what we are bound to.
+
+## 6. Interactive Visualizer
+
+* **Assumption:** We can modify the existing read-only "Decision Tree" visualizer (seen in the screenshots) to be **interactive**, specifically by adding `onClick` handlers to the builder's question cards that highlight the corresponding node in the visualizer.
+* **Reasoning:** The screenshots show a *static* visualization. Making it interactive is a new feature assumption to add the "clarity" you requested.
+
+## 7. Business Logic & Constraints
+
+* **Assumption:** Once an assessment is created as "Points-Based" or "Decision-Tree," that `Scoring Method` **must be locked forever.**
+* **Reasoning:** This is a critical business logic assumption to prevent data corruption. Allowing an admin to change a "Points-Based" assessment to a "Decision-Tree" would orphan all the point data and break the assessment.
+* **Assumption:** The `assessmentResponses` table is the *correct* and *only* place to store the leads captured from assessments.
+* **Reasoning:** You have a *separate* `leadCaptures` table for e-books. I am assuming we will **not** use that table, and will instead keep assessment leads self-contained within the `assessmentResponses` table to keep the architecture simple.
