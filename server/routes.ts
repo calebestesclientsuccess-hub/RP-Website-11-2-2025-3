@@ -2,6 +2,8 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import multer from "multer";
+import path from "path";
 import { storage } from "./storage";
 import { DEFAULT_TENANT_ID } from "./middleware/tenant";
 import { 
@@ -35,6 +37,53 @@ import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templat
 import { sendGmailEmail } from "./utils/gmail-client";
 import { db } from "./db";
 import { eq, asc } from "drizzle-orm";
+
+// Configure multer for PDF uploads
+const pdfStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'public/uploads/pdfs');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
+    cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+const pdfUpload = multer({
+  storage: pdfStorage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'));
+    }
+  },
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
+
+// Configure multer for image uploads
+const imageStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'public/uploads/images');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
+    cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+const imageUpload = multer({
+  storage: imageStorage,
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files (JPEG, PNG, GIF, WebP) are allowed'));
+    }
+  },
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
 
 // Middleware to check if user is authenticated
 function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -460,6 +509,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error resetting password:", error);
       return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // PDF Upload endpoint
+  app.post("/api/upload/pdf", requireAuth, pdfUpload.single('pdf'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No PDF file uploaded" });
+      }
+
+      const pdfUrl = `/uploads/pdfs/${req.file.filename}`;
+      return res.json({ url: pdfUrl });
+    } catch (error) {
+      console.error("Error uploading PDF:", error);
+      return res.status(500).json({ error: "Failed to upload PDF" });
+    }
+  });
+
+  // Image Upload endpoint
+  app.post("/api/upload/image", requireAuth, imageUpload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No image file uploaded" });
+      }
+
+      const imageUrl = `/uploads/images/${req.file.filename}`;
+      return res.json({ url: imageUrl });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      return res.status(500).json({ error: "Failed to upload image" });
     }
   });
 

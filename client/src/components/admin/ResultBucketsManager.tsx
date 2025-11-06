@@ -1,16 +1,16 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { Loader2, Plus, Trash2, Edit2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Edit2, Upload, FileText, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { insertAssessmentResultBucketSchema, type AssessmentResultBucket } from "@shared/schema";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import {
   Form,
   FormControl,
@@ -51,6 +51,8 @@ export function ResultBucketsManager({ assessmentId, scoringMethod = "decision-t
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBucket, setEditingBucket] = useState<AssessmentResultBucket | null>(null);
   const [deleteConfirmBucket, setDeleteConfirmBucket] = useState<AssessmentResultBucket | null>(null);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const { data: buckets = [], isLoading } = useQuery<AssessmentResultBucket[]>({
     queryKey: [`/api/assessment-configs/${assessmentId}/results`],
