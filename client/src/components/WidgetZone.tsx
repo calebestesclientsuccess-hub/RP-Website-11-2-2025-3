@@ -327,9 +327,9 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
           console.error(`[WidgetZone] No collectionType found for collection widget`);
           return null;
         }
-        
+
         console.log(`[WidgetZone] Rendering collection type: ${parsedConfig.collectionType}`);
-        
+
         switch (parsedConfig.collectionType) {
           case "testimonials":
             return <TestimonialCarousel theme={theme} size={size} />;
@@ -372,7 +372,8 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
     return null;
   }
 
-  // Get display size classes
+  // Get display size CSS classes based on campaign.displaySize
+  console.log(`[WidgetZone] Campaign displaySize:`, campaign.displaySize, `for campaign:`, campaign.campaignName);
   const displaySizeClasses = getDisplaySizeClasses(campaign.displaySize);
 
   return (
