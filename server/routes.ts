@@ -22,11 +22,13 @@ import {
   insertAssessmentQuestionSchema,
   insertAssessmentAnswerSchema,
   insertAssessmentResultBucketSchema,
+  insertConfigurableAssessmentResponseSchema,
   insertCampaignSchema,
   insertEventSchema,
   assessmentResultBuckets,
   type InsertAssessmentResponse
 } from "@shared/schema";
+import { calculatePointsBasedBucket, calculateDecisionTreeBucket } from "./utils/assessment-scoring";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templates";
@@ -144,70 +146,6 @@ function calculateBucket(data: Partial<InsertAssessmentResponse>): string {
   // Default: Architecture Gap (catch-all for any other combination)
   // This is the safest nurture-focused PDF for unclear profiles
   return 'architecture-gap';
-}
-
-/**
- * Calculate points-based assessment bucket
- * Sums up points from selected answers and finds matching bucket by score range
- * 
- * @param submittedData - The assessment response data with selected answer IDs
- * @param answers - All answers for this assessment with their points
- * @param buckets - Result buckets with score ranges
- * @returns The bucket key for the calculated score, or null if no match
- */
-async function calculatePointsBasedBucket(
-  submittedData: Record<string, any>,
-  answers: Array<{ id: string; answerValue: string; points: number | null }>,
-  buckets: Array<{ bucketKey: string; minScore: number | null; maxScore: number | null; order: number }>
-): Promise<string | null> {
-  // Extract all answer IDs from submitted data
-  const selectedAnswerIds = Object.values(submittedData).filter(
-    (value): value is string => typeof value === 'string' && value.length > 0
-  );
-
-  // Calculate total points by matching answer IDs
-  let totalPoints = 0;
-  for (const answerId of selectedAnswerIds) {
-    const answer = answers.find(a => a.id === answerId);
-    if (answer && answer.points !== null && answer.points !== undefined) {
-      totalPoints += answer.points;
-    }
-  }
-
-  console.log(`Points-based scoring: Total points = ${totalPoints}`);
-
-  // Sort buckets by order to ensure consistent matching
-  const sortedBuckets = [...buckets].sort((a, b) => a.order - b.order);
-
-  // Find matching bucket
-  for (const bucket of sortedBuckets) {
-    const { bucketKey, minScore, maxScore } = bucket;
-
-    // Handle different score range scenarios
-    if (minScore !== null && maxScore !== null) {
-      // Both bounds defined
-      if (totalPoints >= minScore && totalPoints <= maxScore) {
-        console.log(`Matched bucket: ${bucketKey} (${minScore}-${maxScore})`);
-        return bucketKey;
-      }
-    } else if (minScore !== null && maxScore === null) {
-      // Only minimum bound (score >= min)
-      if (totalPoints >= minScore) {
-        console.log(`Matched bucket: ${bucketKey} (${minScore}+)`);
-        return bucketKey;
-      }
-    } else if (minScore === null && maxScore !== null) {
-      // Only maximum bound (score <= max)
-      if (totalPoints <= maxScore) {
-        console.log(`Matched bucket: ${bucketKey} (<= ${maxScore})`);
-        return bucketKey;
-      }
-    }
-  }
-
-  // No matching bucket found
-  console.warn(`No bucket matched for score ${totalPoints}`);
-  return null;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -1825,6 +1763,271 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({ success: true });
     } catch (error) {
       console.error("Error deleting campaign:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Configurable Assessment Response endpoints
+  
+  // POST /api/configurable-assessments/:id/submit - Submit assessment answers
+  app.post("/api/configurable-assessments/:id/submit", async (req, res) => {
+    try {
+      const assessmentId = req.params.id;
+      
+      // Get the assessment config
+      const config = await storage.getAssessmentConfigById(req.tenantId, assessmentId);
+      if (!config) {
+        return res.status(404).json({ error: "Assessment not found" });
+      }
+
+      // Validate request body structure
+      const submissionSchema = z.object({
+        answers: z.array(z.object({
+          questionId: z.string(),
+          answerId: z.string()
+        })),
+        email: z.string().email().optional(),
+        name: z.string().optional(),
+        company: z.string().optional(),
+      });
+
+      const validationResult = submissionSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        const validationError = fromZodError(validationResult.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const { answers, email, name, company } = validationResult.data;
+
+      // Generate unique session ID
+      const sessionId = crypto.randomBytes(16).toString('hex');
+
+      // Get all questions, answers, and buckets for scoring
+      const questions = await storage.getQuestionsByAssessmentId(assessmentId);
+      const allAnswers = await storage.getAnswersByAssessmentId(assessmentId);
+      const buckets = await storage.getBucketsByAssessmentId(assessmentId);
+
+      // Calculate final bucket based on scoring method
+      let finalBucketKey: string | null = null;
+      let finalScore: number | null = null;
+
+      if (config.scoringMethod === "points-based") {
+        finalBucketKey = calculatePointsBasedBucket(answers, allAnswers, buckets);
+        // Calculate total score for display
+        finalScore = answers.reduce((total, answer) => {
+          const answerData = allAnswers.find(a => a.id === answer.answerId);
+          return total + (answerData?.points || 0);
+        }, 0);
+      } else if (config.scoringMethod === "decision-tree") {
+        if (!config.entryQuestionId) {
+          return res.status(400).json({ error: "Decision tree assessment requires entry question" });
+        }
+        finalBucketKey = calculateDecisionTreeBucket(
+          answers,
+          questions,
+          allAnswers,
+          config.entryQuestionId
+        );
+      }
+
+      if (!finalBucketKey) {
+        return res.status(400).json({ error: "Unable to determine result bucket" });
+      }
+
+      // Create the response record
+      const responseData = {
+        assessmentConfigId: assessmentId,
+        sessionId,
+        answers: JSON.stringify(answers),
+        finalScore,
+        finalBucketKey,
+        name: name || null,
+        email: email || null,
+        company: company || null,
+        resultUrl: null,
+      };
+
+      const response = await storage.createConfigurableResponse(req.tenantId, responseData);
+
+      // Get the result bucket details
+      const resultBucket = buckets.find(b => b.bucketKey === finalBucketKey);
+
+      // Handle different gate behaviors
+      if (config.gateBehavior === "UNGATED") {
+        // Return full result immediately
+        return res.json({
+          sessionId,
+          result: resultBucket,
+          score: finalScore,
+        });
+      } else if (config.gateBehavior === "PRE_GATED") {
+        // Email was required in submission, generate result URL and return result
+        const resultUrl = `/assessments/results/${sessionId}`;
+        await storage.updateConfigurableResponse(req.tenantId, sessionId, { resultUrl });
+        
+        return res.json({
+          sessionId,
+          resultUrl,
+          result: resultBucket,
+          score: finalScore,
+        });
+      } else if (config.gateBehavior === "POST_GATED") {
+        // Return session ID only, require lead capture later
+        return res.json({
+          sessionId,
+          bucketKey: finalBucketKey,
+        });
+      }
+
+      return res.status(400).json({ error: "Invalid gate behavior" });
+    } catch (error) {
+      console.error("Error submitting assessment:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // PUT /api/configurable-assessments/sessions/:sessionId/capture-lead - Capture lead info
+  app.put("/api/configurable-assessments/sessions/:sessionId/capture-lead", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+
+      // Validate lead capture data
+      const leadCaptureSchema = z.object({
+        email: z.string().email("Valid email is required"),
+        name: z.string().min(1, "Name is required"),
+        company: z.string().optional(),
+      });
+
+      const validationResult = leadCaptureSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        const validationError = fromZodError(validationResult.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const { email, name, company } = validationResult.data;
+
+      // Get existing response
+      const response = await storage.getConfigurableResponseBySessionId(req.tenantId, sessionId);
+      if (!response) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+
+      // Generate result URL
+      const resultUrl = `/assessments/results/${sessionId}`;
+
+      // Update response with lead info and result URL
+      const updatedResponse = await storage.updateConfigurableResponse(
+        req.tenantId,
+        sessionId,
+        {
+          email,
+          name,
+          company: company || null,
+          resultUrl,
+        }
+      );
+
+      // Get the result bucket details
+      const buckets = await storage.getBucketsByAssessmentId(response.assessmentConfigId);
+      const resultBucket = buckets.find(b => b.bucketKey === response.finalBucketKey);
+
+      return res.json({
+        resultUrl,
+        result: resultBucket,
+        score: response.finalScore,
+      });
+    } catch (error) {
+      console.error("Error capturing lead:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // GET /api/configurable-assessments/results/:sessionId - Public result page
+  app.get("/api/configurable-assessments/results/:sessionId", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+
+      // Get the response
+      const response = await storage.getConfigurableResponseBySessionId(req.tenantId, sessionId);
+      if (!response) {
+        return res.status(404).json({ error: "Result not found" });
+      }
+
+      // Get assessment config
+      const config = await storage.getAssessmentConfigById(req.tenantId, response.assessmentConfigId);
+      if (!config) {
+        return res.status(404).json({ error: "Assessment configuration not found" });
+      }
+
+      // Get the result bucket
+      const buckets = await storage.getBucketsByAssessmentId(response.assessmentConfigId);
+      const resultBucket = buckets.find(b => b.bucketKey === response.finalBucketKey);
+
+      if (!resultBucket) {
+        return res.status(404).json({ error: "Result bucket not found" });
+      }
+
+      return res.json({
+        assessment: {
+          title: config.title,
+          description: config.description,
+        },
+        result: resultBucket,
+        score: response.finalScore,
+        submittedAt: response.createdAt,
+      });
+    } catch (error) {
+      console.error("Error fetching result:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // GET /api/configurable-assessments/:id/responses - Admin submissions list
+  app.get("/api/configurable-assessments/:id/responses", requireAuth, async (req, res) => {
+    try {
+      const assessmentId = req.params.id;
+
+      // Parse filters from query params
+      const filters: { startDate?: Date; endDate?: Date; bucketKey?: string } = {};
+
+      if (req.query.startDate && typeof req.query.startDate === 'string') {
+        filters.startDate = new Date(req.query.startDate);
+      }
+
+      if (req.query.endDate && typeof req.query.endDate === 'string') {
+        filters.endDate = new Date(req.query.endDate);
+      }
+
+      if (req.query.bucketKey && typeof req.query.bucketKey === 'string') {
+        filters.bucketKey = req.query.bucketKey;
+      }
+
+      // Get all responses for this assessment
+      const responses = await storage.getAllConfigurableResponses(
+        req.tenantId,
+        assessmentId,
+        filters
+      );
+
+      // Get buckets for enriching response data
+      const buckets = await storage.getBucketsByAssessmentId(assessmentId);
+      const bucketMap = new Map(buckets.map(b => [b.bucketKey, b.bucketName]));
+
+      // Enrich responses with bucket names
+      const enrichedResponses = responses.map(r => ({
+        ...r,
+        bucketName: bucketMap.get(r.finalBucketKey || '') || 'Unknown',
+      }));
+
+      return res.json(enrichedResponses);
+    } catch (error) {
+      console.error("Error fetching responses:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

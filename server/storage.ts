@@ -16,10 +16,11 @@ import {
   type AssessmentQuestion, type InsertAssessmentQuestion,
   type AssessmentAnswer, type InsertAssessmentAnswer,
   type AssessmentResultBucket, type InsertAssessmentResultBucket,
+  type ConfigurableAssessmentResponse, type InsertConfigurableAssessmentResponse,
   type Campaign, type InsertCampaign,
   type Event, type InsertEvent,
   users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens,
-  assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, campaigns, events, tenants
+  assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, ilike, sql } from "drizzle-orm";
@@ -108,6 +109,11 @@ export interface IStorage {
   
   createEvent(tenantId: string, event: InsertEvent): Promise<Event>;
   getAllEvents(tenantId: string, filters?: { campaignId?: string; eventType?: string }): Promise<Event[]>;
+  
+  getConfigurableResponseBySessionId(tenantId: string, sessionId: string): Promise<ConfigurableAssessmentResponse | undefined>;
+  createConfigurableResponse(tenantId: string, response: InsertConfigurableAssessmentResponse): Promise<ConfigurableAssessmentResponse>;
+  updateConfigurableResponse(tenantId: string, sessionId: string, data: Partial<InsertConfigurableAssessmentResponse>): Promise<ConfigurableAssessmentResponse>;
+  getAllConfigurableResponses(tenantId: string, assessmentId?: string, filters?: { startDate?: Date; endDate?: Date; bucketKey?: string }): Promise<ConfigurableAssessmentResponse[]>;
 }
 
 export class DbStorage implements IStorage {
@@ -586,6 +592,58 @@ export class DbStorage implements IStorage {
     return await db.select().from(events)
       .where(and(...conditions))
       .orderBy(desc(events.createdAt));
+  }
+
+  async getConfigurableResponseBySessionId(tenantId: string, sessionId: string): Promise<ConfigurableAssessmentResponse | undefined> {
+    const [response] = await db.select().from(configurableAssessmentResponses)
+      .where(and(
+        eq(configurableAssessmentResponses.tenantId, tenantId),
+        eq(configurableAssessmentResponses.sessionId, sessionId)
+      ));
+    return response;
+  }
+
+  async createConfigurableResponse(tenantId: string, insertResponse: InsertConfigurableAssessmentResponse): Promise<ConfigurableAssessmentResponse> {
+    const [response] = await db.insert(configurableAssessmentResponses)
+      .values({ tenantId, ...insertResponse })
+      .returning();
+    return response;
+  }
+
+  async updateConfigurableResponse(tenantId: string, sessionId: string, data: Partial<InsertConfigurableAssessmentResponse>): Promise<ConfigurableAssessmentResponse> {
+    const [response] = await db
+      .update(configurableAssessmentResponses)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(
+        eq(configurableAssessmentResponses.tenantId, tenantId),
+        eq(configurableAssessmentResponses.sessionId, sessionId)
+      ))
+      .returning();
+    return response;
+  }
+
+  async getAllConfigurableResponses(tenantId: string, assessmentId?: string, filters?: { startDate?: Date; endDate?: Date; bucketKey?: string }): Promise<ConfigurableAssessmentResponse[]> {
+    const conditions = [eq(configurableAssessmentResponses.tenantId, tenantId)];
+    
+    if (assessmentId) {
+      conditions.push(eq(configurableAssessmentResponses.assessmentConfigId, assessmentId));
+    }
+    
+    if (filters?.bucketKey) {
+      conditions.push(eq(configurableAssessmentResponses.finalBucketKey, filters.bucketKey));
+    }
+    
+    if (filters?.startDate) {
+      conditions.push(sql`${configurableAssessmentResponses.createdAt} >= ${filters.startDate}`);
+    }
+    
+    if (filters?.endDate) {
+      conditions.push(sql`${configurableAssessmentResponses.createdAt} <= ${filters.endDate}`);
+    }
+
+    return await db.select().from(configurableAssessmentResponses)
+      .where(and(...conditions))
+      .orderBy(desc(configurableAssessmentResponses.createdAt));
   }
 }
 
