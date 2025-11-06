@@ -384,29 +384,6 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
           data-testid={`widget-zone-${zone}`}
         >
           {widget}
-          {/* Render inline campaigns */}
-          {inlineCampaigns.map((campaign: Campaign) => (
-            <div key={campaign.id} className="campaign-inline-content my-8">
-              {campaign.contentType === 'calculator' && campaign.calculatorType && (
-                <DynamicCalculator type={campaign.calculatorType} />
-              )}
-              {campaign.contentType === 'form' && campaign.formType && (
-                <DynamicForm type={campaign.formType} />
-              )}
-              {campaign.contentType === 'collection' && campaign.collectionType === 'blog' && (
-                <BlogFeed limit={campaign.collectionLimit} />
-              )}
-              {campaign.contentType === 'collection' && campaign.collectionType === 'video' && (
-                <VideoGallery limit={campaign.collectionLimit} />
-              )}
-              {campaign.contentType === 'collection' && campaign.collectionType === 'testimonial' && (
-                <TestimonialCarousel />
-              )}
-              {campaign.contentType === 'embeddedAssessment' && campaign.assessmentId && (
-                <AssessmentEmbed assessmentId={campaign.assessmentId} />
-              )}
-            </div>
-          ))}
         </div>
       </ErrorBoundary>
       <PopupEngine campaigns={popupCampaigns} />
