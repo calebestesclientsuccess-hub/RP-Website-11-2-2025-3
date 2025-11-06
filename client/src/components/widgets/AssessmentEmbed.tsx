@@ -15,7 +15,7 @@ interface AssessmentEmbedProps {
 
 export function AssessmentEmbed({ assessmentId, className, theme, size }: AssessmentEmbedProps) {
   const { data: config, isLoading, error } = useQuery<AssessmentConfig>({
-    queryKey: [`/api/assessment-configs/${assessmentId}`],
+    queryKey: [`/api/public/assessment-configs/${assessmentId}`],
   });
 
   // Loading state with skeleton

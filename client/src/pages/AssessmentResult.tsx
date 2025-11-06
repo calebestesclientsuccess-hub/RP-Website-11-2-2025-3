@@ -20,11 +20,10 @@ const isValidUrl = (url: string | null | undefined): boolean => {
 
 interface AssessmentResultResponse {
   assessment: {
-    id: string;
     title: string;
     description: string | null;
   };
-  bucket: {
+  result: {
     id: string;
     bucketName: string;
     bucketKey: string;
@@ -33,13 +32,7 @@ interface AssessmentResultResponse {
     pdfUrl: string | null;
   };
   score: number | null;
-  response: {
-    id: string;
-    sessionId: string;
-    name: string | null;
-    email: string | null;
-    company: string | null;
-  };
+  submittedAt: string;
 }
 
 export default function AssessmentResult() {
@@ -79,16 +72,32 @@ export default function AssessmentResult() {
     );
   }
 
-  const { assessment, bucket, score, response } = data;
+  const { assessment, result, score } = data;
+  
+  // Handle missing result data
+  if (!result) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="w-full max-w-3xl mx-4">
+          <CardContent className="py-12 text-center">
+            <div className="text-destructive font-semibold mb-2">Results Processing</div>
+            <p className="text-muted-foreground">
+              Your assessment results are being processed. Please check back in a moment.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   
   // Validate PDF URL before showing download buttons
-  const hasValidPdfUrl = isValidUrl(bucket.pdfUrl);
+  const hasValidPdfUrl = isValidUrl(result.pdfUrl);
 
   return (
     <>
       <Helmet>
-        <title>{bucket.title} | {assessment.title} Results</title>
-        <meta name="description" content={`Your ${assessment.title} results: ${bucket.title}`} />
+        <title>{result.title} | {assessment.title} Results</title>
+        <meta name="description" content={`Your ${assessment.title} results: ${result.title}`} />
       </Helmet>
 
       <div className="min-h-screen bg-background py-8 md:py-16">
@@ -106,46 +115,17 @@ export default function AssessmentResult() {
             </p>
           </div>
 
-          {/* Personal Info Card */}
-          {response.name && (
-            <Card className="mb-6" data-testid="card-personal-info">
-              <CardContent className="py-4">
-                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                  <div>
-                    <span className="font-medium text-foreground">Name:</span> {response.name}
-                  </div>
-                  {response.email && (
-                    <>
-                      <Separator orientation="vertical" className="h-4" />
-                      <div>
-                        <span className="font-medium text-foreground">Email:</span> {response.email}
-                      </div>
-                    </>
-                  )}
-                  {response.company && (
-                    <>
-                      <Separator orientation="vertical" className="h-4" />
-                      <div>
-                        <span className="font-medium text-foreground">Company:</span> {response.company}
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Main Result Card */}
           <Card className="border-2 mb-6" data-testid="card-result">
             <CardHeader className="border-b bg-muted/30">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex-1">
                   <CardTitle className="text-2xl md:text-3xl mb-2" data-testid="text-result-title">
-                    {bucket.title}
+                    {result.title}
                   </CardTitle>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary" data-testid="badge-bucket-name">
-                      {bucket.bucketName}
+                      {result.bucketName}
                     </Badge>
                     {score !== null && (
                       <Badge variant="outline" className="gap-1" data-testid="badge-score">
@@ -164,7 +144,7 @@ export default function AssessmentResult() {
                     className="gap-2"
                     data-testid="button-download-pdf"
                   >
-                    <a href={bucket.pdfUrl!} download target="_blank" rel="noopener noreferrer">
+                    <a href={result.pdfUrl!} download target="_blank" rel="noopener noreferrer">
                       <Download className="h-4 w-4" />
                       Download PDF
                     </a>
@@ -177,7 +157,7 @@ export default function AssessmentResult() {
               {/* Result Content */}
               <div 
                 className="prose prose-slate dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: bucket.content }}
+                dangerouslySetInnerHTML={{ __html: result.content }}
                 data-testid="content-result"
               />
             </CardContent>
@@ -188,17 +168,14 @@ export default function AssessmentResult() {
             <CardHeader>
               <CardTitle>What's Next?</CardTitle>
               <CardDescription>
-                We've sent a copy of your results to {response.email || "your email"}.
+                Based on your results, we recommend taking the following actions.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Based on your results, we recommend taking the following actions:
-              </p>
               <div className="flex flex-wrap gap-3">
                 {hasValidPdfUrl && (
                   <Button variant="outline" asChild data-testid="button-download-pdf-secondary">
-                    <a href={bucket.pdfUrl!} download target="_blank" rel="noopener noreferrer">
+                    <a href={result.pdfUrl!} download target="_blank" rel="noopener noreferrer">
                       <Download className="h-4 w-4 mr-2" />
                       Save Results PDF
                     </a>

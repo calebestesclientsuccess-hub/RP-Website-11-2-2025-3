@@ -1545,6 +1545,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public assessment config by ID endpoint (for embedded widgets)
+  app.get("/api/public/assessment-configs/:id", async (req, res) => {
+    try {
+      const config = await storage.getAssessmentConfigById(req.tenantId, req.params.id);
+      if (!config || !config.published) {
+        return res.status(404).json({ error: "Assessment config not found or not published" });
+      }
+      return res.json(config);
+    } catch (error) {
+      console.error("Error fetching public assessment config:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Public campaigns endpoint (for WidgetZone)
   app.get("/api/public/campaigns", async (req, res) => {
     try {
