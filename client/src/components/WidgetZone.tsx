@@ -322,6 +322,24 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
           />
         );
 
+      case "collection":
+        if (!parsedConfig || !parsedConfig.collectionType) {
+          console.error(`[WidgetZone] No collectionType found for collection widget`);
+          return null;
+        }
+        
+        switch (parsedConfig.collectionType) {
+          case "testimonials":
+            return <TestimonialCarousel theme={theme} size={size} />;
+          case "videos":
+            return <VideoGallery theme={theme} size={size} />;
+          case "blogs":
+            return <BlogFeed theme={theme} size={size} />;
+          default:
+            console.warn(`[WidgetZone] Unknown collection type: ${parsedConfig.collectionType}`);
+            return null;
+        }
+
       default:
         console.warn(`[WidgetZone] Unknown content type: ${campaign.contentType}`);
         return null;
