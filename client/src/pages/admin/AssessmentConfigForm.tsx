@@ -33,8 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { QuestionsManager } from "@/components/admin/QuestionsManager";
-import { AnswersManager } from "@/components/admin/AnswersManager";
+import { FlowBuilder } from "@/components/admin/FlowBuilder";
 import { ResultBucketsManager } from "@/components/admin/ResultBucketsManager";
 import { DecisionTreeVisualization } from "@/components/admin/DecisionTreeVisualization";
 
@@ -189,15 +188,12 @@ export default function AssessmentConfigForm() {
                   {/* Left Column - 70% */}
                   <div className="flex-1 min-w-0" style={{ flex: "0 0 68%" }}>
                     <Tabs defaultValue="basic" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
+                    <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="basic" data-testid="tab-basic">
                         Basic Info
                       </TabsTrigger>
-                      <TabsTrigger value="questions" data-testid="tab-questions">
-                        Questions
-                      </TabsTrigger>
-                      <TabsTrigger value="answers" data-testid="tab-answers">
-                        Answers
+                      <TabsTrigger value="flow-builder" data-testid="tab-flow-builder">
+                        Flow Builder
                       </TabsTrigger>
                       <TabsTrigger value="results" data-testid="tab-results">
                         Results
@@ -345,12 +341,8 @@ export default function AssessmentConfigForm() {
                       </Form>
                     </TabsContent>
 
-                    <TabsContent value="questions" className="mt-6">
-                      <QuestionsManager assessmentId={params?.id!} />
-                    </TabsContent>
-
-                    <TabsContent value="answers" className="mt-6">
-                      <AnswersManager 
+                    <TabsContent value="flow-builder" className="mt-6">
+                      <FlowBuilder 
                         assessmentId={params?.id!} 
                         scoringMethod={form.watch("scoringMethod") || config?.scoringMethod}
                       />
