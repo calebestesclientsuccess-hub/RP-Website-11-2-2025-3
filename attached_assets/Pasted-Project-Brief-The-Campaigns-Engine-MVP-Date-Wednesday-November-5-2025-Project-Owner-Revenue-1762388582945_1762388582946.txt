@@ -1,0 +1,499 @@
+Project Brief: "The Campaigns" Engine (MVP)
+Date: Wednesday, November 5, 2025
+Project Owner: Revenue Party
+Development Partner: Replit
+
+Part 1: Executive Summary & Core Strategy
+
+1.1. Project Goal
+
+This document outlines the MVP for the "Campaigns" Engine. The goal is to build a single, unified tool within our existing Admin Panel that allows a non-technical team to create, configure, and deploy all dynamic content (Smart Widgets, Popups, and existing Content Collections) across the site safely and without touching the codebase.
+
+1.2. Core Strategy: "Extend, Don't Migrate"
+
+This project is an extension of our current, production-ready Vite/Express/Drizzle platform. We are not migrating the stack. We are building on top of this proven foundation.
+
+1.3. Core Architectural Prerequisite: The "Stubbed Tenant" Pattern
+
+To ensure this MVP is future-proof for multi-tenancy without the overhead of building it now, all work must adhere to the following "Conscious Foundation." This is the non-negotiable prerequisite for all subsequent epics.
+
+Epic
+
+User Story & Acceptance Criteria
+
+Foundation: Schema
+
+User Story 1.1: Create tenants Table
+
+
+
+ As a Developer, I want to add a tenants table to the Drizzle schema so that all future data has a master record to link to.
+
+
+
+ AC:
+
+
+
+ 1.1.1. Create a tenants table in shared/schema.ts (tenant_id, client_name, subdomain).
+
+
+
+ 1.1.2. Insert one row into this table: { tenant_id: 'tnt_revenueparty_default', client_name: 'Revenue Party (Default)', subdomain: 'www' }.
+
+
+
+
+
+ User Story 1.2: Make Data Tables Tenant-Aware
+
+
+
+ As a Developer, I want to add a tenant_id column to all new and existing client-facing data tables so that all data is associated with a tenant.
+
+
+
+ AC:
+
+
+
+ 1.2.1. Add a tenant_id column to all new tables created for this MVP (e.g., campaigns, events).
+
+
+
+ 1.2.2. Add a tenant_id column to the following existing data tables: blogPosts, leadCaptures, assessmentResponses, widgetConfig, testimonials, videoPosts, jobPostings, jobApplications (and all other client-facing data).
+
+
+
+ 1.2.3. This column must be set to default('tnt_revenueparty_default') to tag all existing and new data to our default tenant.
+
+
+
+ 1.2.4. Crucially, do not add tenant_id to system-level tables like users or passwordResetTokens.
+
+Foundation: Logic
+
+User Story 1.3: Implement "Stub" Middleware
+
+
+
+ As a Developer, I want to create a simple Express middleware that hard-codes the tenant_id for every request so that all our API queries function correctly.
+
+
+
+ AC:
+
+
+
+ 1.3.1. Add a new middleware to server/index.ts before the main API routes.
+
+
+
+ 1.3.2. This middleware must perform only one function: req.tenantId = 'tnt_revenueparty_default'; next();
+
+
+
+
+
+ User Story 1.4: Enforce "Conscious" Querying
+
+
+
+ As a Developer, I want to ensure all new database queries for the "Campaigns" Engine are tenant-aware.
+
+
+
+ AC:
+
+
+
+ 1.4.1. All new Drizzle queries must be written with a WHERE clause that filters by req.tenantId (which is being provided by the "Stub" Middleware).
+
+
+
+ 1.4.2. Correct: db.select().from(campaigns).where(eq(campaigns.tenantId, req.tenantId)).
+
+Part 2: The "Campaigns" Engine (MVP Build)
+
+Goal: To build the "Campaigns" wizard, the JSON-powered "Widget Factory," and the frontend rendering engine.
+
+Epic 2.1: The "Campaigns" Admin UI & Schema
+
+User Story 2.1.1: Create "Campaigns" Admin UI & Schema
+
+As an: Admin
+
+I want to: Have a new "Campaigns" section in the Admin Panel (e.g., /admin/campaigns) to create, edit, and manage all my widgets.
+
+So that: I have a single, unified workflow.
+
+AC:
+
+(AC 2.1.1.1) Create new admin routes for "Campaigns" (List, New, Edit) using the existing admin UI patterns (Tiptap, Shadcn, etc.).
+
+(AC 2.1.1.2) Create a new campaigns table in the Drizzle schema.
+
+(AC 2.1.1.3) The campaigns table must have a tenant_id column (per AC 1.2.1).
+
+(AC 2.1.1.4) The table must include performance fields: isActive (boolean, default true), startDate (timestamp, nullable), endDate (timestamp, nullable).
+
+(AC 2.1.1.5) The table must include all fields necessary to store the settings from User Stories 2.1.2 through 2.1.7.
+
+User Story 2.1.2: Define Campaign Content (Section 1: "What is this?")
+
+As an: Admin
+
+I want to: Define the name and content type of my new campaign from a single form.
+
+AC:
+
+(AC 2.1.2.1) The "New Campaign" form must have a "Campaign Name" text field (e.g., "E-book Download - Homepage Popup").
+
+(AC 2.1.2.2) A "Content Type" radio button group must be present:
+
+( ) Smart Widget (for JSON-built Calculators, Forms)
+
+( ) Content Collection (for existing CMS content)
+
+User Story 2.1.3: Define "Smart Widget" Content (Conditional UI)
+
+As an: Admin
+
+I want to: Use a "Smart Prompt Builder" form to generate a perfect LLM prompt when I select "Smart Widget."
+
+So that: I can easily get the safe, valid JSON config I need.
+
+AC:
+
+(AC 2.1.3.1) If "Content Type: Smart Widget" is selected, a new form section must appear.
+
+(AC 2.1.3.2) This section must include a "Widget Type" radio: ( ) Form, ( ) Calculator. (Note: "Assessment" is excluded, see US 2.1.4).
+
+(AC 2.1.3.3) Conditionally display repeater fields based on the "Widget Type" (e.g., "Inputs" & "Formulas" for Calculator; "Inputs" & "Result Message" for Form).
+
+(AC 2.1.3.4) A read-only "Magic Prompt" text area must update in real-time as I fill out these fields. This prompt must be generated based on the templates in Part 3: Appendix.
+
+(AC 2.1.3.5) A "Copy Prompt" button must be provided.
+
+(AC 2.1.3.6) A final "Paste JSON Config" text area must be present.
+
+(AC 2.1.3.7) The "Paste JSON Config" text area must have real-time, in-browser validation (e.g., using a useEffect hook).
+
+(AC 2.1.3.8) The UI must show granular errors (e.g., "Invalid JSON format" or "Field 'title' is missing") as the admin types, based on the Zod schemas in Part 3: Appendix.
+
+(AC 2.1.3.9) The "Save" button must be disabled if validation errors are present.
+
+User Story 2.1.4: Define "Content Collection" Content (Conditional UI)
+
+As an: Admin
+
+I want to: Select from my existing, hard-coded CMS content when I select "Content Collection."
+
+So that: I can easily place my Testimonial Carousel or existing Assessment tools.
+
+AC:
+
+(AC 2.1.4.1) If "Content Type: Content Collection" is selected, a new dropdown must appear.
+
+(AC 2.1.4.2) The dropdown must be labeled "Select Collection" and include: Testimonial Carousel, Video Gallery, Blog Feed, and Embed Assessment.
+
+(AC 2.1.4.3) If "Embed Assessment" is selected, a second dropdown must appear, populated with the list of assessments from the existing assessmentConfigs (or equivalent) table.
+
+User Story 2.1.5: Define Campaign Display ("Section 2: How?")
+
+As an: Admin
+
+I want to: Control the visual appearance and behavior of my campaign.
+
+AC:
+
+(AC 2.1.5.1) A "Display As" radio button must be present: ( ) In-Page Section, ( ) Overlay (Popup).
+
+(AC 2.1.5.2) A "Select Theme" dropdown must be present: Light (Default), Dark, Brand Accent, Transparent.
+
+(AC 2.1.5.3) If "In-Page Section" is selected, a "Select Size" radio must appear: ( ) Full Width, ( ) Small (Constrained).
+
+(AC 2.1.5.4) If "Overlay (Popup)" is selected, the following fields must appear:
+
+Placement: "Pop-up (Center)", "Pop-up (Bottom-Right)", "Pop-off (Right Side)"
+
+Trigger: "On Page Load (after X seconds)", "On Scroll (after X %)"
+
+Dismissal: "Static (User clicks 'X')", "Fade Out (after X seconds)"
+
+User Story 2.1.6: Define Campaign Targeting ("Section 3: Where?")
+
+As an: Admin
+
+I want to: Control exactly which pages my campaign runs on.
+
+AC:
+
+(AC 2.1.6.1) A "Target Pages" checklist must be present. This list must be hard-coded in the admin UI. For the MVP, it will list: Homepage, /problem, /gtm-engine, /results, /why-us, /pricing, /blog (All Posts).
+
+(AC 2.1.6.2) If "In-Page Section" is selected, a "Select Zone" dropdown must appear: [Dropdown: Hero, Section 1, Section 2, ... Section 10].
+
+(AC 2.1.6.3) The database schema must enforce a unique index (e.g., uniqueIndex('unique_active_zone').on(table.targetPage, table.targetZone, table.isActive).where(sql${table.isActive} = true)) to prevent two active campaigns from being assigned to the same zone.
+
+(AC 2.1.6.4) The admin UI must also read this data and provide friendly feedback (e.g., "Zone 3 is currently assigned to 'Holiday Promo'").
+
+User Story 2.1.7: Define Page-Level SEO (Conditional UI)
+
+As an: Admin
+
+I want to: Set the title and meta description for my "In-Page Section" campaigns.
+
+So that: My dynamically assembled pages are "god-tier" SEO-ready.
+
+AC:
+
+(AC 2.1.7.1) If "In-Page Section" is selected, a new "SEO & Metadata" section must appear in the form.
+
+(AC 2.1.7.2) This section must include fields for:
+
+Meta Title (Text)
+
+Meta Description (Textarea)
+
+OpenGraph Image (Image Upload)
+
+(AC 2.1.7.3) These fields must be saved in the campaigns table.
+
+Epic 2.2: The "Widget Factory" (The Frontend Renderers)
+
+User Story 2.2.1: Build "Smart Widget" Renderers
+
+As a: Developer
+
+I want to: Build the frontend React components that can read and render the "Smart Widget" JSON config.
+
+AC:
+
+(AC 2.2.1.1) Create new dynamic components: <DynamicCalculator /> and <DynamicForm />.
+
+(AC 2.2.1.2) These components must accept a jsonConfig prop. They will parse the JSON (defined in Part 3: Appendix) to render themselves.
+
+(AC 2.2.1.3) These components must also accept theme and size props and use CVA (already in stack) to apply the correct styling.
+
+User Story 2.2.2: Build "Collection" Renderers
+
+As a: Developer
+
+I want to: Build hard-coded React components for our "Content Collections."
+
+So that: The "Campaigns" engine can render our standard CMS content.
+
+AC:
+
+(AC 2.2.2.1) Create new, tenant-aware Express endpoints (e.g., /api/collections/testimonials) that fetch data based on the req.tenantId.
+
+(AC 2.2.2.2) Create a <TestimonialCarousel /> component. This component must be a client component that uses useQuery (TanStack Query) to fetch data from the new /api/collections/testimonials endpoint.
+
+(AC 2.2.2.3) Create <VideoGallery /> and <BlogFeed /> components following the same pattern.
+
+(AC 2.2.2.4) Create <AssessmentEmbed />. This component must accept an assessmentId prop and render the existing assessment tool.
+
+(AC 2.2.2.5) All these components must also accept the theme and size props.
+
+Epic 2.3: Frontend Placement (Consuming the Campaigns)
+
+User Story 2.3.1: Implement "In-Page Section" (Widget Zones)
+
+As a: Developer
+
+I want to: Dynamically render all "In-Page Section" campaigns in their designated zones and set the page's metadata.
+
+AC:
+
+(AC 2.3.1.1) Modify the main page templates (e.g., Home.tsx).
+
+(AC 2.3.1.2) The page component must fetch all active campaigns for the current page and req.tenantId (using isActive, startDate, endDate for performance).
+
+(AC 2.3.1.3) The page must use the fetched campaign data to dynamically set its metadata, using the existing <SEO /> component. (This fulfills US 2.1.7).
+
+(AC 2.3.1.4) The page will loop from 1 to 10, rendering a <WidgetZone /> for each "Section."
+
+(AC 2.3.1.5) The <WidgetZone /> component must find the correct campaign(s) assigned to its zone (e.g., "Section 1") and render the correct component (e.g., <DynamicCalculator /> or <TestimonialCarousel />) with the correct props.
+
+User Story 2.3.2: Implement "Overlay" (Popup) Engine
+
+As a: Developer
+
+I want to: Build a global, site-wide engine to handle all "Overlay (Popup)" campaigns.
+
+AC:
+
+(AC 2.3.2.1) Build a new, single <PopupEngine /> component and ensure it runs on every page (e.g., in App.tsx).
+
+(AC 2.3.2.2) <PopupEngine /> must fetch all active "Overlay" campaigns for the current URL and req.tenantId using useQuery with a 5-minute staleTime for caching.
+
+(AC 2.3.2.3) It must use useEffect, setTimeout, and scroll listeners (or IntersectionObserver) to manage all "Trigger" and "Dismissal" logic.
+
+(AC 2.3.2.4) It must use Framer Motion (already in stack) to handle all "pop-up" and "fade-out" animations.
+
+(AC 2.3.2.5) Conflict Resolution: The <PopupEngine /> must only ever show one popup per user session. If multiple popups are eligible to trigger, it will show the most recently created one (by createdAt timestamp).
+
+Epic 2.4: The "User Analytics" Engine (MVP)
+
+User Story 2.4.1: Create events Table
+
+As a: Developer
+
+I want to: Create an events table in the Drizzle schema.
+
+So that: We have a central, performant location to store all user behavior.
+
+AC:
+
+(AC 2.4.1.1) The events table must be created in shared/schema.ts (and include tenant_id per AC 1.2.1).
+
+(AC 2.4.1.2) The schema must include: event_id, timestamp, tenant_id, session_id (from req.session), user_id (nullable), campaign_id (nullable FK to campaigns), event_type (e.g., "campaign_viewed", "campaign_submit"), and payload (JSON).
+
+User Story 2.4.2: Create Event Capture Endpoint & Track Events
+
+As a: Developer
+
+I want to: Create a single /api/events/track endpoint and have all campaigns use it.
+
+So that: We can measure campaign performance without slowing down the campaigns table.
+
+AC:
+
+(AC 2.4.2.1) Create a new, tenant-aware Express endpoint at /api/events/track.
+
+(AC 2.4.2.2) The endpoint must accept event_type, campaign_id, and payload, and save them to the events table (this replaces AC 2.1.1.5).
+
+(AC 2.4.2.3) The <WidgetZone /> must fire a "campaign_viewed" event (using this API) when it renders a campaign.
+
+(AC 2.4.2.4) The <PopupEngine /> must fire a "campaign_viewed" event when a popup is shown.
+
+(AC 2.4.2.5) The <DynamicForm /> must fire a "campaign_submit" event on a successful submission.
+
+Epic 2.5: "God-Tier SEO" Guardrails
+
+User Story 2.5.1: Prevent Intrusive Interstitial Penalties
+
+As an: Admin
+
+I want to: Be prevented from making a choice that hurts our Google ranking.
+
+So that: The platform automatically enforces "god-tier" SEO.
+
+AC:
+
+(AC 2.5.1.1) The <PopupEngine /> must be mobile-aware.
+
+(AC 2.5.1.2) If Placement: "Pop-up (Center)" is selected, it must not trigger "On Page Load" or "On Scroll" for mobile users. It may only trigger on a user click (this behavior can be hard-coded for now).
+
+(AC 2.5.1.3) Placement: "Pop-off (Right Side)" must automatically render as Placement: "Pop-up (Bottom-Right)" on mobile devices.
+
+(AC 2.5.1.4) An "On Scroll" trigger must not fire while the user is actively scrolling. It must wait until the user has stopped scrolling for a brief period (e.g., 1 second) before showing the popup.
+
+Part 3: Appendix - Smart Widget Schemas & Prompts
+
+This section defines the "Smart Prompt" templates and the Zod schemas Replit will use for validation (per AC 2.1.3.4 and 2.1.3.8).
+
+3.1. Widget Type: "Form"
+
+Zod Schema (for AC 2.1.3.8):
+
+import { z } from 'zod';
+const FormInputSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  type: z.enum(['text', 'email', 'tel', 'textarea']),
+  placeholder: z.string().optional(),
+});
+const FormConfigSchema = z.object({
+  widgetType: z.literal('Form'),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  inputs: z.array(FormInputSchema).min(1),
+  submitButtonText: z.string().default('Submit'),
+  successMessage: z.string().default('Thank you!'),
+});
+
+
+"Magic Prompt" Template (for AC 2.1.3.4):
+
+You are the 'Revenue Party' Widget Configurator. Your ONLY job is to return valid JSON for our DynamicForm component. You MUST NOT write React or HTML. You MUST adhere to the schema.
+JSON Schema:
+{"widgetType":"Form","title":"string","description":"string?","inputs":[{"id":"string","label":"string","type":"text"|"email"|"tel"|"textarea","placeholder":"string?"}],"submitButtonText":"string?","successMessage":"string?"}
+User Request:
+
+Title: {{ADMIN_FORM_TITLE}}
+
+Description: {{ADMIN_FORM_DESCRIPTION}}
+
+Inputs: {{ADMIN_FORM_INPUTS_REPEATER}}
+
+Button Text: {{ADMIN_FORM_BUTTON_TEXT}}
+
+YOUR JSON:
+
+3.2. Widget Type: "Calculator"
+
+Zod Schema (for AC 2.1.3.8):
+
+import { z } from 'zod';
+const CalcInputSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  type: z.enum(['number', 'percentage']),
+});
+const CalcFormulaSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  value: z.string().min(1), // e.g., "input_1 * (1 - input_2)"
+});
+const CalcResultSchema = z.object({
+  label: z.string().min(1),
+  value: z.string(), // e.g., "formula_1"
+});
+const CalculatorConfigSchema = z.object({
+  widgetType: z.literal('Calculator'),
+  title: z.string().min(1),
+  inputs: z.array(CalcInputSchema).min(1),
+  formulas: z.array(CalcFormulaSchema).min(1),
+  results: z.array(CalcResultSchema).min(1),
+});
+
+
+"Magic Prompt" Template (for AC 2.1.3.4):
+
+You are the 'Revenue Party' Widget Configurator. Your ONLY job is to return valid JSON for our DynamicCalculator component. You MUST NOT write React or HTML. You MUST adhere to the schema.
+JSON Schema:
+{"widgetType":"Calculator","title":"string","inputs":[{"id":"string","label":"string","type":"number"|"percentage"}],"formulas":[{"id":"string","label":"string","value":"(math expression)"}],"results":[{"label":"string","value":"(formula id)"}]}
+User Request:
+
+Title: {{ADMIN_FORM_TITLE}}
+
+Inputs: {{ADMIN_FORM_INPUTS_REPEATER}}
+
+Formulas: {{ADMIN_FORM_FORMULAS_REPEATER}}
+
+Results: {{ADMIN_FORM_RESULTS_REPEATER}}
+
+YOUR JSON:
+
+Part 4: Future Vision (Beyond This MVP)
+
+This section outlines the long-term plan, which is not part of this immediate build.
+
+Phase 3: Activate Full Multi-Tenancy
+
+Replace the "Stub" Middleware with a dynamic, subdomain-aware middleware.
+
+Build the client-facing login system (client_users table) and a permission-restricted admin panel for our clients.
+
+Phase 4: Direct LLM API Integration & Analytics
+
+Add a "Generate with AI" button to the "Smart Prompt Builder" that calls the Gemini API directly from the server.
+
+Build the "Lead Journey" dashboard (based on the events table) to provide "Facebook-grade" surveillance and prove ROI.
+
+Phase 5: Advanced Integrations
+
+Build the "CRM Push" (e.g., to HubSpot) for new leads.
+
+Create a "Social Media Portal" by adding a "Social Feed" option to the "Content Collection" dropdown.
