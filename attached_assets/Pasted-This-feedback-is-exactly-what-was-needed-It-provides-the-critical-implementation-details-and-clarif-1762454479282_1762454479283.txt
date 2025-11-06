@@ -1,0 +1,122 @@
+This feedback is exactly what was needed. It provides the critical implementation details and clarifies the *existing* codebase patterns, which is a massive shortcut.
+
+Based on these corrections, here is the final, complete, and executable plan for Agent 3.
+
+---
+
+### **The Final Plan of Record (v3)**
+
+**Objective:** To refactor the configurable assessment builder using a "Wizard-to-Create, Tabs-to-Edit" pattern. This plan is fully corrected to include configurable gating, a new dedicated submissions table with multi-tenancy, and it adheres to existing codebase patterns for routing and admin UI.
+
+---
+
+### **1. Database Schema (Final)**
+
+Instruct Agent 3 to add/modify the following in `shared/schema.ts`:
+
+* **1. (NEW) Create `configurable_assessment_responses` table:**
+    * This table is the critical fix, separating new submissions from the legacy `assessmentResponses` table.
+    * **Fields:**
+        * `id` (primary key)
+        * `tenantId` (varchar, notNull, references `tenants.id`) **(Critical addition for multi-tenancy)**
+        * `assessmentConfigId` (foreign key to `assessmentConfigs.id`)
+        * `sessionId` (text, unique)
+        * `answers` (json, to store user's `{ qId, aId }` selections)
+        * `finalScore` (integer, nullable, for Points-Based)
+        * `finalBucketKey` (text, nullable, for Decision-Tree)
+        * `name`, `email`, `company` (text, nullable)
+        * `resultUrl` (text, nullable, for the unique tracked link)
+        * `createdAt`, `updatedAt` (timestamps)
+
+* **2. (MODIFY) `assessmentConfigs` table:**
+    * Add **`gateBehavior`** (Type: `text`, default: `UNGATED`): Stores the gating preference (`UNGATED`, `PRE_GATED`, `POST_GATED`).
+    * *(Verification)* This table already has `scoringMethod` and `entryQuestionId`.
+
+* **3. (MODIFY) `assessmentResultBuckets` table:**
+    * Add **`pdfUrl`** (Type: `text`, nullable: `true`): The static PDF link (e.g., `/public/downloads/my-ebook.pdf`).
+    * Add **`minScore`** and **`maxScore`** (Type: `integer`, nullable: `true`): For "Points-Based" buckets.
+
+* **4. (NO CHANGE) `assessmentAnswers` table:**
+    * **This is a critical correction:** We will **NOT** add `routingBucketKey` or `routingQuestionId`.
+    * We will **continue to use the existing `answerValue` (JSON) field** to store routing logic, as seen in `AnswersManager.tsx` (e.g., `{"nextQuestionId": "..."}` or `{"resultBucketKey": "..."}`).
+
+---
+
+### **2. Backend Implementation (API & Scoring Logic)**
+
+This section is new and defines the core engine.
+
+* **1. (NEW) Scoring Logic Module (`server/utils/assessment-scoring.ts`):**
+    * This new file will centralize scoring logic.
+    * `calculatePointsBasedBucket(answers, buckets)`: Sums points from `assessmentAnswers` and matches to a bucket's `minScore`/`maxScore` range.
+    * `calculateDecisionTreeBucket(answers, questions, buckets)`: Follows the `answerValue` (JSON) routing from the user's `answers` to find the final `resultBucketKey`.
+
+* **2. (NEW) API Routes:**
+    * **`POST /api/configurable-assessments/:id/submit`**:
+        * Creates a new row in `configurable_assessment_responses`.
+        * Runs the appropriate scoring logic from `assessment-scoring.ts`.
+        * Returns the `sessionId` (for `POST_GATED`) or the final result data (for `UNGATED`).
+    * **`PUT /api/configurable-assessments/sessions/:sessionId/capture-lead`**:
+        * Used by the `POST_GATED` flow.
+        * Updates the `configurable_assessment_responses` row with `name`, `email`, `company`.
+        * Generates and saves the `resultUrl`.
+        * Returns the `resultUrl` to the frontend for redirection.
+    * **`GET /api/configurable-assessments/results/:sessionId`**:
+        * The public page for a unique, tracked result.
+        * Fetches the response data and the corresponding `assessmentResultBucket` content (including `pdfUrl`).
+    * **`GET /api/configurable-assessments/:id/responses`**:
+        * Powers the "Submissions" tab.
+        * Returns a paginated list of `configurable_assessment_responses` for that `assessmentId`, with filters for date, bucket, and email search.
+
+---
+
+### **3. Admin UI: "Wizard-to-Create"**
+
+This wizard guides the admin through a new, error-proof setup.
+
+* **Step 1: Setup & Method**
+    * `Title`, `Slug`.
+    * `Scoring Method` (Radio): "Points-Based" or "Decision-Tree".
+    * `Gate Behavior` (Radio): `UNGATED`, `PRE_GATED`, `POST_GATED`.
+* **Step 2: Define Result Buckets**
+    * The admin creates the `assessmentResultBuckets`. The modal will show/hide `Min/Max Score` fields based on the `Scoring Method` chosen in Step 1.
+* **Step 3: Build the Flow**
+    * The admin creates `assessmentQuestions` and `assessmentAnswers`.
+    * **`entryQuestionId` Logic:** The first question created is automatically set as the `entryQuestionId`. A "Set as Start Question" icon will be present on all other question cards to allow changing this.
+    * **Routing Logic:** The "Routing" dropdown for Decision-Tree mode will save its data as JSON to the `answerValue` field, matching the existing codebase pattern.
+* **Step 4: Save & Finish**
+    * **Validation:** This step will run validation rules (e.g., "Must have at least one question," "All branches must terminate to a bucket," "No overlapping score ranges").
+    * **Action:** On save, this creates the `assessmentConfig` with **`published: false`** and redirects to the "Tabs-to-Edit" interface.
+
+---
+
+### **4. Admin UI: "Tabs-to-Edit"**
+
+This is the interface for editing existing assessments.
+
+* **Tab 1: Basic Info**
+    * `Title`, `Slug`, `Gate Behavior`.
+    * `Scoring Method` will be **locked and read-only**.
+    * A **`Published` toggle** will be here to make the assessment live.
+* **Tab 2: Result Buckets**
+    * The editor for `assessmentResultBuckets`.
+* **Tab 3: Flow Builder**
+    * The editor for `assessmentQuestions` and `assessmentAnswers`.
+    * The **Interactive Visualizer** will be on the right, highlighting the active question.
+* **Tab 4: Submissions**
+    * This will be a full dashboard, **copying the UI pattern** from the existing `AssessmentAdminDashboard.tsx` (`rag://rag_source_4`).
+    * It will pull data from `GET /api/configurable-assessments/:id/responses`.
+    * It will include **filters** (date range, bucket, search) and a **CSV export button**.
+
+---
+
+### **5. Public Flow (Conditional Logic)**
+
+This defines how the user-facing assessment will function.
+
+* **Gating:** The frontend will first check the `assessmentConfig.gateBehavior` to determine the flow (`PRE_GATED`, `UNGATED`, `POST_GATED`).
+* **Conditional Logic Evaluation:**
+    * As the user progresses, the frontend will check each `assessmentQuestions.conditionalLogic` JSON.
+    * It will check the user's *previous answers* (held in React state).
+    * It will **skip any questions** where the condition (e.g., `{"questionId": "abc", "answerId": "xyz"}`) is not met.
+* **Submission:** The flow will call the new API routes (`.../submit`, `.../capture-lead`, `.../results/:sessionId`) to process the user and deliver the final, correct result page.
