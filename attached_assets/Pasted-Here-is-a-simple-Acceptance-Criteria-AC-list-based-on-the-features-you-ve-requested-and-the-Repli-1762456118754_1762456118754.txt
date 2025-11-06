@@ -1,0 +1,49 @@
+Here is a simple Acceptance Criteria (AC) list based on the features you've requested and the "Replit" feedback.
+
+---
+
+### **Admin: Assessment Creation (Wizard)**
+
+* **AC-1:** `GIVEN` an admin clicks "New Assessment," `THEN` they must be shown a multi-step setup wizard.
+* **AC-2:** `GIVEN` the admin is in Step 1, `THEN` they must be forced to select a `Scoring Method` ("Points-Based" or "Decision-Tree") and a `Gate Behavior` ("UNGATED," "PRE\_GATED," or "POST\_GATED").
+* **AC-3:** `GIVEN` the admin completes the wizard, `THEN` the assessment must be saved as `published: false`.
+* **AC-4:** `GIVEN` the admin is in the wizard's "Save" step, `THEN` validation must prevent saving an assessment with overlapping score ranges (for Points-Based) or dead-end branches (for Decision-Tree).
+
+### **Admin: Assessment Editing (Tabs)**
+
+* **AC-5:** `GIVEN` an admin edits an existing assessment, `THEN` they must see a tabbed interface (Basic Info, Result Buckets, Flow Builder, Submissions).
+* **AC-6:** `GIVEN` an admin is on the "Basic Info" tab, `THEN` the `Scoring Method` field must be **locked and read-only**.
+* **AC-7:** `GIVEN` an admin is on the "Basic Info" tab, `THEN` they must have a "Published" toggle to make the assessment live.
+* **AC-8:** `GIVEN` an admin is editing a "Decision-Tree" assessment, `WHEN` they click a question in the "Flow Builder" tab, `THEN` the corresponding node in the "Decision Tree" visualizer must highlight.
+
+### **Admin: "Points-Based" Logic**
+
+* **AC-9:** `GIVEN` an admin creates a "Points-Based" assessment, `THEN` the "Result Buckets" modal must include `Min Score` and `Max Score` fields.
+* **AC-10:** `GIVEN` an admin is in the "Flow Builder" for a "Points-Based" assessment, `THEN` they must be able to add a point value to each answer.
+
+### **Admin: "Decision-Tree" Logic**
+
+* **AC-11:** `GIVEN` an admin creates a "Decision-Tree" assessment, `THEN` the "Result Buckets" modal must include a `Bucket Key` field.
+* **AC-12:** `GIVEN` an admin is in the "Flow Builder" for a "Decision-Tree" assessment, `THEN` each answer must have a single `Routing:` dropdown.
+* **AC-13:** `GIVEN` an admin selects a route (e.g., "Go to Q3" or "Show Result: Bucket A"), `THEN` that logic must be saved as JSON to the existing `answerValue` field.
+* **AC-14:** `GIVEN` an admin is in the "Flow Builder," `THEN` the first question created must be set as the `entryQuestionId`, and they must have an option to change it.
+
+### **Admin: Submissions & Data**
+
+* **AC-15:** `GIVEN` an admin is on the "Submissions" tab, `THEN` they must see a data grid pulling from the new `configurable_assessment_responses` table.
+* **AC-16:** `GIVEN` an admin is on the "Submissions" tab, `THEN` they must have a button to "Export to CSV".
+* **AC-17:** `GIVEN` an admin is on the "Submissions" tab, `THEN` they must be able to filter submissions by date range, bucket, and email.
+
+### **Public: User Flow & Gating**
+
+* **AC-18:** `GIVEN` a public user starts an assessment, `THEN` the frontend must correctly implement the chosen `gateBehavior` (show form before, after, or not at all).
+* **AC-19:** `GIVEN` a public user is taking an assessment, `THEN` the frontend must evaluate the `conditionalLogic` JSON for each question and skip questions if the condition is not met.
+* **AC-20:** `GIVEN` a user completes a `POST_GATED` assessment, `WHEN` they submit the lead form, `THEN` they must be redirected to a new, unique, shareable `resultUrl` (e.g., `/assessment/results/[sessionId]`).
+* **AC-21:** `GIVEN` a user views any result (gated or ungated), `THEN` they must be shown a link to the static `pdfUrl` defined for that specific result bucket.
+
+### **Backend: Data & Architecture**
+
+* **AC-22:** `GIVEN` any user completes a configurable assessment, `THEN` the submission *must* be saved to the new `configurable_assessment_responses` table, not the legacy `assessmentResponses` table.
+* **AC-23:** `GIVEN` a submission is saved to `configurable_assessment_responses`, `THEN` it *must* include the correct `tenantId` to prevent data leakage.
+* **AC-24:** `GIVEN` a submission is processed, `THEN` the scoring logic *must* be handled by the new `server/utils/assessment-scoring.ts` module.
+* **AC-25:** `GIVEN` the frontend needs to save or retrieve data, `THEN` it must use the new API endpoints (e.g., `.../submit`, `.../capture-lead`, `.../results/:sessionId`, `.../responses`).
