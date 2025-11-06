@@ -387,6 +387,9 @@ export default function Home() {
       {/* Middle Widget Zone 2 */}
       <WidgetZone zone="zone-3" className="my-8" />
 
+      {/* Widget Zone 5 */}
+      <WidgetZone zone="zone-5" className="my-8" />
+
       {/* Tool Module - "Interactive ROI Calculator" */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
         <div className="max-w-7xl mx-auto">
@@ -421,6 +424,9 @@ export default function Home() {
 
       {/* Bottom Widget Zone */}
       <WidgetZone zone="zone-4" className="my-8" />
+
+      {/* Widget Zone 6 */}
+      <WidgetZone zone="zone-6" className="my-8" />
 
       {/* Final CTA Module */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-primary/5">

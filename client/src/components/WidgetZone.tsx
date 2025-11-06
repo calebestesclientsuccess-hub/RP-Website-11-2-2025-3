@@ -19,31 +19,102 @@ interface WidgetZoneProps {
   className?: string;
 }
 
-// Map route paths to campaign page names
+// Map static route paths to campaign page names
 const pathToPageName: Record<string, string> = {
-  "/": "Home",
-  "/blog": "Blog",
-  "/why-us": "About",
-  "/contact": "Contact",
-  "/pricing": "Pricing",
-  "/features": "Features",
-  "/assessment": "Assessments",
+  "/": "home",
+  "/blog": "blog",
+  "/why-us": "about",
+  "/contact": "contact",
+  "/pricing": "pricing",
+  "/problem": "problem",
+  "/gtm-engine": "gtm-engine",
+  "/results": "results",
+  "/roi-calculator": "roi-calculator",
+  "/faq": "faq",
+  "/assessment": "assessment",
+  "/audit": "audit",
+};
+
+// Determine all page names that apply to the current path
+const getPageNames = (path: string): string[] => {
+  const names: string[] = [];
+  
+  // Add specific page name if it exists in the static map
+  if (pathToPageName[path]) {
+    names.push(pathToPageName[path]);
+  }
+  
+  // Check for wildcard matches
+  
+  // Blog posts: /blog/:slug (but not /blog itself)
+  if (path.startsWith("/blog/") && path !== "/blog") {
+    names.push("all-blog-posts");
+  }
+  
+  // Assessment pages
+  if (
+    path.startsWith("/resources/gtm-assessment") ||
+    path.startsWith("/pipeline-assessment") ||
+    path === "/assessment"
+  ) {
+    names.push("all-assessment-pages");
+    
+    // Also add specific assessment page names
+    if (path === "/resources/gtm-assessment") {
+      names.push("gtm-assessment");
+    } else if (path.startsWith("/pipeline-assessment")) {
+      names.push("pipeline-assessment");
+    }
+  }
+  
+  // Default to "home" if no names found
+  if (names.length === 0) {
+    names.push("home");
+  }
+  
+  return names;
+};
+
+// Get display size CSS classes based on campaign.displaySize
+const getDisplaySizeClasses = (displaySize?: string | null): string => {
+  switch (displaySize) {
+    case "inline":
+      // Compact styling - smaller padding, tighter layout
+      return "p-2 space-y-2";
+    case "standard":
+      // Default styling
+      return "p-4 space-y-4";
+    case "large":
+      // Larger padding and spacing
+      return "p-6 md:p-8 space-y-6";
+    case "hero":
+      // Full-width, banner-style layout
+      return "w-full p-8 md:p-12 space-y-6 md:space-y-8";
+    case "takeover":
+      // Maximum size, dominates the section
+      return "w-full min-h-[60vh] p-12 md:p-16 space-y-8 md:space-y-12";
+    default:
+      // Default to standard
+      return "p-4 space-y-4";
+  }
 };
 
 export function WidgetZone({ zone, className }: WidgetZoneProps) {
   const [location] = useLocation();
   const { toast } = useToast();
 
-  // Determine the current page name from the route
-  const currentPage = pathToPageName[location] || "Home";
+  // Determine all page names that apply to the current path
+  const pageNames = getPageNames(location);
+  
+  // Use first page name as primary (for tracking purposes)
+  const currentPage = pageNames[0];
 
-  // Fetch active campaigns for this zone and page
-  const { data: campaigns, isLoading, error } = useQuery<Campaign[]>({
-    queryKey: ["/api/public/campaigns", { zone, page: currentPage, displayAs: "inline" }],
+  // Fetch all active campaigns for this zone
+  const { data: allCampaigns, isLoading, error } = useQuery<Campaign[]>({
+    queryKey: ["/api/public/campaigns", { zone, displayAs: "inline" }],
     queryFn: async () => {
       const params = new URLSearchParams({
         zone,
-        page: currentPage,
         displayAs: "inline",
       });
       const response = await fetch(`/api/public/campaigns?${params}`, {
@@ -55,6 +126,26 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
       return response.json();
     },
   });
+  
+  // Filter campaigns to match current page names
+  const campaigns = allCampaigns?.filter(campaign => 
+    campaign.targetPages?.some(targetPage => pageNames.includes(targetPage))
+  );
+
+  // Get the first matching campaign (or null if none)
+  const campaign = campaigns?.[0] || null;
+
+  // Track campaign_viewed event when campaign is loaded
+  // IMPORTANT: This must be called before any conditional returns (Rules of Hooks)
+  useEffect(() => {
+    if (campaign?.id) {
+      trackEvent('campaign_viewed', campaign.id, {
+        zone,
+        page: currentPage,
+        contentType: campaign.contentType
+      });
+    }
+  }, [campaign?.id, zone, currentPage, campaign?.contentType]);
 
   // Handle loading state - return null (invisible)
   if (isLoading) {
@@ -68,23 +159,9 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
   }
 
   // Handle empty state - no campaigns found
-  if (!campaigns || campaigns.length === 0) {
+  if (!campaign) {
     return null;
   }
-
-  // Get the first matching campaign
-  const campaign = campaigns[0];
-
-  // Track campaign_viewed event when campaign is loaded
-  useEffect(() => {
-    if (campaign?.id) {
-      trackEvent('campaign_viewed', campaign.id, {
-        zone,
-        page: currentPage,
-        contentType: campaign.contentType
-      });
-    }
-  }, [campaign?.id, zone, currentPage]);
 
   // Parse widgetConfig if it exists (stored as JSON string)
   let parsedConfig: any = null;
@@ -214,6 +291,9 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
     return null;
   }
 
+  // Get display size classes
+  const displaySizeClasses = getDisplaySizeClasses(campaign.displaySize);
+
   return (
     <>
       {/* Inject SEO metadata if available */}
@@ -235,9 +315,12 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
         </Helmet>
       )}
 
-      {/* Render the widget */}
+      {/* Render the widget with displaySize styling */}
       <ErrorBoundary silent>
-        <div className={className} data-testid={`widget-zone-${zone}`}>
+        <div 
+          className={`${displaySizeClasses} ${className || ''}`}
+          data-testid={`widget-zone-${zone}`}
+        >
           {widget}
         </div>
       </ErrorBoundary>

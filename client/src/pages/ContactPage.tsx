@@ -21,6 +21,9 @@ export default function ContactPage() {
           Contact Us / Careers
         </h1>
       </div>
+
+      {/* Middle Widget Zone */}
+      <WidgetZone zone="zone-11" className="my-8" />
       
       {/* Bottom Widget Zone */}
       <WidgetZone zone="zone-4" className="my-8" />

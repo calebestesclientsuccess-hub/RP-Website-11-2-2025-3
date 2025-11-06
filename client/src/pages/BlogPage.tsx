@@ -344,6 +344,9 @@ export default function BlogPage() {
       {/* Middle Widget Zone */}
       <WidgetZone zone="zone-2" className="my-8" />
 
+      {/* Widget Zone 12 */}
+      <WidgetZone zone="zone-12" className="my-8" />
+
       {/* Featured Resources */}
       <section className="py-16 px-4 md:px-6 lg:px-8 bg-background">
         <div className="max-w-7xl mx-auto">
@@ -462,6 +465,9 @@ export default function BlogPage() {
         </div>
       </section>
 
+      {/* Widget Zone 13 */}
+      <WidgetZone zone="zone-13" className="my-8" />
+
       {/* Content Type Filter */}
       <section className="py-8 px-4 md:px-6 lg:px-8 bg-card/50 border-y">
         <div className="max-w-7xl mx-auto">
@@ -504,6 +510,9 @@ export default function BlogPage() {
 
       {/* Bottom Widget Zone */}
       <WidgetZone zone="zone-4" className="my-8" />
+
+      {/* Widget Zone 14 */}
+      <WidgetZone zone="zone-14" className="my-8" />
 
       {/* Loading State */}
       {isLoading && (

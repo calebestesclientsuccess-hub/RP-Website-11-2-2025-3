@@ -1,6 +1,7 @@
 import { SEO } from "@/components/SEO";
 import { FAQSchema } from "@/components/FAQSchema";
 import { Button } from "@/components/ui/button";
+import { WidgetZone } from "@/components/WidgetZone";
 import { Link } from "wouter";
 import {
   Accordion,
@@ -55,6 +56,9 @@ export default function FAQPage() {
       />
       <FAQSchema faqs={faqs} />
 
+      {/* Widget Zone 20 */}
+      <WidgetZone zone="zone-20" className="my-8" />
+
       <div className="container mx-auto px-4 py-16 max-w-4xl">
         {/* Hero Module */}
         <div className="text-center mb-16" data-testid="section-hero">
@@ -101,6 +105,9 @@ export default function FAQPage() {
           </Accordion>
         </section>
 
+        {/* Widget Zone 21 */}
+        <WidgetZone zone="zone-21" className="my-8" />
+
         {/* Section 2: The Asset, Risk & IP */}
         <section className="mb-12" data-testid="section-asset-risk">
           <h2 className="text-3xl font-bold mb-6" data-testid="heading-section-2">
@@ -135,6 +142,9 @@ export default function FAQPage() {
             </AccordionItem>
           </Accordion>
         </section>
+
+        {/* Widget Zone 22 */}
+        <WidgetZone zone="zone-22" className="my-8" />
 
         {/* Section 3: The Competition */}
         <section className="mb-12" data-testid="section-competition">
@@ -171,6 +181,9 @@ export default function FAQPage() {
             </AccordionItem>
           </Accordion>
         </section>
+
+        {/* Widget Zone 23 */}
+        <WidgetZone zone="zone-23" className="my-8" />
 
         {/* Primary CTA Module */}
         <section className="text-center mt-16 py-12 px-6 rounded-lg bg-card border" data-testid="section-cta">

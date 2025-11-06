@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { WidgetZone } from "@/components/WidgetZone";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -305,6 +306,9 @@ export default function AuditPage() {
           </div>
         </div>
       </section>
+
+      {/* Widget Zone 30 */}
+      <WidgetZone zone="zone-30" className="my-8" />
     </div>
   );
 }

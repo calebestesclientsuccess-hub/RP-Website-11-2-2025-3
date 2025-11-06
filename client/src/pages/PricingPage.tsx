@@ -345,6 +345,9 @@ export default function PricingPage() {
       {/* Middle Widget Zone 2 */}
       <WidgetZone zone="zone-3" className="my-8" />
 
+      {/* Widget Zone 9 */}
+      <WidgetZone zone="zone-9" className="my-8" />
+
       {/* Module 3: "Why We Are Proud of Our Price" */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-proud-of-price">
         <div className="max-w-4xl mx-auto">
@@ -466,6 +469,9 @@ export default function PricingPage() {
 
       {/* Bottom Widget Zone */}
       <WidgetZone zone="zone-4" className="my-8" />
+
+      {/* Widget Zone 10 */}
+      <WidgetZone zone="zone-10" className="my-8" />
 
       {/* Final CTA */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-final-cta">

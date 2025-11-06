@@ -253,6 +253,7 @@ export const campaigns = pgTable("campaigns", {
   contentType: text("content_type").notNull(),
   widgetConfig: text("widget_config"),
   displayAs: text("display_as").notNull(),
+  displaySize: text("display_size").default("standard"),
   targetPages: text("target_pages").array(),
   targetZone: text("target_zone"),
   isActive: boolean("is_active").default(true).notNull(),

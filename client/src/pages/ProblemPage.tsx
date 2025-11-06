@@ -3,6 +3,7 @@ import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { WidgetZone } from "@/components/WidgetZone";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle, DollarSign } from "lucide-react";
@@ -18,6 +19,9 @@ export default function ProblemPage() {
         canonical="/problem"
       />
       <Breadcrumbs items={[]} currentPage="The Problem" />
+
+      {/* Widget Zone 24 */}
+      <WidgetZone zone="zone-24" className="my-8" />
 
       <div className="min-h-screen">
         {/* Hero Module */}
@@ -85,6 +89,9 @@ export default function ProblemPage() {
             </motion.div>
           </div>
         </section>
+
+        {/* Widget Zone 25 */}
+        <WidgetZone zone="zone-25" className="my-8" />
 
         {/* Trap 1 Module - "The Internal Hire" */}
         <section className="py-20 px-4 md:px-6 lg:px-8">
@@ -154,6 +161,9 @@ export default function ProblemPage() {
           </div>
         </section>
 
+        {/* Widget Zone 26 */}
+        <WidgetZone zone="zone-26" className="my-8" />
+
         {/* Trap 2 Module - "The Outsourcing Agency" */}
         <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
           <div className="max-w-6xl mx-auto">
@@ -222,6 +232,9 @@ export default function ProblemPage() {
           </div>
         </section>
 
+        {/* Widget Zone 27 */}
+        <WidgetZone zone="zone-27" className="my-8" />
+
         {/* The Diagnosis Module */}
         <section className="py-20 px-4 md:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto">
@@ -252,6 +265,9 @@ export default function ProblemPage() {
             </motion.div>
           </div>
         </section>
+
+        {/* Widget Zone 28 */}
+        <WidgetZone zone="zone-28" className="my-8" />
 
         {/* Social Proof Module */}
         <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
@@ -289,6 +305,9 @@ export default function ProblemPage() {
             </motion.div>
           </div>
         </section>
+
+        {/* Widget Zone 29 */}
+        <WidgetZone zone="zone-29" className="my-8" />
 
         {/* Primary CTA Module */}
         <section className="py-20 px-4 md:px-6 lg:px-8">

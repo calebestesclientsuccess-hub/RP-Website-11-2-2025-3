@@ -1,5 +1,6 @@
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { ZoneReferenceGuide } from "@/components/admin/ZoneReferenceGuide";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,7 @@ const formSchema = insertCampaignSchema.extend({
   campaignName: z.string().min(1, "Campaign name is required"),
   contentType: z.enum(["calculator", "form", "collection", "embedded-assessment"]),
   displayAs: z.enum(["inline", "popup"]),
+  displaySize: z.enum(["inline", "standard", "large", "hero", "takeover"]).default("standard"),
   theme: z.enum(["light", "dark", "auto"]).default("auto"),
   size: z.enum(["small", "medium", "large"]).default("medium"),
   overlayOpacity: z.number().min(0).max(100).default(50),
@@ -128,6 +130,7 @@ export default function CampaignForm() {
       campaignName: "",
       contentType: "calculator",
       displayAs: "inline",
+      displaySize: "standard",
       targetZone: "zone-1",
       isActive: true,
       widgetConfig: "",
@@ -169,6 +172,7 @@ export default function CampaignForm() {
         campaignName: campaign.campaignName,
         contentType: campaign.contentType as "calculator" | "form" | "collection" | "embedded-assessment",
         displayAs: campaign.displayAs as "inline" | "popup",
+        displaySize: ((campaign as any).displaySize as "inline" | "standard" | "large" | "hero" | "takeover") || "standard",
         targetZone: campaign.targetZone || "zone-1",
         isActive: campaign.isActive,
         widgetConfig: campaign.widgetConfig || "",
@@ -675,12 +679,45 @@ export default function CampaignForm() {
                           )}
                         />
 
+                        {displayAs === "inline" && (
+                          <FormField
+                            control={form.control}
+                            name="displaySize"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Display Size</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value ?? "standard"}>
+                                  <FormControl>
+                                    <SelectTrigger data-testid="select-display-size">
+                                      <SelectValue placeholder="Select display size" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="inline">Inline - Compact widget, fits in tight spaces</SelectItem>
+                                    <SelectItem value="standard">Standard - Default size, works most places</SelectItem>
+                                    <SelectItem value="large">Large - Prominent, takes up more vertical space</SelectItem>
+                                    <SelectItem value="hero">Hero - Full-width banner style</SelectItem>
+                                    <SelectItem value="takeover">Takeover - Maximum size, dominates the section</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormDescription>
+                                  Controls the visual size and prominence of inline widgets
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+
                         <FormField
                           control={form.control}
                           name="targetZone"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Target Zone</FormLabel>
+                              <div className="flex items-center justify-between">
+                                <FormLabel>Target Zone</FormLabel>
+                                <ZoneReferenceGuide />
+                              </div>
                               <Select onValueChange={field.onChange} value={field.value ?? ""}>
                                 <FormControl>
                                   <SelectTrigger data-testid="select-target-zone">
@@ -688,20 +725,15 @@ export default function CampaignForm() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="zone-1" data-testid="option-zone-1">Zone 1</SelectItem>
-                                  <SelectItem value="zone-2" data-testid="option-zone-2">Zone 2</SelectItem>
-                                  <SelectItem value="zone-3" data-testid="option-zone-3">Zone 3</SelectItem>
-                                  <SelectItem value="zone-4" data-testid="option-zone-4">Zone 4</SelectItem>
-                                  <SelectItem value="zone-5" data-testid="option-zone-5">Zone 5</SelectItem>
-                                  <SelectItem value="zone-6" data-testid="option-zone-6">Zone 6</SelectItem>
-                                  <SelectItem value="zone-7" data-testid="option-zone-7">Zone 7</SelectItem>
-                                  <SelectItem value="zone-8" data-testid="option-zone-8">Zone 8</SelectItem>
-                                  <SelectItem value="zone-9" data-testid="option-zone-9">Zone 9</SelectItem>
-                                  <SelectItem value="zone-10" data-testid="option-zone-10">Zone 10</SelectItem>
+                                  {Array.from({ length: 30 }, (_, i) => i + 1).map((num) => (
+                                    <SelectItem key={`zone-${num}`} value={`zone-${num}`} data-testid={`option-zone-${num}`}>
+                                      Zone {num}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                               <FormDescription>
-                                Select the zone where this campaign should appear
+                                Select the zone where this campaign should appear (1-30)
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
@@ -1610,14 +1642,17 @@ export default function CampaignForm() {
                       </p>
                       <div className="space-y-3">
                         {[
-                          { value: "all", label: "All Pages" },
                           { value: "home", label: "Home" },
-                          { value: "blog", label: "Blog" },
-                          { value: "about", label: "About" },
-                          { value: "contact", label: "Contact" },
+                          { value: "why-us", label: "Why Us (About)" },
                           { value: "pricing", label: "Pricing" },
-                          { value: "features", label: "Features" },
-                          { value: "assessments", label: "Assessments" },
+                          { value: "contact", label: "Contact" },
+                          { value: "blog", label: "Blog Index" },
+                          { value: "all-blog-posts", label: "All Blog Posts (Individual Articles)" },
+                          { value: "gtm-engine", label: "GTM Engine" },
+                          { value: "faq", label: "FAQ" },
+                          { value: "problem", label: "Problem" },
+                          { value: "audit", label: "Audit" },
+                          { value: "all-assessment-pages", label: "All Assessment Pages" },
                         ].map((page) => (
                           <div key={page.value} className="flex items-center space-x-2">
                             <Checkbox

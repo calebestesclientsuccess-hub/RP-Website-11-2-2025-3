@@ -450,6 +450,9 @@ export default function About() {
       {/* Middle Widget Zone 2 */}
       <WidgetZone zone="zone-3" className="my-8" />
 
+      {/* Widget Zone 7 */}
+      <WidgetZone zone="zone-7" className="my-8" />
+
       {/* Module 4: Risk Comparison Table */}
       <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-comparison">
         <div className="max-w-7xl mx-auto">
@@ -566,6 +569,9 @@ export default function About() {
 
       {/* Bottom Widget Zone */}
       <WidgetZone zone="zone-4" className="my-8" />
+
+      {/* Widget Zone 8 */}
+      <WidgetZone zone="zone-8" className="my-8" />
 
       {/* Primary CTA Section */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-cta">

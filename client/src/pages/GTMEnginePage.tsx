@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import BuildAndRampTimeline from "@/components/BuildAndRampTimeline";
 import { SimplifiedOrbitalPowers } from "@/components/SimplifiedOrbitalPowers";
+import { WidgetZone } from "@/components/WidgetZone";
 import { Users, Brain, BookOpen, Shield, Zap, CheckCircle2, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
@@ -83,6 +84,9 @@ export default function GTMEnginePage() {
 
       <Breadcrumbs items={[]} currentPage="The GTM Engine" />
 
+      {/* Widget Zone 15 */}
+      <WidgetZone zone="zone-15" className="my-8" />
+
       {/* Hero Module */}
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
         {/* Light grid dots pattern (light mode only) */}
@@ -128,6 +132,9 @@ export default function GTMEnginePage() {
 
       {/* Your Fullstack Sales Unit - The Product Reveal */}
       <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
+
+      {/* Widget Zone 16 */}
+      <WidgetZone zone="zone-16" className="my-8" />
 
       {/* Module 1: The "Hardware" & "Software" of Your Asset */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-asset-components">
@@ -283,6 +290,9 @@ export default function GTMEnginePage() {
         </div>
       </section>
 
+      {/* Widget Zone 17 */}
+      <WidgetZone zone="zone-17" className="my-8" />
+
       {/* Module 2: The 4-Month "Build & Ramp" Process */}
       <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-build-ramp">
         <div className="max-w-7xl mx-auto">
@@ -311,6 +321,9 @@ export default function GTMEnginePage() {
           </div>
         </div>
       </section>
+
+      {/* Widget Zone 18 */}
+      <WidgetZone zone="zone-18" className="my-8" />
 
       {/* Module 3: The "Anti-Risk" Safety Net */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-anti-risk">
@@ -401,6 +414,9 @@ export default function GTMEnginePage() {
           </div>
         </div>
       </section>
+
+      {/* Widget Zone 19 */}
+      <WidgetZone zone="zone-19" className="my-8" />
 
       {/* Primary CTA Module */}
       <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-cta">
