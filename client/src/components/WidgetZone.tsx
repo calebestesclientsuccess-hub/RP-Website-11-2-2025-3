@@ -342,15 +342,6 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
             return null;
         }
 
-      case "testimonial-carousel":
-        return <TestimonialCarousel theme={theme} size={size} />;
-
-      case "video-gallery":
-        return <VideoGallery theme={theme} size={size} />;
-
-      case "blog-feed":
-        return <BlogFeed theme={theme} size={size} />;
-
       default:
         console.error(`[WidgetZone] Unknown content type: ${campaign.contentType}`, { 
           campaign, 
