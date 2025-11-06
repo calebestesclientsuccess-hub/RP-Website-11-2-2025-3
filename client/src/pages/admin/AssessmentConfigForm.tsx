@@ -347,11 +347,17 @@ export default function AssessmentConfigForm() {
                     </TabsContent>
 
                     <TabsContent value="answers" className="mt-6">
-                      <AnswersManager assessmentId={params?.id!} />
+                      <AnswersManager 
+                        assessmentId={params?.id!} 
+                        scoringMethod={form.watch("scoringMethod") || config?.scoringMethod}
+                      />
                     </TabsContent>
 
                     <TabsContent value="results" className="mt-6">
-                      <ResultBucketsManager assessmentId={params?.id!} />
+                      <ResultBucketsManager 
+                        assessmentId={params?.id!} 
+                        scoringMethod={form.watch("scoringMethod") || config?.scoringMethod}
+                      />
                     </TabsContent>
                   </Tabs>
                 ) : (

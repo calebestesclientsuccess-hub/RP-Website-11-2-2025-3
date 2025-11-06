@@ -90,6 +90,70 @@ function calculateBucket(data: Partial<InsertAssessmentResponse>): string {
   return 'architecture-gap';
 }
 
+/**
+ * Calculate points-based assessment bucket
+ * Sums up points from selected answers and finds matching bucket by score range
+ * 
+ * @param submittedData - The assessment response data with selected answer IDs
+ * @param answers - All answers for this assessment with their points
+ * @param buckets - Result buckets with score ranges
+ * @returns The bucket key for the calculated score, or null if no match
+ */
+async function calculatePointsBasedBucket(
+  submittedData: Record<string, any>,
+  answers: Array<{ id: string; answerValue: string; points: number | null }>,
+  buckets: Array<{ bucketKey: string; minScore: number | null; maxScore: number | null; order: number }>
+): Promise<string | null> {
+  // Extract all answer IDs from submitted data
+  const selectedAnswerIds = Object.values(submittedData).filter(
+    (value): value is string => typeof value === 'string' && value.length > 0
+  );
+
+  // Calculate total points by matching answer IDs
+  let totalPoints = 0;
+  for (const answerId of selectedAnswerIds) {
+    const answer = answers.find(a => a.id === answerId);
+    if (answer && answer.points !== null && answer.points !== undefined) {
+      totalPoints += answer.points;
+    }
+  }
+
+  console.log(`Points-based scoring: Total points = ${totalPoints}`);
+
+  // Sort buckets by order to ensure consistent matching
+  const sortedBuckets = [...buckets].sort((a, b) => a.order - b.order);
+
+  // Find matching bucket
+  for (const bucket of sortedBuckets) {
+    const { bucketKey, minScore, maxScore } = bucket;
+
+    // Handle different score range scenarios
+    if (minScore !== null && maxScore !== null) {
+      // Both bounds defined
+      if (totalPoints >= minScore && totalPoints <= maxScore) {
+        console.log(`Matched bucket: ${bucketKey} (${minScore}-${maxScore})`);
+        return bucketKey;
+      }
+    } else if (minScore !== null && maxScore === null) {
+      // Only minimum bound (score >= min)
+      if (totalPoints >= minScore) {
+        console.log(`Matched bucket: ${bucketKey} (${minScore}+)`);
+        return bucketKey;
+      }
+    } else if (minScore === null && maxScore !== null) {
+      // Only maximum bound (score <= max)
+      if (totalPoints <= maxScore) {
+        console.log(`Matched bucket: ${bucketKey} (<= ${maxScore})`);
+        return bucketKey;
+      }
+    }
+  }
+
+  // No matching bucket found
+  console.warn(`No bucket matched for score ${totalPoints}`);
+  return null;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication endpoints
   app.post("/api/auth/register", async (req, res) => {
@@ -917,12 +981,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/assessments/:sessionId/submit", async (req, res) => {
     try {
       const { sessionId } = req.params;
-      const data = req.body;
+      const { assessmentId, ...submittedData } = req.body;
 
-      const bucket = calculateBucket(data);
+      let bucket: string | null = null;
 
+      // If assessmentId is provided, use config-based scoring
+      if (assessmentId) {
+        // Fetch assessment config
+        const config = await storage.getAssessmentConfigById(req.tenantId, assessmentId);
+
+        if (!config) {
+          return res.status(404).json({ 
+            error: "Assessment configuration not found",
+            details: `No assessment found with ID: ${assessmentId}`
+          });
+        }
+
+        // Check scoring method
+        if (config.scoringMethod === 'points') {
+          console.log(`Using points-based scoring for assessment: ${config.title}`);
+
+          // Fetch all answers for this assessment
+          const answers = await storage.getAnswersByAssessmentId(assessmentId);
+
+          if (answers.length === 0) {
+            return res.status(400).json({ 
+              error: "No answers configured",
+              details: "This assessment has no answers configured for scoring"
+            });
+          }
+
+          // Fetch result buckets
+          const buckets = await storage.getBucketsByAssessmentId(assessmentId);
+
+          if (buckets.length === 0) {
+            return res.status(400).json({ 
+              error: "No result buckets configured",
+              details: "This assessment has no result buckets configured"
+            });
+          }
+
+          // Calculate points-based bucket
+          bucket = await calculatePointsBasedBucket(submittedData, answers, buckets);
+
+          // Handle case where no bucket matches
+          if (!bucket) {
+            // Try to find a default bucket (first one, or one with no score bounds)
+            const defaultBucket = buckets.find(b => 
+              b.minScore === null && b.maxScore === null
+            ) || buckets[0];
+
+            if (defaultBucket) {
+              console.warn(`No exact match found, using default bucket: ${defaultBucket.bucketKey}`);
+              bucket = defaultBucket.bucketKey;
+            } else {
+              return res.status(400).json({ 
+                error: "No matching result found",
+                details: "Your score did not match any configured result bucket"
+              });
+            }
+          }
+        } else {
+          // Use decision-tree logic for non-points assessments
+          console.log(`Using decision-tree scoring for assessment: ${config.title}`);
+          bucket = calculateBucket(submittedData);
+        }
+      } else {
+        // Fallback to legacy decision-tree logic if no assessmentId provided
+        console.log("No assessmentId provided, using legacy decision-tree scoring");
+        bucket = calculateBucket(submittedData);
+      }
+
+      // Update assessment with results
       const assessment = await storage.updateAssessment(req.tenantId, sessionId, {
-        ...data,
+        ...submittedData,
         bucket,
         completed: true,
       });
@@ -934,7 +1066,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error submitting assessment:", error);
-      return res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ 
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 

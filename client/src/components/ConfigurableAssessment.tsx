@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -27,6 +28,13 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
   const [, setLocation] = useLocation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [sessionId] = useState(() => {
+    const existing = localStorage.getItem(`assessment_session_${configSlug}`);
+    if (existing) return existing;
+    const newId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    localStorage.setItem(`assessment_session_${configSlug}`, newId);
+    return newId;
+  });
 
   const { data: config, isLoading } = useQuery<AssessmentConfig>({
     queryKey: [`/api/assessment-configs/slug/${configSlug}`],
@@ -40,6 +48,17 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
   const { data: allAnswers = [] } = useQuery<AssessmentAnswer[]>({
     queryKey: [`/api/assessment-configs/${config?.id}/answers`],
     enabled: !!config?.id,
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: async (data: { assessmentId: string; [key: string]: string }) => {
+      const response = await apiRequest('POST', `/api/assessments/${sessionId}/submit`, data);
+      return response.json();
+    },
+    onSuccess: (response) => {
+      localStorage.removeItem(`assessment_session_${configSlug}`);
+      setLocation(`/resources/${configSlug}/${response.bucket}`);
+    },
   });
 
   if (isLoading) {
@@ -104,11 +123,21 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
         setCurrentQuestionIndex(nextIndex);
       }
     } else if (answerData.resultBucketKey) {
-      const queryParams = new URLSearchParams();
-      Object.entries(newAnswers).forEach(([qId, aId]) => {
-        queryParams.append(`q${qId}`, aId);
-      });
-      setLocation(`/resources/${configSlug}/${answerData.resultBucketKey}?${queryParams.toString()}`);
+      // Check if this is a points-based assessment
+      if (config?.scoringMethod === 'points') {
+        // Submit to backend for points calculation
+        submitMutation.mutate({
+          assessmentId: config.id,
+          ...newAnswers,
+        });
+      } else {
+        // Decision-tree: navigate directly to result
+        const queryParams = new URLSearchParams();
+        Object.entries(newAnswers).forEach(([qId, aId]) => {
+          queryParams.append(`q${qId}`, aId);
+        });
+        setLocation(`/resources/${configSlug}/${answerData.resultBucketKey}?${queryParams.toString()}`);
+      }
     }
   };
 

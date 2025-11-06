@@ -59,9 +59,10 @@ const formSchema = insertAssessmentAnswerSchema.omit({ questionId: true }).exten
 
 interface AnswersManagerProps {
   assessmentId: string;
+  scoringMethod?: string;
 }
 
-export function AnswersManager({ assessmentId }: AnswersManagerProps) {
+export function AnswersManager({ assessmentId, scoringMethod = "decision-tree" }: AnswersManagerProps) {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
@@ -85,6 +86,7 @@ export function AnswersManager({ assessmentId }: AnswersManagerProps) {
     defaultValues: {
       answerText: "",
       answerValue: "{}",
+      points: undefined,
       order: 1,
       routingType: "question",
       nextQuestionId: "",
@@ -187,6 +189,7 @@ export function AnswersManager({ assessmentId }: AnswersManagerProps) {
     form.reset({
       answerText: "",
       answerValue: "{}",
+      points: undefined,
       order: questionAnswers.length + 1,
       routingType: "question",
       nextQuestionId: "",
@@ -209,6 +212,7 @@ export function AnswersManager({ assessmentId }: AnswersManagerProps) {
     form.reset({
       answerText: answer.answerText,
       answerValue: answer.answerValue,
+      points: answer.points !== null ? answer.points : undefined,
       order: answer.order,
       routingType: routing.nextQuestionId ? "question" : "result",
       nextQuestionId: routing.nextQuestionId || "",
@@ -292,9 +296,16 @@ export function AnswersManager({ assessmentId }: AnswersManagerProps) {
                             <CardTitle className="text-sm font-medium">
                               {answer.answerText}
                             </CardTitle>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {getRoutingLabel(answer)}
-                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <p className="text-xs text-muted-foreground">
+                                {getRoutingLabel(answer)}
+                              </p>
+                              {scoringMethod === "points" && answer.points !== null && (
+                                <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">
+                                  {answer.points} pts
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="flex gap-2">
                             <Button
@@ -365,6 +376,32 @@ export function AnswersManager({ assessmentId }: AnswersManagerProps) {
                   </FormItem>
                 )}
               />
+
+              {scoringMethod === "points" && (
+                <FormField
+                  control={form.control}
+                  name="points"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Points</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          value={field.value ?? ""}
+                          onChange={(e) => field.onChange(e.target.value === "" ? undefined : parseInt(e.target.value))}
+                          placeholder="0"
+                          data-testid="input-answer-points"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Points awarded for selecting this answer
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}

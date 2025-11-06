@@ -43,9 +43,10 @@ const formSchema = insertAssessmentResultBucketSchema.omit({ assessmentId: true 
 
 interface ResultBucketsManagerProps {
   assessmentId: string;
+  scoringMethod?: string;
 }
 
-export function ResultBucketsManager({ assessmentId }: ResultBucketsManagerProps) {
+export function ResultBucketsManager({ assessmentId, scoringMethod = "decision-tree" }: ResultBucketsManagerProps) {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBucket, setEditingBucket] = useState<AssessmentResultBucket | null>(null);
@@ -63,6 +64,8 @@ export function ResultBucketsManager({ assessmentId }: ResultBucketsManagerProps
       title: "",
       content: "",
       routingRules: "",
+      minScore: undefined,
+      maxScore: undefined,
       order: buckets.length + 1,
     },
   });
@@ -88,6 +91,8 @@ export function ResultBucketsManager({ assessmentId }: ResultBucketsManagerProps
         title: "",
         content: "",
         routingRules: "",
+        minScore: undefined,
+        maxScore: undefined,
         order: buckets.length + 2,
       });
     },
@@ -156,6 +161,8 @@ export function ResultBucketsManager({ assessmentId }: ResultBucketsManagerProps
       title: "",
       content: "",
       routingRules: "",
+      minScore: undefined,
+      maxScore: undefined,
       order: buckets.length + 1,
     });
     setIsDialogOpen(true);
@@ -169,6 +176,8 @@ export function ResultBucketsManager({ assessmentId }: ResultBucketsManagerProps
       title: bucket.title,
       content: bucket.content,
       routingRules: bucket.routingRules || "",
+      minScore: bucket.minScore !== null ? bucket.minScore : undefined,
+      maxScore: bucket.maxScore !== null ? bucket.maxScore : undefined,
       order: bucket.order,
     });
     setIsDialogOpen(true);
@@ -225,6 +234,11 @@ export function ResultBucketsManager({ assessmentId }: ResultBucketsManagerProps
                     <CardTitle className="text-base">{bucket.bucketName}</CardTitle>
                     <CardDescription className="mt-1 text-xs">
                       Key: {bucket.bucketKey}
+                      {scoringMethod === "points" && (bucket.minScore !== null || bucket.maxScore !== null) && (
+                        <span className="ml-2 text-primary font-medium">
+                          • Score: {bucket.minScore ?? "-"}–{bucket.maxScore ?? "-"}
+                        </span>
+                      )}
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">
@@ -360,6 +374,57 @@ export function ResultBucketsManager({ assessmentId }: ResultBucketsManagerProps
                   </FormItem>
                 )}
               />
+
+              {scoringMethod === "points" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="minScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Min Score</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="number"
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : parseInt(e.target.value))}
+                            placeholder="0"
+                            data-testid="input-bucket-min-score"
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Minimum points for this result
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="maxScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Max Score</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="number"
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : parseInt(e.target.value))}
+                            placeholder="100"
+                            data-testid="input-bucket-max-score"
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Maximum points for this result
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
 
               <FormField
                 control={form.control}
