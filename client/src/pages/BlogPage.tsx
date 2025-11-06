@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WidgetZone } from "@/components/WidgetZone";
 import { 
   Search, 
   Calendar, 
@@ -252,6 +253,9 @@ export default function BlogPage() {
         </div>
       </section>
 
+      {/* Top Widget Zone */}
+      <WidgetZone zone="zone-1" className="my-8" />
+
       {/* Categories Filter */}
       <section className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4">
@@ -336,6 +340,9 @@ export default function BlogPage() {
           </div>
         </div>
       </section>
+
+      {/* Middle Widget Zone */}
+      <WidgetZone zone="zone-2" className="my-8" />
 
       {/* Featured Resources */}
       <section className="py-16 px-4 md:px-6 lg:px-8 bg-background">
@@ -494,6 +501,9 @@ export default function BlogPage() {
           </div>
         </div>
       </section>
+
+      {/* Bottom Widget Zone */}
+      <WidgetZone zone="zone-4" className="my-8" />
 
       {/* Loading State */}
       {isLoading && (

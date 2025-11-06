@@ -2,14 +2,18 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfigurableAssessment } from "@/components/ConfigurableAssessment";
+import { cn } from "@/lib/utils";
+import { widgetVariants } from "@/lib/widgetVariants";
 import type { AssessmentConfig } from "@shared/schema";
 
 interface AssessmentEmbedProps {
   assessmentId: string;
   className?: string;
+  theme?: "light" | "dark" | "auto";
+  size?: "small" | "medium" | "large";
 }
 
-export function AssessmentEmbed({ assessmentId, className }: AssessmentEmbedProps) {
+export function AssessmentEmbed({ assessmentId, className, theme, size }: AssessmentEmbedProps) {
   const { data: config, isLoading, error } = useQuery<AssessmentConfig>({
     queryKey: [`/api/assessment-configs/${assessmentId}`],
   });
@@ -17,7 +21,7 @@ export function AssessmentEmbed({ assessmentId, className }: AssessmentEmbedProp
   // Loading state with skeleton
   if (isLoading) {
     return (
-      <Card className={className} data-testid="card-assessment-embed-loading">
+      <Card className={cn(widgetVariants({ theme, size }), className)} data-testid="card-assessment-embed-loading">
         <CardHeader>
           <Skeleton className="h-8 w-3/4" data-testid="skeleton-title" />
           <Skeleton className="h-4 w-full mt-2" data-testid="skeleton-description" />
@@ -34,7 +38,7 @@ export function AssessmentEmbed({ assessmentId, className }: AssessmentEmbedProp
   // Error state
   if (error) {
     return (
-      <Card className={className} data-testid="card-assessment-embed-error">
+      <Card className={cn(widgetVariants({ theme, size }), className)} data-testid="card-assessment-embed-error">
         <CardContent className="py-12 text-center">
           <p className="text-muted-foreground" data-testid="text-error-message">
             Failed to load assessment. Please try again later.
@@ -47,7 +51,7 @@ export function AssessmentEmbed({ assessmentId, className }: AssessmentEmbedProp
   // Empty state (assessment not found)
   if (!config) {
     return (
-      <Card className={className} data-testid="card-assessment-embed-not-found">
+      <Card className={cn(widgetVariants({ theme, size }), className)} data-testid="card-assessment-embed-not-found">
         <CardContent className="py-12 text-center">
           <p className="text-muted-foreground" data-testid="text-not-found-message">
             Assessment not found
@@ -60,7 +64,7 @@ export function AssessmentEmbed({ assessmentId, className }: AssessmentEmbedProp
   // Unpublished state
   if (!config.published) {
     return (
-      <Card className={className} data-testid="card-assessment-embed-unpublished">
+      <Card className={cn(widgetVariants({ theme, size }), className)} data-testid="card-assessment-embed-unpublished">
         <CardContent className="py-12 text-center">
           <p className="text-muted-foreground" data-testid="text-unpublished-message">
             This assessment is not published

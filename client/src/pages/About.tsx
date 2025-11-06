@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StaticGradientBg } from "@/components/StaticGradientBg";
+import { WidgetZone } from "@/components/WidgetZone";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { 
@@ -148,6 +149,9 @@ export default function About() {
         </div>
       </section>
 
+      {/* Top Widget Zone */}
+      <WidgetZone zone="zone-1" className="my-8" />
+
       {/* Module 1: Our Culture is Your Asset */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-culture-asset">
         <div className="max-w-7xl mx-auto">
@@ -274,6 +278,9 @@ export default function About() {
           </div>
         </div>
       </section>
+
+      {/* Middle Widget Zone 1 */}
+      <WidgetZone zone="zone-2" className="my-8" />
 
       {/* Module 2: Build, Operate, Transfer Model */}
       <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-bot-model">
@@ -440,6 +447,9 @@ export default function About() {
         </div>
       </section>
 
+      {/* Middle Widget Zone 2 */}
+      <WidgetZone zone="zone-3" className="my-8" />
+
       {/* Module 4: Risk Comparison Table */}
       <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-comparison">
         <div className="max-w-7xl mx-auto">
@@ -553,6 +563,9 @@ export default function About() {
           </div>
         </div>
       </section>
+
+      {/* Bottom Widget Zone */}
+      <WidgetZone zone="zone-4" className="my-8" />
 
       {/* Primary CTA Section */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-cta">

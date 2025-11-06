@@ -6,13 +6,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Star, Quote } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { widgetVariants } from '@/lib/widgetVariants';
 import type { Testimonial } from '@shared/schema';
 
 interface TestimonialCarouselProps {
   className?: string;
+  theme?: "light" | "dark" | "auto";
+  size?: "small" | "medium" | "large";
 }
 
-export default function TestimonialCarousel({ className }: TestimonialCarouselProps) {
+export default function TestimonialCarousel({ className, theme, size }: TestimonialCarouselProps) {
   const { data: testimonials, isLoading, error } = useQuery<Testimonial[]>({
     queryKey: ['/api/collections/testimonials'],
   });
@@ -57,7 +61,7 @@ export default function TestimonialCarousel({ className }: TestimonialCarouselPr
   if (isLoading) {
     return (
       <div className={className} data-testid="testimonial-carousel-loading">
-        <Card>
+        <Card className={cn(widgetVariants({ theme, size }))}>
           <CardContent className="p-8">
             <Skeleton className="h-8 w-8 rounded-full mb-4" />
             <Skeleton className="h-24 w-full mb-4" />
@@ -77,7 +81,7 @@ export default function TestimonialCarousel({ className }: TestimonialCarouselPr
   if (error) {
     return (
       <div className={className} data-testid="testimonial-carousel-error">
-        <Card>
+        <Card className={cn(widgetVariants({ theme, size }))}>
           <CardContent className="p-8 text-center text-muted-foreground">
             Failed to load testimonials
           </CardContent>
@@ -89,7 +93,7 @@ export default function TestimonialCarousel({ className }: TestimonialCarouselPr
   if (!testimonials || testimonials.length === 0) {
     return (
       <div className={className} data-testid="testimonial-carousel-empty">
-        <Card>
+        <Card className={cn(widgetVariants({ theme, size }))}>
           <CardContent className="p-8 text-center text-muted-foreground">
             No testimonials found
           </CardContent>
@@ -108,7 +112,7 @@ export default function TestimonialCarousel({ className }: TestimonialCarouselPr
               className="flex-[0_0_100%] min-w-0"
               data-testid={`testimonial-slide-${index}`}
             >
-              <Card>
+              <Card className={cn(widgetVariants({ theme, size }))}>
                 <CardContent className="p-8 md:p-12">
                   <Quote 
                     className="h-10 w-10 text-primary/20 mb-4" 

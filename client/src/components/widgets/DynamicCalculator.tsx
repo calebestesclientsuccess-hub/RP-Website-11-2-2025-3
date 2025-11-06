@@ -5,14 +5,17 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { widgetVariants } from "@/lib/widgetVariants";
 import type { CalculatorConfig } from "@shared/schema";
 
 interface DynamicCalculatorProps {
   config: CalculatorConfig;
   className?: string;
+  theme?: "light" | "dark" | "auto";
+  size?: "small" | "medium" | "large";
 }
 
-export function DynamicCalculator({ config, className }: DynamicCalculatorProps) {
+export function DynamicCalculator({ config, className, theme, size }: DynamicCalculatorProps) {
   const [inputValues, setInputValues] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
     config.inputs.forEach((input) => {
@@ -45,7 +48,7 @@ export function DynamicCalculator({ config, className }: DynamicCalculatorProps)
   };
 
   return (
-    <Card className={cn("w-full", className)}>
+    <Card className={cn(widgetVariants({ theme, size }), "w-full", className)}>
       <CardHeader>
         <CardTitle>{config.title}</CardTitle>
         {config.description && (

@@ -5,6 +5,7 @@ import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { WidgetZone } from "@/components/WidgetZone";
 import { CheckCircle2, X, Shield, Calendar, RefreshCw, Target, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
@@ -186,6 +187,9 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* Top Widget Zone */}
+      <WidgetZone zone="zone-1" className="my-8" />
+
       {/* Module 1: Pricing Cards */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-pricing-cards">
         <div className="max-w-7xl mx-auto">
@@ -288,6 +292,9 @@ export default function PricingPage() {
         </div>
       </section>
 
+      {/* Middle Widget Zone 1 */}
+      <WidgetZone zone="zone-2" className="my-8" />
+
       {/* Module 2: The "Anti-Trap" Terms */}
       <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-anti-trap-terms">
         <div className="max-w-7xl mx-auto">
@@ -334,6 +341,9 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
+
+      {/* Middle Widget Zone 2 */}
+      <WidgetZone zone="zone-3" className="my-8" />
 
       {/* Module 3: "Why We Are Proud of Our Price" */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-proud-of-price">
@@ -453,6 +463,9 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
+
+      {/* Bottom Widget Zone */}
+      <WidgetZone zone="zone-4" className="my-8" />
 
       {/* Final CTA */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-final-cta">

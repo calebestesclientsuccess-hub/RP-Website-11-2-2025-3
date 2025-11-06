@@ -9,6 +9,7 @@ import { AuthProvider } from "./hooks/use-auth";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { FloatingWidget } from "./components/FloatingWidget";
+import { PopupEngine } from "./components/PopupEngine";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Home from "@/pages/Home";
 import ProblemPage from "@/pages/ProblemPage";
@@ -152,6 +153,7 @@ function App() {
                   </main>
                   <Footer />
                   <FloatingWidget />
+                  <PopupEngine />
                 </div>
                 <Toaster />
                 <ServiceWorker />

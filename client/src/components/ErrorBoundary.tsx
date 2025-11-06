@@ -3,6 +3,8 @@ import { Card } from '@/components/ui/card';
 
 interface Props {
   children: ReactNode;
+  fallback?: ReactNode;
+  silent?: boolean;
 }
 
 interface State {
@@ -25,13 +27,19 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // In production, you might want to send this to an error reporting service
-    console.error('Error caught by boundary:', error, errorInfo);
+    console.error('Widget error caught by ErrorBoundary:', error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
-      // Production: Show user-friendly error
+      if (this.props.silent) {
+        return null;
+      }
+      
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+      
       if (process.env.NODE_ENV === 'production') {
         return (
           <div className="min-h-screen flex items-center justify-center p-4">
@@ -51,7 +59,6 @@ export class ErrorBoundary extends Component<Props, State> {
         );
       }
 
-      // Development: Show detailed error
       return (
         <div className="min-h-screen flex items-center justify-center p-4">
           <Card className="max-w-2xl p-8">

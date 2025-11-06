@@ -5,13 +5,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Play, Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { widgetVariants } from '@/lib/widgetVariants';
 import type { VideoPost } from '@shared/schema';
 
 interface VideoGalleryProps {
   className?: string;
+  theme?: "light" | "dark" | "auto";
+  size?: "small" | "medium" | "large";
 }
 
-export default function VideoGallery({ className }: VideoGalleryProps) {
+export default function VideoGallery({ className, theme, size }: VideoGalleryProps) {
   const [selectedVideo, setSelectedVideo] = useState<VideoPost | null>(null);
 
   const { data: videos, isLoading, error } = useQuery<VideoPost[]>({
@@ -23,7 +27,7 @@ export default function VideoGallery({ className }: VideoGalleryProps) {
       <div className={className} data-testid="video-gallery-loading">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i}>
+            <Card key={i} className={cn(widgetVariants({ theme, size }))}>
               <Skeleton className="h-48 w-full rounded-t-lg" />
               <CardHeader>
                 <Skeleton className="h-6 w-3/4 mb-2" />
@@ -39,7 +43,7 @@ export default function VideoGallery({ className }: VideoGalleryProps) {
   if (error) {
     return (
       <div className={className} data-testid="video-gallery-error">
-        <Card>
+        <Card className={cn(widgetVariants({ theme, size }))}>
           <CardContent className="p-8 text-center text-muted-foreground">
             Failed to load videos
           </CardContent>
@@ -51,7 +55,7 @@ export default function VideoGallery({ className }: VideoGalleryProps) {
   if (!videos || videos.length === 0) {
     return (
       <div className={className} data-testid="video-gallery-empty">
-        <Card>
+        <Card className={cn(widgetVariants({ theme, size }))}>
           <CardContent className="p-8 text-center text-muted-foreground">
             No videos found
           </CardContent>
@@ -72,7 +76,7 @@ export default function VideoGallery({ className }: VideoGalleryProps) {
           {videos.map((video, index) => (
             <Card
               key={video.id}
-              className="hover-elevate active-elevate-2 cursor-pointer overflow-hidden"
+              className={cn(widgetVariants({ theme, size }), "hover-elevate active-elevate-2 cursor-pointer overflow-hidden")}
               onClick={() => setSelectedVideo(video)}
               data-testid={`video-card-${index}`}
             >

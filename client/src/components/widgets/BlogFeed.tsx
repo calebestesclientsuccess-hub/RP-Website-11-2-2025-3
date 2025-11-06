@@ -6,14 +6,18 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar, User } from 'lucide-react';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { widgetVariants } from '@/lib/widgetVariants';
 import type { BlogPost } from '@shared/schema';
 
 interface BlogFeedProps {
   className?: string;
   limit?: number;
+  theme?: "light" | "dark" | "auto";
+  size?: "small" | "medium" | "large";
 }
 
-export default function BlogFeed({ className, limit }: BlogFeedProps) {
+export default function BlogFeed({ className, limit, theme, size }: BlogFeedProps) {
   const { data: blogs, isLoading, error } = useQuery<BlogPost[]>({
     queryKey: ['/api/collections/blogs'],
   });
@@ -25,7 +29,7 @@ export default function BlogFeed({ className, limit }: BlogFeedProps) {
       <div className={className} data-testid="blog-feed-loading">
         <div className="space-y-6">
           {Array.from({ length: limit || 3 }).map((_, i) => (
-            <Card key={i}>
+            <Card key={i} className={cn(widgetVariants({ theme, size }))}>
               <div className="flex flex-col md:flex-row">
                 <Skeleton className="h-48 md:h-auto md:w-64 rounded-t-lg md:rounded-l-lg md:rounded-tr-none" />
                 <div className="flex-1 p-6">
@@ -45,7 +49,7 @@ export default function BlogFeed({ className, limit }: BlogFeedProps) {
   if (error) {
     return (
       <div className={className} data-testid="blog-feed-error">
-        <Card>
+        <Card className={cn(widgetVariants({ theme, size }))}>
           <CardContent className="p-8 text-center text-muted-foreground">
             Failed to load blog posts
           </CardContent>
@@ -57,7 +61,7 @@ export default function BlogFeed({ className, limit }: BlogFeedProps) {
   if (!displayedBlogs || displayedBlogs.length === 0) {
     return (
       <div className={className} data-testid="blog-feed-empty">
-        <Card>
+        <Card className={cn(widgetVariants({ theme, size }))}>
           <CardContent className="p-8 text-center text-muted-foreground">
             No blog posts found
           </CardContent>
@@ -77,7 +81,7 @@ export default function BlogFeed({ className, limit }: BlogFeedProps) {
         {displayedBlogs.map((blog, index) => (
           <Link key={blog.id} href={`/blog/${blog.slug}`}>
             <a data-testid={`blog-card-${index}`}>
-              <Card className="hover-elevate active-elevate-2 cursor-pointer overflow-hidden">
+              <Card className={cn(widgetVariants({ theme, size }), "hover-elevate active-elevate-2 cursor-pointer overflow-hidden")}>
                 <div className="flex flex-col md:flex-row">
                   {blog.featuredImage && (
                     <div className="md:w-64 h-48 md:h-auto bg-muted flex-shrink-0">

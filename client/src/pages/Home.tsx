@@ -12,6 +12,7 @@ import VideoSchema from "@/components/VideoSchema";
 import SoftwareApplicationSchema from "@/components/SoftwareApplicationSchema";
 import LeadMagnetHero from "@/components/LeadMagnetHero";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
+import { WidgetZone } from "@/components/WidgetZone";
 import { ArrowRight, Users, Target, Zap } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect, useRef, useState } from "react";
@@ -180,6 +181,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Top Widget Zone */}
+      <WidgetZone zone="zone-1" className="my-8" />
+
       {/* Problem Module - "The Trap" */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
         <div className="max-w-7xl mx-auto">
@@ -215,6 +219,9 @@ export default function Home() {
 
       {/* Bridge Statement */}
       <SimpleBridgeSection />
+
+      {/* Middle Widget Zone 1 */}
+      <WidgetZone zone="zone-2" className="my-8" />
 
       {/* Solution Module - "The System" */}
       <section className="relative z-10 py-20 px-4 md:px-6 lg:px-8" data-testid="section-solution">
@@ -377,6 +384,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Middle Widget Zone 2 */}
+      <WidgetZone zone="zone-3" className="my-8" />
+
       {/* Tool Module - "Interactive ROI Calculator" */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
         <div className="max-w-7xl mx-auto">
@@ -408,6 +418,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Bottom Widget Zone */}
+      <WidgetZone zone="zone-4" className="my-8" />
 
       {/* Final CTA Module */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-primary/5">

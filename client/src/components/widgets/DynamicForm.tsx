@@ -24,15 +24,18 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
+import { widgetVariants } from "@/lib/widgetVariants";
 import type { FormConfig } from "@shared/schema";
 
 interface DynamicFormProps {
   config: FormConfig;
   onSubmit: (data: Record<string, any>) => void;
   className?: string;
+  theme?: "light" | "dark" | "auto";
+  size?: "small" | "medium" | "large";
 }
 
-export function DynamicForm({ config, onSubmit, className }: DynamicFormProps) {
+export function DynamicForm({ config, onSubmit, className, theme, size }: DynamicFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -131,7 +134,7 @@ export function DynamicForm({ config, onSubmit, className }: DynamicFormProps) {
   };
 
   return (
-    <Card className={cn("w-full", className)}>
+    <Card className={cn(widgetVariants({ theme, size }), "w-full", className)}>
       <CardHeader>
         <CardTitle>{config.title}</CardTitle>
         {config.description && (

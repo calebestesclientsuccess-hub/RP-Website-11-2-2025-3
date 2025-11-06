@@ -1607,10 +1607,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public campaigns endpoint (for WidgetZone)
+  app.get("/api/public/campaigns", async (req, res) => {
+    try {
+      const { zone, page, displayAs, active } = req.query;
+      let campaigns = await storage.getAllCampaigns(req.tenantId);
+
+      // Filter by active status (default to true for public endpoint)
+      campaigns = campaigns.filter(c => c.isActive);
+
+      // Filter by displayAs
+      if (displayAs) {
+        campaigns = campaigns.filter(c => c.displayAs === displayAs);
+      }
+
+      // Filter by zone
+      if (zone) {
+        campaigns = campaigns.filter(c => c.targetZone === zone);
+      }
+
+      // Filter by page
+      if (page) {
+        campaigns = campaigns.filter(c => {
+          // If targetPages is empty or null, campaign targets all pages
+          if (!c.targetPages || c.targetPages.length === 0) {
+            return true;
+          }
+          // Check if page is in targetPages
+          return c.targetPages.includes(page as string);
+        });
+      }
+
+      return res.json(campaigns);
+    } catch (error) {
+      console.error("Error fetching public campaigns:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Campaign routes
   app.get("/api/campaigns", requireAuth, async (req, res) => {
     try {
-      const campaigns = await storage.getAllCampaigns(req.tenantId);
+      const { zone, page, displayAs, active } = req.query;
+      let campaigns = await storage.getAllCampaigns(req.tenantId);
+
+      // Filter by active status
+      if (active === "true") {
+        campaigns = campaigns.filter(c => c.isActive);
+      }
+
+      // Filter by displayAs
+      if (displayAs) {
+        campaigns = campaigns.filter(c => c.displayAs === displayAs);
+      }
+
+      // Filter by zone
+      if (zone) {
+        campaigns = campaigns.filter(c => c.targetZone === zone);
+      }
+
+      // Filter by page
+      if (page) {
+        campaigns = campaigns.filter(c => {
+          // If targetPages is empty or null, campaign targets all pages
+          if (!c.targetPages || c.targetPages.length === 0) {
+            return true;
+          }
+          // Check if page is in targetPages
+          return c.targetPages.includes(page as string);
+        });
+      }
+
       return res.json(campaigns);
     } catch (error) {
       console.error("Error fetching campaigns:", error);
