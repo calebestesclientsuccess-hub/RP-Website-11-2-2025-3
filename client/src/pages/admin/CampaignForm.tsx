@@ -83,7 +83,7 @@ export default function CampaignForm() {
   });
 
   const { data: assessments } = useQuery<AssessmentConfig[]>({
-    queryKey: ["/api/assessments"],
+    queryKey: ["/api/assessment-configs"],
   });
 
   const [calculatorInputs, setCalculatorInputs] = useState<CalculatorInput[]>([
