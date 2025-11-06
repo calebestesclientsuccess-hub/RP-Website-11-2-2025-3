@@ -450,7 +450,9 @@ export function RichTextEditor({ content, onChange, placeholder = 'Start writing
       </div>
 
       {/* Editor */}
-      <EditorContent editor={editor} className="prose-editor" />
+      <div className="prose-editor">
+        <EditorContent editor={editor} />
+      </div>
 
       {/* Image Dialog */}
       <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
