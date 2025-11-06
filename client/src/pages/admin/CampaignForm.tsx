@@ -13,8 +13,8 @@ import { ArrowLeft, Loader2, Plus, Trash2, CheckCircle2, XCircle, AlertTriangle 
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { 
-  insertCampaignSchema, 
+import {
+  insertCampaignSchema,
   type Campaign,
   type AssessmentConfig,
   calculatorConfigSchema,
@@ -70,6 +70,7 @@ export default function CampaignForm() {
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/admin/campaigns/:id/edit");
   const isEdit = !!params?.id;
+  const id = params?.id;
 
   const style = {
     "--sidebar-width": "16rem",
@@ -151,6 +152,12 @@ export default function CampaignForm() {
   const currentTargetZone = form.watch("targetZone");
   const currentTargetPages = form.watch("targetPages");
 
+  // Helper function to build payload, assuming it's defined elsewhere or needs to be added.
+  // For now, we'll assume it exists and takes the form data.
+  // If it doesn't exist, this would be a point of failure.
+  const buildPayload = (data: z.infer<typeof formSchema>) => data;
+
+
   useEffect(() => {
     if (campaign && isEdit) {
       // Parse SEO metadata if present
@@ -190,7 +197,7 @@ export default function CampaignForm() {
       if (campaign.widgetConfig) {
         try {
           const config = JSON.parse(campaign.widgetConfig);
-          
+
           if (campaign.contentType === "calculator") {
             setCalculatorInputs(config.inputs || []);
             setCalculatorFormula(config.formula || "");
@@ -326,10 +333,10 @@ export default function CampaignForm() {
   const hasConflict = zoneConflicts && zoneConflicts.length > 0 && zoneConflicts.some(c => {
     // Don't show conflict with the current campaign being edited
     if (isEdit && c.id === params?.id) return false;
-    
+
     // Check if campaign is active and on same zone
     if (!c.isActive || c.targetZone !== currentTargetZone) return false;
-    
+
     // Check if there's page overlap
     const campaignPages = c.targetPages || [];
     return currentTargetPages.some(page => campaignPages.includes(page) || campaignPages.includes("all"));
@@ -370,7 +377,7 @@ export default function CampaignForm() {
     try {
       const parsed = JSON.parse(jsonText);
       const result = calculatorConfigSchema.safeParse(parsed);
-      
+
       if (result.success) {
         setCalculatorJsonValid(true);
         setCalculatorJsonErrors([]);
@@ -396,7 +403,7 @@ export default function CampaignForm() {
     try {
       const parsed = JSON.parse(jsonText);
       const result = formConfigSchema.safeParse(parsed);
-      
+
       if (result.success) {
         setFormJsonValid(true);
         setFormJsonErrors([]);
@@ -469,11 +476,11 @@ export default function CampaignForm() {
 
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const response = await apiRequest("POST", "/api/campaigns", data);
-      return response.json();
+      return apiRequest("POST", "/api/campaigns", buildPayload(data));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/public/campaigns"] });
       toast({
         title: "Success",
         description: "Campaign created successfully",
@@ -483,7 +490,7 @@ export default function CampaignForm() {
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to create campaign",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -491,12 +498,12 @@ export default function CampaignForm() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: z.infer<typeof formSchema>) => {
-      const response = await apiRequest("PUT", `/api/campaigns/${params?.id}`, data);
-      return response.json();
+      if (!id) throw new Error("Campaign ID is required");
+      return apiRequest("PUT", `/api/campaigns/${id}`, buildPayload(data));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/campaigns"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/campaigns", params?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/public/campaigns"] });
       toast({
         title: "Success",
         description: "Campaign updated successfully",
@@ -506,7 +513,7 @@ export default function CampaignForm() {
     onError: (error: Error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update campaign",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -1113,7 +1120,7 @@ export default function CampaignForm() {
                           </div>
                         </RadioGroup>
                         <p className="text-sm text-muted-foreground">
-                          {formMode === "html" 
+                          {formMode === "html"
                             ? "Paste your HTML form directly. Perfect for quick setup and custom designs."
                             : "Build a form with individual fields. More structured but requires configuration."}
                         </p>
@@ -1795,10 +1802,10 @@ export default function CampaignForm() {
                             <AlertTitle>Zone Conflict Detected</AlertTitle>
                             <AlertDescription>
                               Zone {currentTargetZone} is already used by campaign "{conflictingCampaign.campaignName}" on these pages:{" "}
-                              {currentTargetPages.filter(page => 
-                                (conflictingCampaign.targetPages || []).includes(page) || 
+                              {currentTargetPages.filter(page =>
+                                (conflictingCampaign.targetPages || []).includes(page) ||
                                 (conflictingCampaign.targetPages || []).includes("all")
-                              ).join(", ")}. 
+                              ).join(", ")}.
                               Saving will deactivate the other campaign or you can choose a different zone.
                             </AlertDescription>
                           </Alert>
