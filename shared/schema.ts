@@ -205,6 +205,7 @@ export const assessmentConfigs = pgTable("assessment_configs", {
   slug: text("slug").notNull().unique(),
   description: text("description"),
   scoringMethod: text("scoring_method").notNull().default("decision-tree"),
+  gateBehavior: text("gate_behavior").notNull().default("UNGATED"),
   entryQuestionId: varchar("entry_question_id"),
   published: boolean("published").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -239,11 +240,28 @@ export const assessmentResultBuckets = pgTable("assessment_result_buckets", {
   bucketKey: text("bucket_key").notNull(),
   title: text("title").notNull(),
   content: text("content").notNull(),
+  pdfUrl: text("pdf_url"),
   routingRules: text("routing_rules"),
   minScore: integer("min_score"),
   maxScore: integer("max_score"),
   order: integer("order").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const configurableAssessmentResponses = pgTable("configurable_assessment_responses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  assessmentConfigId: varchar("assessment_config_id").notNull().references(() => assessmentConfigs.id),
+  sessionId: varchar("session_id").notNull().unique(),
+  answers: text("answers").notNull(),
+  finalScore: integer("final_score"),
+  finalBucketKey: text("final_bucket_key"),
+  name: text("name"),
+  email: text("email"),
+  company: text("company"),
+  resultUrl: text("result_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const campaigns = pgTable("campaigns", {
@@ -405,6 +423,13 @@ export const insertAssessmentResultBucketSchema = createInsertSchema(assessmentR
   createdAt: true,
 });
 
+export const insertConfigurableAssessmentResponseSchema = createInsertSchema(configurableAssessmentResponses).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertCampaignSchema = createInsertSchema(campaigns).omit({
   id: true,
   tenantId: true,
@@ -454,6 +479,8 @@ export type AssessmentAnswer = typeof assessmentAnswers.$inferSelect;
 export type InsertAssessmentAnswer = z.infer<typeof insertAssessmentAnswerSchema>;
 export type AssessmentResultBucket = typeof assessmentResultBuckets.$inferSelect;
 export type InsertAssessmentResultBucket = z.infer<typeof insertAssessmentResultBucketSchema>;
+export type ConfigurableAssessmentResponse = typeof configurableAssessmentResponses.$inferSelect;
+export type InsertConfigurableAssessmentResponse = z.infer<typeof insertConfigurableAssessmentResponseSchema>;
 export type Campaign = typeof campaigns.$inferSelect;
 export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
 export type Event = typeof events.$inferSelect;
