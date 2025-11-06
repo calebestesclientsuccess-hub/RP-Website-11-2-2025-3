@@ -49,8 +49,13 @@ const isQuestionVisible = (
   return true;
 };
 
-export default function AssessmentRuntime() {
-  const { slug } = useParams<{ slug: string }>();
+interface AssessmentRuntimeProps {
+  slugProp?: string;
+}
+
+export default function AssessmentRuntime({ slugProp }: AssessmentRuntimeProps = {}) {
+  const { slug: urlSlug } = useParams<{ slug: string }>();
+  const slug = slugProp || urlSlug;
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   

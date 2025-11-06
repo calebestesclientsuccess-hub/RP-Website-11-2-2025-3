@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ConfigurableAssessment } from "@/components/ConfigurableAssessment";
+import AssessmentRuntime from "@/pages/AssessmentRuntime";
 import { cn } from "@/lib/utils";
 import { widgetVariants } from "@/lib/widgetVariants";
 import type { AssessmentConfig } from "@shared/schema";
@@ -75,8 +75,8 @@ export function AssessmentEmbed({ assessmentId, className, theme, size }: Assess
   }
 
   // Valid, published assessment
-  // Shows title/description then renders ConfigurableAssessment
-  // Note: Not wrapping in Card to avoid nested Cards (ConfigurableAssessment has its own Card)
+  // Shows title/description then renders AssessmentRuntime
+  // Note: Not wrapping in Card to avoid nested Cards (AssessmentRuntime has its own Card)
   return (
     <div className={className} data-testid="container-assessment-embed">
       <div className="mb-6">
@@ -89,7 +89,7 @@ export function AssessmentEmbed({ assessmentId, className, theme, size }: Assess
           </p>
         )}
       </div>
-      <ConfigurableAssessment configSlug={config.slug} mode="inline" />
+      <AssessmentRuntime slugProp={config.slug} />
     </div>
   );
 }
