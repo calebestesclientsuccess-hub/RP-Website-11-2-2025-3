@@ -47,10 +47,6 @@ export default function LoginPage() {
     }
   }, [user, setLocation]);
 
-  if (user) {
-    return null;
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
