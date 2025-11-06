@@ -79,10 +79,28 @@ export function QuestionsManager({ assessmentId }: QuestionsManagerProps) {
   });
 
   // Fetch answers for selected question (for conditional logic)
-  const { data: availableAnswers = [], isLoading: isLoadingAnswers } = useQuery<AssessmentAnswer[]>({
-    queryKey: [`/api/assessment-questions/${selectedQuestionId}/answers`],
+  const { data: availableAnswers = [], isLoading: isLoadingAnswers, error: answersError } = useQuery<AssessmentAnswer[]>({
+    queryKey: ['/api/assessment-questions', selectedQuestionId, 'answers'],
     enabled: !!selectedQuestionId && enableConditionalLogic,
+    refetchOnMount: true,
   });
+
+  // Debug logging for conditional logic
+  useEffect(() => {
+    console.log('[QuestionsManager] selectedQuestionId changed:', selectedQuestionId);
+    console.log('[QuestionsManager] enableConditionalLogic:', enableConditionalLogic);
+    console.log('[QuestionsManager] Query enabled:', !!selectedQuestionId && enableConditionalLogic);
+  }, [selectedQuestionId, enableConditionalLogic]);
+
+  useEffect(() => {
+    console.log('[QuestionsManager] Answers query state:', {
+      selectedQuestionId,
+      availableAnswers: availableAnswers?.length || 0,
+      isLoadingAnswers,
+      hasError: !!answersError,
+      error: answersError
+    });
+  }, [selectedQuestionId, availableAnswers, isLoadingAnswers, answersError]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

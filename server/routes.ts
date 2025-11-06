@@ -40,6 +40,59 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 /**
+ * Generate a unique slug from a title for assessment configs
+ * 
+ * @param title - The title to convert into a slug
+ * @param tenantId - The tenant ID to check uniqueness within
+ * @param storage - Storage instance to check for existing slugs
+ * @param excludeId - Optional ID to exclude from uniqueness check (for updates)
+ * @returns A unique slug string
+ */
+async function generateSlug(
+  title: string, 
+  tenantId: string, 
+  storage: any,
+  excludeId?: string
+): Promise<string> {
+  // Convert title to lowercase and replace spaces/special chars with hyphens
+  let baseSlug = title
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters except hyphens and spaces
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+
+  // If the slug is empty after sanitization, use a default
+  if (!baseSlug) {
+    baseSlug = 'assessment';
+  }
+
+  let slug = baseSlug;
+  let attempt = 0;
+  const maxAttempts = 100;
+
+  // Check for uniqueness and append random suffix if needed
+  while (attempt < maxAttempts) {
+    const existing = await storage.getAssessmentConfigBySlug(tenantId, slug);
+    
+    // If no existing config found, or if it's the same one we're updating, slug is unique
+    if (!existing || (excludeId && existing.id === excludeId)) {
+      return slug;
+    }
+
+    // Generate random 6-character suffix
+    const suffix = crypto.randomBytes(3).toString('hex');
+    slug = `${baseSlug}-${suffix}`;
+    attempt++;
+  }
+
+  // Fallback: use timestamp-based suffix if all random attempts failed
+  const timestamp = Date.now().toString(36);
+  return `${baseSlug}-${timestamp}`;
+}
+
+/**
  * Calculate assessment bucket based on core philosophy answers
  * Bucket assignment is determined by Q1 (Own vs Rent), Q2 (Sale Type), 
  * Q3 (Critical Piece), and Q11 (Budget)
@@ -1175,7 +1228,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const config = await storage.createAssessmentConfig(req.tenantId, result.data);
+      // Auto-generate slug if not provided or empty
+      let configData = result.data;
+      if (!configData.slug || configData.slug.trim() === '') {
+        if (!configData.title) {
+          return res.status(400).json({ 
+            error: "Title is required to generate slug" 
+          });
+        }
+        configData.slug = await generateSlug(configData.title, req.tenantId, storage);
+      }
+
+      const config = await storage.createAssessmentConfig(req.tenantId, configData);
       return res.status(201).json(config);
     } catch (error) {
       console.error("Error creating assessment config:", error);
@@ -1194,7 +1258,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const config = await storage.updateAssessmentConfig(req.tenantId, req.params.id, result.data);
+      let updateData = result.data;
+      
+      // Auto-generate slug if explicitly set to empty or if title is being updated without a slug
+      if (updateData.slug !== undefined && (!updateData.slug || updateData.slug.trim() === '')) {
+        // If slug is being cleared, we need a title to generate a new one
+        const existingConfig = await storage.getAssessmentConfigById(req.tenantId, req.params.id);
+        if (!existingConfig) {
+          return res.status(404).json({ error: "Assessment config not found" });
+        }
+        
+        const titleForSlug = updateData.title || existingConfig.title;
+        updateData.slug = await generateSlug(titleForSlug, req.tenantId, storage, req.params.id);
+      }
+
+      const config = await storage.updateAssessmentConfig(req.tenantId, req.params.id, updateData);
       return res.json(config);
     } catch (error) {
       console.error("Error updating assessment config:", error);
@@ -1287,7 +1365,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/assessment-questions/:questionId/answers", requireAuth, async (req, res) => {
     try {
-      const answers = await storage.getAnswersByQuestionId(req.params.questionId);
+      const { questionId } = req.params;
+      console.log('[API] Fetching answers for questionId:', questionId);
+      
+      const answers = await storage.getAnswersByQuestionId(questionId);
+      console.log('[API] Found', answers.length, 'answers for questionId:', questionId);
+      
       return res.json(answers);
     } catch (error) {
       console.error("Error fetching answers:", error);
