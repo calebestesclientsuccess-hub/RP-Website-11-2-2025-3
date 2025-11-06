@@ -11,7 +11,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { FileText, Video, Settings, LogOut, LayoutDashboard, ClipboardList } from "lucide-react";
+import { FileText, Video, Settings, LogOut, LayoutDashboard, ClipboardList, Megaphone } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 
@@ -25,6 +25,11 @@ const menuItems = [
     title: "Assessments",
     url: "/admin/assessments",
     icon: ClipboardList,
+  },
+  {
+    title: "Campaigns",
+    url: "/admin/campaigns",
+    icon: Megaphone,
   },
   {
     title: "Blog Posts",

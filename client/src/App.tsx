@@ -51,6 +51,8 @@ import VideoPostForm from "@/pages/admin/VideoPostForm";
 import WidgetConfigPage from "@/pages/admin/WidgetConfigPage";
 import AssessmentConfigsList from "@/pages/admin/AssessmentConfigsList";
 import AssessmentConfigForm from "@/pages/admin/AssessmentConfigForm";
+import CampaignsList from "@/pages/admin/CampaignsList";
+import CampaignForm from "@/pages/admin/CampaignForm";
 import NotFound from "@/pages/not-found";
 import GtmResultPage from "@/pages/GtmResultPage"; // Assuming this is a new import needed for the changes
 import { ServiceWorker } from "@/components/ServiceWorker";
@@ -87,6 +89,9 @@ function Router() {
       <Route path="/admin/assessments/new" component={AssessmentConfigForm} />
       <Route path="/admin/assessments/:id/edit" component={AssessmentConfigForm} />
       <Route path="/admin/assessments" component={AssessmentConfigsList} />
+      <Route path="/admin/campaigns/new" component={CampaignForm} />
+      <Route path="/admin/campaigns/:id/edit" component={CampaignForm} />
+      <Route path="/admin/campaigns" component={CampaignsList} />
       <Route path="/admin/blog-posts/new" component={BlogPostForm} />
       <Route path="/admin/blog-posts/:id/edit" component={BlogPostForm} />
       <Route path="/admin/blog-posts" component={BlogPostsList} />

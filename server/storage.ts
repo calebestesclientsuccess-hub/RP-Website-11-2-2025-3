@@ -16,8 +16,10 @@ import {
   type AssessmentQuestion, type InsertAssessmentQuestion,
   type AssessmentAnswer, type InsertAssessmentAnswer,
   type AssessmentResultBucket, type InsertAssessmentResultBucket,
+  type Campaign, type InsertCampaign,
+  type Event, type InsertEvent,
   users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens,
-  assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, tenants
+  assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, campaigns, events, tenants
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, ilike, sql } from "drizzle-orm";
@@ -97,6 +99,15 @@ export interface IStorage {
   createAssessmentResultBucket(bucket: InsertAssessmentResultBucket): Promise<AssessmentResultBucket>;
   updateAssessmentResultBucket(id: string, bucket: Partial<InsertAssessmentResultBucket>): Promise<AssessmentResultBucket>;
   deleteAssessmentResultBucket(id: string): Promise<void>;
+  
+  getAllCampaigns(tenantId: string): Promise<Campaign[]>;
+  getCampaignById(tenantId: string, id: string): Promise<Campaign | undefined>;
+  createCampaign(tenantId: string, campaign: InsertCampaign): Promise<Campaign>;
+  updateCampaign(tenantId: string, id: string, campaign: Partial<InsertCampaign>): Promise<Campaign>;
+  deleteCampaign(tenantId: string, id: string): Promise<void>;
+  
+  createEvent(tenantId: string, event: InsertEvent): Promise<Event>;
+  getAllEvents(tenantId: string, filters?: { campaignId?: string; eventType?: string }): Promise<Event[]>;
 }
 
 export class DbStorage implements IStorage {
@@ -519,6 +530,62 @@ export class DbStorage implements IStorage {
 
   async deleteAssessmentResultBucket(id: string): Promise<void> {
     await db.delete(assessmentResultBuckets).where(eq(assessmentResultBuckets.id, id));
+  }
+
+  async getAllCampaigns(tenantId: string): Promise<Campaign[]> {
+    return await db.select().from(campaigns)
+      .where(eq(campaigns.tenantId, tenantId))
+      .orderBy(desc(campaigns.createdAt));
+  }
+
+  async getCampaignById(tenantId: string, id: string): Promise<Campaign | undefined> {
+    const [campaign] = await db.select().from(campaigns)
+      .where(and(eq(campaigns.tenantId, tenantId), eq(campaigns.id, id)));
+    return campaign;
+  }
+
+  async createCampaign(tenantId: string, insertCampaign: InsertCampaign): Promise<Campaign> {
+    const [campaign] = await db.insert(campaigns)
+      .values({ tenantId, ...insertCampaign })
+      .returning();
+    return campaign;
+  }
+
+  async updateCampaign(tenantId: string, id: string, updateCampaign: Partial<InsertCampaign>): Promise<Campaign> {
+    const [campaign] = await db
+      .update(campaigns)
+      .set({ ...updateCampaign, updatedAt: new Date() })
+      .where(and(eq(campaigns.tenantId, tenantId), eq(campaigns.id, id)))
+      .returning();
+    return campaign;
+  }
+
+  async deleteCampaign(tenantId: string, id: string): Promise<void> {
+    await db.delete(campaigns)
+      .where(and(eq(campaigns.tenantId, tenantId), eq(campaigns.id, id)));
+  }
+
+  async createEvent(tenantId: string, insertEvent: InsertEvent): Promise<Event> {
+    const [event] = await db.insert(events)
+      .values({ tenantId, ...insertEvent })
+      .returning();
+    return event;
+  }
+
+  async getAllEvents(tenantId: string, filters?: { campaignId?: string; eventType?: string }): Promise<Event[]> {
+    const conditions = [eq(events.tenantId, tenantId)];
+    
+    if (filters?.campaignId) {
+      conditions.push(eq(events.campaignId, filters.campaignId));
+    }
+    
+    if (filters?.eventType) {
+      conditions.push(eq(events.eventType, filters.eventType));
+    }
+
+    return await db.select().from(events)
+      .where(and(...conditions))
+      .orderBy(desc(events.createdAt));
   }
 }
 

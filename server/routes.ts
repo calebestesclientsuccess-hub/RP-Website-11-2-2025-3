@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { storage } from "./storage";
+import { DEFAULT_TENANT_ID } from "./middleware/tenant";
 import { 
   insertEmailCaptureSchema, 
   insertBlogPostSchema,
@@ -21,6 +22,8 @@ import {
   insertAssessmentQuestionSchema,
   insertAssessmentAnswerSchema,
   insertAssessmentResultBucketSchema,
+  insertCampaignSchema,
+  insertEventSchema,
   assessmentResultBuckets,
   type InsertAssessmentResponse
 } from "@shared/schema";
@@ -817,6 +820,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public collection endpoints
+  app.get("/api/collections/testimonials", async (req, res) => {
+    try {
+      const testimonials = await storage.getAllTestimonials(DEFAULT_TENANT_ID, true);
+      return res.json(testimonials);
+    } catch (error) {
+      console.error("Error fetching testimonials collection:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/collections/videos", async (req, res) => {
+    try {
+      const videos = await storage.getAllVideoPosts(DEFAULT_TENANT_ID, true);
+      return res.json(videos);
+    } catch (error) {
+      console.error("Error fetching videos collection:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/collections/blogs", async (req, res) => {
+    try {
+      const blogs = await storage.getAllBlogPosts(DEFAULT_TENANT_ID, true);
+      return res.json(blogs);
+    } catch (error) {
+      console.error("Error fetching blogs collection:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Job postings endpoints
   app.get("/api/job-postings", async (req, res) => {
     try {
@@ -1569,6 +1603,201 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error fetching public assessment:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Campaign routes
+  app.get("/api/campaigns", requireAuth, async (req, res) => {
+    try {
+      const campaigns = await storage.getAllCampaigns(req.tenantId);
+      return res.json(campaigns);
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/campaigns/:id", requireAuth, async (req, res) => {
+    try {
+      const campaign = await storage.getCampaignById(req.tenantId, req.params.id);
+      if (!campaign) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+      return res.json(campaign);
+    } catch (error) {
+      console.error("Error fetching campaign:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/campaigns", requireAuth, async (req, res) => {
+    try {
+      const result = insertCampaignSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const campaignData = result.data;
+
+      // Zone conflict validation for inline campaigns
+      if (campaignData.displayAs === "inline" && campaignData.targetZone) {
+        const allCampaigns = await storage.getAllCampaigns(req.tenantId);
+        
+        for (const existingCampaign of allCampaigns) {
+          // Skip if not active or not inline or no target zone
+          if (!existingCampaign.isActive || 
+              existingCampaign.displayAs !== "inline" || 
+              !existingCampaign.targetZone) {
+            continue;
+          }
+
+          // Check if same zone
+          if (existingCampaign.targetZone === campaignData.targetZone) {
+            // Check for overlapping pages
+            const existingPages = existingCampaign.targetPages || [];
+            const newPages = campaignData.targetPages || [];
+            
+            // If either campaign targets all pages (empty array), there's a conflict
+            // Or if there are any overlapping pages
+            const hasOverlap = existingPages.length === 0 || 
+                              newPages.length === 0 || 
+                              existingPages.some(page => newPages.includes(page));
+
+            if (hasOverlap) {
+              const overlappingPages = existingPages.length === 0 || newPages.length === 0
+                ? ["all pages"]
+                : existingPages.filter(page => newPages.includes(page));
+
+              return res.status(400).json({
+                error: `Zone ${campaignData.targetZone} is already used by campaign '${existingCampaign.campaignName}' on page(s): ${overlappingPages.join(", ")}`
+              });
+            }
+          }
+        }
+      }
+
+      const campaign = await storage.createCampaign(req.tenantId, campaignData);
+      return res.status(201).json(campaign);
+    } catch (error) {
+      console.error("Error creating campaign:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/campaigns/:id", requireAuth, async (req, res) => {
+    try {
+      const result = insertCampaignSchema.partial().safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const campaignData = result.data;
+
+      // Zone conflict validation for inline campaigns
+      if (campaignData.displayAs === "inline" && campaignData.targetZone) {
+        const allCampaigns = await storage.getAllCampaigns(req.tenantId);
+        
+        for (const existingCampaign of allCampaigns) {
+          // Skip the campaign being updated
+          if (existingCampaign.id === req.params.id) {
+            continue;
+          }
+
+          // Skip if not active or not inline or no target zone
+          if (!existingCampaign.isActive || 
+              existingCampaign.displayAs !== "inline" || 
+              !existingCampaign.targetZone) {
+            continue;
+          }
+
+          // Check if same zone
+          if (existingCampaign.targetZone === campaignData.targetZone) {
+            // Check for overlapping pages
+            const existingPages = existingCampaign.targetPages || [];
+            const newPages = campaignData.targetPages || [];
+            
+            // If either campaign targets all pages (empty array), there's a conflict
+            // Or if there are any overlapping pages
+            const hasOverlap = existingPages.length === 0 || 
+                              newPages.length === 0 || 
+                              existingPages.some(page => newPages.includes(page));
+
+            if (hasOverlap) {
+              const overlappingPages = existingPages.length === 0 || newPages.length === 0
+                ? ["all pages"]
+                : existingPages.filter(page => newPages.includes(page));
+
+              return res.status(400).json({
+                error: `Zone ${campaignData.targetZone} is already used by campaign '${existingCampaign.campaignName}' on page(s): ${overlappingPages.join(", ")}`
+              });
+            }
+          }
+        }
+      }
+
+      const campaign = await storage.updateCampaign(req.tenantId, req.params.id, campaignData);
+      return res.json(campaign);
+    } catch (error) {
+      console.error("Error updating campaign:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/campaigns/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deleteCampaign(req.tenantId, req.params.id);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting campaign:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Event routes
+  app.post("/api/events/track", async (req, res) => {
+    try {
+      const result = insertEventSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const event = await storage.createEvent(req.tenantId, result.data);
+      return res.status(201).json(event);
+    } catch (error) {
+      console.error("Error tracking event:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/events", requireAuth, async (req, res) => {
+    try {
+      const filters: { campaignId?: string; eventType?: string } = {};
+      
+      if (req.query.campaignId && typeof req.query.campaignId === 'string') {
+        filters.campaignId = req.query.campaignId;
+      }
+      
+      if (req.query.eventType && typeof req.query.eventType === 'string') {
+        filters.eventType = req.query.eventType;
+      }
+
+      const events = await storage.getAllEvents(req.tenantId, filters);
+      return res.json(events);
+    } catch (error) {
+      console.error("Error fetching events:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

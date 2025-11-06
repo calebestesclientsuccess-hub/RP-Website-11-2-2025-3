@@ -246,6 +246,37 @@ export const assessmentResultBuckets = pgTable("assessment_result_buckets", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const campaigns = pgTable("campaigns", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  campaignName: text("campaign_name").notNull(),
+  contentType: text("content_type").notNull(),
+  widgetConfig: text("widget_config"),
+  displayAs: text("display_as").notNull(),
+  targetPages: text("target_pages").array(),
+  targetZone: text("target_zone"),
+  isActive: boolean("is_active").default(true).notNull(),
+  theme: text("theme").default("auto"),
+  size: text("size").default("medium"),
+  overlayOpacity: integer("overlay_opacity").default(50),
+  dismissible: boolean("dismissible").default(true),
+  animation: text("animation").default("fade"),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  seoMetadata: text("seo_metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const events = pgTable("events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  campaignId: varchar("campaign_id").references(() => campaigns.id),
+  eventType: text("event_type").notNull(),
+  payload: text("payload"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertTenantSchema = createInsertSchema(tenants).omit({
   createdAt: true,
   updatedAt: true,
@@ -373,6 +404,19 @@ export const insertAssessmentResultBucketSchema = createInsertSchema(assessmentR
   createdAt: true,
 });
 
+export const insertCampaignSchema = createInsertSchema(campaigns).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+});
+
 export type InsertTenant = z.infer<typeof insertTenantSchema>;
 export type Tenant = typeof tenants.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -409,3 +453,65 @@ export type AssessmentAnswer = typeof assessmentAnswers.$inferSelect;
 export type InsertAssessmentAnswer = z.infer<typeof insertAssessmentAnswerSchema>;
 export type AssessmentResultBucket = typeof assessmentResultBuckets.$inferSelect;
 export type InsertAssessmentResultBucket = z.infer<typeof insertAssessmentResultBucketSchema>;
+export type Campaign = typeof campaigns.$inferSelect;
+export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+
+export const formFieldSchema = z.object({
+  name: z.string().min(1, "Field name is required"),
+  label: z.string().min(1, "Field label is required"),
+  type: z.enum(["text", "email", "tel", "number", "textarea", "select", "checkbox", "radio"]),
+  required: z.boolean().default(false),
+  placeholder: z.string().optional(),
+  validation: z.object({
+    min: z.number().optional(),
+    max: z.number().optional(),
+    pattern: z.string().optional(),
+    message: z.string().optional(),
+  }).optional(),
+  options: z.array(z.object({
+    label: z.string(),
+    value: z.string(),
+  })).optional(),
+});
+
+export const formConfigSchema = z.object({
+  title: z.string().min(1, "Form title is required"),
+  description: z.string().optional(),
+  fields: z.array(formFieldSchema).min(1, "At least one field is required"),
+  submitButtonText: z.string().default("Submit"),
+  successMessage: z.string().default("Thank you for your submission!"),
+});
+
+export const calculatorInputSchema = z.object({
+  name: z.string().min(1, "Input name is required"),
+  label: z.string().min(1, "Input label is required"),
+  type: z.enum(["number", "slider", "toggle"]),
+  defaultValue: z.number().default(0),
+  min: z.number().optional(),
+  max: z.number().optional(),
+  step: z.number().optional(),
+  unit: z.string().optional(),
+});
+
+export const calculatorConfigSchema = z.object({
+  title: z.string().min(1, "Calculator title is required"),
+  description: z.string().optional(),
+  inputs: z.array(calculatorInputSchema).min(1, "At least one input is required"),
+  formula: z.string().min(1, "Formula is required"),
+  resultLabel: z.string().default("Result"),
+  resultUnit: z.string().optional(),
+});
+
+export const seoMetadataSchema = z.object({
+  metaTitle: z.string().optional(),
+  metaDescription: z.string().optional(),
+  ogImage: z.string().optional(),
+});
+
+export type FormField = z.infer<typeof formFieldSchema>;
+export type FormConfig = z.infer<typeof formConfigSchema>;
+export type CalculatorInput = z.infer<typeof calculatorInputSchema>;
+export type CalculatorConfig = z.infer<typeof calculatorConfigSchema>;
+export type SeoMetadata = z.infer<typeof seoMetadataSchema>;
