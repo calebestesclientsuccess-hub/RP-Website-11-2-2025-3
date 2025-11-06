@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
+import DOMPurify from "dompurify";
 import { DynamicCalculator } from "@/components/widgets/DynamicCalculator";
 import { DynamicForm } from "@/components/widgets/DynamicForm";
 import TestimonialCarousel from "@/components/widgets/TestimonialCarousel";
@@ -247,6 +248,42 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
           console.error(`[WidgetZone] No config found for form widget`);
           return null;
         }
+        
+        // Check if this is raw HTML mode
+        if (parsedConfig.type === "html") {
+          // Sanitize HTML with DOMPurify for security
+          // Allow essential form attributes for third-party integrations (Mailchimp, ConvertKit, etc.)
+          const sanitizedHTML = DOMPurify.sanitize(parsedConfig.html || "", {
+            ALLOWED_TAGS: ['form', 'input', 'textarea', 'button', 'select', 'option', 'label', 'div', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'br', 'hr', 'a', 'strong', 'em', 'ul', 'ol', 'li'],
+            ALLOWED_ATTR: [
+              // Form attributes (essential for third-party form providers)
+              'action', 'method', 'enctype', 'accept-charset', 'autocomplete', 'novalidate',
+              // Input attributes
+              'type', 'name', 'value', 'placeholder', 'required', 'disabled', 'readonly', 'checked', 'maxlength', 'min', 'max', 'step', 'pattern',
+              // Select/option attributes
+              'selected', 'multiple', 'size',
+              // Common attributes
+              'class', 'id', 'style', 'title', 'aria-label', 'aria-describedby',
+              // Link attributes
+              'href', 'target', 'rel',
+              // Label attributes
+              'for',
+              // Data attributes (used by many form providers)
+              'data-form-id', 'data-uid', 'data-ga', 'data-track'
+            ],
+            // Allow data-* attributes for form providers
+            ALLOW_DATA_ATTR: true,
+          });
+          
+          return (
+            <div 
+              dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
+              data-testid="raw-html-form"
+            />
+          );
+        }
+        
+        // Otherwise use the DynamicForm builder
         return (
           <DynamicForm
             config={parsedConfig as FormConfig}

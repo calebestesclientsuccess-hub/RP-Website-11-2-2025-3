@@ -97,6 +97,8 @@ export default function CampaignForm() {
   const [calculatorJsonValid, setCalculatorJsonValid] = useState<boolean | null>(null);
   const [calculatorJsonErrors, setCalculatorJsonErrors] = useState<string[]>([]);
 
+  const [formMode, setFormMode] = useState<"builder" | "html">("html");
+  const [formHtmlContent, setFormHtmlContent] = useState("");
   const [formFields, setFormFields] = useState<FormFieldType[]>([
     { name: "", label: "", type: "text", required: false }
   ]);
@@ -198,12 +200,18 @@ export default function CampaignForm() {
             setCalculatorDescription(config.description || "");
             setCalculatorJsonText(campaign.widgetConfig);
           } else if (campaign.contentType === "form") {
-            setFormFields(config.fields || []);
-            setFormTitle(config.title || "");
-            setFormDescription(config.description || "");
-            setFormSubmitButtonText(config.submitButtonText || "Submit");
-            setFormSuccessMessage(config.successMessage || "Thank you for your submission!");
-            setFormJsonText(campaign.widgetConfig);
+            if (config.type === "html") {
+              setFormMode("html");
+              setFormHtmlContent(config.html || "");
+            } else {
+              setFormMode("builder");
+              setFormFields(config.fields || []);
+              setFormTitle(config.title || "");
+              setFormDescription(config.description || "");
+              setFormSubmitButtonText(config.submitButtonText || "Submit");
+              setFormSuccessMessage(config.successMessage || "Thank you for your submission!");
+              setFormJsonText(campaign.widgetConfig);
+            }
           } else if (campaign.contentType === "collection") {
             setCollectionType(config.collectionType || "testimonials");
             if (config.collectionType === "custom") {
@@ -237,6 +245,8 @@ export default function CampaignForm() {
     calculatorResultUnit,
     calculatorTitle,
     calculatorDescription,
+    formMode,
+    formHtmlContent,
     formFields,
     formTitle,
     formDescription,
@@ -260,14 +270,23 @@ export default function CampaignForm() {
   };
 
   const updateFormConfig = () => {
-    const config = {
-      title: formTitle,
-      description: formDescription,
-      fields: formFields,
-      submitButtonText: formSubmitButtonText,
-      successMessage: formSuccessMessage,
-    };
-    form.setValue("widgetConfig", JSON.stringify(config));
+    if (formMode === "html") {
+      const config = {
+        type: "html",
+        html: formHtmlContent,
+      };
+      form.setValue("widgetConfig", JSON.stringify(config));
+    } else {
+      const config = {
+        type: "builder",
+        title: formTitle,
+        description: formDescription,
+        fields: formFields,
+        submitButtonText: formSubmitButtonText,
+        successMessage: formSuccessMessage,
+      };
+      form.setValue("widgetConfig", JSON.stringify(config));
+    }
   };
 
   const updateCollectionConfig = () => {
@@ -1073,6 +1092,58 @@ export default function CampaignForm() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
+                      <div className="space-y-4">
+                        <Label>Form Mode</Label>
+                        <RadioGroup
+                          value={formMode}
+                          onValueChange={(value) => setFormMode(value as "builder" | "html")}
+                          className="flex gap-4"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="html" id="form-mode-html" data-testid="radio-form-mode-html" />
+                            <Label htmlFor="form-mode-html" className="font-normal cursor-pointer">
+                              Raw HTML (Simple)
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="builder" id="form-mode-builder" data-testid="radio-form-mode-builder" />
+                            <Label htmlFor="form-mode-builder" className="font-normal cursor-pointer">
+                              Form Builder (Advanced)
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                        <p className="text-sm text-muted-foreground">
+                          {formMode === "html" 
+                            ? "Paste your HTML form directly. Perfect for quick setup and custom designs."
+                            : "Build a form with individual fields. More structured but requires configuration."}
+                        </p>
+                      </div>
+
+                      <Separator />
+
+                      {formMode === "html" ? (
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="form-html-content">HTML Content</Label>
+                            <Textarea
+                              id="form-html-content"
+                              placeholder='<form>
+  <input type="text" name="name" placeholder="Name" required />
+  <input type="email" name="email" placeholder="Email" required />
+  <button type="submit">Submit</button>
+</form>'
+                              value={formHtmlContent}
+                              onChange={(e) => setFormHtmlContent(e.target.value)}
+                              className="mt-2 font-mono text-sm"
+                              rows={15}
+                              data-testid="textarea-form-html"
+                            />
+                            <p className="text-sm text-muted-foreground mt-2">
+                              Paste your complete HTML form code here. It will be sanitized for security before rendering.
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
                       <Accordion type="single" collapsible className="w-full">
                         <AccordionItem value="form-settings">
                           <AccordionTrigger data-testid="accordion-form-settings">Form Settings</AccordionTrigger>
@@ -1328,6 +1399,7 @@ export default function CampaignForm() {
                           </AccordionContent>
                         </AccordionItem>
                       </Accordion>
+                      )}
                     </CardContent>
                   </Card>
                 )}

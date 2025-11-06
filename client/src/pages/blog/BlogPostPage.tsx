@@ -2,6 +2,7 @@
 import { SEO } from "@/components/SEO";
 import { ArticleSchema } from "@/components/schemas/ArticleSchema";
 import { ReadingProgressBar } from "@/components/ReadingProgressBar";
+import { WidgetZone } from "@/components/WidgetZone";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { marked } from "marked";
@@ -59,6 +60,8 @@ export default function BlogPostPage() {
           </div>
         </header>
 
+        <WidgetZone zone="zone-1" />
+
         {post.featuredImage && (
           <img 
             src={post.featuredImage} 
@@ -67,10 +70,14 @@ export default function BlogPostPage() {
           />
         )}
 
+        <WidgetZone zone="zone-2" />
+
         <div 
           className="prose prose-lg max-w-none"
           dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
+
+        <WidgetZone zone="zone-4" />
       </article>
     </>
   );
