@@ -37,7 +37,7 @@ export function FloatingCalculatorCTA() {
       {/* Main CTA Button */}
       <Button
         size="lg"
-        className="shadow-2xl h-14 w-14 lg:h-auto lg:w-auto gap-2 rounded-full lg:rounded-md"
+        className="gradient-button-crimson-blue shadow-2xl h-14 w-14 lg:h-auto lg:w-auto gap-2 rounded-full lg:rounded-md"
         data-testid="button-floating-calculator"
         aria-label="Open ROI Calculator"
         asChild

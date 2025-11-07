@@ -602,6 +602,13 @@
     }
   }
 
+/* Crimson to Royal Blue Gradient for Buttons */
+.gradient-button-crimson-blue {
+  background: linear-gradient(135deg, #DC143C 0%, #4169E1 100%);
+  color: white;
+  border: 1px solid rgba(220, 20, 60, 0.5);
+}
+
   /* Context-aware gradient intensities - LIGHT MODE */
   html:not(.dark) .gradient-hero {
     filter: saturate(1.2) brightness(1.05);
@@ -1210,6 +1217,23 @@ html:not(.dark) a.inline-flex.items-center.justify-center[role="button"] {
 }
 
 /* 4. Vintage Stamp Badges (light mode only) */
+/* Dutch angle rotation pattern for stickers */
+.badge-texture.sticker-dutch-left {
+  transform: rotate(-2deg);
+}
+
+.badge-texture.sticker-dutch-right {
+  transform: rotate(2deg);
+}
+
+.badge-texture.sticker-dutch-left-subtle {
+  transform: rotate(-1.5deg);
+}
+
+.badge-texture.sticker-dutch-right-subtle {
+  transform: rotate(1.5deg);
+}
+
 html:not(.dark) .badge-texture {
   /* Perforated edge effect */
   background-image: 

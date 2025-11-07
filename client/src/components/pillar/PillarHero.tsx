@@ -12,7 +12,7 @@ export function PillarHero({ title, subtitle, badgeText }: PillarHeroProps) {
       <div className="max-w-4xl mx-auto">
         {badgeText && (
           <Badge 
-            className="badge-texture bg-competition text-white border-competition text-sm px-4 py-1.5 mb-6"
+            className="badge-texture sticker-dutch-right bg-competition text-white border-competition text-sm px-4 py-1.5 mb-6"
             data-testid="badge-pillar-category"
           >
             {badgeText}

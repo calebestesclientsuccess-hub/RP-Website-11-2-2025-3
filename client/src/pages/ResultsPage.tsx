@@ -94,7 +94,7 @@ export default function ResultsPage() {
                 className="mb-6 flex justify-center"
               >
                 <Badge
-                  className="badge-texture bg-primary text-white border-primary text-sm px-4 py-1.5"
+                  className="badge-texture sticker-dutch-left-subtle bg-primary text-white border-primary text-sm px-4 py-1.5"
                   data-testid="badge-hero-results"
                 >
                   Proven Results

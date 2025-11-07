@@ -126,7 +126,7 @@ export default function Home() {
                   className="mb-6"
                 >
                   <Badge 
-                    className="badge-texture bg-community text-white border-community text-sm px-4 py-1.5"
+                    className="badge-texture sticker-dutch-left bg-community text-white border-community text-sm px-4 py-1.5"
                     data-testid="badge-hero-culture"
                   >
                     Community + Competition = Culture
@@ -149,7 +149,7 @@ export default function Home() {
                   transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
                   data-testid="text-hero-body"
                 >
-                  We build self-sustaining <Link href="/gtm-engine" className="text-primary hover:underline">GTM Engines</Link> that deliver 3-5x the pipeline at 60%+ of the cost of a <Link href="/problem" className="text-primary hover:underline">traditional internal hire</Link>. This isn't an SDR. It's your entire revenue architecture.
+                  We build self-sustaining <Link href="/gtm-engine" className="gradient-text gradient-hero hover:underline">GTM Engines</Link> that deliver 3-5x the pipeline at 60%+ of the cost of a <Link href="/problem" className="gradient-text gradient-hero hover:underline">traditional internal hire</Link>. This isn't an SDR. It's your entire revenue architecture.
                 </motion.p>
               </div>
 
@@ -189,7 +189,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-trap">
-              The <span className="gradient-text gradient-hero">$198,000</span> Mistake<br />
+              The $198,000 Mistake<br />
               <span className="gradient-text gradient-hero">You Don't Have to Make</span>
             </h2>
             <div className="space-y-4">
