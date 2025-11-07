@@ -126,7 +126,7 @@ export default function Home() {
                   className="mb-6"
                 >
                   <Badge 
-                    className="badge-texture sticker-dutch-left bg-community text-white border-community text-sm px-4 py-1.5"
+                    className="badge-texture bg-community text-white border-community text-sm px-4 py-1.5"
                     data-testid="badge-hero-culture"
                   >
                     Community + Competition = Culture

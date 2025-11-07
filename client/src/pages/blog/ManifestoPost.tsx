@@ -27,7 +27,7 @@ export default function ManifestoPost() {
       <section className="relative pt-32 pb-16 px-4 md:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <Badge 
-            className="badge-texture sticker-dutch-left bg-competition text-white border-competition text-sm px-4 py-1.5 mb-6"
+            className="badge-texture bg-competition text-white border-competition text-sm px-4 py-1.5 mb-6"
             data-testid="badge-manifesto"
           >
             Our Manifesto

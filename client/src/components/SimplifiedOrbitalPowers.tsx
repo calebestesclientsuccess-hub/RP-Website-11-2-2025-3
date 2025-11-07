@@ -376,11 +376,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-2">
-          <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent mb-2">
-            Your Fullstack Sales Unit
+          <h2 className="text-5xl md:text-6xl font-bold mb-2">
+            <span className="gradient-text gradient-hero">Your Fullstack Sales Unit</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Not just BDRs. A complete system engineered to deliver predictable revenue.
+          <p className="text-xl md:text-2xl max-w-3xl mx-auto">
+            More than SDRs. A complete system engineered to deliver predictable revenue.
           </p>
         </div>
 
