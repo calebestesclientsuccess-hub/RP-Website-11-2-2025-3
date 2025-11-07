@@ -36,8 +36,9 @@ export function FloatingAssessmentCTA() {
 
       {/* Main CTA Button */}
       <Button
+        variant="default"
         size="lg"
-        className="gradient-button-crimson-blue shadow-2xl h-14 w-14 lg:h-auto lg:w-auto gap-2 rounded-full lg:rounded-md"
+        className="shadow-2xl h-14 w-14 lg:h-auto lg:w-auto gap-2 rounded-full lg:rounded-md"
         data-testid="button-floating-assessment"
         aria-label="Take GTM Assessment"
         asChild

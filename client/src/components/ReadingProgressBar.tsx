@@ -7,7 +7,6 @@ export function ReadingProgressBar() {
   const [, setLocation] = useLocation();
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isEngaged, setIsEngaged] = useState(false);
-  const [showGradient, setShowGradient] = useState(false);
   const [showGlow, setShowGlow] = useState(false);
   const scrollCountRef = useRef(0);
   const lastScrollTimeRef = useRef(Date.now());
@@ -34,8 +33,6 @@ export function ReadingProgressBar() {
         // Trigger engagement after 2-3 scrolls
         if (scrollCountRef.current >= 2 && !isEngaged) {
           setIsEngaged(true);
-          // Start gradient transition after engagement
-          setTimeout(() => setShowGradient(true), 500);
         }
       }
 
@@ -94,23 +91,17 @@ export function ReadingProgressBar() {
         </div>
 
         <Button
+          variant="default"
           onClick={handleAssessmentClick}
           size="sm"
-          variant="outline"
           className={`
             relative overflow-visible transition-all duration-2000 ease-in-out
-            ${showGradient ? 'border-primary/30' : ''}
             ${!isMobile && showGlow ? 'shadow-[0_0_20px_rgba(220,38,38,0.3)]' : ''}
           `}
           data-testid="button-take-assessment"
         >
           <Sparkles className="w-3 h-3 mr-2" />
-          <span 
-            className={`
-              transition-all duration-2000 ease-in-out
-              ${showGradient ? 'bg-gradient-to-r from-red-600 via-rose-500 to-pink-500 bg-clip-text text-transparent font-semibold' : ''}
-            `}
-          >
+          <span>
             Take Assessment
           </span>
         </Button>
