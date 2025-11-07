@@ -13,6 +13,8 @@ import { CheckCircle, Calendar, XCircle } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 const auditSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
@@ -39,13 +41,29 @@ export default function AuditPage() {
     }
   });
 
+  const submitMutation = useMutation({
+    mutationFn: async (data: AuditFormData) => {
+      const response = await apiRequest("POST", "/api/leads/audit-request", data);
+      return await response.json();
+    },
+    onSuccess: () => {
+      setSubmitted(true);
+      toast({
+        title: "Audit Request Submitted",
+        description: "A GTM Architect will send a personal confirmation and prep materials within one business day."
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to submit audit request. Please try again."
+      });
+    }
+  });
+
   const handleSubmit = (data: AuditFormData) => {
-    console.log('Audit request submitted:', data);
-    setSubmitted(true);
-    toast({
-      title: "Audit Request Submitted",
-      description: "A GTM Architect will send a personal confirmation and prep materials within one business day."
-    });
+    submitMutation.mutate(data);
   };
 
   return (

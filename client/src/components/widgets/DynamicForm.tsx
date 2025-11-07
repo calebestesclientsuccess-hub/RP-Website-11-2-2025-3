@@ -26,10 +26,12 @@ import {
 import { cn } from "@/lib/utils";
 import { widgetVariants } from "@/lib/widgetVariants";
 import type { FormConfig } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface DynamicFormProps {
   config: FormConfig;
-  onSubmit: (data: Record<string, any>) => void;
+  onSubmit?: (data: Record<string, any>) => void;
   className?: string;
   theme?: "light" | "dark" | "auto";
   size?: "small" | "medium" | "large";
@@ -38,6 +40,7 @@ interface DynamicFormProps {
 export function DynamicForm({ config, onSubmit, className, theme, size }: DynamicFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const { toast } = useToast();
 
   const formSchema = z.object(
     config.fields.reduce((acc, field) => {
@@ -122,12 +125,42 @@ export function DynamicForm({ config, onSubmit, className, theme, size }: Dynami
   const handleSubmit = async (data: Record<string, any>) => {
     setIsSubmitting(true);
     try {
-      await onSubmit(data);
+      // If custom onSubmit is provided, use it
+      if (onSubmit) {
+        await onSubmit(data);
+      } else {
+        // Default behavior: save to unified leads table
+        const email = data.email || data.workEmail || data.contactEmail || "";
+        const name = data.name || data.fullName || `${data.firstName || ""} ${data.lastName || ""}`.trim();
+        const phone = data.phone || data.phoneNumber || data.tel || "";
+        const company = data.company || data.companyName || "";
+        
+        await apiRequest("POST", "/api/leads/capture", {
+          email,
+          name: name || undefined,
+          company: company || undefined,
+          phone: phone || undefined,
+          source: "dynamic-form",
+          pageUrl: window.location.pathname,
+          formData: JSON.stringify(data),
+        });
+      }
+      
       setShowSuccess(true);
       form.reset();
       setTimeout(() => setShowSuccess(false), 5000);
+      
+      toast({
+        title: "Success!",
+        description: config.successMessage || "Thank you! We'll be in touch soon.",
+      });
     } catch (error) {
       console.error("Form submission error:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to submit form. Please try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }

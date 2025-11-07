@@ -296,6 +296,21 @@ export const events = pgTable("events", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const leads = pgTable("leads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  email: text("email").notNull(),
+  name: text("name"),
+  company: text("company"),
+  phone: text("phone"),
+  source: text("source").notNull(),
+  pageUrl: text("page_url"),
+  formData: text("form_data"),
+  userAgent: text("user_agent"),
+  ipAddress: text("ip_address"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertTenantSchema = createInsertSchema(tenants).omit({
   createdAt: true,
   updatedAt: true,
@@ -443,6 +458,17 @@ export const insertEventSchema = createInsertSchema(events).omit({
   createdAt: true,
 });
 
+export const insertLeadSchema = createInsertSchema(leads)
+  .omit({
+    id: true,
+    tenantId: true,
+    createdAt: true,
+  })
+  .extend({
+    email: z.string().email("Please enter a valid email address"),
+    source: z.string().min(1, "Source is required"),
+  });
+
 export type InsertTenant = z.infer<typeof insertTenantSchema>;
 export type Tenant = typeof tenants.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -485,6 +511,8 @@ export type Campaign = typeof campaigns.$inferSelect;
 export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type Lead = typeof leads.$inferSelect;
+export type InsertLead = z.infer<typeof insertLeadSchema>;
 
 export const formFieldSchema = z.object({
   name: z.string().min(1, "Field name is required"),

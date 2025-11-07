@@ -27,6 +27,7 @@ import {
   insertConfigurableAssessmentResponseSchema,
   insertCampaignSchema,
   insertEventSchema,
+  insertLeadSchema,
   assessmentResultBuckets,
   type InsertAssessmentResponse
 } from "@shared/schema";
@@ -35,6 +36,7 @@ import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templates";
 import { sendGmailEmail } from "./utils/gmail-client";
+import { sendLeadNotificationEmail } from "./utils/lead-notifications";
 import { db } from "./db";
 import { eq, asc } from "drizzle-orm";
 
@@ -588,6 +590,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Lead capture endpoint for DynamicForm submissions
+  app.post("/api/leads/capture", async (req, res) => {
+    try {
+      const result = insertLeadSchema.safeParse(req.body);
+
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const lead = await storage.createLead(req.tenantId, {
+        ...result.data,
+        userAgent: req.headers['user-agent'],
+        ipAddress: req.ip,
+      });
+      
+      // Send notification email to all users (don't await - run in background)
+      sendLeadNotificationEmail(lead).catch(err => 
+        console.error("Failed to send lead notification:", err)
+      );
+
+      return res.status(201).json({
+        success: true,
+        message: "Thank you! We'll be in touch soon.",
+        id: lead.id,
+      });
+    } catch (error) {
+      console.error("Error creating lead:", error);
+      return res.status(500).json({
+        error: "Internal server error",
+        message: "Failed to submit your information. Please try again.",
+      });
+    }
+  });
+
+  // Lead capture endpoint for GTM Audit requests
+  app.post("/api/leads/audit-request", async (req, res) => {
+    try {
+      const auditSchema = z.object({
+        fullName: z.string().min(2, "Full name is required"),
+        workEmail: z.string().email("Please enter a valid work email"),
+        companyName: z.string().min(2, "Company name is required"),
+        website: z.string().url("Please enter a valid website URL").or(z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/, "Please enter a valid domain")),
+        gtmChallenge: z.string().min(10, "Please describe your GTM challenge (at least 10 characters)")
+      });
+
+      const result = auditSchema.safeParse(req.body);
+
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const { fullName, workEmail, companyName, website, gtmChallenge } = result.data;
+
+      const lead = await storage.createLead(req.tenantId, {
+        email: workEmail,
+        name: fullName,
+        company: companyName,
+        source: "audit-request",
+        pageUrl: req.headers.referer || "/audit",
+        formData: JSON.stringify({ website, gtmChallenge }),
+        userAgent: req.headers['user-agent'],
+        ipAddress: req.ip,
+      });
+      
+      // Send notification email to all users (don't await - run in background)
+      sendLeadNotificationEmail(lead).catch(err => 
+        console.error("Failed to send lead notification:", err)
+      );
+
+      return res.status(201).json({
+        success: true,
+        message: "Audit request submitted successfully",
+        id: lead.id,
+      });
+    } catch (error) {
+      console.error("Error creating audit request:", error);
+      return res.status(500).json({
+        error: "Internal server error",
+        message: "Failed to submit audit request. Please try again.",
+      });
+    }
+  });
+
+  // Export all leads (admin only)
+  app.get("/api/leads/export", requireAuth, async (req, res) => {
+    try {
+      const filters: { source?: string; startDate?: Date; endDate?: Date } = {};
+
+      if (req.query.source) {
+        filters.source = req.query.source as string;
+      }
+
+      if (req.query.startDate) {
+        filters.startDate = new Date(req.query.startDate as string);
+      }
+
+      if (req.query.endDate) {
+        filters.endDate = new Date(req.query.endDate as string);
+      }
+
+      const leads = await storage.getAllLeads(req.tenantId, filters);
+      
+      return res.json({
+        success: true,
+        count: leads.length,
+        leads: leads.map(lead => ({
+          id: lead.id,
+          email: lead.email,
+          name: lead.name,
+          company: lead.company,
+          phone: lead.phone,
+          source: lead.source,
+          pageUrl: lead.pageUrl,
+          formData: lead.formData ? JSON.parse(lead.formData) : null,
+          createdAt: lead.createdAt,
+        }))
+      });
+    } catch (error) {
+      console.error("Error exporting leads:", error);
+      return res.status(500).json({
+        error: "Internal server error",
+        message: "Failed to export leads.",
+      });
+    }
+  });
+
   // Blog posts endpoints
   app.get("/api/blog-posts", async (req, res) => {
     try {
@@ -948,6 +1084,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const leadCapture = await storage.createLeadCapture(req.tenantId, result.data);
+      
+      // Also save to unified leads table
+      const lead = await storage.createLead(req.tenantId, {
+        email: result.data.email,
+        name: result.data.firstName ? `${result.data.firstName} ${result.data.lastName || ''}`.trim() : undefined,
+        company: result.data.company,
+        source: "lead-magnet",
+        pageUrl: req.headers.referer || result.data.source,
+        formData: JSON.stringify({ resourceDownloaded: result.data.resourceDownloaded }),
+        userAgent: req.headers['user-agent'],
+        ipAddress: req.ip,
+      });
+      
+      // Send notification email to all users (don't await - run in background)
+      sendLeadNotificationEmail(lead).catch(err => 
+        console.error("Failed to send lead notification:", err)
+      );
 
       const downloadUrl = `/downloads/${result.data.resourceDownloaded}.pdf`;
 
@@ -992,6 +1145,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const capture = await storage.createBlueprintCapture(result.data);
+      
+      // Also save to unified leads table
+      const lead = await storage.createLead(req.tenantId, {
+        email: result.data.email,
+        source: "gtm-assessment-blueprint",
+        pageUrl: result.data.path,
+        formData: JSON.stringify({ 
+          q1: result.data.q1, 
+          q2: result.data.q2 
+        }),
+        userAgent: req.headers['user-agent'],
+        ipAddress: req.ip,
+      });
+      
+      // Send notification email to all users (don't await - run in background)
+      sendLeadNotificationEmail(lead).catch(err => 
+        console.error("Failed to send lead notification:", err)
+      );
 
       // Generate email content
       const emailHtml = getBlueprintEmailHtml({
@@ -1162,6 +1333,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         bucket,
         completed: true,
       });
+      
+      // If email (q20) is provided, save to unified leads table
+      if (submittedData.q20) {
+        const lead = await storage.createLead(req.tenantId, {
+          email: submittedData.q20,
+          source: "pipeline-assessment",
+          pageUrl: "/pipeline-assessment",
+          formData: JSON.stringify({ 
+            sessionId,
+            bucket,
+            assessmentData: submittedData 
+          }),
+          userAgent: req.headers['user-agent'],
+          ipAddress: req.ip,
+        });
+        
+        // Send notification email to all users (don't await - run in background)
+        sendLeadNotificationEmail(lead).catch(err => 
+          console.error("Failed to send lead notification:", err)
+        );
+      }
 
       return res.json({
         success: true,
@@ -1944,6 +2136,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const response = await storage.createConfigurableResponse(req.tenantId, responseData);
+      
+      // If email is provided (PRE_GATED or UNGATED with optional email), save to unified leads table
+      if (email) {
+        const lead = await storage.createLead(req.tenantId, {
+          email,
+          name: name || undefined,
+          company: company || undefined,
+          source: "configurable-assessment",
+          pageUrl: req.headers.referer || `/assessments/${assessmentId}`,
+          formData: JSON.stringify({ 
+            assessmentId, 
+            sessionId,
+            finalScore,
+            finalBucketKey 
+          }),
+          userAgent: req.headers['user-agent'],
+          ipAddress: req.ip,
+        });
+        
+        // Send notification email to all users (don't await - run in background)
+        sendLeadNotificationEmail(lead).catch(err => 
+          console.error("Failed to send lead notification:", err)
+        );
+      }
 
       // Get the result bucket details
       const resultBucket = buckets.find(b => b.bucketKey === finalBucketKey);
@@ -2024,6 +2240,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
           company: company || null,
           resultUrl,
         }
+      );
+      
+      // Save to unified leads table
+      const lead = await storage.createLead(req.tenantId, {
+        email,
+        name,
+        company: company || undefined,
+        source: "configurable-assessment",
+        pageUrl: req.headers.referer || `/assessments/${response.assessmentConfigId}`,
+        formData: JSON.stringify({ 
+          assessmentId: response.assessmentConfigId, 
+          sessionId,
+          finalScore: response.finalScore,
+          finalBucketKey: response.finalBucketKey 
+        }),
+        userAgent: req.headers['user-agent'],
+        ipAddress: req.ip,
+      });
+      
+      // Send notification email to all users (don't await - run in background)
+      sendLeadNotificationEmail(lead).catch(err => 
+        console.error("Failed to send lead notification:", err)
       );
 
       // Get the result bucket details

@@ -19,8 +19,9 @@ import {
   type ConfigurableAssessmentResponse, type InsertConfigurableAssessmentResponse,
   type Campaign, type InsertCampaign,
   type Event, type InsertEvent,
+  type Lead, type InsertLead,
   users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens,
-  assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants
+  assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants, leads, insertLeadSchema
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, ilike, sql } from "drizzle-orm";
@@ -114,6 +115,10 @@ export interface IStorage {
   createConfigurableResponse(tenantId: string, response: InsertConfigurableAssessmentResponse): Promise<ConfigurableAssessmentResponse>;
   updateConfigurableResponse(tenantId: string, sessionId: string, data: Partial<InsertConfigurableAssessmentResponse>): Promise<ConfigurableAssessmentResponse>;
   getAllConfigurableResponses(tenantId: string, assessmentId?: string, filters?: { startDate?: Date; endDate?: Date; bucketKey?: string }): Promise<ConfigurableAssessmentResponse[]>;
+  
+  createLead(tenantId: string, lead: InsertLead): Promise<Lead>;
+  getAllLeads(tenantId: string, filters?: { source?: string; startDate?: Date; endDate?: Date }): Promise<Lead[]>;
+  getAllUsers(): Promise<User[]>;
 }
 
 export class DbStorage implements IStorage {
@@ -644,6 +649,37 @@ export class DbStorage implements IStorage {
     return await db.select().from(configurableAssessmentResponses)
       .where(and(...conditions))
       .orderBy(desc(configurableAssessmentResponses.createdAt));
+  }
+
+  async createLead(tenantId: string, insertLead: InsertLead): Promise<Lead> {
+    const [lead] = await db.insert(leads)
+      .values({ tenantId, ...insertLead })
+      .returning();
+    return lead;
+  }
+
+  async getAllLeads(tenantId: string, filters?: { source?: string; startDate?: Date; endDate?: Date }): Promise<Lead[]> {
+    const conditions = [eq(leads.tenantId, tenantId)];
+    
+    if (filters?.source) {
+      conditions.push(eq(leads.source, filters.source));
+    }
+    
+    if (filters?.startDate) {
+      conditions.push(sql`${leads.createdAt} >= ${filters.startDate}`);
+    }
+    
+    if (filters?.endDate) {
+      conditions.push(sql`${leads.createdAt} <= ${filters.endDate}`);
+    }
+
+    return await db.select().from(leads)
+      .where(and(...conditions))
+      .orderBy(desc(leads.createdAt));
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
   }
 }
 
