@@ -15,7 +15,7 @@ router.get('/sitemap-dynamic.xml', async (req, res) => {
       })
       .from(blogPosts)
       .where(eq(blogPosts.published, true))
-      .orderBy(desc(blogPosts.createdAt));
+      .orderBy(desc(blogPosts.publishedAt));
 
     const baseUrl = 'https://revenueparty.com';
     const currentDate = new Date().toISOString().split('T')[0];
