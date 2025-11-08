@@ -166,10 +166,10 @@ export default function Home() {
                   size="lg" 
                   variant="outline"
                   className="text-lg px-8 py-6" 
-                  data-testid="button-hero-see-how"
+                  data-testid="button-hero-take-assessment"
                   asChild
                 >
-                  <Link href="/gtm-engine">See How It Works</Link>
+                  <Link href="/assessment">Take Assessment</Link>
                 </Button>
               </div>
             </div>

@@ -5,6 +5,16 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { 
   Calculator, 
   TrendingUp, 
@@ -15,11 +25,15 @@ import {
   XCircle,
   Target,
   Zap,
-  ArrowRight
+  ArrowRight,
+  Share2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 type EngineOption = "lone-wolf" | "1-sdr" | "2-sdr" | "3-sdr";
 
@@ -170,7 +184,7 @@ export default function ROICalculator() {
                   <div>
                     <div className="flex justify-between mb-3">
                       <Label className="text-base font-semibold">Your Avg. 24-Month Client LTV</Label>
-                      <span className="text-lg font-mono font-bold text-primary" data-testid="text-ltv-value">
+                      <span className="text-lg font-mono font-bold gradient-text-purple" data-testid="text-ltv-value">
                         {formatCurrency(ltv[0])}
                       </span>
                     </div>
@@ -192,7 +206,7 @@ export default function ROICalculator() {
                   <div>
                     <div className="flex justify-between mb-3">
                       <Label className="text-base font-semibold">Your Close Rate from a Qualified Meeting</Label>
-                      <span className="text-lg font-mono font-bold text-primary" data-testid="text-close-rate-value">
+                      <span className="text-lg font-mono font-bold gradient-text-purple" data-testid="text-close-rate-value">
                         {closeRate[0]}%
                       </span>
                     </div>
@@ -375,7 +389,7 @@ export default function ROICalculator() {
                   {/* Projected New LTV Booked Per Month */}
                   <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
                     <p className="text-sm text-muted-foreground mb-1">Projected New LTV Booked Per Month</p>
-                    <p className="text-3xl font-bold font-mono text-primary" data-testid="text-projected-ltv">
+                    <p className="text-3xl font-bold font-mono gradient-text-purple" data-testid="text-projected-ltv">
                       {projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}
                     </p>
                   </div>
@@ -383,7 +397,7 @@ export default function ROICalculator() {
                   {/* Your Monthly ROI */}
                   <div className="p-4 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg border border-primary">
                     <p className="text-sm text-muted-foreground mb-1">Your Monthly ROI</p>
-                    <p className="text-4xl font-bold font-mono text-primary" data-testid="text-monthly-roi">
+                    <p className="text-4xl font-bold font-mono gradient-text-purple" data-testid="text-monthly-roi">
                       {monthlyROI > 0 ? `${formatNumber(monthlyROI, 0)}x` : '0x'}
                     </p>
                     {monthlyROI > 0 && (

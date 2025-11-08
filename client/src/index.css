@@ -136,9 +136,59 @@
   --chart-4: 251 49% 40%;       /* Purple dark */
   --chart-5: 354 70% 55%;       /* Coral variation */
 
+  /* ================================================
+     TYPOGRAPHY SYSTEM - Global font definitions
+     Future: Admin can control font families here
+     ================================================ */
   --font-sans: Inter, system-ui, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: 'JetBrains Mono', monospace;
+  
+  /* Typography Scale - Future admin control */
+  --font-size-h1: 2.5rem;      /* 40px */
+  --font-size-h2: 2rem;        /* 32px */
+  --font-size-h3: 1.5rem;      /* 24px */
+  --font-size-h4: 1.25rem;     /* 20px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-small: 0.875rem; /* 14px */
+  
+  /* ================================================
+     COMPONENT-SPECIFIC COLOR VARIABLES
+     Future: Admin can control component colors
+     ================================================ */
+  
+  /* Calculator Colors - ROI Calculator accent colors */
+  --calculator-accent: var(--community);           /* Purple for sliders and values */
+  --calculator-accent-foreground: var(--community-foreground);
+  --calculator-outline: var(--primary);            /* Red for borders and glow */
+  --calculator-cta: var(--primary);                /* Red for CTA buttons */
+  --calculator-cta-foreground: var(--primary-foreground);
+  
+  /* Widget Colors - Floating widgets and CTAs */
+  --widget-primary: var(--primary);
+  --widget-primary-foreground: var(--primary-foreground);
+  
+  /* ================================================
+     STYLE GROUPING RULES - Pattern Documentation
+     
+     H1 Pattern (Default):
+     - Line 1: Standard foreground color (black/white)
+     - Line 2: Gradient text (.gradient-text class)
+     - Exceptions: Hero section, Fullstack Sales Unit
+     
+     Button Pattern:
+     - Primary: Red (--primary) for main CTAs
+     - Secondary: Contextual colors for supporting actions
+     - All buttons use hover-elevate and active-elevate-2
+     
+     Badge Pattern:
+     - Community: Purple (--community)
+     - Competition: Red (--primary)
+     - Culture: Combined community + competition
+     
+     Future: These patterns can be configured via admin panel
+     ================================================ */
+  
   --radius: .5rem; /* 8px */
   --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
@@ -299,6 +349,17 @@
   --chart-3: 249 40% 45%;       /* Indigo */
   --chart-4: 251 55% 55%;       /* Purple dark */
   --chart-5: 354 75% 60%;       /* Coral variation */
+  
+  /* Calculator Colors - Dark mode variants */
+  --calculator-accent: var(--community);           /* Purple for sliders and values */
+  --calculator-accent-foreground: var(--community-foreground);
+  --calculator-outline: var(--primary);            /* Red for borders and glow */
+  --calculator-cta: var(--primary);                /* Red for CTA buttons */
+  --calculator-cta-foreground: var(--primary-foreground);
+  
+  /* Widget Colors - Dark mode variants */
+  --widget-primary: var(--primary);
+  --widget-primary-foreground: var(--primary-foreground);
 
   --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 100% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(0 0% 100% / 0.00);
@@ -600,6 +661,64 @@
       -webkit-text-fill-color: transparent;
       background-size: 200% 100%;
     }
+  }
+
+  /* ================================================
+     PURPLE/COMMUNITY GRADIENT - For calculator values
+     ================================================ */
+  
+  /* Light mode purple gradient */
+  html:not(.dark) .gradient-text-purple {
+    color: hsl(var(--community));
+    font-weight: 600;
+    
+    @supports (background-clip: text) or (-webkit-background-clip: text) {
+      background: linear-gradient(
+        90deg,
+        hsl(252 80% 28%) 0%,
+        hsl(252 80% 32%) 35%,
+        hsl(252 75% 38%) 65%,
+        hsl(252 70% 42%) 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% 100%;
+    }
+  }
+
+  /* Dark mode purple gradient */
+  html.dark .gradient-text-purple {
+    color: hsl(var(--community));
+    font-weight: 600;
+    
+    @supports (background-clip: text) or (-webkit-background-clip: text) {
+      background: linear-gradient(
+        90deg,
+        hsl(252 90% 50%) 0%,
+        hsl(252 90% 55%) 35%,
+        hsl(252 85% 60%) 65%,
+        hsl(252 80% 65%) 100%
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% 100%;
+    }
+  }
+
+  /* ================================================
+     CALCULATOR SLIDER COLORS - Override to purple
+     ================================================ */
+  
+  /* Target sliders within calculator cards */
+  [data-testid="card-hero-roi"] [role="slider"],
+  [data-testid="card-hero-roi"] [data-radix-collection-item] {
+    border-color: hsl(var(--calculator-accent));
+  }
+  
+  [data-testid="card-hero-roi"] [data-radix-slider-range] {
+    background-color: hsl(var(--calculator-accent));
   }
 
 /* Crimson to Royal Blue Gradient for Buttons */
@@ -1060,6 +1179,20 @@
 
 .animate-gentle-pulse:hover {
   animation-play-state: paused;
+}
+
+/* Subtle bounce animation for floating widget first appearance */
+@keyframes subtle-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-subtle-bounce {
+  animation: subtle-bounce 0.4s ease-in-out 3;
 }
 
 /* ================================================
