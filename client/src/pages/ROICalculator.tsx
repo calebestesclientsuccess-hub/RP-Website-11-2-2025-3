@@ -85,6 +85,9 @@ export default function ROICalculator() {
   const [ltv, setLtv] = useState([120000]);
   const [closeRate, setCloseRate] = useState([25]);
   const [selectedEngine, setSelectedEngine] = useState<EngineOption>("2-sdr");
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [recipientEmails, setRecipientEmails] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -131,6 +134,71 @@ export default function ROICalculator() {
   const projectedLTVPerMonth = projectedDealsPerMonth * ltv[0];
   const monthlyROI = projectedLTVPerMonth > 0 ? projectedLTVPerMonth / monthlyInvestment : 0;
 
+  const shareReportMutation = useMutation({
+    mutationFn: async (emails: string) => {
+      const reportData = {
+        emails: emails.split(',').map(e => e.trim()).filter(e => e),
+        ltv: ltv[0],
+        closeRate: closeRate[0],
+        selectedEngine,
+        engineName: config.name,
+        monthlyInvestment,
+        monthlySQOs,
+        costPerMeeting,
+        projectedDealsPerMonth,
+        projectedLTVPerMonth,
+        monthlyROI
+      };
+      return apiRequest('/api/share-roi-report', {
+        method: 'POST',
+        body: JSON.stringify(reportData),
+        headers: { 'Content-Type': 'application/json' }
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Report Shared!",
+        description: "Your ROI report has been sent successfully.",
+      });
+      setShareDialogOpen(false);
+      setRecipientEmails("");
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to share report. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleShareReport = () => {
+    if (!recipientEmails.trim()) {
+      toast({
+        title: "Email Required",
+        description: "Please enter at least one email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate email formats
+    const emails = recipientEmails.split(',').map(e => e.trim()).filter(e => e);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const invalidEmails = emails.filter(email => !emailRegex.test(email));
+    
+    if (invalidEmails.length > 0) {
+      toast({
+        title: "Invalid Email Format",
+        description: `Please check: ${invalidEmails.join(', ')}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    shareReportMutation.mutate(recipientEmails);
+  };
+
   return (
     <div className="min-h-screen">
       <SEO 
@@ -142,11 +210,12 @@ export default function ROICalculator() {
 
       {/* Hero Module */}
       <section className="pt-32 pb-16 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-primary/5 to-background">
-        <div className="max-w-7xl mx-auto text-center">
+        <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
+            className="text-center"
           >
             <Badge className="mb-4" variant="outline" data-testid="badge-calculator">
               <Calculator className="w-3 h-3 mr-1" />
@@ -155,9 +224,72 @@ export default function ROICalculator() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-hero">
               Calculate the ROI of a Guaranteed Sales Asset
             </h1>
-            <p className="text-xl text-muted-foreground max-w-4xl mx-auto" data-testid="text-hero-subtitle">
+            <p className="text-xl text-muted-foreground max-w-4xl mx-auto mb-8" data-testid="text-hero-subtitle">
               Stop guessing with $198k hires. Design a guaranteed revenue engine and see the 80x+ ROI.
             </p>
+            
+            {/* Share Report Button */}
+            <div className="flex justify-end max-w-7xl mx-auto">
+              <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" data-testid="button-share-report">
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share My Report
+                  </Button>
+                </DialogTrigger>
+                <DialogContent data-testid="dialog-share-report">
+                  <DialogHeader>
+                    <DialogTitle>Share Your ROI Report</DialogTitle>
+                    <DialogDescription>
+                      Enter email addresses (comma-separated for multiple recipients) to share your customized ROI analysis.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email-recipients">Email Recipients</Label>
+                      <Input
+                        id="email-recipients"
+                        placeholder="email@example.com, colleague@example.com"
+                        value={recipientEmails}
+                        onChange={(e) => setRecipientEmails(e.target.value)}
+                        data-testid="input-email-recipients"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Separate multiple emails with commas
+                      </p>
+                    </div>
+                    
+                    {/* Report Preview */}
+                    <div className="p-4 bg-muted/30 rounded-lg space-y-2 text-sm">
+                      <p className="font-semibold">Report will include:</p>
+                      <ul className="space-y-1 text-muted-foreground">
+                        <li>• LTV: {formatCurrency(ltv[0])}</li>
+                        <li>• Close Rate: {closeRate[0]}%</li>
+                        <li>• Selected Engine: {config.name}</li>
+                        <li>• Monthly ROI: {monthlyROI > 0 ? `${formatNumber(monthlyROI, 0)}x` : '0x'}</li>
+                        <li>• Projected LTV/Month: {projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShareDialogOpen(false)}
+                      data-testid="button-cancel-share"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleShareReport}
+                      disabled={shareReportMutation.isPending}
+                      data-testid="button-send-report"
+                    >
+                      {shareReportMutation.isPending ? "Sending..." : "Send Report"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </motion.div>
         </div>
       </section>

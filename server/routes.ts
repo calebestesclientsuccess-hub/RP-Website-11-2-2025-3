@@ -590,6 +590,171 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Share ROI Report endpoint
+  app.post("/api/share-roi-report", async (req, res) => {
+    try {
+      const { emails, ltv, closeRate, engineName, monthlyInvestment, monthlySQOs, 
+              costPerMeeting, projectedDealsPerMonth, projectedLTVPerMonth, monthlyROI } = req.body;
+
+      if (!emails || !Array.isArray(emails) || emails.length === 0) {
+        return res.status(400).json({
+          error: "At least one email address is required"
+        });
+      }
+
+      // Validate email formats
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const invalidEmails = emails.filter((email: string) => !emailRegex.test(email));
+      
+      if (invalidEmails.length > 0) {
+        return res.status(400).json({
+          error: "Invalid email format",
+          details: `Invalid emails: ${invalidEmails.join(', ')}`
+        });
+      }
+
+      // Validate numeric fields
+      if (typeof ltv !== 'number' || typeof closeRate !== 'number' || 
+          typeof monthlyInvestment !== 'number' || typeof monthlySQOs !== 'number' ||
+          typeof costPerMeeting !== 'number' || typeof projectedDealsPerMonth !== 'number' ||
+          typeof projectedLTVPerMonth !== 'number' || typeof monthlyROI !== 'number') {
+        return res.status(400).json({
+          error: "Invalid data format - numeric fields required"
+        });
+      }
+
+      // Format the email content
+      const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(value);
+      };
+
+      const formatNumber = (value: number, decimals = 0) => {
+        return new Intl.NumberFormat('en-US', {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        }).format(value);
+      };
+
+      const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+    .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+    .metric { background: white; padding: 20px; margin: 15px 0; border-radius: 8px; border-left: 4px solid #ef4444; }
+    .metric-label { font-size: 14px; color: #6b7280; margin-bottom: 5px; }
+    .metric-value { font-size: 24px; font-weight: bold; color: #1f2937; }
+    .highlight { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 25px; border-radius: 8px; text-align: center; margin: 20px 0; }
+    .highlight-value { font-size: 36px; font-weight: bold; margin: 10px 0; }
+    .footer { text-align: center; margin-top: 30px; padding: 20px; color: #6b7280; font-size: 14px; }
+    .cta { display: inline-block; background: #ef4444; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin: 0;">Your GTM Engine ROI Report</h1>
+      <p style="margin: 10px 0 0 0;">Customized analysis from Revenue Party</p>
+    </div>
+    <div class="content">
+      <p>Here's your personalized ROI analysis for a guaranteed sales engine:</p>
+      
+      <div class="metric">
+        <div class="metric-label">Your Average 24-Month Client LTV</div>
+        <div class="metric-value">${formatCurrency(ltv)}</div>
+      </div>
+      
+      <div class="metric">
+        <div class="metric-label">Your Close Rate from Qualified Meetings</div>
+        <div class="metric-value">${closeRate}%</div>
+      </div>
+      
+      <div class="metric">
+        <div class="metric-label">Selected Engine</div>
+        <div class="metric-value">${engineName}</div>
+      </div>
+      
+      <div class="metric">
+        <div class="metric-label">Monthly Investment</div>
+        <div class="metric-value">${formatCurrency(monthlyInvestment)}</div>
+      </div>
+      
+      <div class="metric">
+        <div class="metric-label">Guaranteed SQOs per Month</div>
+        <div class="metric-value">${monthlySQOs} meetings</div>
+      </div>
+      
+      <div class="metric">
+        <div class="metric-label">Cost per Guaranteed Meeting</div>
+        <div class="metric-value">${costPerMeeting > 0 ? formatCurrency(costPerMeeting) : 'N/A'}</div>
+      </div>
+      
+      <div class="metric">
+        <div class="metric-label">Projected New Deals per Month</div>
+        <div class="metric-value">${formatNumber(projectedDealsPerMonth, 1)} deals</div>
+      </div>
+      
+      <div class="metric">
+        <div class="metric-label">Projected New LTV Booked per Month</div>
+        <div class="metric-value">${projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}</div>
+      </div>
+      
+      <div class="highlight">
+        <div class="metric-label" style="color: rgba(255,255,255,0.9);">Your Monthly ROI</div>
+        <div class="highlight-value">${monthlyROI > 0 ? `${formatNumber(monthlyROI, 0)}x` : '0x'}</div>
+        <p style="margin: 10px 0 0 0; font-size: 14px;">Return on Investment Multiplier</p>
+      </div>
+      
+      <div style="text-align: center;">
+        <a href="https://revenueparty.com/roi-calculator" class="cta">View Full Calculator</a>
+      </div>
+      
+      <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;">
+        <strong>What This Means:</strong> For every dollar invested in your GTM Engine, you're projected to generate ${monthlyROI > 0 ? `${formatNumber(monthlyROI, 1)}x` : '0x'} in client lifetime value. This assumes a ${closeRate}% close rate from qualified meetings and an average client LTV of ${formatCurrency(ltv)}.
+      </p>
+    </div>
+    <div class="footer">
+      <p>This report was generated by the Revenue Party ROI Calculator</p>
+      <p>Ready to build your guaranteed revenue engine? <a href="https://revenueparty.com/assessment" style="color: #ef4444;">Take our assessment</a></p>
+    </div>
+  </div>
+</body>
+</html>
+      `;
+
+      // Send email to all recipients
+      for (const email of emails) {
+        try {
+          await sendGmailEmail({
+            to: email,
+            subject: "Your GTM Engine ROI Report",
+            html: htmlContent
+          });
+        } catch (emailError) {
+          console.error(`Failed to send email to ${email}:`, emailError);
+        }
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: `Report sent to ${emails.length} recipient${emails.length > 1 ? 's' : ''}`
+      });
+    } catch (error) {
+      console.error("Error sharing ROI report:", error);
+      return res.status(500).json({
+        error: "Failed to share report. Please try again."
+      });
+    }
+  });
+
   // Lead capture endpoint for DynamicForm submissions
   app.post("/api/leads/capture", async (req, res) => {
     try {
