@@ -619,47 +619,35 @@
      GRADIENT TEXT SYSTEM - Progressive Enhancement
      ================================================ */
 
-  /* Base gradient text class with fallback - LIGHT MODE - Red-focused */
+  /* Base gradient text class with fallback - LIGHT MODE - Blue to Red */
   html:not(.dark) .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: var(--gradient-fallback);
     font-weight: 600; /* Improve readability */
     
-    /* Layer 1: Red-focused gradient for capable browsers */
+    /* Layer 1: Blue to red gradient for capable browsers */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(
-        90deg,
-        hsl(var(--gradient-dark-red-hsl)) 0%,
-        hsl(var(--gradient-start-hsl)) 35%,
-        hsl(var(--gradient-pink-hsl)) 65%,
-        hsl(var(--gradient-magenta-hsl)) 100%
-      );
+      background: linear-gradient(21deg, hsl(243, 100%, 39%) 0%, hsl(0, 83%, 59%) 90%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-size: 200% 100%;
+      background-size: 150% 100%;
     }
   }
 
-  /* Dark mode gradient - uses warm red gradient (no blues/purples) */
+  /* Dark mode gradient - Blue to Red */
   html.dark .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: hsl(var(--primary));
     font-weight: 600;
     
-    /* Layer 1: Warm red gradient for capable browsers */
+    /* Layer 1: Blue to red gradient for capable browsers */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(
-        90deg,
-        hsl(var(--gradient-dark-red)) 0%,
-        hsl(var(--gradient-dark-crimson)) 30%,
-        hsl(var(--gradient-dark-rose)) 60%,
-        hsl(var(--gradient-dark-pink)) 100%
-      );
+      background: linear-gradient(21deg, hsl(243, 100%, 39%) 0%, hsl(0, 83%, 59%) 90%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-size: 200% 100%;
+      background-size: 150% 100%;
     }
   }
 
@@ -667,43 +655,31 @@
      PURPLE/COMMUNITY GRADIENT - For calculator values
      ================================================ */
   
-  /* Light mode purple gradient */
+  /* Light mode blue to red gradient */
   html:not(.dark) .gradient-text-purple {
     color: hsl(var(--community));
     font-weight: 600;
     
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(
-        90deg,
-        hsl(252 80% 28%) 0%,
-        hsl(252 80% 32%) 35%,
-        hsl(252 75% 38%) 65%,
-        hsl(252 70% 42%) 100%
-      );
+      background: linear-gradient(21deg, hsl(243, 100%, 39%) 0%, hsl(0, 83%, 59%) 90%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-size: 200% 100%;
+      background-size: 150% 100%;
     }
   }
 
-  /* Dark mode purple gradient */
+  /* Dark mode blue to red gradient */
   html.dark .gradient-text-purple {
     color: hsl(var(--community));
     font-weight: 600;
     
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(
-        90deg,
-        hsl(252 90% 50%) 0%,
-        hsl(252 90% 55%) 35%,
-        hsl(252 85% 60%) 65%,
-        hsl(252 80% 65%) 100%
-      );
+      background: linear-gradient(21deg, hsl(243, 100%, 39%) 0%, hsl(0, 83%, 59%) 90%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-size: 200% 100%;
+      background-size: 150% 100%;
     }
   }
 

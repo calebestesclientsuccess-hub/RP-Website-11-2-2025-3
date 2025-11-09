@@ -222,7 +222,8 @@ export default function ROICalculator() {
               Interactive ROI Calculator
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-hero">
-              Calculate the ROI of a Guaranteed Sales Asset
+              Calculate the ROI of<br />
+              <span className="gradient-text gradient-hero">a Guaranteed Sales Asset</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-4xl mx-auto mb-8" data-testid="text-hero-subtitle">
               Stop guessing with $198k hires. Design a guaranteed revenue engine and see the 80x+ ROI.
@@ -316,7 +317,7 @@ export default function ROICalculator() {
                   <div>
                     <div className="flex justify-between mb-3">
                       <Label className="text-base font-semibold">Your Avg. 24-Month Client LTV</Label>
-                      <span className="text-lg font-mono font-bold text-community" data-testid="text-ltv-value">
+                      <span className="text-lg font-mono font-bold gradient-text-purple" data-testid="text-ltv-value">
                         {formatCurrency(ltv[0])}
                       </span>
                     </div>
@@ -338,7 +339,7 @@ export default function ROICalculator() {
                   <div>
                     <div className="flex justify-between mb-3">
                       <Label className="text-base font-semibold">Your Close Rate from a Qualified Meeting</Label>
-                      <span className="text-lg font-mono font-bold text-community" data-testid="text-close-rate-value">
+                      <span className="text-lg font-mono font-bold gradient-text-purple" data-testid="text-close-rate-value">
                         {closeRate[0]}%
                       </span>
                     </div>
