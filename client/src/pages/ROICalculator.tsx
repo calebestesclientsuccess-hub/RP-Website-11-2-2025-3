@@ -474,7 +474,7 @@ export default function ROICalculator() {
                   {/* Monthly Investment */}
                   <div className="p-4 bg-background rounded-lg border border-border">
                     <p className="text-sm text-muted-foreground mb-1">Monthly Investment</p>
-                    <p className="text-2xl font-bold font-mono" data-testid="text-monthly-investment">
+                    <p className="text-2xl font-bold font-mono gradient-text-purple" data-testid="text-monthly-investment">
                       {formatCurrency(monthlyInvestment)}
                     </p>
                   </div>
@@ -482,7 +482,7 @@ export default function ROICalculator() {
                   {/* Monthly Guaranteed SQOs */}
                   <div className="p-4 bg-background rounded-lg border border-border">
                     <p className="text-sm text-muted-foreground mb-1">Monthly Guaranteed SQOs</p>
-                    <p className="text-2xl font-bold font-mono" data-testid="text-monthly-sqos">
+                    <p className="text-2xl font-bold font-mono gradient-text-purple" data-testid="text-monthly-sqos">
                       {monthlySQOs > 0 ? monthlySQOs : 'None'}
                     </p>
                     {monthlySQOs === 0 && (
@@ -496,7 +496,7 @@ export default function ROICalculator() {
                   {/* Cost per Guaranteed Meeting */}
                   <div className="p-4 bg-background rounded-lg border border-border">
                     <p className="text-sm text-muted-foreground mb-1">Your Cost per Guaranteed Meeting</p>
-                    <p className="text-2xl font-bold font-mono" data-testid="text-cost-per-meeting">
+                    <p className="text-2xl font-bold font-mono gradient-text-purple" data-testid="text-cost-per-meeting">
                       {costPerMeeting > 0 ? formatCurrency(costPerMeeting) : 'N/A'}
                     </p>
                     {costPerMeeting === 0 && (

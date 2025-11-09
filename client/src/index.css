@@ -619,15 +619,15 @@
      GRADIENT TEXT SYSTEM - Progressive Enhancement
      ================================================ */
 
-  /* Base gradient text class with fallback - LIGHT MODE - Blue to Red */
+  /* Base gradient text class with fallback - LIGHT MODE - Crimson to Charcoal */
   html:not(.dark) .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: var(--gradient-fallback);
     font-weight: 600; /* Improve readability */
     
-    /* Layer 1: Blue to red gradient for capable browsers */
+    /* Layer 1: Crimson to charcoal gradient for capable browsers */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(21deg, hsl(243, 100%, 39%) 0%, hsl(0, 83%, 59%) 90%);
+      background: linear-gradient(21deg, hsl(348, 83%, 47%) 0%, hsl(0, 0%, 10%) 90%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -635,15 +635,15 @@
     }
   }
 
-  /* Dark mode gradient - Blue to Red */
+  /* Dark mode gradient - Crimson to Charcoal */
   html.dark .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: hsl(var(--primary));
     font-weight: 600;
     
-    /* Layer 1: Blue to red gradient for capable browsers */
+    /* Layer 1: Crimson to charcoal gradient for capable browsers */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(21deg, hsl(243, 100%, 39%) 0%, hsl(0, 83%, 59%) 90%);
+      background: linear-gradient(21deg, hsl(348, 83%, 47%) 0%, hsl(0, 0%, 10%) 90%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -655,13 +655,13 @@
      PURPLE/COMMUNITY GRADIENT - For calculator values
      ================================================ */
   
-  /* Light mode blue to red gradient */
+  /* Light mode crimson to charcoal gradient */
   html:not(.dark) .gradient-text-purple {
     color: hsl(var(--community));
     font-weight: 600;
     
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(21deg, hsl(243, 100%, 39%) 0%, hsl(0, 83%, 59%) 90%);
+      background: linear-gradient(21deg, hsl(348, 83%, 47%) 0%, hsl(0, 0%, 10%) 90%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -669,13 +669,13 @@
     }
   }
 
-  /* Dark mode blue to red gradient */
+  /* Dark mode crimson to charcoal gradient */
   html.dark .gradient-text-purple {
     color: hsl(var(--community));
     font-weight: 600;
     
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(21deg, hsl(243, 100%, 39%) 0%, hsl(0, 83%, 59%) 90%);
+      background: linear-gradient(21deg, hsl(348, 83%, 47%) 0%, hsl(0, 0%, 10%) 90%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -706,6 +706,7 @@
 
   /* Context-aware gradient intensities - LIGHT MODE */
   html:not(.dark) .gradient-hero {
+    background-image: linear-gradient(21deg, hsl(348, 83%, 47%) 0%, hsl(0, 0%, 10%) 90%);
     filter: saturate(1.2) brightness(1.05);
   }
 
@@ -723,6 +724,7 @@
 
   /* Context-aware gradient intensities - DARK MODE */
   html.dark .gradient-hero {
+    background-image: linear-gradient(21deg, hsl(348, 83%, 47%) 0%, hsl(0, 0%, 10%) 90%);
     filter: saturate(1.15) brightness(1.1);
   }
 
@@ -1036,24 +1038,11 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* Badge Texture - Worn, Dimpled Paper Effect */
+/* Badge Texture - Aggressive Crimson to Charcoal Gradient */
 .badge-texture {
   position: relative;
-  background-image: 
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 2px,
-      rgba(255, 255, 255, 0.03) 2px,
-      rgba(255, 255, 255, 0.03) 4px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.02) 2px,
-      rgba(0, 0, 0, 0.02) 4px
-    );
+  background-image: linear-gradient(21deg, hsl(348, 83%, 47%) 0%, hsl(0, 0%, 10%) 90%);
+  background-repeat: no-repeat;
   box-shadow: 
     inset 0 1px 2px rgba(0, 0, 0, 0.08),
     inset 0 -1px 1px rgba(255, 255, 255, 0.1),
@@ -1327,31 +1316,8 @@ html:not(.dark) a.inline-flex.items-center.justify-center[role="button"] {
 
 /* 4. Vintage Stamp Badges (light mode only) */
 html:not(.dark) .badge-texture {
-  /* Perforated edge effect */
-  background-image: 
-    /* Cross-hatch paper texture */
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.02) 2px,
-      rgba(0, 0, 0, 0.02) 4px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.015) 2px,
-      rgba(0, 0, 0, 0.015) 4px
-    ),
-    /* Perforated dots pattern */
-    radial-gradient(circle at 0% 0%, transparent 1.5px, currentColor 1.5px, currentColor 2px, transparent 2px),
-    radial-gradient(circle at 100% 0%, transparent 1.5px, currentColor 1.5px, currentColor 2px, transparent 2px),
-    radial-gradient(circle at 0% 100%, transparent 1.5px, currentColor 1.5px, currentColor 2px, transparent 2px),
-    radial-gradient(circle at 100% 100%, transparent 1.5px, currentColor 1.5px, currentColor 2px, transparent 2px);
-  background-size: 100% 100%, 100% 100%, 8px 8px, 8px 8px, 8px 8px, 8px 8px;
-  background-position: 0 0, 0 0, 0 0, calc(100% - 0px) 0, 0 calc(100% - 0px), calc(100% - 0px) calc(100% - 0px);
-  background-repeat: repeat, repeat, repeat-y, repeat-y, repeat-x, repeat-x;
+  background-image: linear-gradient(21deg, hsl(348, 83%, 47%) 0%, hsl(0, 0%, 10%) 90%);
+  background-repeat: no-repeat;
   
   /* Worn ink effect - enhanced shadows */
   box-shadow: 

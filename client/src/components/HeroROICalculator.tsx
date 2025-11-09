@@ -57,7 +57,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           <div>
             <div className="flex justify-between mb-2">
               <label className="text-sm font-medium">Your 24-Month Client LTV</label>
-              <span className="text-sm font-mono font-bold text-community" data-testid="text-ltv-value">
+              <span className="text-sm font-mono font-bold gradient-text-purple" data-testid="text-ltv-value">
                 {formatCurrency(ltv[0])}
               </span>
             </div>
@@ -75,7 +75,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           <div>
             <div className="flex justify-between mb-2">
               <label className="text-sm font-medium">Close Rate from Qualified Meeting</label>
-              <span className="text-sm font-mono font-bold text-community" data-testid="text-close-rate-value">
+              <span className="text-sm font-mono font-bold gradient-text-purple" data-testid="text-close-rate-value">
                 {closeRate[0]}%
               </span>
             </div>
@@ -95,7 +95,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-card/50 p-3 rounded-lg border border-border">
               <p className="text-xs text-muted-foreground mb-1">Monthly Investment</p>
-              <p className="text-lg font-bold font-mono" data-testid="text-monthly-investment">
+              <p className="text-lg font-bold font-mono gradient-text-purple" data-testid="text-monthly-investment">
                 {formatCurrency(monthlyInvestment)}
               </p>
             </div>
@@ -110,13 +110,13 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-card/50 p-3 rounded-lg border border-border">
               <p className="text-xs text-muted-foreground mb-1">Cost per Meeting</p>
-              <p className="text-lg font-bold font-mono" data-testid="text-cost-per-meeting">
+              <p className="text-lg font-bold font-mono gradient-text-purple" data-testid="text-cost-per-meeting">
                 {formatCurrency(costPerMeeting)}
               </p>
             </div>
             <div className="bg-card/50 p-3 rounded-lg border border-border">
               <p className="text-xs text-muted-foreground mb-1">ROI</p>
-              <p className="text-lg font-bold font-mono text-community" data-testid="text-roi">
+              <p className="text-lg font-bold font-mono gradient-text-purple" data-testid="text-roi">
                 {formatNumber(roi)}x
               </p>
             </div>
@@ -124,7 +124,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
 
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
             <p className="text-xs text-muted-foreground mb-1">Projected New LTV/Month</p>
-            <p className="text-3xl font-bold text-community font-mono" data-testid="text-projected-ltv">
+            <p className="text-3xl font-bold gradient-text-purple font-mono" data-testid="text-projected-ltv">
               {formatCurrency(projectedLTVPerMonth)}
             </p>
           </div>
