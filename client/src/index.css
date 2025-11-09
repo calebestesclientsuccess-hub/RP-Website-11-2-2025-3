@@ -88,8 +88,8 @@
 
   --primary-foreground: 0 0% 100%;
   
-  /* Community: Deep Mature Purple - rich and sophisticated */
-  --community: 252 80% 32%;
+  /* Community: Vibrant Purple - matching the badge */
+  --community: 252 67% 53%;
   
   --community-foreground: 0 0% 100%;
   
@@ -298,10 +298,10 @@
 
   --primary-foreground: 0 0% 100%;
   
-  /* Community: Deep Mature Purple - rich and sophisticated for dark mode */
-  --community: 252 90% 55%;
+  /* Community: Vibrant Purple - matching the badge for dark mode */
+  --community: 252 67% 58%;
   
-  --community-foreground: 249 12% 6%;
+  --community-foreground: 0 0% 100%;
   
   /* Community: Deep Indigo - good contrast maintained */
   --indigo: 249 40% 45%;
