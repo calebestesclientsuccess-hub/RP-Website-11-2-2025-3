@@ -17,7 +17,8 @@ Revenue Party is a marketing website for a Go-to-Market (GTM) consultancy, speci
 The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js backend with PostgreSQL and Drizzle ORM. The architecture prioritizes simplicity and maintainability, including a full-featured Content Management System (CMS) and a multi-user authentication system with role-based access control.
 
 **UI/UX Decisions:**
-- **Color Philosophy**: Semantic color system meeting WCAG AA accessibility standards, featuring a red-focused gradient system.
+- **Color Philosophy**: Semantic color system meeting WCAG AA accessibility standards, featuring a red-focused gradient system with purple accent (RGB 88, 50, 175).
+  - **Purple Specification**: The `--community` color uses exact RGB(88, 50, 175) = HSL(258, 56%, 44%) for calculator elements, community badge, and slider components.
 - **Typography**: Inter for headings/body, JetBrains Mono for monospace, with an inverted pyramid hierarchy.
 - **Design System**: Semantic color tokens, badge variants, and consistent typography, supporting both dark (default) and sophisticated light themes. Gradient text is used for numbers and key highlights.
 - **Animations**: Minimal GSAP usage (only for `BuildAndRampTimeline`) respecting `prefers-reduced-motion`.
