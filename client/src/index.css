@@ -88,8 +88,8 @@
 
   --primary-foreground: 0 0% 100%;
   
-  /* Community: Vibrant Purple - matching the badge */
-  --community: 252 67% 53%;
+  /* Community: Purple - RGB(88, 50, 175) */
+  --community: 258 56% 44%;
   
   --community-foreground: 0 0% 100%;
   
@@ -298,8 +298,8 @@
 
   --primary-foreground: 0 0% 100%;
   
-  /* Community: Vibrant Purple - matching the badge for dark mode */
-  --community: 252 67% 58%;
+  /* Community: Purple - RGB(88, 50, 175) for dark mode */
+  --community: 258 56% 50%;
   
   --community-foreground: 0 0% 100%;
   
