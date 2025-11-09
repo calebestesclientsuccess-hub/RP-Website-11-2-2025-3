@@ -15,9 +15,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { 
-  Calculator, 
-  TrendingUp, 
+import {
+  Calculator,
+  TrendingUp,
   DollarSign,
   Shield,
   AlertTriangle,
@@ -186,7 +186,7 @@ export default function ROICalculator() {
     const emails = recipientEmails.split(',').map(e => e.trim()).filter(e => e);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const invalidEmails = emails.filter(email => !emailRegex.test(email));
-    
+
     if (invalidEmails.length > 0) {
       toast({
         title: "Invalid Email Format",
@@ -201,7 +201,7 @@ export default function ROICalculator() {
 
   return (
     <div className="min-h-screen">
-      <SEO 
+      <SEO
         title="Calculate the ROI of a Guaranteed Sales Asset | Revenue Party"
         description="Stop guessing with $198k hires. Design a guaranteed revenue engine and see the 80x+ ROI. Compare internal hires vs. GTM Engine systems."
         keywords="ROI calculator, sales ROI, GTM engine calculator, BDR cost calculator, sales team ROI, guaranteed meetings"
@@ -227,7 +227,7 @@ export default function ROICalculator() {
             <p className="text-xl text-muted-foreground max-w-4xl mx-auto mb-8" data-testid="text-hero-subtitle">
               Stop guessing with $198k hires. Design a guaranteed revenue engine and see the 80x+ ROI.
             </p>
-            
+
             {/* Share Report Button */}
             <div className="flex justify-end max-w-7xl mx-auto">
               <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
@@ -258,7 +258,7 @@ export default function ROICalculator() {
                         Separate multiple emails with commas
                       </p>
                     </div>
-                    
+
                     {/* Report Preview */}
                     <div className="p-4 bg-muted/30 rounded-lg space-y-2 text-sm">
                       <p className="font-semibold">Report will include:</p>
@@ -298,7 +298,7 @@ export default function ROICalculator() {
       <section className="py-16 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8">
-            
+
             {/* Column 1: Your Inputs */}
             <div className="space-y-6">
               {/* Part 1: Your Business Value */}
@@ -316,7 +316,7 @@ export default function ROICalculator() {
                   <div>
                     <div className="flex justify-between mb-3">
                       <Label className="text-base font-semibold">Your Avg. 24-Month Client LTV</Label>
-                      <span className="text-lg font-mono font-bold gradient-text-purple" data-testid="text-ltv-value">
+                      <span className="text-lg font-mono font-bold text-community" data-testid="text-ltv-value">
                         {formatCurrency(ltv[0])}
                       </span>
                     </div>
@@ -338,7 +338,7 @@ export default function ROICalculator() {
                   <div>
                     <div className="flex justify-between mb-3">
                       <Label className="text-base font-semibold">Your Close Rate from a Qualified Meeting</Label>
-                      <span className="text-lg font-mono font-bold gradient-text-purple" data-testid="text-close-rate-value">
+                      <span className="text-lg font-mono font-bold text-community" data-testid="text-close-rate-value">
                         {closeRate[0]}%
                       </span>
                     </div>
@@ -367,8 +367,8 @@ export default function ROICalculator() {
                   </h2>
                 </div>
 
-                <RadioGroup 
-                  value={selectedEngine} 
+                <RadioGroup
+                  value={selectedEngine}
                   onValueChange={(value) => setSelectedEngine(value as EngineOption)}
                   className="space-y-4"
                   data-testid="radio-group-engine"
@@ -376,26 +376,26 @@ export default function ROICalculator() {
                   {(Object.keys(engineConfigs) as EngineOption[]).map((key) => {
                     const config = engineConfigs[key];
                     const isLoneWolf = key === "lone-wolf";
-                    
+
                     return (
-                      <div 
+                      <div
                         key={key}
                         className={`relative border rounded-lg p-4 hover-elevate transition-all ${
-                          selectedEngine === key 
-                            ? 'border-primary bg-primary/5' 
+                          selectedEngine === key
+                            ? 'border-primary bg-primary/5'
                             : 'border-border'
                         } ${isLoneWolf ? 'border-destructive/30 bg-destructive/5' : ''}`}
                         data-testid={`radio-option-${key}`}
                       >
                         <div className="flex items-start gap-3">
-                          <RadioGroupItem 
-                            value={key} 
+                          <RadioGroupItem
+                            value={key}
                             id={key}
                             className="mt-1"
                             data-testid={`radio-button-${key}`}
                           />
-                          <Label 
-                            htmlFor={key} 
+                          <Label
+                            htmlFor={key}
                             className="flex-1 cursor-pointer"
                           >
                             <div className="flex items-center gap-2 mb-2">
@@ -438,8 +438,8 @@ export default function ROICalculator() {
                                 )}
                                 <span className="text-muted-foreground">
                                   Reliability: <span className={`font-semibold ${
-                                    isLoneWolf 
-                                      ? 'text-destructive' 
+                                    isLoneWolf
+                                      ? 'text-destructive'
                                       : 'text-green-600 dark:text-green-400'
                                   }`}>
                                     {config.reliability}
@@ -611,14 +611,14 @@ export default function ROICalculator() {
               The Math is Clear. The Blueprint is Next.
             </h2>
             <p className="text-lg text-muted-foreground mb-8" data-testid="text-cta-body">
-              This is the math. Now let's apply it. Schedule a free GTM Audit with an Architect, 
+              This is the math. Now let's apply it. Schedule a free GTM Audit with an Architect,
               and we will build this exact blueprint for your business.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button 
-                size="lg" 
-                className="gap-2 min-w-[280px]" 
+              <Button
+                size="lg"
+                className="gap-2 min-w-[280px]"
                 data-testid="button-schedule-audit"
                 asChild
               >
@@ -627,11 +627,11 @@ export default function ROICalculator() {
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
-              
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="gap-2 min-w-[280px]" 
+
+              <Button
+                size="lg"
+                variant="outline"
+                className="gap-2 min-w-[280px]"
                 data-testid="button-assessment"
                 asChild
               >
