@@ -196,16 +196,12 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   useEffect(() => {
     const updateSelectionPosition = () => {
       const isMobile = window.innerWidth < 768;
-      const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
       
       if (isMobile) {
-        // Mobile: bottom-left (225°) for better visibility
+        // Mobile: bottom-left (225°) for better visibility - 7 o'clock position
         setSelectedPosition(225);
-      } else if (isTablet) {
-        // Tablet: slightly adjusted (200°)
-        setSelectedPosition(200);
       } else {
-        // Desktop: left side (180°)
+        // Desktop/Tablet: left side (180°) - 9 o'clock position
         setSelectedPosition(180);
       }
     };
@@ -413,8 +409,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             const newRotation = (currentRotation - 3 + (rotationIncrement + 3) * progress) % 360;
             setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
             
-            // Update selectedIndex at 70% (earlier for better sync)
-            if (progress >= 0.70 && selectedIndex !== nextIndex) {
+            // Update selectedIndex when the badge is VISUALLY at the selected position
+            // This happens around 85-90% of the rotation
+            if (progress >= 0.85 && selectedIndex !== nextIndex) {
               setSelectedIndex(nextIndex);
             }
           }
@@ -739,7 +736,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
                 // Determine if this badge is at the selected position (responsive based on viewport)
                 const normalizedAngle = totalAngle % 360;
-                const isAtSelectedPosition = Math.abs(normalizedAngle - selectedPosition) < 5; // Within 5° of selected position
+                // Tighter threshold for more precise highlighting (3° instead of 5°)
+                const isAtSelectedPosition = Math.abs(normalizedAngle - selectedPosition) < 3;
                 
                 // Determine if this is the NEXT badge (the one about to be selected)
                 const nextIndex = (selectedIndex + 1) % powers.length;
