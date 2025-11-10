@@ -36,7 +36,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
     if (value >= 1000000) {
       return `$${(value / 1000000).toFixed(1)}M`;
     } else if (value >= 1000) {
-      return `$${(value / 1000).toFixed(1)}K`;
+      return `$${Math.round(value / 1000)}K`;
     }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -127,7 +127,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
         <div className="mt-4 pt-4 border-t border-border space-y-2.5">
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-card/50 p-2.5 rounded-lg border border-border">
-              <p className="text-xs text-muted-foreground mb-0.5">Guaranteed Meetings/Mo</p>
+              <p className="text-xs text-muted-foreground mb-0.5">Real Opportunities Each Month</p>
               <p className="text-base font-bold font-mono" data-testid="text-guaranteed-sqos">
                 {guaranteedSQOs}
               </p>
@@ -143,28 +143,21 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           {/* Side by side revenue metrics */}
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
-              <p className="text-xs text-muted-foreground mb-0.5">New LTV/Month</p>
+              <p className="text-xs text-muted-foreground mb-0.5">Additional Monthly Revenue</p>
               <p className="text-xl font-bold font-mono" data-testid="text-projected-ltv">
                 {formatCurrency(projectedLTVPerMonth)}
               </p>
             </div>
 
             <div className="bg-primary/10 p-3 rounded-lg border border-primary/30">
-              <p className="text-xs text-muted-foreground mb-0.5">New LTV/Year</p>
+              <p className="text-xs text-muted-foreground mb-0.5">Additional Annual Revenue</p>
               <p className="text-xl font-bold font-mono" data-testid="text-projected-ltv-annual">
                 {formatCurrency(projectedLTVPerYear)}
               </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Based on 220 meetings (Dec excluded for training)
+              </p>
             </div>
-          </div>
-
-          <div className="bg-card/50 p-2.5 rounded-lg border border-border">
-            <p className="text-xs text-muted-foreground mb-0.5">Annual ROI</p>
-            <p className="text-lg font-bold font-mono" data-testid="text-annual-roi">
-              {formatNumber(annualROI)}x
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Based on 220 meetings (Dec excluded for training)
-            </p>
           </div>
 
           <Button 
