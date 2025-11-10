@@ -639,36 +639,28 @@
      GRADIENT TEXT SYSTEM - Progressive Enhancement
      ================================================ */
 
-  /* Base gradient text class - Pure blood crimson, no glow */
+  /* Base gradient text class - Rich crimson with subtle depth */
   html:not(.dark) .gradient-text {
-    /* Deep blood crimson with purple undertone mixed into the color itself */
-    color: #8B1538 !important;
+    /* Deep crimson red - the color you loved */
+    color: #DC143C;
     font-weight: 600;
     
-    /* Minimal dimensional depth - 1px shadow only */
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
-    
-    /* Remove any gradient backgrounds that might be interfering */
-    background: none !important;
-    -webkit-background-clip: initial !important;
-    background-clip: initial !important;
-    -webkit-text-fill-color: initial !important;
+    /* Subtle dimensional depth for richness */
+    text-shadow: 
+      0 1px 2px rgba(0, 0, 0, 0.15),
+      0 0 8px rgba(220, 20, 60, 0.1);
   }
 
-  /* Dark mode - Blood crimson with same minimal depth */
+  /* Dark mode - Vibrant crimson with gentle glow */
   html.dark .gradient-text {
-    /* Slightly brighter blood crimson for dark backgrounds */
-    color: #A01A3F !important;
+    /* Rich crimson red - same beautiful color */
+    color: #DC143C;
     font-weight: 600;
     
-    /* Minimal dimensional depth - 1px shadow only */
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
-    
-    /* Remove any gradient backgrounds that might be interfering */
-    background: none !important;
-    -webkit-background-clip: initial !important;
-    background-clip: initial !important;
-    -webkit-text-fill-color: initial !important;
+    /* Gentle glow that makes it pop on dark backgrounds */
+    text-shadow: 
+      0 1px 3px rgba(0, 0, 0, 0.3),
+      0 0 12px rgba(220, 20, 60, 0.15);
   }
 
   /* Optional pulsing - apply with .gradient-text-pulse class */
