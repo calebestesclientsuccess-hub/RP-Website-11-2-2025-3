@@ -1186,6 +1186,12 @@ html.dark .secondary-cta:hover {
   transform: translateY(1px);
 }
 
+/* Focus state for accessibility */
+.secondary-cta:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
 /* Icon animations within secondary CTAs */
 .secondary-cta svg {
   transition: transform 0.2s ease;
@@ -1193,6 +1199,22 @@ html.dark .secondary-cta:hover {
 
 .secondary-cta:hover svg {
   transform: translateX(2px);
+}
+
+/* Disabled state */
+.secondary-cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondary-cta:disabled:hover {
+  background-color: hsl(var(--foreground));
+  color: hsl(var(--primary));
+}
+
+html.dark .secondary-cta:disabled:hover {
+  background-color: hsl(0 0% 100%);
+  color: hsl(var(--primary));
 }
 
 .animated-border-glow {
