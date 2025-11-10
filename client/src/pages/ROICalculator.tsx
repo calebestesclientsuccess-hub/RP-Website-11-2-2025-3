@@ -159,19 +159,24 @@ export default function ROICalculator() {
       toast({
         title: "Report Sent!",
         description: (
-          <div className="space-y-3">
-            <p>Your ROI report has been sent successfully.</p>
+          <div className="space-y-4 pt-2">
+            <p className="text-sm">Your ROI report has been sent successfully.</p>
             <Button
               asChild
-              className="w-full gradient-button-crimson-blue animate-pulse hover:animate-none shadow-lg hover:shadow-xl transition-all duration-300"
+              className="w-full h-12 text-base font-semibold gradient-button-crimson-blue shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 animate-shimmer hover:animate-none"
+              style={{
+                background: 'linear-gradient(90deg, #ef4444, #dc2626, #7c3aed, #6366f1, #ef4444)',
+                backgroundSize: '300% 100%',
+              }}
             >
               <Link href="/assessment">
                 Take Full Assessment
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Link>
             </Button>
           </div>
         ),
+        duration: 8000,
       });
       setShareDialogOpen(false);
       setRecipientEmails("");
