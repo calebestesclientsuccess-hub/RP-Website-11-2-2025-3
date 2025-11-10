@@ -647,7 +647,7 @@
 
     /* Layer 1: New 4-stop crimson-to-midnight gradient for capable browsers */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, #CF2D2D 13%, #B82323 54%, #6F0D85 75%, #320440 92%);
+      background: linear-gradient(90deg, rgba(207, 45, 45, 1) 13%, rgba(184, 35, 35, 0.99) 54%, rgba(76, 9, 89, 1) 75%, rgba(28, 3, 41, 1) 92%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -663,7 +663,7 @@
 
     /* Layer 1: New 4-stop crimson-to-midnight gradient for capable browsers */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, #CF2D2D 13%, #B82323 54%, #6F0D85 75%, #320440 92%);
+      background: linear-gradient(90deg, rgba(207, 45, 45, 1) 13%, rgba(184, 35, 35, 0.99) 54%, rgba(76, 9, 89, 1) 75%, rgba(28, 3, 41, 1) 92%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -681,7 +681,7 @@
     font-weight: 600;
 
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, #CF2D2D 13%, #B82323 54%, #6F0D85 75%, #320440 92%);
+      background: linear-gradient(90deg, rgba(207, 45, 45, 1) 13%, rgba(184, 35, 35, 0.99) 54%, rgba(76, 9, 89, 1) 75%, rgba(28, 3, 41, 1) 92%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -695,7 +695,7 @@
     font-weight: 600;
 
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, #CF2D2D 13%, #B82323 54%, #6F0D85 75%, #320440 92%);
+      background: linear-gradient(90deg, rgba(207, 45, 45, 1) 13%, rgba(184, 35, 35, 0.99) 54%, rgba(76, 9, 89, 1) 75%, rgba(28, 3, 41, 1) 92%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
