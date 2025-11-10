@@ -263,7 +263,7 @@ export default function ROICalculator() {
       </section>
 
       {/* Calculator Section - 2 Column Layout */}
-      <section className="py-16 px-4 md:px-6 lg:px-8">
+      <section className="pt-9 pb-16 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Container with relative positioning for floating button */}
           <div className="relative pt-16">
