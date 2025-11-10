@@ -270,66 +270,66 @@
   /* Dark backgrounds with subtle purple undertones */
   --background: 249 12% 6%;
 
-  --foreground: 0 0% 98%;
+  --foreground: 0 0% 91%;
 
   --border: 249 8% 16%;
 
   --card: 249 10% 11%;
 
-  --card-foreground: 0 0% 98%;
+  --card-foreground: 0 0% 91%;
 
   --card-border: 249 8% 15%;
 
   --sidebar: 249 12% 7%;
 
-  --sidebar-foreground: 0 0% 98%;
+  --sidebar-foreground: 0 0% 91%;
 
   --sidebar-border: 249 10% 12%;
 
   --sidebar-primary: 0 85% 45%;
 
-  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-primary-foreground: 0 0% 91%;
 
   --sidebar-accent: 249 8% 14%;
 
-  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-accent-foreground: 0 0% 91%;
 
   --sidebar-ring: 0 85% 45%;
 
   --popover: 249 10% 13%;
 
-  --popover-foreground: 0 0% 98%;
+  --popover-foreground: 0 0% 91%;
 
   --popover-border: 249 8% 17%;
 
   /* Competition: Accessible red for dark mode (4.5:1+ contrast) */
   --primary: 0 85% 45%;
 
-  --primary-foreground: 0 0% 100%;
+  --primary-foreground: 0 0% 91%;
 
   /* Community: Purple - RGB(88, 50, 175) for dark mode */
   --community: 258 56% 44%;
 
-  --community-foreground: 0 0% 100%;
+  --community-foreground: 0 0% 91%;
 
   /* Tertiary CTA: Purple - RGB(95, 61, 182) for dark mode */
   --tertiary: 258 47% 46%;
-  --tertiary-foreground: 0 0% 100%;
+  --tertiary-foreground: 0 0% 91%;
 
   /* Community: Deep Indigo - good contrast maintained */
   --indigo: 249 40% 45%;
 
-  --indigo-foreground: 0 0% 98%;
+  --indigo-foreground: 0 0% 91%;
 
   /* Community: Purple Dark - darkened for accessibility */
   --purple-dark: 251 55% 45%;
 
-  --purple-dark-foreground: 0 0% 98%;
+  --purple-dark-foreground: 0 0% 91%;
 
   /* Purple-tinted secondary */
   --secondary: 249 8% 16%;
 
-  --secondary-foreground: 0 0% 98%;
+  --secondary-foreground: 0 0% 91%;
 
   /* Purple-tinted muted */
   --muted: 249 6% 15%;
@@ -339,11 +339,11 @@
   /* Purple-tinted accent */
   --accent: 250 12% 18%;
 
-  --accent-foreground: 0 0% 98%;
+  --accent-foreground: 0 0% 91%;
 
   --destructive: 0 84% 60%;
 
-  --destructive-foreground: 0 0% 98%;
+  --destructive-foreground: 0 0% 91%;
 
   --input: 249 6% 35%;
   --ring: 0 85% 45%;
@@ -666,7 +666,7 @@
   /* Dark mode gradient - Crimson to Warm Grey */
   html.dark .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
-    color: hsl(var(--primary));
+    color: hsl(0 0% 91%);
     font-weight: 600;
 
     /* Layer 1: Crimson to warm grey gradient for capable browsers */
