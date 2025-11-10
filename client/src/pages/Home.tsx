@@ -256,16 +256,27 @@ export default function Home() {
             >
               {/* Card 1: Your Fully Loaded Sales Team */}
               <div
+                role="button"
+                tabIndex={0}
+                aria-expanded={expandedCards.talent}
+                aria-label="Expand or collapse Sales Team information"
                 className={cn(
-                  "group relative p-8 rounded-xl transition-all duration-300 flex flex-col w-full",
+                  "group relative p-8 rounded-xl transition-all duration-500 ease-out flex flex-col w-full cursor-pointer",
                   "bg-card/50 backdrop-blur-sm",
                   "border border-rose-600/30",
-                  "hover:border-rose-600/50 hover:bg-card/70",
-                  expandedCards.talent && "bg-card/70"
+                  "hover:border-rose-600/50 hover:bg-card/70 hover:shadow-lg hover:scale-[1.02]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2",
+                  expandedCards.talent && "bg-card/70 border-rose-600/50"
                 )}
                 onMouseEnter={() => toggleCardExpansion('talent')}
                 onMouseLeave={() => toggleCardExpansion('talent')}
                 onClick={() => toggleCardExpansion('talent')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleCardExpansion('talent');
+                  }
+                }}
               >
                 {/* Icon with coordinated glow */}
                 <div className="mb-6 flex justify-center">
@@ -276,35 +287,44 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                {/* Heading - Priority 1 */}
-                <h3 className="text-2xl font-bold mb-3 text-rose-600">
+                {/* Heading - Centered */}
+                <h3 className="text-2xl font-bold mb-3 text-rose-600 text-center">
                   Your Fully Loaded Sales Team
                 </h3>
-                <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80">
+                <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80 text-center px-1">
                   A team of well equipped SDRs, not a single Lone Wolf rep.
                 </p>
-                <div className="group relative flex-grow flex flex-col justify-end">
+                {/* Fixed height container for consistent card heights */}
+                <div className="flex-grow flex flex-col justify-end min-h-[120px]">
                   <div
-                    className={`leading-relaxed transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] opacity-70 ${
+                    className={cn(
+                      "leading-relaxed transition-all duration-500 ease-out opacity-70",
                       expandedCards.talent ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
-                    }`}
+                    )}
                   >
                     <p className="relative">
                       Elite Sales Talent, equipped and trained by our Architects. The majority of our talent pipeline come with 5 - 15 years of experience at Y-Combinator companies. They're all extensively vetted for core skills, such as university level writing, reading, and arithmetic, and then taken through a rigorous set of sales interviews. Once selected most salespeople are trained by RP Architects for 4-6 weeks before being assigned to a campaign.
                       {!expandedCards.talent && (
-                        <span className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card via-card/80 to-transparent pointer-events-none" />
+                        <span className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card/50 via-card/80 to-transparent pointer-events-none" />
                       )}
                     </p>
                   </div>
                   <button
-                    onClick={() => toggleCardExpansion('talent')}
-                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-rose-600 hover:text-rose-600/90 transition-all duration-300 hover:gap-3 group/btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleCardExpansion('talent');
+                    }}
+                    aria-label={expandedCards.talent ? 'Show less information' : 'Read more information'}
+                    className="flex items-center justify-center gap-2 mt-auto pt-3 text-sm font-semibold text-rose-600 hover:text-rose-600/90 transition-all duration-300 hover:gap-3 group/btn touch-manipulation"
                   >
                     <span className="relative">
                       {expandedCards.talent ? 'Show less' : 'Read more'}
                       <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-rose-600 group-hover/btn:w-full transition-all duration-300" />
                     </span>
-                    <ChevronDown className={`w-4 h-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${expandedCards.talent ? 'rotate-180' : ''} group-hover/btn:scale-110`} />
+                    <ChevronDown className={cn(
+                      "w-4 h-4 transition-all duration-500 ease-out group-hover/btn:scale-110",
+                      expandedCards.talent && 'rotate-180'
+                    )} />
                   </button>
                 </div>
               </div>
@@ -319,16 +339,27 @@ export default function Home() {
             >
               {/* Card 2: Your Playbook */}
               <div
+                role="button"
+                tabIndex={0}
+                aria-expanded={expandedCards.playbook}
+                aria-label="Expand or collapse Playbook information"
                 className={cn(
-                  "group relative p-8 rounded-xl transition-all duration-300 flex flex-col w-full",
+                  "group relative p-8 rounded-xl transition-all duration-500 ease-out flex flex-col w-full cursor-pointer",
                   "bg-card/50 backdrop-blur-sm",
                   "border border-indigo-500/30",
-                  "hover:border-indigo-500/50 hover:bg-card/70",
-                  expandedCards.playbook && "bg-card/70"
+                  "hover:border-indigo-500/50 hover:bg-card/70 hover:shadow-lg hover:scale-[1.02]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2",
+                  expandedCards.playbook && "bg-card/70 border-indigo-500/50"
                 )}
                 onMouseEnter={() => toggleCardExpansion('playbook')}
                 onMouseLeave={() => toggleCardExpansion('playbook')}
                 onClick={() => toggleCardExpansion('playbook')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleCardExpansion('playbook');
+                  }
+                }}
               >
                 {/* Icon with coordinated glow */}
                 <div className="mb-6 flex justify-center">
@@ -339,35 +370,44 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                {/* Heading - Priority 1 */}
-                <h3 className="text-2xl font-bold mb-3 text-indigo-500">
+                {/* Heading - Centered */}
+                <h3 className="text-2xl font-bold mb-3 text-indigo-500 text-center">
                   Your Playbook
                 </h3>
-                <p className="leading-relaxed italic text-sm font-semibold mb-4 px-1 opacity-80">
+                <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80 text-center px-1">
                   Our strategic framework, fully customized to your business.
                 </p>
-                <div className="group relative flex-grow flex flex-col justify-end">
+                {/* Fixed height container for consistent card heights */}
+                <div className="flex-grow flex flex-col justify-end min-h-[120px]">
                   <div
-                    className={`leading-relaxed transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] opacity-70 ${
+                    className={cn(
+                      "leading-relaxed transition-all duration-500 ease-out opacity-70",
                       expandedCards.playbook ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
-                    }`}
+                    )}
                   >
                     <p className="relative">
                       Our salespeople study the playbook for days before they pick up the phone, but that's just the beginning. The playbook is continuously improved, and ultimately, you walk away with proof of product-market-fit -- with knowledge of exactly what value propositions, what scripts and collateral and emails will win new business. 100% your IP.
                       {!expandedCards.playbook && (
-                        <span className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card via-card/80 to-transparent pointer-events-none" />
+                        <span className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card/50 via-card/80 to-transparent pointer-events-none" />
                       )}
                     </p>
                   </div>
                   <button
-                    onClick={() => toggleCardExpansion('playbook')}
-                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-indigo-500 hover:text-indigo-500/90 transition-all duration-300 hover:gap-3 group/btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleCardExpansion('playbook');
+                    }}
+                    aria-label={expandedCards.playbook ? 'Show less information' : 'Read more information'}
+                    className="flex items-center justify-center gap-2 mt-auto pt-3 text-sm font-semibold text-indigo-500 hover:text-indigo-500/90 transition-all duration-300 hover:gap-3 group/btn touch-manipulation"
                   >
                     <span className="relative">
                       {expandedCards.playbook ? 'Show less' : 'Read more'}
                       <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-indigo-500 group-hover/btn:w-full transition-all duration-300" />
                     </span>
-                    <ChevronDown className={`w-4 h-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${expandedCards.playbook ? 'rotate-180' : ''} group-hover/btn:scale-110`} />
+                    <ChevronDown className={cn(
+                      "w-4 h-4 transition-all duration-500 ease-out group-hover/btn:scale-110",
+                      expandedCards.playbook && 'rotate-180'
+                    )} />
                   </button>
                 </div>
               </div>
@@ -382,16 +422,27 @@ export default function Home() {
             >
               {/* Card 3: Your Signal Factory */}
               <div
+                role="button"
+                tabIndex={0}
+                aria-expanded={expandedCards.signal}
+                aria-label="Expand or collapse Signal Factory information"
                 className={cn(
-                  "group relative p-8 rounded-xl transition-all duration-300 flex flex-col w-full",
+                  "group relative p-8 rounded-xl transition-all duration-500 ease-out flex flex-col w-full cursor-pointer",
                   "bg-card/50 backdrop-blur-sm",
                   "border border-emerald-500/30",
-                  "hover:border-emerald-500/50 hover:bg-card/70",
-                  expandedCards.signal && "bg-card/70"
+                  "hover:border-emerald-500/50 hover:bg-card/70 hover:shadow-lg hover:scale-[1.02]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
+                  expandedCards.signal && "bg-card/70 border-emerald-500/50"
                 )}
                 onMouseEnter={() => toggleCardExpansion('signal')}
                 onMouseLeave={() => toggleCardExpansion('signal')}
                 onClick={() => toggleCardExpansion('signal')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleCardExpansion('signal');
+                  }
+                }}
               >
                 {/* Icon with coordinated glow */}
                 <div className="mb-6 flex justify-center">
@@ -402,35 +453,44 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                {/* Heading - Priority 1 */}
-                <h3 className="text-2xl font-bold mb-3 text-emerald-500">
+                {/* Heading - Centered */}
+                <h3 className="text-2xl font-bold mb-3 text-emerald-500 text-center">
                   Your Signal Factory
                 </h3>
-                <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80">
+                <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80 text-center px-1">
                   Our AI-Powered Engine, customized to fuel your business.
                 </p>
-                <div className="group relative flex-grow flex flex-col justify-end">
+                {/* Fixed height container for consistent card heights */}
+                <div className="flex-grow flex flex-col justify-end min-h-[120px]">
                   <div
-                    className={`leading-relaxed transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] opacity-70 ${
+                    className={cn(
+                      "leading-relaxed transition-all duration-500 ease-out opacity-70",
                       expandedCards.signal ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
-                    }`}
+                    )}
                   >
                     <p className="relative">
                       We combine Gemini with both code custom-written for you, and our proprietary AI and automation templates in Clay and N8N. Prompt Engineers then construct pipelines for contents, email, summaries, AI-powered automations and more. Like the Playbook, it begins as hypothesis. But once we see what works, we document it. This is also 100% your IP. You will own the blueprint, and we'll help you use it to build your own when you're ready.
                       {!expandedCards.signal && (
-                        <span className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card via-card/80 to-transparent pointer-events-none" />
+                        <span className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card/50 via-card/80 to-transparent pointer-events-none" />
                       )}
                     </p>
                   </div>
                   <button
-                    onClick={() => toggleCardExpansion('signal')}
-                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-emerald-500 hover:text-emerald-500/90 transition-all duration-300 hover:gap-3 group/btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleCardExpansion('signal');
+                    }}
+                    aria-label={expandedCards.signal ? 'Show less information' : 'Read more information'}
+                    className="flex items-center justify-center gap-2 mt-auto pt-3 text-sm font-semibold text-emerald-500 hover:text-emerald-500/90 transition-all duration-300 hover:gap-3 group/btn touch-manipulation"
                   >
                     <span className="relative">
                       {expandedCards.signal ? 'Show less' : 'Read more'}
                       <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-emerald-500 group-hover/btn:w-full transition-all duration-300" />
                     </span>
-                    <ChevronDown className={`w-4 h-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${expandedCards.signal ? 'rotate-180' : ''} group-hover/btn:scale-110`} />
+                    <ChevronDown className={cn(
+                      "w-4 h-4 transition-all duration-500 ease-out group-hover/btn:scale-110",
+                      expandedCards.signal && 'rotate-180'
+                    )} />
                   </button>
                 </div>
               </div>
