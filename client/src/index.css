@@ -639,15 +639,15 @@
      GRADIENT TEXT SYSTEM - Progressive Enhancement
      ================================================ */
 
-  /* Base gradient text class with fallback - LIGHT MODE - Crimson to Warm Grey */
+  /* Base gradient text class with fallback - LIGHT MODE - Crimson to Midnight Purple */
   html:not(.dark) .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: var(--gradient-fallback);
     font-weight: 600; /* Improve readability */
 
-    /* Layer 1: Crimson to warm grey gradient for capable browsers */
+    /* Layer 1: New 4-stop crimson-to-midnight gradient for capable browsers */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, hsl(348, 83%, 47%) 0%, hsl(0, 10%, 20%) 90%);
+      background: linear-gradient(180deg, #CF202D 0%, #CF202D 48%, #8B1484 64%, #0A0A1A 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -655,15 +655,15 @@
     }
   }
 
-  /* Dark mode gradient - Crimson to Warm Grey */
+  /* Dark mode gradient - Crimson to Midnight Purple */
   html.dark .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: hsl(0 0% 91%);
     font-weight: 600;
 
-    /* Layer 1: Crimson to warm grey gradient for capable browsers */
+    /* Layer 1: New 4-stop crimson-to-midnight gradient for capable browsers */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, hsl(348, 83%, 47%) 0%, hsl(0, 10%, 20%) 90%);
+      background: linear-gradient(180deg, #CF202D 0%, #CF202D 48%, #8B1484 64%, #0A0A1A 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -675,13 +675,13 @@
      PURPLE/COMMUNITY GRADIENT - For calculator values
      ================================================ */
 
-  /* Light mode crimson to warm grey gradient */
+  /* Light mode crimson to midnight purple gradient */
   html:not(.dark) .gradient-text-purple {
     color: hsl(var(--community));
     font-weight: 600;
 
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, hsl(348, 83%, 47%) 0%, hsl(0, 10%, 20%) 90%);
+      background: linear-gradient(180deg, #CF202D 0%, #CF202D 48%, #8B1484 64%, #0A0A1A 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -689,13 +689,13 @@
     }
   }
 
-  /* Dark mode crimson to warm grey gradient */
+  /* Dark mode crimson to midnight purple gradient */
   html.dark .gradient-text-purple {
     color: hsl(var(--community));
     font-weight: 600;
 
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, hsl(348, 83%, 47%) 0%, hsl(0, 10%, 20%) 90%);
+      background: linear-gradient(180deg, #CF202D 0%, #CF202D 48%, #8B1484 64%, #0A0A1A 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -728,9 +728,9 @@
   html:not(.dark) .gradient-hero {
     background: linear-gradient(
       180deg,
-      #DC143C 0%,
-      #DC143C 60%,
-      #8B0A50 85%,
+      #CF202D 0%,
+      #CF202D 48%,
+      #8B1484 64%,
       #0A0A1A 100%
     );
     -webkit-background-clip: text;
@@ -754,9 +754,9 @@
   html.dark .gradient-hero {
     background: linear-gradient(
       180deg,
-      #DC143C 0%,
-      #DC143C 60%,
-      #8B0A50 85%,
+      #CF202D 0%,
+      #CF202D 48%,
+      #8B1484 64%,
       #0A0A1A 100%
     );
     -webkit-background-clip: text;
