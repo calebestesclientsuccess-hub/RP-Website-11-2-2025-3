@@ -77,6 +77,17 @@ app.use((req, res, next) => {
   next();
 });
 
+// Global error handlers for uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  // Don't exit - try to continue running
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit - try to continue running
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;

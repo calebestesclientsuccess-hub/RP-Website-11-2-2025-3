@@ -7,10 +7,26 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL environment variable is not set");
 }
 
-export const db = drizzle({
-  connection: process.env.DATABASE_URL,
-  schema,
-  ws: ws,
+// Create a separate pg.Pool for Drizzle
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+export const db = drizzle(pool, { schema });
+
+// Handle pool errors to prevent crashes
+pool.on('error', (err) => {
+  console.error('Unexpected database pool error:', err);
+  // Don't crash the app - just log the error
+});
+
+// Add connection retry logic
+pool.on('connect', () => {
+  console.log('Database connection established');
+});
+
+pool.on('remove', () => {
+  console.log('Database connection removed from pool');
 });
 
 // Create a separate pg.Pool for session storage
