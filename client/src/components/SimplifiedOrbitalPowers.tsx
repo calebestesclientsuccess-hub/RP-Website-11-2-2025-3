@@ -289,7 +289,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     const performTransition = (currentIndex: number) => {
       setIsAnimating(true);
-      
+
       const nextIndex = (currentIndex + 1) % powers.length;
       const currentAngle = powers[currentIndex].angle;
       const targetAngle = powers[nextIndex].angle;
@@ -356,7 +356,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     // Track the current index in closure
     let currentTourIndex = selectedIndex;
-    
+
     const runTransition = () => {
       performTransition(currentTourIndex);
       currentTourIndex = (currentTourIndex + 1) % powers.length;
