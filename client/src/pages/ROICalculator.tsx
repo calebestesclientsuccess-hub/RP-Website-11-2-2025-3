@@ -134,6 +134,13 @@ export default function ROICalculator() {
   const projectedLTVPerMonth = projectedDealsPerMonth * ltv[0];
   const monthlyROI = projectedLTVPerMonth > 0 ? projectedLTVPerMonth / monthlyInvestment : 0;
 
+  // Annual calculations (11 months, excluding December for training)
+  const annualInvestment = monthlyInvestment * 12;
+  const annualSQOs = monthlySQOs * 11; // 11 months post-ramp
+  const closedDealsPerYear = annualSQOs * (closeRate[0] / 100);
+  const projectedLTVPerYear = closedDealsPerYear * ltv[0];
+  const annualROI = projectedLTVPerYear > 0 ? projectedLTVPerYear / annualInvestment : 0;
+
   const shareReportMutation = useMutation({
     mutationFn: async (emails: string) => {
       const reportData = {
@@ -147,7 +154,12 @@ export default function ROICalculator() {
         costPerMeeting,
         projectedDealsPerMonth,
         projectedLTVPerMonth,
-        monthlyROI
+        monthlyROI,
+        annualInvestment,
+        annualSQOs,
+        closedDealsPerYear,
+        projectedLTVPerYear,
+        annualROI
       };
       return apiRequest('/api/share-roi-report', {
         method: 'POST',
@@ -295,6 +307,7 @@ export default function ROICalculator() {
                         <li>• Selected Engine: {config.name}</li>
                         <li>• Monthly ROI: {monthlyROI > 0 ? `${formatNumber(monthlyROI, 0)}x` : '0x'}</li>
                         <li>• Projected LTV/Month: {projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}</li>
+                        <li>• Projected LTV/Year: {projectedLTVPerYear > 0 ? formatCurrency(projectedLTVPerYear) : '$0'}</li>
                       </ul>
                     </div>
                   </div>
@@ -545,6 +558,20 @@ export default function ROICalculator() {
                     <p className="text-3xl font-bold font-mono gradient-text-purple" data-testid="text-projected-ltv">
                       {projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}
                     </p>
+                  </div>
+
+                  {/* Projected Annual Revenue (NEW) */}
+                  <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
+                    <p className="text-sm text-muted-foreground mb-1">Projected New LTV Booked Per Year</p>
+                    <p className="text-3xl font-bold font-mono gradient-text-purple" data-testid="text-projected-ltv-annual">
+                      {projectedLTVPerYear > 0 ? formatCurrency(projectedLTVPerYear) : '$0'}
+                    </p>
+                    {monthlySQOs > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Based on {annualSQOs} meetings/year*<br />
+                        <span className="italic">*December excluded for training</span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Your Monthly ROI */}
