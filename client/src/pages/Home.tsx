@@ -257,11 +257,11 @@ export default function Home() {
             >
               <Card className="p-8 light-trickle-top light-depth hover-elevate transition-all h-full" data-testid="card-component-talent">
                 <div className="mb-6">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/30">
                     <Users className="w-8 h-8 text-primary" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Your Fully Loaded Sales Team</h3>
+                <h3 className="text-2xl font-bold mb-4 text-primary">Your Fully Loaded Sales Team</h3>
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80">
                   A team of well equipped SDRs, not a single Lone Wolf rep.
                 </p>
@@ -300,11 +300,11 @@ export default function Home() {
             >
               <Card className="p-8 light-trickle-corner light-depth hover-elevate transition-all h-full" data-testid="card-component-framework">
                 <div className="mb-6">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Target className="w-8 h-8 text-primary" />
+                  <div className="w-16 h-16 rounded-full bg-community/20 flex items-center justify-center mb-4 border-2 border-community/30">
+                    <Target className="w-8 h-8 text-community" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Your Playbook</h3>
+                <h3 className="text-2xl font-bold mb-4 text-community">Your Playbook</h3>
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 px-1 opacity-80">
                   Our strategic framework, fully customized to your business.
                 </p>
@@ -343,11 +343,11 @@ export default function Home() {
             >
               <Card className="p-8 light-trickle-radial light-depth hover-elevate transition-all h-full" data-testid="card-component-signal">
                 <div className="mb-6">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <Zap className="w-8 h-8 text-primary" />
+                  <div className="w-16 h-16 rounded-full bg-indigo/20 flex items-center justify-center mb-4 border-2 border-indigo/30">
+                    <Zap className="w-8 h-8 text-indigo" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Your Signal Factory</h3>
+                <h3 className="text-2xl font-bold mb-4 text-indigo">Your Signal Factory</h3>
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80">
                   Our AI-Powered Engine, customized to fuel your business.
                 </p>
