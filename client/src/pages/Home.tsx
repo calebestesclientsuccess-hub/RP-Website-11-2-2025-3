@@ -101,7 +101,7 @@ export default function Home() {
       />
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-32 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
+      <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
         {/* Animated gradient mesh background */}
         <StaticGradientBg />
 
