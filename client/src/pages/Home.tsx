@@ -149,7 +149,7 @@ export default function Home() {
                   transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
                   data-testid="text-hero-body"
                 >
-                  We build self-sustaining <Link href="/gtm-engine" className="gradient-text gradient-hero hover:underline">GTM Engines</Link> that deliver 3-5x the pipeline at 60%+ of the cost of a <Link href="/problem" className="gradient-text gradient-hero hover:underline">traditional internal hire</Link>. This isn't an SDR. It's your entire revenue architecture.
+                  We build self-sustaining <Link href="/gtm-engine" className="hover:underline">GTM Engines</Link> that deliver 3-5x the pipeline at 60%+ of the cost of a <Link href="/problem" className="hover:underline">traditional internal hire</Link>. This isn't an SDR. It's your entire revenue architecture.
                 </motion.p>
               </div>
 
@@ -194,7 +194,7 @@ export default function Home() {
             </h2>
             <div className="space-y-4">
               <p className="text-xl leading-relaxed" data-testid="text-trap-description">
-                Founders are forced to choose between two bad options: the slow, expensive '<span className="gradient-text gradient-hero">$198,000</span> Mistake' of a failed internal hire, or the 'Outsourcing Suicide Mission' that gives you zero IP and zero control.
+                Founders are forced to choose between two bad options: the slow, expensive '$198,000 Mistake' of a failed internal hire, or the 'Outsourcing Suicide Mission' that gives you zero IP and zero control.
               </p>
               <p className="text-xl leading-relaxed" data-testid="text-trap-disease">
                 Both are symptoms of the same disease: solving a system problem with a headcount solution.
@@ -337,7 +337,7 @@ export default function Home() {
               <Card className="p-8 text-center light-depth hover-elevate transition-all h-full" data-testid="metric-ramp">
                 <h3 className="text-6xl font-bold gradient-text gradient-hero mb-4">3-5x</h3>
                 <h4 className="text-2xl font-bold mb-3">Faster Ramp</h4>
-                <p>Pipeline productive in <span className="gradient-text gradient-hero">14 days</span>, not <span className="gradient-text gradient-hero">6 months</span>.</p>
+                <p>Pipeline productive in 14 days, not 6 months.</p>
               </Card>
             </motion.div>
 
@@ -350,7 +350,7 @@ export default function Home() {
               <Card className="p-8 text-center light-depth hover-elevate transition-all h-full" data-testid="metric-savings">
                 <h3 className="text-6xl font-bold gradient-text gradient-hero mb-4">60%+</h3>
                 <h4 className="text-2xl font-bold mb-3">Cost Savings</h4>
-                <p>vs. the <span className="gradient-text gradient-hero">$198k+</span> total cost of a failed internal hire.</p>
+                <p>vs. the $198k+ total cost of a failed internal hire.</p>
               </Card>
             </motion.div>
 
@@ -399,7 +399,7 @@ export default function Home() {
               <span className="gradient-text gradient-hero">Calculate Your True ROI.</span>
             </h2>
             <p className="text-xl leading-relaxed" data-testid="text-roi-calculator-description">
-              A single internal hire costs over <span className="gradient-text gradient-hero">$198,000</span> when you factor in salary, benefits, management tax, and hiring drag. Use our calculator to see the true cost of the 'Lone Wolf' model compared to deploying a GTM Engine.
+              A single internal hire costs over $198,000 when you factor in salary, benefits, management tax, and hiring drag. Use our calculator to see the true cost of the 'Lone Wolf' model compared to deploying a GTM Engine.
             </p>
           </div>
 
