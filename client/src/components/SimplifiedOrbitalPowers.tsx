@@ -178,12 +178,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [prePulseActive, setPrePulseActive] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Orbital rotation animation - slow, cinematic rotation during video
+  // Orbital rotation animation - starts when section enters viewport
   useEffect(() => {
     if (prefersReducedMotion()) return;
-    
-    // Only start rotation once video has started playing
-    if (!hasPlayed) return;
 
     const rotationObj = { value: orbitRotation };
 
@@ -202,7 +199,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     return () => {
       orbitAnimationRef.current?.kill();
     };
-  }, [hasPlayed]);
+  }, []);
 
   // Handle video end and start deceleration
   useEffect(() => {
@@ -232,8 +229,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       });
       const nearestPowerIndex = powers.findIndex(p => p.angle === nearestPowerAngle);
 
-      // Decelerate to the nearest position over 1.5 seconds with smooth easing
-      let targetRotation = nearestPowerAngle;
+      // Target rotation: Always position selected icon at 180° (leftmost position)
+      // Calculate how much we need to rotate to get the selected power to 180°
+      const targetPowerAngle = nearestPowerAngle;
+      const targetRotation = 180 - targetPowerAngle;
 
       // Calculate clockwise-only rotation (never counter-clockwise)
       let rotationDiff = targetRotation - currentRotation;
@@ -241,16 +240,16 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
       gsap.to({ value: 0 }, {
         value: 1,
-        duration: 1.5,
-        ease: "power3.out", // Smooth but quicker deceleration
+        duration: 3, // Full 3 seconds for extremely smooth deceleration
+        ease: "power1.out", // Gentle, gradual deceleration curve
         onUpdate: function() {
           const progress = this.progress();
-          const easedProgress = gsap.parseEase("power3.out")(progress);
+          const easedProgress = gsap.parseEase("power1.out")(progress);
           const newRotation = (currentRotation + rotationDiff * easedProgress) % 360;
           setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
         },
         onComplete: () => {
-          setOrbitRotation(nearestPowerAngle);
+          setOrbitRotation(targetRotation);
           setSelectedIndex(nearestPowerIndex);
 
           // Wait 1 second before starting auto-tour
@@ -315,6 +314,29 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
       // Wait for pre-pulse to complete
       timeline.to({}, { duration: PRE_PULSE_DURATION / 1000 });
+
+      // Get scale factor based on device
+      const isMobile = window.innerWidth < 768;
+      const scaleMultiplier = isMobile ? 1.3 : 1.5;
+
+      // Animate scaling of the current badge during pre-pulse
+      const currentBadge = badgeRefs.current[currentIndex];
+      if (currentBadge) {
+        gsap.to(currentBadge, {
+          scale: scaleMultiplier,
+          duration: ROTATION_DURATION / 1000,
+          ease: "power2.inOut",
+          delay: PRE_PULSE_DURATION / 1000,
+          onComplete: () => {
+            // Scale back down after rotation
+            gsap.to(currentBadge, {
+              scale: 1,
+              duration: 0.3,
+              ease: "power2.out"
+            });
+          }
+        });
+      }
 
       // Then smoothly rotate with cinematic easing
       timeline.to(
@@ -450,15 +472,16 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasPlayed && !videoError) {
+            // Start video immediately when section enters viewport
             attemptPlay();
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.1 } // Lower threshold for earlier trigger
     );
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
     }
 
     return () => {
