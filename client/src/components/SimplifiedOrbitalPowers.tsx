@@ -176,6 +176,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const tourIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [videoEnded, setVideoEnded] = useState(false);
   const [prePulseActive, setPrePulseActive] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Orbital rotation animation - slow, cinematic rotation during video
   useEffect(() => {
@@ -228,25 +229,32 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       });
       const nearestPowerIndex = powers.findIndex(p => p.angle === nearestPowerAngle);
 
-      // Decelerate to the nearest position over 3 seconds with cinematic easing
-      const targetRotation = nearestPowerAngle + (currentRotation > nearestPowerAngle ? 360 : 0);
+      // Decelerate to the nearest position over 4 seconds with ultra-smooth easing
+      let targetRotation = nearestPowerAngle;
       
-      gsap.to({}, {
-        duration: 3,
-        ease: "expo.out", // Exponential easing for natural deceleration
+      // Calculate shortest path
+      let rotationDiff = targetRotation - currentRotation;
+      if (rotationDiff > 180) rotationDiff -= 360;
+      if (rotationDiff < -180) rotationDiff += 360;
+      
+      gsap.to({ value: 0 }, {
+        value: 1,
+        duration: 4,
+        ease: "power4.out", // Ultra-smooth deceleration
         onUpdate: function() {
           const progress = this.progress();
-          const newRotation = currentRotation + (targetRotation - currentRotation) * progress;
-          setOrbitRotation(newRotation % 360);
+          const easedProgress = gsap.parseEase("power4.out")(progress);
+          const newRotation = (currentRotation + rotationDiff * easedProgress) % 360;
+          setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
         },
         onComplete: () => {
           setOrbitRotation(nearestPowerAngle);
           setSelectedIndex(nearestPowerIndex);
           
-          // Wait 1.5 seconds before starting auto-tour for smoother transition
+          // Wait 2 seconds before starting auto-tour
           setTimeout(() => {
             setPlaybackMode('autoTour');
-          }, 1500);
+          }, 2000);
         }
       });
     };
@@ -258,7 +266,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     };
   }, [videoRef, orbitRotation]);
 
-  // Auto-tour system - rotate through powers every 5.5 seconds (3.5s + 2s delay)
+  // Auto-tour system - rotate through powers with smooth transitions
   useEffect(() => {
     if (playbackMode !== 'autoTour') {
       // Clear any existing interval
@@ -266,57 +274,75 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         clearInterval(tourIntervalRef.current);
         tourIntervalRef.current = null;
       }
+      setIsAnimating(false);
       return;
     }
 
     if (prefersReducedMotion()) return;
 
-    // Start the auto-tour
-    tourIntervalRef.current = setInterval(() => {
+    const performTransition = () => {
+      if (isAnimating) return; // Prevent overlapping animations
+      
+      setIsAnimating(true);
       setSelectedIndex(prev => {
         const nextIndex = (prev + 1) % powers.length;
+        const currentAngle = powers[prev].angle;
         const targetAngle = powers[nextIndex].angle;
         
-        // Start pre-pulse 0.8 seconds before rotation to signal movement
+        // Calculate shortest path for rotation
+        let angleDiff = targetAngle - currentAngle;
+        if (angleDiff > 180) angleDiff -= 360;
+        if (angleDiff < -180) angleDiff += 360;
+        
+        // Pre-pulse phase (1 second)
         setPrePulseActive(true);
         
-        setTimeout(() => {
-          setPrePulseActive(false);
-        }, 800);
-        
-        // Animate rotation to the target angle with elegant easing
-        gsap.to({}, {
-          duration: 1.5,
-          delay: 0.8, // Delay rotation to allow pre-pulse to complete
-          ease: "power3.inOut", // Smoother, more refined easing
-          onUpdate: function() {
-            const progress = this.progress();
-            const currentAngle = powers[prev].angle;
-            let angleDiff = targetAngle - currentAngle;
-            
-            // Handle wrapping around 360 degrees
-            if (angleDiff > 180) angleDiff -= 360;
-            if (angleDiff < -180) angleDiff += 360;
-            
-            const newRotation = (currentAngle + angleDiff * progress) % 360;
-            setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
-          },
+        // Create single smooth animation timeline
+        const timeline = gsap.timeline({
           onComplete: () => {
             setOrbitRotation(targetAngle);
+            setPrePulseActive(false);
+            setIsAnimating(false);
           }
         });
         
+        // Wait 0.6s for pre-pulse to be noticeable
+        timeline.to({}, { duration: 0.6 });
+        
+        // Then smoothly rotate over 2s with cinematic easing
+        timeline.to(
+          { value: 0 },
+          {
+            value: 1,
+            duration: 2,
+            ease: "power2.inOut",
+            onUpdate: function() {
+              const progress = this.progress();
+              const newRotation = (currentAngle + angleDiff * progress) % 360;
+              setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
+            }
+          }
+        );
+        
         return nextIndex;
       });
-    }, 6300); // 0.8s pre-pulse + 1.5s animation + 4s pause between transitions
+    };
+
+    // Initial transition after a brief pause
+    const initialTimeout = setTimeout(performTransition, 1000);
+    
+    // Then continue with interval
+    tourIntervalRef.current = setInterval(performTransition, 6600); // 0.6s pre-pulse + 2s rotation + 4s pause
 
     return () => {
+      clearTimeout(initialTimeout);
       if (tourIntervalRef.current) {
         clearInterval(tourIntervalRef.current);
         tourIntervalRef.current = null;
       }
+      gsap.killTweensOf({});
     };
-  }, [playbackMode]);
+  }, [playbackMode, isAnimating]);
 
   // Manual play handler for when autoplay is blocked
   const handleManualPlay = () => {
@@ -619,9 +645,12 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                             : `0 0 20px ${power.glowColor}`,
                           animation: index === selectedIndex 
                             ? prePulseActive 
-                              ? 'orbital-badge-pre-pulse 0.8s ease-in-out' 
-                              : 'orbital-badge-pulse 2s ease-in-out infinite'
-                            : 'none'
+                              ? 'orbital-badge-pre-pulse 1s cubic-bezier(0.4, 0, 0.2, 1)' 
+                              : 'orbital-badge-pulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+                            : 'none',
+                          willChange: index === selectedIndex ? 'transform, filter' : 'auto',
+                          backfaceVisibility: 'hidden',
+                          WebkitBackfaceVisibility: 'hidden'
                         }}
                       >
                         {power.icon}
