@@ -68,7 +68,7 @@ export function InternalHireCostCalculator() {
                 <span>$100k</span>
               </div>
               <div className="mt-2 text-sm text-muted-foreground">
-                + ${formatCurrency(bonus).replace('$', '')} bonus = <span className="font-semibold">{formatCurrency(totalCompensation)} OTE</span>
+                + {formatCurrency(bonus)} bonus = <span className="font-semibold">{formatCurrency(totalCompensation)} OTE</span>
               </div>
             </div>
 
@@ -100,7 +100,7 @@ export function InternalHireCostCalculator() {
                 <span className="font-mono">{formatCurrency(baseSalary[0])}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Bonus (to $70K OTE):</span>
+                <span className="text-muted-foreground">Bonus (OTE):</span>
                 <span className="font-mono">{formatCurrency(bonus)}</span>
               </div>
               <div className="flex justify-between text-sm">
