@@ -13,7 +13,7 @@ import SoftwareApplicationSchema from "@/components/SoftwareApplicationSchema";
 import LeadMagnetHero from "@/components/LeadMagnetHero";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import { WidgetZone } from "@/components/WidgetZone";
-import { ArrowRight, Users, Target, Zap, ChevronDown } from "lucide-react";
+import { ArrowRight, Users, Target, Zap } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
@@ -106,7 +106,8 @@ export default function Home() {
       />
 
       {/* Hero Section */}
-      <section className="relative flex items-center justify-center px-4 md:px-6 lg:px-8 overflow-hidden" style={{ minHeight: '175vh', paddingBottom: '40vh' }}>
+      <section className="relative pt-32 pb-32 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
+        {/* Animated gradient mesh background */}
         <StaticGradientBg />
 
         {/* Light grid dots pattern (light mode only) */}
