@@ -1061,22 +1061,20 @@
   background-image: linear-gradient(180deg, hsl(258, 56%, 44%) 0%, hsl(251, 49%, 32%) 90%);
   background-repeat: no-repeat;
 
-  /* Expensive embossed paper effect - deep shadows and highlights */
+  /* Thick expensive paper effect - subtle outer shadows only */
   box-shadow:
-    /* Inner top highlight - simulates raised surface */
-    inset 0 2px 3px rgba(255, 255, 255, 0.2),
-    /* Inner bottom shadow - adds depth */
-    inset 0 -2px 4px rgba(0, 0, 0, 0.25),
     /* Outer shadow - lifts badge off page */
-    0 3px 8px rgba(0, 0, 0, 0.15),
-    /* Subtle glow for premium feel */
-    0 0 20px rgba(88, 50, 175, 0.1);
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    /* Secondary shadow for depth */
+    0 2px 4px rgba(0, 0, 0, 0.15),
+    /* Subtle warm glow */
+    0 0 30px rgba(88, 50, 175, 0.08);
   
-  /* Enhanced contrast and texture depth */
-  filter: contrast(1.08) brightness(0.95) saturate(1.15);
+  /* Enhanced contrast and texture depth for paper feel */
+  filter: contrast(1.05) brightness(0.92) saturate(1.1);
   
-  /* Subtle border for definition */
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  /* No border - thick paper doesn't need it */
+  border: none;
 }
 
 .badge-texture::before {
@@ -1084,8 +1082,8 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  /* Bubbled/embossed expensive paper texture */
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperTexture'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='5' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperTexture)' opacity='0.15'/%3E%3C/svg%3E");
+  /* Thick expensive paper texture - increased opacity for more visible grain */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperTexture'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.2' numOctaves='6' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperTexture)' opacity='0.25'/%3E%3C/svg%3E");
   pointer-events: none;
   mix-blend-mode: overlay;
 }
@@ -1364,11 +1362,10 @@ html:not(.dark) .badge-texture {
 html:not(.dark) .badge-texture:hover {
   transform: translateY(-2px);
   box-shadow:
-    /* Enhanced embossed effect on hover */
-    inset 0 2px 4px rgba(255, 255, 255, 0.25),
-    inset 0 -2px 5px rgba(0, 0, 0, 0.3),
-    0 6px 16px rgba(0, 0, 0, 0.2),
-    0 0 30px rgba(88, 50, 175, 0.15);
+    /* Enhanced paper depth on hover */
+    0 8px 20px rgba(0, 0, 0, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.2),
+    0 0 40px rgba(88, 50, 175, 0.12);
 }
 
 html:not(.dark) .badge-texture::before {
