@@ -208,10 +208,7 @@ export default function Home() {
             </h2>
             <div className="space-y-4">
               <p className="text-xl leading-relaxed" data-testid="text-trap-description">
-                Founders are forced to choose between two bad options: the slow, expensive '$198,000 Mistake' of a failed internal hire, or the 'Outsourcing Suicide Mission' that gives you zero IP and zero control.
-              </p>
-              <p className="text-xl leading-relaxed" data-testid="text-trap-disease">
-                Both are symptoms of the same disease: solving a system problem with a headcount solution.
+                Founders face two bad options: the '$198,000 Mistake' of a slow, failed hire, or the 'High-Risk Outsourcing Trap' that costs all IP and control. Both stem from the same root cause: solving a system problem with a headcount solution.
               </p>
             </div>
           </div>
