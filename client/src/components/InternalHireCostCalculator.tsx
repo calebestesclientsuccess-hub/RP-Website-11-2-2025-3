@@ -13,10 +13,10 @@ export function InternalHireCostCalculator() {
   // Cost calculations
   const bonus = 20000; // Fixed bonus to reach $70K OTE
   const totalCompensation = baseSalary[0] + bonus;
-  const benefits = baseSalary[0] * 0.40; // 40% of base salary for benefits (insurance, 401k, etc.)
+  const benefits = baseSalary[0] * 0.35; // 35% of base salary for benefits (insurance, 401k, etc.)
   const recruiterFee = totalCompensation * 0.22; // 22% recruiter fee on total comp
   const onboardingCost = (totalCompensation / 12) * onboardingMonths[0]; // Lost productivity during onboarding
-  const managementTax = 22000; // Annual management time cost (meetings, reviews, coaching)
+  const managementTax = 20000; // Annual management time cost (meetings, reviews, coaching)
   const toolsAndLicenses = 12000; // Annual cost for tools (ZoomInfo, Outreach, etc.)
   
   const totalFirstYearCost = baseSalary[0] + bonus + benefits + recruiterFee + onboardingCost + managementTax + toolsAndLicenses;
@@ -104,7 +104,7 @@ export function InternalHireCostCalculator() {
                 <span className="font-mono">{formatCurrency(bonus)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Benefits (40%):</span>
+                <span className="text-muted-foreground">Benefits (35%):</span>
                 <span className="font-mono">{formatCurrency(benefits)}</span>
               </div>
               <div className="flex justify-between text-sm">
