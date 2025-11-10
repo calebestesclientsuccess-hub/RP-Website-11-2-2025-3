@@ -438,19 +438,14 @@
   }
 
   /* Global body text color rule - white in dark mode, black in light mode */
-  /* Target base text elements that don't have explicit color classes */
-  p:not([class*="text-"]):not([class*="gradient-"]),
-  span:not([class*="text-"]):not([class*="gradient-"]),
-  div:not([class*="text-"]):not([class*="gradient-"]),
-  li:not([class*="text-"]):not([class*="gradient-"]),
-  td:not([class*="text-"]):not([class*="gradient-"]),
-  th:not([class*="text-"]):not([class*="gradient-"]),
-  label:not([class*="text-"]):not([class*="gradient-"]),
-  figcaption:not([class*="text-"]):not([class*="gradient-"]),
-  blockquote:not([class*="text-"]):not([class*="gradient-"]),
-  address:not([class*="text-"]):not([class*="gradient-"]),
-  time:not([class*="text-"]):not([class*="gradient-"]) {
-    color: hsl(var(--foreground)) !important;
+  /* Only exclude elements with explicit Tailwind color utility classes */
+  p:not(.text-primary):not(.text-muted-foreground):not(.text-destructive):not(.text-secondary-foreground):not(.gradient-text),
+  span:not(.text-primary):not(.text-muted-foreground):not(.text-destructive):not(.text-secondary-foreground):not(.gradient-text),
+  div:not(.text-primary):not(.text-muted-foreground):not(.text-destructive):not(.text-secondary-foreground):not(.gradient-text),
+  li:not(.text-primary):not(.text-muted-foreground):not(.text-destructive):not(.text-secondary-foreground):not(.gradient-text),
+  td:not(.text-primary):not(.text-muted-foreground):not(.text-destructive):not(.text-secondary-foreground):not(.gradient-text),
+  th:not(.text-primary):not(.text-muted-foreground):not(.text-destructive):not(.text-secondary-foreground):not(.gradient-text) {
+    color: hsl(var(--foreground));
   }
 }
 
