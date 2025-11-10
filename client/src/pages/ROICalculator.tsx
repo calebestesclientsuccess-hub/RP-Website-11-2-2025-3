@@ -696,7 +696,7 @@ export default function ROICalculator() {
                 asChild
               >
                 <Link href="/assessment">
-                  Wait, am I ready for an engine?
+                  Am I ready for an engine?
                 </Link>
               </Button>
             </div>
