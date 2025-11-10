@@ -225,22 +225,25 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       });
       const nearestPowerIndex = powers.findIndex(p => p.angle === nearestPowerAngle);
 
-      // Decelerate to the nearest position over 2.5 seconds
+      // Decelerate to the nearest position over 2.5 seconds with smooth easing
       const targetRotation = nearestPowerAngle + (currentRotation > nearestPowerAngle ? 360 : 0);
       
       gsap.to({}, {
         duration: 2.5,
-        ease: "power2.out",
+        ease: "power3.out", // Smoother easing curve
         onUpdate: function() {
           const progress = this.progress();
-          const currentSpeed = (1 - progress) * 6; // Decelerate from 6 deg/frame to 0
           const newRotation = currentRotation + (targetRotation - currentRotation) * progress;
           setOrbitRotation(newRotation % 360);
         },
         onComplete: () => {
           setOrbitRotation(nearestPowerAngle);
           setSelectedIndex(nearestPowerIndex);
-          setPlaybackMode('autoTour');
+          
+          // Wait 1 second before starting auto-tour for smoother transition
+          setTimeout(() => {
+            setPlaybackMode('autoTour');
+          }, 1000);
         }
       });
     };
@@ -252,7 +255,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     };
   }, [videoRef, orbitRotation]);
 
-  // Auto-tour system - rotate through powers every 3.5 seconds
+  // Auto-tour system - rotate through powers every 5.5 seconds (3.5s + 2s delay)
   useEffect(() => {
     if (playbackMode !== 'autoTour') {
       // Clear any existing interval
@@ -271,9 +274,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         const nextIndex = (prev + 1) % powers.length;
         const targetAngle = powers[nextIndex].angle;
         
-        // Animate rotation to the target angle
+        // Animate rotation to the target angle with smoother easing
         gsap.to({}, {
-          duration: 1,
+          duration: 1.2,
           ease: "power2.inOut",
           onUpdate: function() {
             const progress = this.progress();
@@ -294,7 +297,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         
         return nextIndex;
       });
-    }, 3500);
+    }, 5500); // Increased from 3500 to 5500 (adds 2 seconds between transitions)
 
     return () => {
       if (tourIntervalRef.current) {
