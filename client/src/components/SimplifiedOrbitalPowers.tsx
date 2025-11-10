@@ -221,18 +221,24 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         orbitAnimationRef.current.kill();
       }
 
-      // Calculate the nearest power position to land on
+      // Find which power is currently closest to the left (180°) position
       const currentRotation = orbitRotation % 360;
-      const powerAngles = powers.map(p => p.angle);
-      const nearestPowerAngle = powerAngles.reduce((prev, curr) => {
-        return Math.abs(curr - currentRotation) < Math.abs(prev - currentRotation) ? curr : prev;
+      let nearestPowerIndex = 0;
+      let minDistance = 360;
+      
+      powers.forEach((power, idx) => {
+        const totalAngle = (power.angle + currentRotation) % 360;
+        const distance = Math.abs(totalAngle - 180);
+        const wrappedDistance = Math.min(distance, 360 - distance);
+        if (wrappedDistance < minDistance) {
+          minDistance = wrappedDistance;
+          nearestPowerIndex = idx;
+        }
       });
-      const nearestPowerIndex = powers.findIndex(p => p.angle === nearestPowerAngle);
 
-      // Target rotation: Always position selected icon at 180° (leftmost position)
-      // Calculate how much we need to rotate to get the selected power to 180°
-      const targetPowerAngle = nearestPowerAngle;
-      let targetRotation = 180 - targetPowerAngle;
+      // Calculate target rotation to position this power exactly at 180°
+      const nearestPowerAngle = powers[nearestPowerIndex].angle;
+      let targetRotation = 180 - nearestPowerAngle;
 
       // Normalize target rotation to 0-360 range
       while (targetRotation < 0) targetRotation += 360;
@@ -300,21 +306,21 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       setIsAnimating(true);
 
       const nextIndex = (currentIndex + 1) % powers.length;
-      const currentAngle = powers[currentIndex].angle;
-      const targetAngle = powers[nextIndex].angle;
+      
+      // Calculate rotation needed to move to next power
+      // We need to rotate 60° clockwise (one power position)
+      const currentRotation = orbitRotation;
+      const rotationIncrement = 60; // Move one position clockwise
+      const targetRotation = (currentRotation + rotationIncrement) % 360;
 
-      // Calculate clockwise-only rotation
-      let angleDiff = targetAngle - currentAngle;
-      if (angleDiff < 0) angleDiff += 360; // Always move clockwise (positive direction)
-
-      // Start pre-pulse
+      // Start pre-pulse on the NEXT badge (the one about to become selected)
       setPrePulseActive(true);
 
       // Create single smooth animation timeline
       const timeline = gsap.timeline({
         onComplete: () => {
           // Update all states synchronously at completion
-          setOrbitRotation(targetAngle);
+          setOrbitRotation(targetRotation);
           setSelectedIndex(nextIndex);
           setPrePulseActive(false);
           setIsAnimating(false);
@@ -330,10 +336,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         {
           value: 1,
           duration: ROTATION_DURATION / 1000,
-          ease: "power3.out", // Slightly gentler than power4 for more natural movement
+          ease: "power3.out",
           onUpdate: function() {
             const progress = this.progress();
-            const newRotation = (currentAngle + angleDiff * progress) % 360;
+            const newRotation = (currentRotation + rotationIncrement * progress) % 360;
             setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
           }
         }
@@ -365,7 +371,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       setIsAnimating(false);
       setPrePulseActive(false);
     };
-  }, [playbackMode]);
+  }, [playbackMode, selectedIndex, orbitRotation]);
 
   // Manual play handler for when autoplay is blocked
   const handleManualPlay = () => {
@@ -637,6 +643,20 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 const x = Math.cos(angleRad) * radius;
                 const y = Math.sin(angleRad) * radius * 0.6;
 
+                // Determine if this badge is at the selected position (180° = left)
+                const normalizedAngle = totalAngle % 360;
+                const isAtSelectedPosition = Math.abs(normalizedAngle - 180) < 5; // Within 5° of left position
+                
+                // Determine if this is the NEXT badge (the one about to be selected)
+                const nextIndex = (selectedIndex + 1) % powers.length;
+                const isNextBadge = index === nextIndex;
+                
+                // Show pre-pulse only on the next badge that's about to rotate to selected position
+                const showPrePulse = isNextBadge && prePulseActive && isAnimating;
+                
+                // Show sustained pulse only on currently selected badge at left position
+                const showSustainedPulse = isAtSelectedPosition && !isAnimating;
+
                 return (
                   <div
                     key={power.id}
@@ -660,19 +680,19 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                           relative rounded-full p-3 bg-background/90 backdrop-blur-sm
                           border-2 ${power.color} shadow-lg
                           group-hover:shadow-xl transition-all duration-300
-                          ${index === selectedIndex ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-110' : ''}
+                          ${isAtSelectedPosition ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-110' : ''}
                         `,
                         )}
                         style={{
-                          boxShadow: index === selectedIndex
+                          boxShadow: isAtSelectedPosition
                             ? `0 0 30px ${power.glowColor}, 0 0 60px ${power.glowColor}`
                             : `0 0 20px ${power.glowColor}`,
-                          animation: index === selectedIndex
-                            ? prePulseActive
-                              ? 'orbital-badge-pre-pulse 1s cubic-bezier(0.4, 0, 0.2, 1)'
-                              : 'orbital-badge-pulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+                          animation: showPrePulse
+                            ? 'orbital-badge-pre-pulse 1s cubic-bezier(0.4, 0, 0.2, 1)'
+                            : showSustainedPulse
+                            ? 'orbital-badge-pulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite'
                             : 'none',
-                          willChange: index === selectedIndex ? 'transform, filter' : 'auto',
+                          willChange: (showPrePulse || showSustainedPulse) ? 'transform, filter' : 'auto',
                           backfaceVisibility: 'hidden',
                           WebkitBackfaceVisibility: 'hidden'
                         }}
