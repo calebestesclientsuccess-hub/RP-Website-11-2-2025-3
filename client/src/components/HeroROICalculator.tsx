@@ -33,6 +33,11 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
   const annualROI = projectedLTVPerYear / annualInvestment;
 
   const formatCurrency = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(1)}K`;
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -54,20 +59,20 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
       <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-2xl blur-2xl opacity-50 animate-pulse" style={{ animationDuration: '3s' }}></div>
       <div className="absolute -inset-2 bg-primary/10 rounded-xl blur-xl"></div>
       
-      <Card className="p-6 bg-card/95 backdrop-blur-md border-primary/40 shadow-2xl relative" data-testid="card-hero-roi">
-        <div className="mb-5">
-          <h3 className="text-2xl font-bold mb-1">The $15K Investment That Returns 40x</h3>
+      <Card className="p-5 bg-card/95 backdrop-blur-md border-primary/40 shadow-2xl relative" data-testid="card-hero-roi">
+        <div className="mb-4">
+          <h3 className="text-xl font-bold mb-1">The $15K Investment That Returns 40x</h3>
           <p className="text-xs text-muted-foreground">
             Adjust for your business to see the math
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Investment Slider */}
           <div>
-            <div className="flex justify-between mb-2">
-              <label className="text-sm font-medium">Monthly Investment</label>
-              <span className="text-sm font-mono font-bold text-muted-foreground" data-testid="text-investment-value">
+            <div className="flex justify-between mb-1.5">
+              <label className="text-xs font-medium">Monthly Investment</label>
+              <span className="text-xs font-mono font-bold text-muted-foreground" data-testid="text-investment-value">
                 {formatCurrency(monthlyInvestment[0])}
               </span>
             </div>
@@ -83,9 +88,9 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
 
           {/* LTV Slider */}
           <div>
-            <div className="flex justify-between mb-2">
-              <label className="text-sm font-medium">Your 24-Month Client LTV</label>
-              <span className="text-sm font-mono font-bold text-muted-foreground" data-testid="text-ltv-value">
+            <div className="flex justify-between mb-1.5">
+              <label className="text-xs font-medium">Your 24-Month Client LTV</label>
+              <span className="text-xs font-mono font-bold text-muted-foreground" data-testid="text-ltv-value">
                 {formatCurrency(ltv[0])}
               </span>
             </div>
@@ -101,9 +106,9 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
 
           {/* Close Rate Slider */}
           <div>
-            <div className="flex justify-between mb-2">
-              <label className="text-sm font-medium">Close Rate from Qualified Meeting</label>
-              <span className="text-sm font-mono font-bold text-muted-foreground" data-testid="text-close-rate-value">
+            <div className="flex justify-between mb-1.5">
+              <label className="text-xs font-medium">Close Rate from Qualified Meeting</label>
+              <span className="text-xs font-mono font-bold text-muted-foreground" data-testid="text-close-rate-value">
                 {closeRate[0]}%
               </span>
             </div>
@@ -119,43 +124,46 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
         </div>
 
         {/* Results */}
-        <div className="mt-5 pt-5 border-t border-border space-y-3">
+        <div className="mt-4 pt-4 border-t border-border space-y-2.5">
           <div className="grid grid-cols-2 gap-2">
-            <div className="bg-card/50 p-3 rounded-lg border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Guaranteed Meetings/Mo</p>
-              <p className="text-lg font-bold font-mono" data-testid="text-guaranteed-sqos">
+            <div className="bg-card/50 p-2.5 rounded-lg border border-border">
+              <p className="text-xs text-muted-foreground mb-0.5">Guaranteed Meetings/Mo</p>
+              <p className="text-base font-bold font-mono" data-testid="text-guaranteed-sqos">
                 {guaranteedSQOs}
               </p>
             </div>
-            <div className="bg-card/50 p-3 rounded-lg border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Monthly ROI</p>
-              <p className="text-lg font-bold font-mono" data-testid="text-roi">
+            <div className="bg-card/50 p-2.5 rounded-lg border border-border">
+              <p className="text-xs text-muted-foreground mb-0.5">Monthly ROI</p>
+              <p className="text-base font-bold font-mono" data-testid="text-roi">
                 {formatNumber(roi)}x
               </p>
             </div>
           </div>
 
-          <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
-            <p className="text-xs text-muted-foreground mb-1">Projected New LTV/Month</p>
-            <p className="text-3xl font-bold font-mono" data-testid="text-projected-ltv">
-              {formatCurrency(projectedLTVPerMonth)}
-            </p>
+          {/* Side by side revenue metrics */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
+              <p className="text-xs text-muted-foreground mb-0.5">New LTV/Month</p>
+              <p className="text-xl font-bold font-mono" data-testid="text-projected-ltv">
+                {formatCurrency(projectedLTVPerMonth)}
+              </p>
+            </div>
+
+            <div className="bg-primary/10 p-3 rounded-lg border border-primary/30">
+              <p className="text-xs text-muted-foreground mb-0.5">New LTV/Year</p>
+              <p className="text-xl font-bold font-mono" data-testid="text-projected-ltv-annual">
+                {formatCurrency(projectedLTVPerYear)}
+              </p>
+            </div>
           </div>
 
-          <div className="bg-primary/10 p-4 rounded-lg border border-primary/30">
-            <p className="text-xs text-muted-foreground mb-1">Projected New LTV/Year</p>
-            <p className="text-3xl font-bold font-mono" data-testid="text-projected-ltv-annual">
-              {formatCurrency(projectedLTVPerYear)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Based on 220 meetings (Dec excluded for training)
-            </p>
-          </div>
-
-          <div className="bg-card/50 p-3 rounded-lg border border-border">
-            <p className="text-xs text-muted-foreground mb-1">Annual ROI</p>
-            <p className="text-2xl font-bold font-mono" data-testid="text-annual-roi">
+          <div className="bg-card/50 p-2.5 rounded-lg border border-border">
+            <p className="text-xs text-muted-foreground mb-0.5">Annual ROI</p>
+            <p className="text-lg font-bold font-mono" data-testid="text-annual-roi">
               {formatNumber(annualROI)}x
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Based on 220 meetings (Dec excluded for training)
             </p>
           </div>
 
