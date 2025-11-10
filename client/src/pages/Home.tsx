@@ -588,16 +588,6 @@ export default function Home() {
       {/* Tool Module - "Interactive ROI Calculator" */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-roi-calculator">
-              Stop Guessing.<br />
-              <span className="gradient-text gradient-hero">Calculate Your True ROI.</span>
-            </h2>
-            <p className="text-xl leading-relaxed" data-testid="text-roi-calculator-description">
-              A single internal hire costs over $198,000 when you factor in salary, benefits, management tax, and hiring drag. Use our calculator to see the true cost of the 'Lone Wolf' model compared to deploying a GTM Engine.
-            </p>
-          </div>
-
           {/* Internal Hire Cost Calculator Section */}
           <div className="max-w-4xl mx-auto mb-12">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-12 text-center leading-tight">
