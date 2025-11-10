@@ -636,13 +636,33 @@
   }
 
   /* ================================================
-     GRADIENT TEXT SYSTEM - Pure Crimson
+     GRADIENT TEXT SYSTEM - Seductive Crimson with Glow
      ================================================ */
 
-  /* Pure crimson for both light and dark modes */
+  /* Darker, seductive crimson with animated glow */
   .gradient-text {
-    color: #DC143C;
+    color: #B80D2E;
     font-weight: 600;
+    text-shadow: 
+      0 0 20px rgba(184, 13, 46, 0.6),
+      0 0 40px rgba(184, 13, 46, 0.4),
+      0 0 60px rgba(184, 13, 46, 0.2);
+    animation: gradient-text-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes gradient-text-pulse {
+    0%, 100% {
+      text-shadow: 
+        0 0 20px rgba(184, 13, 46, 0.6),
+        0 0 40px rgba(184, 13, 46, 0.4),
+        0 0 60px rgba(184, 13, 46, 0.2);
+    }
+    50% {
+      text-shadow: 
+        0 0 30px rgba(184, 13, 46, 0.8),
+        0 0 50px rgba(184, 13, 46, 0.5),
+        0 0 70px rgba(184, 13, 46, 0.3);
+    }
   }
 
   /* ================================================
