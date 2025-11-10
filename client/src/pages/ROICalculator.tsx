@@ -336,7 +336,7 @@ export default function ROICalculator() {
                   {/* Input 1: LTV */}
                   <div>
                     <div className="flex justify-between mb-3">
-                      <Label className="text-base font-semibold">Your Avg. 24-Month Client LTV</Label>
+                      <Label className="text-base font-semibold">2-Year Client Value</Label>
                       <span className="text-lg font-mono font-bold gradient-text-purple" data-testid="text-ltv-value">
                         {formatCurrency(ltv[0])}
                       </span>
@@ -358,7 +358,7 @@ export default function ROICalculator() {
                   {/* Input 2: Close Rate */}
                   <div>
                     <div className="flex justify-between mb-3">
-                      <Label className="text-base font-semibold">Your Close Rate from a Qualified Meeting</Label>
+                      <Label className="text-base font-semibold">Close Rate from Real Opportunity</Label>
                       <span className="text-lg font-mono font-bold gradient-text-purple" data-testid="text-close-rate-value">
                         {closeRate[0]}%
                       </span>

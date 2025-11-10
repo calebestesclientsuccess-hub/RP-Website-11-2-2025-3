@@ -89,7 +89,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           {/* LTV Slider */}
           <div>
             <div className="flex justify-between mb-1.5">
-              <label className="text-xs font-medium">Your 24-Month Client LTV</label>
+              <label className="text-xs font-medium">2-Year Client Value</label>
               <span className="text-xs font-mono font-bold text-muted-foreground" data-testid="text-ltv-value">
                 {formatCurrency(ltv[0])}
               </span>
@@ -107,7 +107,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           {/* Close Rate Slider */}
           <div>
             <div className="flex justify-between mb-1.5">
-              <label className="text-xs font-medium">Close Rate from Qualified Meeting</label>
+              <label className="text-xs font-medium">Close Rate from Real Opportunity</label>
               <span className="text-xs font-mono font-bold text-muted-foreground" data-testid="text-close-rate-value">
                 {closeRate[0]}%
               </span>
@@ -155,7 +155,8 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
                 {formatCurrency(projectedLTVPerYear)}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Based on 220 meetings (Dec excluded for training)
+                Estimation based on 220 meetings*<br />
+                <span className="italic">*December excluded for training</span>
               </p>
             </div>
           </div>
