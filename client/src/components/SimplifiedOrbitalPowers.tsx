@@ -176,15 +176,17 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const tourIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [videoEnded, setVideoEnded] = useState(false);
 
-  // Orbital rotation animation - rotate the entire orbital system
+  // Orbital rotation animation - slow, cinematic rotation during video
   useEffect(() => {
     if (prefersReducedMotion()) return;
 
     const rotationObj = { value: 0 };
 
+    // Much slower rotation: 120 seconds per full rotation (0.5 RPM)
+    // This creates a gentle, sophisticated movement
     orbitAnimationRef.current = gsap.to(rotationObj, {
       value: 360,
-      duration: 60,
+      duration: 120,
       ease: "none",
       repeat: -1,
       onUpdate: () => {
@@ -225,12 +227,12 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       });
       const nearestPowerIndex = powers.findIndex(p => p.angle === nearestPowerAngle);
 
-      // Decelerate to the nearest position over 2.5 seconds with smooth easing
+      // Decelerate to the nearest position over 3 seconds with cinematic easing
       const targetRotation = nearestPowerAngle + (currentRotation > nearestPowerAngle ? 360 : 0);
       
       gsap.to({}, {
-        duration: 2.5,
-        ease: "power3.out", // Smoother easing curve
+        duration: 3,
+        ease: "expo.out", // Exponential easing for natural deceleration
         onUpdate: function() {
           const progress = this.progress();
           const newRotation = currentRotation + (targetRotation - currentRotation) * progress;
@@ -240,10 +242,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           setOrbitRotation(nearestPowerAngle);
           setSelectedIndex(nearestPowerIndex);
           
-          // Wait 1 second before starting auto-tour for smoother transition
+          // Wait 1.5 seconds before starting auto-tour for smoother transition
           setTimeout(() => {
             setPlaybackMode('autoTour');
-          }, 1000);
+          }, 1500);
         }
       });
     };
@@ -274,10 +276,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         const nextIndex = (prev + 1) % powers.length;
         const targetAngle = powers[nextIndex].angle;
         
-        // Animate rotation to the target angle with smoother easing
+        // Animate rotation to the target angle with elegant easing
         gsap.to({}, {
-          duration: 1.2,
-          ease: "power2.inOut",
+          duration: 1.5,
+          ease: "power3.inOut", // Smoother, more refined easing
           onUpdate: function() {
             const progress = this.progress();
             const currentAngle = powers[prev].angle;
@@ -297,7 +299,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         
         return nextIndex;
       });
-    }, 5500); // Increased from 3500 to 5500 (adds 2 seconds between transitions)
+    }, 5500); // 1.5s animation + 4s pause between transitions
 
     return () => {
       if (tourIntervalRef.current) {
