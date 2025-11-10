@@ -171,29 +171,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
   const [initialPulse, setInitialPulse] = useState(true);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const orbitAnimationRef = useRef<gsap.core.Tween | null>(null);
   const [orbitRotation, setOrbitRotation] = useState(0);
   const [showPlayButton, setShowPlayButton] = useState(false);
   const [videoError, setVideoError] = useState(false);
-
-  // Track mouse position for magnetic effect
-  useEffect(() => {
-    if (prefersReducedMotion()) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setMousePos({
-          x: e.clientX - rect.left - rect.width / 2,
-          y: e.clientY - rect.top - rect.height / 2
-        });
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   // Orbital rotation animation - rotate the entire orbital system
   useEffect(() => {
@@ -447,7 +428,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               </div>
             </div>
 
-            {/* Orbital Badges with Magnetic Effect */}
+            {/* Orbital Badges */}
             <div className="orbital-badges-container absolute inset-0 pointer-events-none">
               {powers.map((power, index) => {
                 const radius = 320;
@@ -456,23 +437,13 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 const x = Math.cos(angleRad) * radius;
                 const y = Math.sin(angleRad) * radius * 0.6;
 
-                // Calculate magnetic effect
-                const badgeX = x;
-                const badgeY = y;
-                const distance = Math.sqrt(
-                  Math.pow(mousePos.x - badgeX, 2) + Math.pow(mousePos.y - badgeY, 2)
-                );
-                const magneticStrength = Math.max(0, 1 - distance / 200);
-                const pullX = (mousePos.x - badgeX) * magneticStrength * 0.15;
-                const pullY = (mousePos.y - badgeY) * magneticStrength * 0.15;
-
                 return (
                   <div
                     key={power.id}
                     ref={el => badgeRefs.current[index] = el}
                     className="absolute left-1/2 top-1/2 pointer-events-auto"
                     style={{
-                      transform: `translate(calc(-50% + ${x + pullX}px), calc(-50% + ${y + pullY}px))`,
+                      transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
                       zIndex: 30
                     }}
                   >
