@@ -7,18 +7,20 @@ import { AlertTriangle, DollarSign } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function InternalHireCostCalculator() {
-  const [baseSalary, setBaseSalary] = useState([80000]);
+  const [baseSalary, setBaseSalary] = useState([50000]);
   const [onboardingMonths, setOnboardingMonths] = useState([3]);
   
   // Cost calculations
-  const benefits = baseSalary[0] * 0.30; // 30% of salary for benefits
-  const recruiterFee = baseSalary[0] * 0.20; // 20% recruiter fee
-  const onboardingCost = (baseSalary[0] / 12) * onboardingMonths[0]; // Lost productivity during onboarding
+  const bonus = 20000; // Fixed bonus to reach $70K OTE
+  const totalCompensation = baseSalary[0] + bonus;
+  const benefits = baseSalary[0] * 0.30; // 30% of base salary for benefits
+  const recruiterFee = totalCompensation * 0.20; // 20% recruiter fee on total comp
+  const onboardingCost = (totalCompensation / 12) * onboardingMonths[0]; // Lost productivity during onboarding
   const managementTax = 15000; // Annual management time cost
   const toolsAndLicenses = 8000; // Annual cost for tools
-  const turnoverRisk = baseSalary[0] * 0.34; // 34% chance of failure within first year
+  const turnoverRisk = totalCompensation * 0.34; // 34% chance of failure within first year
   
-  const totalFirstYearCost = baseSalary[0] + benefits + recruiterFee + onboardingCost + managementTax + toolsAndLicenses;
+  const totalFirstYearCost = baseSalary[0] + bonus + benefits + recruiterFee + onboardingCost + managementTax + toolsAndLicenses;
   const totalWithRisk = totalFirstYearCost + turnoverRisk;
   
   const formatCurrency = (value: number) => {
@@ -56,14 +58,17 @@ export function InternalHireCostCalculator() {
               <Slider
                 value={baseSalary}
                 onValueChange={setBaseSalary}
-                min={60000}
-                max={120000}
+                min={40000}
+                max={100000}
                 step={5000}
                 data-testid="slider-base-salary"
               />
               <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                <span>$60k</span>
-                <span>$120k</span>
+                <span>$40k</span>
+                <span>$100k</span>
+              </div>
+              <div className="mt-2 text-sm text-muted-foreground">
+                + ${formatCurrency(bonus).replace('$', '')} bonus = <span className="font-semibold">{formatCurrency(totalCompensation)} OTE</span>
               </div>
             </div>
 
@@ -95,6 +100,10 @@ export function InternalHireCostCalculator() {
                 <span className="font-mono">{formatCurrency(baseSalary[0])}</span>
               </div>
               <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Bonus (to $70K OTE):</span>
+                <span className="font-mono">{formatCurrency(bonus)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Benefits (30%):</span>
                 <span className="font-mono">{formatCurrency(benefits)}</span>
               </div>
@@ -114,6 +123,20 @@ export function InternalHireCostCalculator() {
                 <span className="text-muted-foreground">Tools & Licenses:</span>
                 <span className="font-mono">{formatCurrency(toolsAndLicenses)}</span>
               </div>
+            </div>
+
+            {/* Missing Support Systems Warning */}
+            <div className="mt-4 p-4 bg-destructive/5 rounded-lg border border-destructive/20">
+              <p className="text-xs font-semibold mb-2 flex items-center gap-1 text-destructive">
+                <AlertTriangle className="w-4 h-4" />
+                What You're NOT Getting:
+              </p>
+              <ul className="text-xs text-muted-foreground space-y-1">
+                <li>• No AI-powered research & personalization at scale</li>
+                <li>• No elite coaching to accelerate ramp & performance</li>
+                <li>• No RevOps support for tech stack optimization</li>
+                <li>• No community & competition (vital for SDR motivation)</li>
+              </ul>
             </div>
           </div>
 
