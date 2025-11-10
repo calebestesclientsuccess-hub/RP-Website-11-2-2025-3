@@ -266,7 +266,7 @@ export default function ROICalculator() {
       <section className="py-16 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Container with relative positioning for floating button */}
-          <div className="relative pt-16">
+          <div className="relative pt-9">
             {/* Share Report Button - Floating above Part 1 */}
             <div className="absolute top-0 left-0">
               <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
