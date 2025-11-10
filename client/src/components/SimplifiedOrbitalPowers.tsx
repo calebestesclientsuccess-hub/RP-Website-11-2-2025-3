@@ -362,22 +362,19 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       timeline.to({}, { duration: DRAMATIC_BEAT / 1000 });
 
       // Then smoothly rotate with cinematic easing
-      // UPDATE selectedIndex when rotation is 70% complete for perfect sync
       timeline.to(
         { value: 0 },
         {
           value: 1,
           duration: ROTATION_DURATION / 1000,
           ease: "power3.out",
+          onStart: () => {
+            // Update selectedIndex at the START of rotation
+            // This ensures the info box always matches the power moving to the left position
+            setSelectedIndex(nextIndex);
+          },
           onUpdate: function() {
             const progress = this.progress();
-            
-            // Update selectedIndex at 70% rotation progress
-            // This ensures visual and content sync perfectly
-            if (progress >= 0.7 && selectedIndex !== nextIndex) {
-              setSelectedIndex(nextIndex);
-            }
-            
             const newRotation = (currentRotation + rotationIncrement * progress) % 360;
             setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
           }
@@ -691,11 +688,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 const nextIndex = (selectedIndex + 1) % powers.length;
                 const isNextBadge = index === nextIndex;
                 
-                // Show pre-pulse only on the next badge that's about to rotate to selected position
+                // Pulse logic: exactly one badge pulses at all times
+                // During animation: pre-pulse on next badge
+                // During pause: sustained pulse on current selected badge
                 const showPrePulse = isNextBadge && prePulseActive && isAnimating;
-                
-                // Show sustained pulse only on currently selected badge at left position
-                const showSustainedPulse = isAtSelectedPosition && !isAnimating;
+                const showSustainedPulse = index === selectedIndex && !isAnimating;
 
                 return (
                   <div
