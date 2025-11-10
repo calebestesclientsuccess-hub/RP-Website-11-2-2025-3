@@ -13,14 +13,14 @@ export function InternalHireCostCalculator() {
   // Cost calculations
   const bonus = 20000; // Fixed bonus to reach $70K OTE
   const totalCompensation = baseSalary[0] + bonus;
-  const benefits = baseSalary[0] * 0.30; // 30% of base salary for benefits
+  const benefits = baseSalary[0] * 0.35; // 35% of base salary for benefits (insurance, 401k, etc.)
   const recruiterFee = totalCompensation * 0.20; // 20% recruiter fee on total comp
   const onboardingCost = (totalCompensation / 12) * onboardingMonths[0]; // Lost productivity during onboarding
-  const managementTax = 15000; // Annual management time cost
-  const toolsAndLicenses = 8000; // Annual cost for tools
-  const turnoverRisk = totalCompensation * 0.34; // 34% chance of failure within first year
+  const managementTax = 20000; // Annual management time cost (meetings, reviews, coaching)
+  const toolsAndLicenses = 10000; // Annual cost for tools (ZoomInfo, Outreach, etc.)
   
   const totalFirstYearCost = baseSalary[0] + bonus + benefits + recruiterFee + onboardingCost + managementTax + toolsAndLicenses;
+  const turnoverRisk = totalFirstYearCost * 0.30; // 30% weighted risk of replacement cost
   const totalWithRisk = totalFirstYearCost + turnoverRisk;
   
   const formatCurrency = (value: number) => {
@@ -38,10 +38,10 @@ export function InternalHireCostCalculator() {
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="w-6 h-6 text-destructive" />
-            <h3 className="text-2xl md:text-3xl font-bold">The True Cost of an Internal Hire</h3>
+            <h3 className="text-2xl md:text-3xl font-bold">The True Cost of 1 Internal SDR</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            Adjust the sliders to calculate the real cost of hiring an SDR/BDR internally
+            This is what you're actually paying for <span className="font-semibold text-destructive">just one SDR/BDR</span> hire
           </p>
         </div>
 
@@ -104,7 +104,7 @@ export function InternalHireCostCalculator() {
                 <span className="font-mono">{formatCurrency(bonus)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Benefits (30%):</span>
+                <span className="text-muted-foreground">Benefits (35%):</span>
                 <span className="font-mono">{formatCurrency(benefits)}</span>
               </div>
               <div className="flex justify-between text-sm">
@@ -148,7 +148,7 @@ export function InternalHireCostCalculator() {
               transition={{ duration: 0.3 }}
               className="p-6 bg-muted/50 rounded-lg border border-border"
             >
-              <p className="text-sm text-muted-foreground mb-2">Total First Year Cost</p>
+              <p className="text-sm text-muted-foreground mb-2">First Year Cost for <span className="font-bold text-foreground">1 SDR</span></p>
               <p className="text-3xl md:text-4xl font-bold font-mono gradient-text gradient-hero" data-testid="text-total-first-year">
                 {formatCurrency(totalFirstYearCost)}
               </p>
@@ -162,13 +162,13 @@ export function InternalHireCostCalculator() {
             >
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-5 h-5 text-destructive" />
-                <p className="text-sm font-semibold text-destructive">Including 34% Turnover Risk</p>
+                <p className="text-sm font-semibold text-destructive">Including Replacement Risk (30%)</p>
               </div>
               <p className="text-4xl md:text-5xl font-bold font-mono text-destructive" data-testid="text-total-with-risk">
                 {formatCurrency(totalWithRisk)}
               </p>
               <p className="text-xs text-muted-foreground mt-3">
-                Industry average: 34% of SDR/BDR hires fail within the first year
+                That's <span className="font-bold text-destructive">$198K for just 1 SDR</span> when you factor in the risk of them leaving or failing
               </p>
             </motion.div>
 
