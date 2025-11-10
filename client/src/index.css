@@ -636,37 +636,13 @@
   }
 
   /* ================================================
-     GRADIENT TEXT SYSTEM - Progressive Enhancement
+     GRADIENT TEXT SYSTEM - Pure Crimson
      ================================================ */
 
-  /* Base gradient text class - Pure single-tone crimson */
-  html:not(.dark) .gradient-text {
-    /* Pure crimson red - the color you loved */
+  /* Pure crimson for both light and dark modes */
+  .gradient-text {
     color: #DC143C;
     font-weight: 600;
-    text-shadow: none;
-  }
-
-  /* Dark mode - Pure crimson */
-  html.dark .gradient-text {
-    /* Pure crimson red - same beautiful color */
-    color: #DC143C;
-    font-weight: 600;
-    text-shadow: none;
-  }
-
-  /* Optional pulsing - apply with .gradient-text-pulse class */
-  @keyframes crimson-pulse {
-    0%, 100% {
-      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
-    }
-    50% {
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-    }
-  }
-
-  .gradient-text-pulse {
-    animation: crimson-pulse 3s ease-in-out infinite;
   }
 
   /* ================================================
@@ -722,58 +698,7 @@
   border: 1px solid rgba(220, 20, 60, 0.5);
 }
 
-  /* Context-aware gradient intensities - LIGHT MODE */
-  html:not(.dark) .gradient-hero {
-    background: linear-gradient(
-      180deg,
-      rgba(180, 25, 25, 1) 13%,
-      rgba(150, 20, 20, 1) 54%,
-      rgba(60, 5, 70, 1) 75%,
-      rgba(20, 2, 30, 1) 92%
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  html:not(.dark) .gradient-card {
-    filter: saturate(1);
-  }
-
-  html:not(.dark) .gradient-button {
-    filter: saturate(0.95);
-  }
-
-  html:not(.dark) .gradient-subtle {
-    filter: saturate(0.8) opacity(0.9);
-  }
-
-  /* Context-aware gradient intensities - DARK MODE */
-  html.dark .gradient-hero {
-    background: linear-gradient(
-      180deg,
-      rgba(180, 25, 25, 1) 13%,
-      rgba(150, 20, 20, 1) 54%,
-      rgba(60, 5, 70, 1) 75%,
-      rgba(20, 2, 30, 1) 92%
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: saturate(1.15) brightness(1.1);
-  }
-
-  html.dark .gradient-card {
-    filter: saturate(1.05);
-  }
-
-  html.dark .gradient-button {
-    filter: saturate(1);
-  }
-
-  html.dark .gradient-subtle {
-    filter: saturate(0.85) opacity(0.95);
-  }
+  
 
   /* ================================================
      LIGHT MODE DEPTH SYSTEM - Multi-layer shadows
