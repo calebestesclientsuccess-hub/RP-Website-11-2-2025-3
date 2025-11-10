@@ -1054,11 +1054,11 @@
     transform: scale(1) translateZ(0);
     filter: brightness(1);
   }
-  25% {
+  30% {
     transform: scale(1.15) translateZ(0);
     filter: brightness(1.4);
   }
-  30% {
+  40% {
     transform: scale(1.15) translateZ(0);
     filter: brightness(1.4);
   }

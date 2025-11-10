@@ -293,8 +293,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     const ROTATION_DURATION = 2000; // 2 seconds for smooth rotation
     const PAUSE_DURATION = 4500; // 4.5 seconds to display each power - more contemplative
-    const PRE_PULSE_DURATION = 1200; // 1.2 seconds for pre-pulse animation - slightly more anticipatory
-    const TOTAL_CYCLE = PRE_PULSE_DURATION + ROTATION_DURATION + PAUSE_DURATION; // 7.7 seconds total
+    const PRE_PULSE_DURATION = 1000; // 1 second matches CSS animation (ends at 30% = 300ms of 1000ms)
+    const TOTAL_CYCLE = PRE_PULSE_DURATION + ROTATION_DURATION + PAUSE_DURATION; // 7.5 seconds total
 
     const performTransition = (currentIndex: number) => {
       setIsAnimating(true);
@@ -313,7 +313,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       // Create single smooth animation timeline
       const timeline = gsap.timeline({
         onComplete: () => {
-          // Update state synchronously
+          // Update all states synchronously at completion
           setOrbitRotation(targetAngle);
           setSelectedIndex(nextIndex);
           setPrePulseActive(false);
@@ -335,12 +335,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             const progress = this.progress();
             const newRotation = (currentAngle + angleDiff * progress) % 360;
             setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
-            
-            // Start background morph at 90% completion for seamless lead-in
-            if (progress >= 0.9 && this.vars.backgroundMorphed !== true) {
-              setSelectedIndex(nextIndex);
-              this.vars.backgroundMorphed = true;
-            }
           }
         }
       );
