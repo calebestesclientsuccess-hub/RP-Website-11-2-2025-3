@@ -1126,6 +1126,59 @@
   }
 }
 
+/* ================================================
+   SECONDARY CTA SYSTEM - Color Inversion Model
+   Secondary CTAs are the visual inverse of primary CTAs
+   Primary: Red fill + white text
+   Secondary: White/black fill + red text
+   ================================================ */
+
+/* Base secondary CTA - uses color inversion */
+.secondary-cta {
+  @apply hover-elevate active-elevate-2;
+  @apply transition-all duration-200;
+}
+
+/* Light mode - black fill with red text */
+html:not(.dark) .secondary-cta {
+  background-color: hsl(var(--foreground));
+  color: hsl(var(--primary));
+  border: 1px solid hsl(var(--foreground));
+}
+
+html:not(.dark) .secondary-cta:hover {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}
+
+/* Dark mode - white fill with red text */
+html.dark .secondary-cta {
+  background-color: hsl(0 0% 100%);
+  color: hsl(var(--primary));
+  border: 1px solid hsl(0 0% 100%);
+}
+
+html.dark .secondary-cta:hover {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}
+
+/* Active state - slight press effect */
+.secondary-cta:active {
+  transform: translateY(1px);
+}
+
+/* Icon animations within secondary CTAs */
+.secondary-cta svg {
+  transition: transform 0.2s ease;
+}
+
+.secondary-cta:hover svg {
+  transform: translateX(2px);
+}
+
 .animated-border-glow {
   position: relative;
   overflow: visible;
