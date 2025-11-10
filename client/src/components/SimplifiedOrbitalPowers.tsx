@@ -321,7 +321,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         onComplete: () => {
           // Update all states synchronously at completion
           setOrbitRotation(targetRotation);
-          setSelectedIndex(nextIndex);
           setPrePulseActive(false);
           setIsAnimating(false);
         }
@@ -331,12 +330,18 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       timeline.to({}, { duration: PRE_PULSE_DURATION / 1000 });
 
       // Then smoothly rotate with cinematic easing
+      // UPDATE selectedIndex IMMEDIATELY when rotation starts so info box matches
       timeline.to(
         { value: 0 },
         {
           value: 1,
           duration: ROTATION_DURATION / 1000,
           ease: "power3.out",
+          onStart: () => {
+            // Update selectedIndex at the START of rotation
+            // This ensures the info box always shows the power that's moving to the left
+            setSelectedIndex(nextIndex);
+          },
           onUpdate: function() {
             const progress = this.progress();
             const newRotation = (currentRotation + rotationIncrement * progress) % 360;
