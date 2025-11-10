@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { insertLeadCaptureSchema } from '@shared/schema';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { trackLeadGeneration } from '@/lib/analytics';
@@ -31,6 +31,16 @@ type FormData = z.infer<typeof formSchema>;
 export default function LeadMagnetHero() {
   const [showThankYou, setShowThankYou] = useState(false);
   const { toast } = useToast();
+  
+  // Check if the playbook feature is enabled
+  const { data: featureFlag } = useQuery<{ enabled: boolean }>({
+    queryKey: ["/api/public/feature-flags/revenue-architecture-playbook"],
+  });
+
+  // Don't render if feature is disabled
+  if (featureFlag && !featureFlag.enabled) {
+    return null;
+  }
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),

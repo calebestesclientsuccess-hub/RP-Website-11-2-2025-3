@@ -2217,6 +2217,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Feature Flags endpoints
+  app.get("/api/feature-flags", requireAuth, async (req, res) => {
+    try {
+      const flags = await storage.getAllFeatureFlags(req.tenantId);
+      return res.json(flags);
+    } catch (error) {
+      console.error("Error fetching feature flags:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/feature-flags/:flagKey", requireAuth, async (req, res) => {
+    try {
+      const { enabled } = req.body;
+      const flag = await storage.updateFeatureFlag(req.tenantId, req.params.flagKey, { enabled });
+      return res.json(flag);
+    } catch (error) {
+      console.error("Error updating feature flag:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Public endpoint to check if a feature is enabled
+  app.get("/api/public/feature-flags/:flagKey", async (req, res) => {
+    try {
+      const flag = await storage.getFeatureFlag(req.tenantId, req.params.flagKey);
+      return res.json({ enabled: flag?.enabled ?? true });
+    } catch (error) {
+      console.error("Error fetching feature flag:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Configurable Assessment Response endpoints
   
   // POST /api/configurable-assessments/:id/submit - Submit assessment answers

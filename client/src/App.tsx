@@ -45,6 +45,7 @@ import ForgotPasswordPage from "@/pages/admin/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/admin/ResetPasswordPage";
 import WelcomePage from "@/pages/admin/WelcomePage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import FeatureFlagsPage from "@/pages/admin/FeatureFlagsPage";
 import BlogPostsList from "@/pages/admin/BlogPostsList";
 import BlogPostForm from "@/pages/admin/BlogPostForm";
 import VideoPostsList from "@/pages/admin/VideoPostsList";
@@ -91,6 +92,7 @@ function Router() {
       <Route path="/admin/reset-password/:token" component={ResetPasswordPage} />
       <Route path="/admin/welcome" component={WelcomePage} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/feature-flags" component={FeatureFlagsPage} />
       <Route path="/admin/assessment-submissions" component={AssessmentAdminDashboard} />
       <Route path="/admin/assessments/new" component={AssessmentConfigForm} />
       <Route path="/admin/assessments/:id/edit" component={AssessmentConfigForm} />

@@ -1,5 +1,5 @@
-import { 
-  type User, type InsertUser, 
+import {
+  type User, type InsertUser,
   type EmailCapture, type InsertEmailCapture,
   type BlogPost, type InsertBlogPost,
   type VideoPost, type InsertVideoPost,
@@ -20,8 +20,9 @@ import {
   type Campaign, type InsertCampaign,
   type Event, type InsertEvent,
   type Lead, type InsertLead,
+  type FeatureFlag, type InsertFeatureFlag,
   users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens,
-  assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants, leads, insertLeadSchema
+  assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants, leads, featureFlags, insertLeadSchema
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, ilike, sql } from "drizzle-orm";
@@ -38,87 +39,92 @@ export interface IStorage {
   markPasswordResetTokenAsUsed(token: string): Promise<void>;
   createEmailCapture(emailCapture: InsertEmailCapture): Promise<EmailCapture>;
   getAllEmailCaptures(): Promise<EmailCapture[]>;
-  
+
   getAllBlogPosts(tenantId: string, publishedOnly?: boolean): Promise<BlogPost[]>;
   getBlogPostBySlug(tenantId: string, slug: string): Promise<BlogPost | undefined>;
   getBlogPostById(tenantId: string, id: string): Promise<BlogPost | undefined>;
   createBlogPost(tenantId: string, post: InsertBlogPost): Promise<BlogPost>;
   updateBlogPost(tenantId: string, id: string, post: Partial<InsertBlogPost>): Promise<BlogPost>;
   deleteBlogPost(tenantId: string, id: string): Promise<void>;
-  
+
   getAllVideoPosts(tenantId: string, publishedOnly?: boolean): Promise<VideoPost[]>;
   getVideoPostBySlug(tenantId: string, slug: string): Promise<VideoPost | undefined>;
   getVideoPostById(tenantId: string, id: string): Promise<VideoPost | undefined>;
   createVideoPost(tenantId: string, post: InsertVideoPost): Promise<VideoPost>;
   updateVideoPost(tenantId: string, id: string, post: Partial<InsertVideoPost>): Promise<VideoPost>;
   deleteVideoPost(tenantId: string, id: string): Promise<void>;
-  
+
   getActiveWidgetConfig(tenantId: string): Promise<WidgetConfig | undefined>;
   createOrUpdateWidgetConfig(tenantId: string, config: InsertWidgetConfig): Promise<WidgetConfig>;
-  
+
   getAllTestimonials(tenantId: string, featuredOnly?: boolean): Promise<Testimonial[]>;
   createTestimonial(tenantId: string, testimonial: InsertTestimonial): Promise<Testimonial>;
-  
+
   getAllJobPostings(tenantId: string, activeOnly?: boolean): Promise<JobPosting[]>;
   getJobPosting(tenantId: string, id: string): Promise<JobPosting | undefined>;
   createJobPosting(tenantId: string, job: InsertJobPosting): Promise<JobPosting>;
-  
+
   createJobApplication(tenantId: string, application: InsertJobApplication): Promise<JobApplication>;
-  
+
   createLeadCapture(tenantId: string, leadCapture: InsertLeadCapture): Promise<LeadCapture>;
   getAllLeadCaptures(tenantId: string): Promise<LeadCapture[]>;
-  
+
   createBlueprintCapture(capture: InsertBlueprintCapture): Promise<BlueprintCapture>;
   getAllBlueprintCaptures(): Promise<BlueprintCapture[]>;
-  
+
   getAssessmentBySessionId(tenantId: string, sessionId: string): Promise<AssessmentResponse | undefined>;
   createAssessment(tenantId: string, assessment: InsertAssessmentResponse): Promise<AssessmentResponse>;
   updateAssessment(tenantId: string, sessionId: string, data: Partial<InsertAssessmentResponse>): Promise<AssessmentResponse>;
   getAllAssessments(tenantId: string, filters?: { bucket?: string; startDate?: Date; endDate?: Date; search?: string }): Promise<AssessmentResponse[]>;
-  
+
   createNewsletterSignup(signup: InsertNewsletterSignup): Promise<NewsletterSignup>;
   getAllNewsletterSignups(): Promise<NewsletterSignup[]>;
-  
+
   getAllAssessmentConfigs(tenantId: string): Promise<AssessmentConfig[]>;
   getAssessmentConfigById(tenantId: string, id: string): Promise<AssessmentConfig | undefined>;
   getAssessmentConfigBySlug(tenantId: string, slug: string): Promise<AssessmentConfig | undefined>;
   createAssessmentConfig(tenantId: string, config: InsertAssessmentConfig): Promise<AssessmentConfig>;
   updateAssessmentConfig(tenantId: string, id: string, config: Partial<InsertAssessmentConfig>): Promise<AssessmentConfig>;
   deleteAssessmentConfig(tenantId: string, id: string): Promise<void>;
-  
+
   getQuestionsByAssessmentId(assessmentId: string): Promise<AssessmentQuestion[]>;
   createAssessmentQuestion(question: InsertAssessmentQuestion): Promise<AssessmentQuestion>;
   updateAssessmentQuestion(id: string, question: Partial<InsertAssessmentQuestion>): Promise<AssessmentQuestion>;
   deleteAssessmentQuestion(id: string): Promise<void>;
-  
+
   getAnswersByQuestionId(questionId: string): Promise<AssessmentAnswer[]>;
   getAnswersByAssessmentId(assessmentId: string): Promise<AssessmentAnswer[]>;
   createAssessmentAnswer(answer: InsertAssessmentAnswer): Promise<AssessmentAnswer>;
   updateAssessmentAnswer(id: string, answer: Partial<InsertAssessmentAnswer>): Promise<AssessmentAnswer>;
   deleteAssessmentAnswer(id: string): Promise<void>;
-  
+
   getBucketsByAssessmentId(assessmentId: string): Promise<AssessmentResultBucket[]>;
   createAssessmentResultBucket(bucket: InsertAssessmentResultBucket): Promise<AssessmentResultBucket>;
   updateAssessmentResultBucket(id: string, bucket: Partial<InsertAssessmentResultBucket>): Promise<AssessmentResultBucket>;
   deleteAssessmentResultBucket(id: string): Promise<void>;
-  
+
   getAllCampaigns(tenantId: string): Promise<Campaign[]>;
   getCampaignById(tenantId: string, id: string): Promise<Campaign | undefined>;
   createCampaign(tenantId: string, campaign: InsertCampaign): Promise<Campaign>;
   updateCampaign(tenantId: string, id: string, campaign: Partial<InsertCampaign>): Promise<Campaign>;
   deleteCampaign(tenantId: string, id: string): Promise<void>;
-  
+
   createEvent(tenantId: string, event: InsertEvent): Promise<Event>;
   getAllEvents(tenantId: string, filters?: { campaignId?: string; eventType?: string }): Promise<Event[]>;
-  
+
   getConfigurableResponseBySessionId(tenantId: string, sessionId: string): Promise<ConfigurableAssessmentResponse | undefined>;
   createConfigurableResponse(tenantId: string, response: InsertConfigurableAssessmentResponse): Promise<ConfigurableAssessmentResponse>;
   updateConfigurableResponse(tenantId: string, sessionId: string, data: Partial<InsertConfigurableAssessmentResponse>): Promise<ConfigurableAssessmentResponse>;
   getAllConfigurableResponses(tenantId: string, assessmentId?: string, filters?: { startDate?: Date; endDate?: Date; bucketKey?: string }): Promise<ConfigurableAssessmentResponse[]>;
-  
+
   createLead(tenantId: string, lead: InsertLead): Promise<Lead>;
   getAllLeads(tenantId: string, filters?: { source?: string; startDate?: Date; endDate?: Date }): Promise<Lead[]>;
   getAllUsers(): Promise<User[]>;
+
+  getAllFeatureFlags(tenantId: string): Promise<FeatureFlag[]>;
+  getFeatureFlag(tenantId: string, flagKey: string): Promise<FeatureFlag | undefined>;
+  updateFeatureFlag(tenantId: string, flagKey: string, updates: Partial<InsertFeatureFlag>): Promise<FeatureFlag>;
+  createFeatureFlag(tenantId: string, flag: InsertFeatureFlag): Promise<FeatureFlag>;
 }
 
 export class DbStorage implements IStorage {
@@ -282,7 +288,7 @@ export class DbStorage implements IStorage {
     const existing = await db.select().from(widgetConfig)
       .where(eq(widgetConfig.tenantId, tenantId))
       .limit(1);
-    
+
     if (existing.length > 0) {
       const [config] = await db
         .update(widgetConfig)
@@ -395,19 +401,19 @@ export class DbStorage implements IStorage {
     let query = db.select().from(assessmentResponses);
 
     const conditions = [eq(assessmentResponses.tenantId, tenantId)];
-    
+
     if (filters?.bucket) {
       conditions.push(eq(assessmentResponses.bucket, filters.bucket));
     }
-    
+
     if (filters?.startDate) {
       conditions.push(eq(assessmentResponses.createdAt, filters.startDate));
     }
-    
+
     if (filters?.endDate) {
       conditions.push(eq(assessmentResponses.createdAt, filters.endDate));
     }
-    
+
     if (filters?.search) {
       conditions.push(like(assessmentResponses.q20, `%${filters.search}%`));
     }
@@ -494,7 +500,7 @@ export class DbStorage implements IStorage {
   async getAnswersByAssessmentId(assessmentId: string): Promise<AssessmentAnswer[]> {
     const questions = await this.getQuestionsByAssessmentId(assessmentId);
     if (questions.length === 0) return [];
-    
+
     const questionIds = questions.map(q => q.id);
     const answers = await db.select()
       .from(assessmentAnswers)
@@ -585,11 +591,11 @@ export class DbStorage implements IStorage {
 
   async getAllEvents(tenantId: string, filters?: { campaignId?: string; eventType?: string }): Promise<Event[]> {
     const conditions = [eq(events.tenantId, tenantId)];
-    
+
     if (filters?.campaignId) {
       conditions.push(eq(events.campaignId, filters.campaignId));
     }
-    
+
     if (filters?.eventType) {
       conditions.push(eq(events.eventType, filters.eventType));
     }
@@ -629,19 +635,19 @@ export class DbStorage implements IStorage {
 
   async getAllConfigurableResponses(tenantId: string, assessmentId?: string, filters?: { startDate?: Date; endDate?: Date; bucketKey?: string }): Promise<ConfigurableAssessmentResponse[]> {
     const conditions = [eq(configurableAssessmentResponses.tenantId, tenantId)];
-    
+
     if (assessmentId) {
       conditions.push(eq(configurableAssessmentResponses.assessmentConfigId, assessmentId));
     }
-    
+
     if (filters?.bucketKey) {
       conditions.push(eq(configurableAssessmentResponses.finalBucketKey, filters.bucketKey));
     }
-    
+
     if (filters?.startDate) {
       conditions.push(sql`${configurableAssessmentResponses.createdAt} >= ${filters.startDate}`);
     }
-    
+
     if (filters?.endDate) {
       conditions.push(sql`${configurableAssessmentResponses.createdAt} <= ${filters.endDate}`);
     }
@@ -651,24 +657,22 @@ export class DbStorage implements IStorage {
       .orderBy(desc(configurableAssessmentResponses.createdAt));
   }
 
-  async createLead(tenantId: string, insertLead: InsertLead): Promise<Lead> {
-    const [lead] = await db.insert(leads)
-      .values({ tenantId, ...insertLead })
-      .returning();
-    return lead;
+  async createLead(tenantId: string, lead: InsertLead): Promise<Lead> {
+    const [newLead] = await db.insert(leads).values({ ...lead, tenantId }).returning();
+    return newLead;
   }
 
   async getAllLeads(tenantId: string, filters?: { source?: string; startDate?: Date; endDate?: Date }): Promise<Lead[]> {
     const conditions = [eq(leads.tenantId, tenantId)];
-    
+
     if (filters?.source) {
       conditions.push(eq(leads.source, filters.source));
     }
-    
+
     if (filters?.startDate) {
       conditions.push(sql`${leads.createdAt} >= ${filters.startDate}`);
     }
-    
+
     if (filters?.endDate) {
       conditions.push(sql`${leads.createdAt} <= ${filters.endDate}`);
     }
@@ -680,6 +684,36 @@ export class DbStorage implements IStorage {
 
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users);
+  }
+
+  async getAllFeatureFlags(tenantId: string): Promise<FeatureFlag[]> {
+    return db.select().from(featureFlags).where(eq(featureFlags.tenantId, tenantId));
+  }
+
+  async getFeatureFlag(tenantId: string, flagKey: string): Promise<FeatureFlag | undefined> {
+    const [flag] = await db
+      .select()
+      .from(featureFlags)
+      .where(and(eq(featureFlags.tenantId, tenantId), eq(featureFlags.flagKey, flagKey)));
+    return flag;
+  }
+
+  async updateFeatureFlag(
+    tenantId: string,
+    flagKey: string,
+    updates: Partial<InsertFeatureFlag>
+  ): Promise<FeatureFlag> {
+    const [flag] = await db
+      .update(featureFlags)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(eq(featureFlags.tenantId, tenantId), eq(featureFlags.flagKey, flagKey)))
+      .returning();
+    return flag;
+  }
+
+  async createFeatureFlag(tenantId: string, flag: InsertFeatureFlag): Promise<FeatureFlag> {
+    const [newFlag] = await db.insert(featureFlags).values({ ...flag, tenantId }).returning();
+    return newFlag;
   }
 }
 

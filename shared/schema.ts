@@ -311,6 +311,17 @@ export const leads = pgTable("leads", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const featureFlags = pgTable("feature_flags", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  flagKey: text("flag_key").notNull(),
+  flagName: text("flag_name").notNull(),
+  enabled: boolean("enabled").default(true).notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertTenantSchema = createInsertSchema(tenants).omit({
   createdAt: true,
   updatedAt: true,
@@ -469,6 +480,13 @@ export const insertLeadSchema = createInsertSchema(leads)
     source: z.string().min(1, "Source is required"),
   });
 
+export const insertFeatureFlagSchema = createInsertSchema(featureFlags).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertTenant = z.infer<typeof insertTenantSchema>;
 export type Tenant = typeof tenants.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -513,6 +531,8 @@ export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type Lead = typeof leads.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
+export type FeatureFlag = typeof featureFlags.$inferSelect;
+export type InsertFeatureFlag = z.infer<typeof insertFeatureFlagSchema>;
 
 export const formFieldSchema = z.object({
   name: z.string().min(1, "Field name is required"),

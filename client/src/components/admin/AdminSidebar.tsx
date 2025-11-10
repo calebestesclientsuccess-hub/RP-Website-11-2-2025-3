@@ -11,7 +11,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { FileText, Video, Settings, LogOut, LayoutDashboard, ClipboardList, Megaphone } from "lucide-react";
+import { FileText, Video, Settings, LogOut, LayoutDashboard, ClipboardList, Megaphone, Flag } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 
@@ -20,6 +20,11 @@ const menuItems = [
     title: "Dashboard",
     url: "/admin",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Feature Flags",
+    url: "/admin/feature-flags",
+    icon: Flag,
   },
   {
     title: "Assessments",
