@@ -1138,16 +1138,18 @@
 }
 
 /* ================================================
-   SECONDARY CTA SYSTEM - Color Inversion Model
+   SECONDARY CTA SYSTEM - Subtle Hover Enhancement
    Secondary CTAs are the visual inverse of primary CTAs
    Primary: Red fill + white text
-   Secondary: White/black fill + red text
+   Secondary: Off-white/black fill + red text
+   Both use subtle movement and darkening on hover
    ================================================ */
 
-/* Base secondary CTA - uses color inversion */
+/* Base secondary CTA - uses subtle hover effects */
 .secondary-cta {
   @apply hover-elevate active-elevate-2;
   @apply transition-all duration-200;
+  transition-property: transform, filter, box-shadow;
 }
 
 /* Light mode - black fill with red text */
@@ -1158,27 +1160,26 @@ html:not(.dark) .secondary-cta {
 }
 
 html:not(.dark) .secondary-cta:hover {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  border-color: hsl(var(--primary));
+  transform: translateY(-2px) scale(1.01);
+  filter: brightness(0.85);
 }
 
-/* Dark mode - white fill with red text */
+/* Dark mode - off-white fill (91% lightness) with red text */
 html.dark .secondary-cta {
-  background-color: hsl(0 0% 100%);
+  background-color: hsl(0 0% 91%);
   color: hsl(var(--primary));
-  border: 1px solid hsl(0 0% 100%);
+  border: 1px solid hsl(0 0% 91%);
 }
 
 html.dark .secondary-cta:hover {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  border-color: hsl(var(--primary));
+  transform: translateY(-2px) scale(1.01);
+  filter: brightness(0.88);
 }
 
 /* Active state - slight press effect */
 .secondary-cta:active {
-  transform: translateY(1px);
+  transform: translateY(0px) scale(0.99);
+  filter: brightness(0.8);
 }
 
 /* Focus state for accessibility */
@@ -1200,16 +1201,13 @@ html.dark .secondary-cta:hover {
 .secondary-cta:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  filter: none;
 }
 
 .secondary-cta:disabled:hover {
-  background-color: hsl(var(--foreground));
-  color: hsl(var(--primary));
-}
-
-html.dark .secondary-cta:disabled:hover {
-  background-color: hsl(0 0% 100%);
-  color: hsl(var(--primary));
+  transform: none;
+  filter: none;
 }
 
 .animated-border-glow {
