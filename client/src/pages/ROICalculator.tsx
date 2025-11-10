@@ -352,7 +352,7 @@ export default function ROICalculator() {
                       <div className="flex items-center gap-2">
                         <Label className="text-base font-semibold">Average LTV</Label>
                         <span className="group relative">
-                          <span className="cursor-help text-muted-foreground">(?)</span>
+                          <span className="cursor-help text-muted-foreground hover:text-foreground transition-colors">ⓘ</span>
                           <div className="absolute left-0 top-6 hidden group-hover:block w-72 p-3 bg-popover border border-border rounded-lg shadow-lg z-10">
                             <p className="font-semibold text-sm mb-1">Based on a $5K/mo Client</p>
                             <p className="text-xs text-muted-foreground">
@@ -527,9 +527,9 @@ export default function ROICalculator() {
                   <div className="p-4 bg-background rounded-lg border border-border">
                     <p className="text-sm text-muted-foreground mb-1">Monthly Guaranteed SQOs</p>
                     <p className="text-2xl font-bold font-mono gradient-text-purple" data-testid="text-monthly-sqos">
-                      {config.guaranteedSQOs > 0 ? formatNumber(config.guaranteedSQOs, 1) : 'None'}
+                      {monthlySQOs > 0 ? formatNumber(monthlySQOs, 1) : 'None'}
                     </p>
-                    {config.guaranteedSQOs === 0 && (
+                    {monthlySQOs === 0 && (
                       <p className="text-xs text-destructive mt-1 flex items-center gap-1">
                         <XCircle className="w-3 h-3" />
                         No guarantee with internal hire

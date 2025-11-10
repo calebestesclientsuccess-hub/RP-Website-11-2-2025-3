@@ -594,7 +594,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/share-roi-report", async (req, res) => {
     try {
       const { emails, ltv, closeRate, engineName, monthlyInvestment, monthlySQOs, 
-              costPerMeeting, projectedDealsPerMonth, projectedLTVPerMonth, monthlyROI } = req.body;
+              costPerMeeting, projectedDealsPerMonth, projectedLTVPerMonth, monthlyROI,
+              annualSQOs, projectedLTVPerYear } = req.body;
 
       if (!emails || !Array.isArray(emails) || emails.length === 0) {
         return res.status(400).json({
@@ -709,8 +710,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       <div class="metric">
         <div class="metric-label">New Revenue Booked Per Year</div>
-        <div class="metric-value">${data.projectedLTVPerYear > 0 ? formatCurrency(data.projectedLTVPerYear) : '$0'}</div>
-        <p style="margin: 5px 0 0 0; font-size: 12px; color: #6b7280;">Based on ${data.annualSQOs} meetings/year*<br><em>*December excluded for training</em></p>
+        <div class="metric-value">${projectedLTVPerYear > 0 ? formatCurrency(projectedLTVPerYear) : '$0'}</div>
+        <p style="margin: 5px 0 0 0; font-size: 12px; color: #6b7280;">Based on ${annualSQOs} meetings/year*<br><em>*December excluded for training</em></p>
       </div>
       
       <div class="highlight">

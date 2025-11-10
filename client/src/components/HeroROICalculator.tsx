@@ -89,7 +89,18 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           {/* LTV Slider */}
           <div>
             <div className="flex justify-between mb-1.5">
-              <label className="text-xs font-medium">Average LTV</label>
+              <div className="flex items-center gap-1.5">
+                <label className="text-xs font-medium">Average LTV</label>
+                <span className="group relative">
+                  <span className="cursor-help text-muted-foreground hover:text-foreground transition-colors text-xs">ⓘ</span>
+                  <div className="absolute left-0 top-5 hidden group-hover:block w-64 p-2.5 bg-popover border border-border rounded-lg shadow-lg z-10 text-xs">
+                    <p className="font-semibold mb-1">Based on a $5K/mo Client</p>
+                    <p className="text-muted-foreground">
+                      Our default LTV of $120,000 imagines an average client value of $5,000 MRR over a 24-month lifetime. Adjust the slider to match your company's average LTV.
+                    </p>
+                  </div>
+                </span>
+              </div>
               <span className="text-xs font-mono font-bold text-muted-foreground" data-testid="text-ltv-value">
                 {formatCurrency(ltv[0])}
               </span>
