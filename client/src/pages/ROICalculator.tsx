@@ -244,7 +244,7 @@ export default function ROICalculator() {
               <span className="gradient-text gradient-hero">a Guaranteed Sales Asset</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-4xl mx-auto mb-8" data-testid="text-hero-subtitle">
-              Stop guessing with $198k hires. Design a guaranteed revenue engine and see the 80x+ ROI.
+              Stop guessing with $198k hires. Design a guaranteed revenue engine and see the 40x+ ROI.
             </p>
           </motion.div>
         </div>
