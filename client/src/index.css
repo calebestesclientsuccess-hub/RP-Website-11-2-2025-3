@@ -639,15 +639,15 @@
      GRADIENT TEXT SYSTEM - Progressive Enhancement
      ================================================ */
 
-  /* Base gradient text class with fallback - LIGHT MODE - Vertical red to dark purple */
+  /* Base gradient text class with fallback - LIGHT MODE - Nearly all red with subtle dark hint */
   html:not(.dark) .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: var(--gradient-fallback);
     font-weight: 600; /* Improve readability */
 
-    /* Layer 1: Vertical gradient - 180deg from bright red to deep purple/black */
+    /* Layer 1: Vertical gradient - 180deg from bright red through reds with tiny dark accent */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, #FF2A00 0%, #8B0000 50%, #1C0329 100%);
+      background: linear-gradient(180deg, #FF2A00 0%, #E02020 30%, #C01818 60%, #A01010 85%, #4A0A15 96%, #1C0329 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -655,15 +655,15 @@
     }
   }
 
-  /* Dark mode gradient - Vertical red to dark purple */
+  /* Dark mode gradient - Nearly all red with subtle dark hint */
   html.dark .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: hsl(0 0% 91%);
     font-weight: 600;
 
-    /* Layer 1: Vertical gradient - 180deg from bright red to deep purple/black */
+    /* Layer 1: Vertical gradient - 180deg from bright red through reds with tiny dark accent */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, #FF2A00 0%, #8B0000 50%, #1C0329 100%);
+      background: linear-gradient(180deg, #FF2A00 0%, #E02020 30%, #C01818 60%, #A01010 85%, #4A0A15 96%, #1C0329 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
