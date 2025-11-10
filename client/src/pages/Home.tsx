@@ -252,11 +252,12 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0 }}
+              className="flex"
             >
               {/* Card 1: Your Fully Loaded Sales Team */}
               <div
                 className={cn(
-                  "group relative p-8 rounded-xl transition-all duration-300",
+                  "group relative p-8 rounded-xl transition-all duration-300 flex flex-col w-full",
                   "bg-card/50 backdrop-blur-sm",
                   "border border-rose-600/30",
                   "hover:border-rose-600/50 hover:bg-card/70",
@@ -282,7 +283,7 @@ export default function Home() {
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80">
                   A team of well equipped SDRs, not a single Lone Wolf rep.
                 </p>
-                <div className="group relative">
+                <div className="group relative flex-grow flex flex-col justify-end">
                   <div
                     className={`leading-relaxed transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] opacity-70 ${
                       expandedCards.talent ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
@@ -314,11 +315,12 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
+              className="flex"
             >
               {/* Card 2: Your Playbook */}
               <div
                 className={cn(
-                  "group relative p-8 rounded-xl transition-all duration-300",
+                  "group relative p-8 rounded-xl transition-all duration-300 flex flex-col w-full",
                   "bg-card/50 backdrop-blur-sm",
                   "border border-indigo-500/30",
                   "hover:border-indigo-500/50 hover:bg-card/70",
@@ -344,7 +346,7 @@ export default function Home() {
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 px-1 opacity-80">
                   Our strategic framework, fully customized to your business.
                 </p>
-                <div className="group relative">
+                <div className="group relative flex-grow flex flex-col justify-end">
                   <div
                     className={`leading-relaxed transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] opacity-70 ${
                       expandedCards.playbook ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
@@ -376,11 +378,12 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex"
             >
               {/* Card 3: Your Signal Factory */}
               <div
                 className={cn(
-                  "group relative p-8 rounded-xl transition-all duration-300",
+                  "group relative p-8 rounded-xl transition-all duration-300 flex flex-col w-full",
                   "bg-card/50 backdrop-blur-sm",
                   "border border-emerald-500/30",
                   "hover:border-emerald-500/50 hover:bg-card/70",
@@ -406,7 +409,7 @@ export default function Home() {
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80">
                   Our AI-Powered Engine, customized to fuel your business.
                 </p>
-                <div className="group relative">
+                <div className="group relative flex-grow flex flex-col justify-end">
                   <div
                     className={`leading-relaxed transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] opacity-70 ${
                       expandedCards.signal ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
