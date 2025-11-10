@@ -190,6 +190,30 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [videoEnded, setVideoEnded] = useState(false);
   const [prePulseActive, setPrePulseActive] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState(180); // Default to left position
+
+  // Calculate responsive selection position based on viewport
+  useEffect(() => {
+    const updateSelectionPosition = () => {
+      const isMobile = window.innerWidth < 768;
+      const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+      
+      if (isMobile) {
+        // Mobile: bottom-left (225°) for better visibility
+        setSelectedPosition(225);
+      } else if (isTablet) {
+        // Tablet: slightly adjusted (200°)
+        setSelectedPosition(200);
+      } else {
+        // Desktop: left side (180°)
+        setSelectedPosition(180);
+      }
+    };
+
+    updateSelectionPosition();
+    window.addEventListener('resize', updateSelectionPosition);
+    return () => window.removeEventListener('resize', updateSelectionPosition);
+  }, []);
 
   // Orbital rotation animation - starts when section enters viewport
   useEffect(() => {
@@ -263,9 +287,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         targetPowerIndex = (nearestPowerIndex + 1) % powers.length;
       }
 
-      // Calculate target rotation
+      // Calculate target rotation using responsive selection position
       const targetPowerAngle = powers[targetPowerIndex].angle;
-      let targetRotation = 180 - targetPowerAngle;
+      let targetRotation = selectedPosition - targetPowerAngle;
 
       // Normalize target rotation
       while (targetRotation < 0) targetRotation += 360;
@@ -368,15 +392,16 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           value: 1,
           duration: ROTATION_DURATION / 1000,
           ease: "power3.out",
-          onStart: () => {
-            // Update selectedIndex at the START of rotation
-            // This ensures the info box always matches the power moving to the left position
-            setSelectedIndex(nextIndex);
-          },
           onUpdate: function() {
             const progress = this.progress();
             const newRotation = (currentRotation + rotationIncrement * progress) % 360;
             setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
+            
+            // Update selectedIndex when badge is 75% through rotation
+            // At this point it's visually entering the selected zone
+            if (progress >= 0.75 && selectedIndex !== nextIndex) {
+              setSelectedIndex(nextIndex);
+            }
           }
         }
       );
@@ -680,9 +705,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 const x = Math.cos(angleRad) * radius;
                 const y = Math.sin(angleRad) * radius * 0.6;
 
-                // Determine if this badge is at the selected position (180° = left)
+                // Determine if this badge is at the selected position (responsive based on viewport)
                 const normalizedAngle = totalAngle % 360;
-                const isAtSelectedPosition = Math.abs(normalizedAngle - 180) < 5; // Within 5° of left position
+                const isAtSelectedPosition = Math.abs(normalizedAngle - selectedPosition) < 5; // Within 5° of selected position
                 
                 // Determine if this is the NEXT badge (the one about to be selected)
                 const nextIndex = (selectedIndex + 1) % powers.length;
