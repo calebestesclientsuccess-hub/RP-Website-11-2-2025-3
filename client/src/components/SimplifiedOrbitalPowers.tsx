@@ -229,7 +229,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       });
       const nearestPowerIndex = powers.findIndex(p => p.angle === nearestPowerAngle);
 
-      // Decelerate to the nearest position over 4 seconds with ultra-smooth easing
+      // Decelerate to the nearest position over 1.5 seconds with smooth easing
       let targetRotation = nearestPowerAngle;
 
       // Calculate clockwise-only rotation (never counter-clockwise)
@@ -238,11 +238,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
       gsap.to({ value: 0 }, {
         value: 1,
-        duration: 4,
-        ease: "power4.out", // Ultra-smooth deceleration
+        duration: 1.5,
+        ease: "power3.out", // Smooth but quicker deceleration
         onUpdate: function() {
           const progress = this.progress();
-          const easedProgress = gsap.parseEase("power4.out")(progress);
+          const easedProgress = gsap.parseEase("power3.out")(progress);
           const newRotation = (currentRotation + rotationDiff * easedProgress) % 360;
           setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
         },
@@ -250,10 +250,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           setOrbitRotation(nearestPowerAngle);
           setSelectedIndex(nearestPowerIndex);
 
-          // Wait 2 seconds before starting auto-tour
+          // Wait 1 second before starting auto-tour
           setTimeout(() => {
             setPlaybackMode('autoTour');
-          }, 2000);
+          }, 1000);
         }
       });
     };
