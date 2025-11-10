@@ -599,8 +599,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-0">
-          <h2 className="text-5xl md:text-6xl font-bold mb-1">
+        <div className="text-center mb-4">
+          <h2 className="text-5xl md:text-6xl font-bold mb-2">
             <span className="gradient-text gradient-hero">The Fullstack Sales Unit</span>
           </h2>
           <p className="text-2xl md:text-3xl italic max-w-3xl mx-auto">
