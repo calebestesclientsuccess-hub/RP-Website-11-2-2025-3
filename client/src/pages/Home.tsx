@@ -289,7 +289,7 @@ export default function Home() {
                 </div>
                 {/* Heading - Centered */}
                 <h3 className="text-2xl font-bold mb-3 text-rose-600 text-center">
-                  Your Fully Loaded Sales Team
+                  Your Sales Team
                 </h3>
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80 text-center px-1">
                   A team of well equipped SDRs, not a single Lone Wolf rep.
