@@ -16,7 +16,7 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow-xs",
         community:
-          "border-transparent bg-community text-community-foreground shadow-xs",
+          "border-transparent bg-community text-community-foreground shadow-xs badge-texture",
         indigo:
           "border-transparent bg-indigo text-indigo-foreground shadow-xs",
         "purple-dark":
