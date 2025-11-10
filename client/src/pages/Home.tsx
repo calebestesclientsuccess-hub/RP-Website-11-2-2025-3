@@ -17,6 +17,7 @@ import { ArrowRight, Users, Target, Zap, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils"; // Assuming cn utility is available
 
 // Video is served from public directory
 const podVideo = "/bdr-pod-video.mp4";
@@ -96,7 +97,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <SEO 
+      <SEO
         title="GTM Engine: Deploy Elite BDR Pods | Revenue Party"
         description="Stop hiring lone wolf SDRs. Deploy a complete GTM Engine with elite BDR pods, AI-powered Signal Factory, and guaranteed 20+ qualified appointments monthly. Own the system, not rent headcount."
         keywords="Revenue Generation System, GTM Engine, Fullstack Sales Unit, white-labeled sales, guaranteed sales appointments, BDR pod, sales system"
@@ -105,7 +106,7 @@ export default function Home() {
       <ServiceSchema />
       <LocalBusinessSchema />
       <SoftwareApplicationSchema />
-      <VideoSchema 
+      <VideoSchema
         name="Your Fullstack Sales Unit - Revenue Party GTM System"
         description="Watch how Revenue Party's GTM Engine deploys elite BDR talent with AI-powered systems to deliver 20+ qualified appointments monthly."
         thumbnailUrl="https://revenueparty.com/apple-touch-icon.png"
@@ -139,14 +140,14 @@ export default function Home() {
                   transition={{ duration: 0.8, ease: "easeOut" }}
                   className="-mb-2"
                 >
-                  <Badge 
+                  <Badge
                     className="badge-texture bg-community text-white border-community text-sm px-4 py-1.5"
                     data-testid="badge-hero-culture"
                   >
                     Community + Competition = Culture
                   </Badge>
                 </motion.div>
-                <motion.h1 
+                <motion.h1
                   className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -156,7 +157,7 @@ export default function Home() {
                   Your Next Sales Hire Shouldn't Be a Person.{" "}
                   <span className="gradient-text gradient-hero">It Should Be a Revenue Generation System.</span>
                 </motion.h1>
-                <motion.p 
+                <motion.p
                   className="text-lg md:text-xl leading-relaxed"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -168,18 +169,18 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  size="lg" 
-                  className="text-lg px-8 py-6 shadow-lg btn-gradient-text" 
+                <Button
+                  size="lg"
+                  className="text-lg px-8 py-6 shadow-lg btn-gradient-text"
                   data-testid="button-hero-schedule"
                   asChild
                 >
                   <Link href="/gtm-audit">Schedule My GTM Audit</Link>
                 </Button>
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   variant="secondary"
-                  className="secondary-cta text-lg px-8 py-6" 
+                  className="secondary-cta text-lg px-8 py-6"
                   data-testid="button-hero-take-assessment"
                   asChild
                 >
@@ -252,18 +253,37 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0 }}
             >
-              <Card className="p-8 light-trickle-top light-depth hover-elevate transition-all h-full" data-testid="card-component-talent">
-                <div className="mb-6">
-                  <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/30">
-                    <Users className="w-8 h-8 text-primary" />
+              {/* Card 1: Your Fully Loaded Sales Team */}
+              <div
+                className={cn(
+                  "group relative p-8 rounded-xl transition-all duration-300",
+                  "bg-card/50 backdrop-blur-sm",
+                  "border border-amber-500/30",
+                  "hover:border-amber-500/50 hover:bg-card/70",
+                  expandedCards.talent && "bg-card/70"
+                )}
+                onMouseEnter={() => toggleCardExpansion('talent')}
+                onMouseLeave={() => toggleCardExpansion('talent')}
+                onClick={() => toggleCardExpansion('talent')}
+              >
+                {/* Icon with coordinated glow */}
+                <div className="mb-6 flex justify-center">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-xl group-hover:bg-amber-500/30 transition-all duration-300" />
+                    <div className="relative bg-amber-500/10 p-4 rounded-full border border-amber-500/30 group-hover:border-amber-500/50 transition-all duration-300">
+                      <Users className="w-8 h-8 text-amber-500" />
+                    </div>
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-primary">Your Fully Loaded Sales Team</h3>
+                {/* Heading - Priority 1 */}
+                <h3 className="text-2xl font-bold mb-3 text-amber-500">
+                  Your Fully Loaded Sales Team
+                </h3>
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80">
                   A team of well equipped SDRs, not a single Lone Wolf rep.
                 </p>
                 <div className="group relative">
-                  <div 
+                  <div
                     className={`leading-relaxed transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] opacity-70 ${
                       expandedCards.talent ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
                     }`}
@@ -275,18 +295,18 @@ export default function Home() {
                       )}
                     </p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => toggleCardExpansion('talent')}
-                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-primary hover:text-primary/90 transition-all duration-300 hover:gap-3 group/btn"
+                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-amber-500 hover:text-amber-500/90 transition-all duration-300 hover:gap-3 group/btn"
                   >
                     <span className="relative">
                       {expandedCards.talent ? 'Show less' : 'Read more'}
-                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary group-hover/btn:w-full transition-all duration-300" />
+                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-amber-500 group-hover/btn:w-full transition-all duration-300" />
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${expandedCards.talent ? 'rotate-180' : ''} group-hover/btn:scale-110`} />
                   </button>
                 </div>
-              </Card>
+              </div>
             </motion.div>
 
             <motion.div
@@ -295,18 +315,37 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <Card className="p-8 light-trickle-corner light-depth hover-elevate transition-all h-full" data-testid="card-component-framework">
-                <div className="mb-6">
-                  <div className="w-16 h-16 rounded-full bg-community/20 flex items-center justify-center mb-4 border-2 border-community/30">
-                    <Target className="w-8 h-8 text-community" />
+              {/* Card 2: Your Playbook */}
+              <div
+                className={cn(
+                  "group relative p-8 rounded-xl transition-all duration-300",
+                  "bg-card/50 backdrop-blur-sm",
+                  "border border-purple-500/30",
+                  "hover:border-purple-500/50 hover:bg-card/70",
+                  expandedCards.playbook && "bg-card/70"
+                )}
+                onMouseEnter={() => toggleCardExpansion('playbook')}
+                onMouseLeave={() => toggleCardExpansion('playbook')}
+                onClick={() => toggleCardExpansion('playbook')}
+              >
+                {/* Icon with coordinated glow */}
+                <div className="mb-6 flex justify-center">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-xl group-hover:bg-purple-500/30 transition-all duration-300" />
+                    <div className="relative bg-purple-500/10 p-4 rounded-full border border-purple-500/30 group-hover:border-purple-500/50 transition-all duration-300">
+                      <Target className="w-8 h-8 text-purple-500" />
+                    </div>
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-community">Your Playbook</h3>
+                {/* Heading - Priority 1 */}
+                <h3 className="text-2xl font-bold mb-3 text-purple-500">
+                  Your Playbook
+                </h3>
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 px-1 opacity-80">
                   Our strategic framework, fully customized to your business.
                 </p>
                 <div className="group relative">
-                  <div 
+                  <div
                     className={`leading-relaxed transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] opacity-70 ${
                       expandedCards.playbook ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
                     }`}
@@ -318,18 +357,18 @@ export default function Home() {
                       )}
                     </p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => toggleCardExpansion('playbook')}
-                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-primary hover:text-primary/90 transition-all duration-300 hover:gap-3 group/btn"
+                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-purple-500 hover:text-purple-500/90 transition-all duration-300 hover:gap-3 group/btn"
                   >
                     <span className="relative">
                       {expandedCards.playbook ? 'Show less' : 'Read more'}
-                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary group-hover/btn:w-full transition-all duration-300" />
+                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-purple-500 group-hover/btn:w-full transition-all duration-300" />
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${expandedCards.playbook ? 'rotate-180' : ''} group-hover/btn:scale-110`} />
                   </button>
                 </div>
-              </Card>
+              </div>
             </motion.div>
 
             <motion.div
@@ -338,18 +377,37 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <Card className="p-8 light-trickle-radial light-depth hover-elevate transition-all h-full" data-testid="card-component-signal">
-                <div className="mb-6">
-                  <div className="w-16 h-16 rounded-full bg-indigo/20 flex items-center justify-center mb-4 border-2 border-indigo/30">
-                    <Zap className="w-8 h-8 text-indigo" />
+              {/* Card 3: Your Signal Factory */}
+              <div
+                className={cn(
+                  "group relative p-8 rounded-xl transition-all duration-300",
+                  "bg-card/50 backdrop-blur-sm",
+                  "border border-cyan-500/30",
+                  "hover:border-cyan-500/50 hover:bg-card/70",
+                  expandedCards.signal && "bg-card/70"
+                )}
+                onMouseEnter={() => toggleCardExpansion('signal')}
+                onMouseLeave={() => toggleCardExpansion('signal')}
+                onClick={() => toggleCardExpansion('signal')}
+              >
+                {/* Icon with coordinated glow */}
+                <div className="mb-6 flex justify-center">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-xl group-hover:bg-cyan-500/30 transition-all duration-300" />
+                    <div className="relative bg-cyan-500/10 p-4 rounded-full border border-cyan-500/30 group-hover:border-cyan-500/50 transition-all duration-300">
+                      <Zap className="w-8 h-8 text-cyan-500" />
+                    </div>
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-indigo">Your Signal Factory</h3>
+                {/* Heading - Priority 1 */}
+                <h3 className="text-2xl font-bold mb-3 text-cyan-500">
+                  Your Signal Factory
+                </h3>
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80">
                   Our AI-Powered Engine, customized to fuel your business.
                 </p>
                 <div className="group relative">
-                  <div 
+                  <div
                     className={`leading-relaxed transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] opacity-70 ${
                       expandedCards.signal ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
                     }`}
@@ -361,25 +419,25 @@ export default function Home() {
                       )}
                     </p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => toggleCardExpansion('signal')}
-                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-primary hover:text-primary/90 transition-all duration-300 hover:gap-3 group/btn"
+                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-cyan-500 hover:text-cyan-500/90 transition-all duration-300 hover:gap-3 group/btn"
                   >
                     <span className="relative">
                       {expandedCards.signal ? 'Show less' : 'Read more'}
-                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-primary group-hover/btn:w-full transition-all duration-300" />
+                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-cyan-500 group-hover/btn:w-full transition-all duration-300" />
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${expandedCards.signal ? 'rotate-180' : ''} group-hover/btn:scale-110`} />
                   </button>
                 </div>
-              </Card>
+              </div>
             </motion.div>
           </div>
 
           {/* CTA */}
           <div className="text-center">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               variant="outline"
               className="gap-2"
               data-testid="button-build-gtm-engine"
@@ -493,8 +551,8 @@ export default function Home() {
 
           {/* CTA for Full Calculator */}
           <div className="text-center">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="text-lg px-8 py-6"
               data-testid="button-calculate-savings"
               asChild
@@ -521,8 +579,8 @@ export default function Home() {
           <p className="text-xl leading-relaxed" data-testid="text-final-cta-description">
             Stop the hiring/firing cycle. Let's audit your GTM architecture and design a system that scales.
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             className="text-lg px-10 py-7 shadow-lg btn-gradient-text"
             data-testid="button-final-schedule"
             asChild
@@ -539,9 +597,9 @@ export default function Home() {
               Take our 3-minute GTM Readiness Assessment to diagnose your current system's bottlenecks.
             </p>
             <Link href="/assessment">
-              <Button 
-                variant="outline" 
-                size="lg" 
+              <Button
+                variant="outline"
+                size="lg"
                 className="text-lg px-8 py-6"
                 data-testid="button-assessment"
               >
