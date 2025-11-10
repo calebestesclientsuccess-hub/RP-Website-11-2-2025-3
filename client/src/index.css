@@ -1033,11 +1033,15 @@
     transform: scale(1) translateZ(0);
     filter: brightness(1);
   }
-  40% {
+  35% {
     transform: scale(1.05) translateZ(0);
     filter: brightness(1.1);
   }
-  60% {
+  50% {
+    transform: scale(1.04) translateZ(0);
+    filter: brightness(1.08);
+  }
+  65% {
     transform: scale(1.05) translateZ(0);
     filter: brightness(1.1);
   }
@@ -1051,6 +1055,10 @@
     filter: brightness(1);
   }
   25% {
+    transform: scale(1.15) translateZ(0);
+    filter: brightness(1.4);
+  }
+  30% {
     transform: scale(1.15) translateZ(0);
     filter: brightness(1.4);
   }

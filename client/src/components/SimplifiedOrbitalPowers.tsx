@@ -245,10 +245,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       const decelerationTween = gsap.to({ value: 0 }, {
         value: 1,
         duration: 3, // Full 3 seconds for extremely smooth deceleration
-        ease: "power4.out", // More elegant, cinematic deceleration
+        ease: "power3.out", // Match auto-tour easing for consistency
         onUpdate: function() {
           const progress = this.progress();
-          const easedProgress = gsap.parseEase("power4.out")(progress);
+          const easedProgress = gsap.parseEase("power3.out")(progress);
           const newRotation = (currentRotation + rotationDiff * easedProgress) % 360;
           setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
         },
@@ -330,15 +330,17 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         {
           value: 1,
           duration: ROTATION_DURATION / 1000,
-          ease: "power4.out", // Match deceleration curve for consistency
+          ease: "power3.out", // Slightly gentler than power4 for more natural movement
           onUpdate: function() {
             const progress = this.progress();
             const newRotation = (currentAngle + angleDiff * progress) % 360;
             setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
-          },
-          onStart: () => {
-            // Trigger background morph at rotation start for seamless feel
-            setSelectedIndex(nextIndex);
+            
+            // Start background morph at 90% completion for seamless lead-in
+            if (progress >= 0.9 && this.vars.backgroundMorphed !== true) {
+              setSelectedIndex(nextIndex);
+              this.vars.backgroundMorphed = true;
+            }
           }
         }
       );
