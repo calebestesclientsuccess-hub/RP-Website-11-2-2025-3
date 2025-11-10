@@ -233,7 +233,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       // Calculate how much we need to rotate to get the selected power to 180°
       const targetPowerAngle = nearestPowerAngle;
       let targetRotation = 180 - targetPowerAngle;
-      
+
       // Normalize target rotation to 0-360 range
       while (targetRotation < 0) targetRotation += 360;
       while (targetRotation >= 360) targetRotation -= 360;
@@ -245,10 +245,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       const decelerationTween = gsap.to({ value: 0 }, {
         value: 1,
         duration: 3, // Full 3 seconds for extremely smooth deceleration
-        ease: "power1.out", // Gentle, gradual deceleration curve
+        ease: "power4.out", // More elegant, cinematic deceleration
         onUpdate: function() {
           const progress = this.progress();
-          const easedProgress = gsap.parseEase("power1.out")(progress);
+          const easedProgress = gsap.parseEase("power4.out")(progress);
           const newRotation = (currentRotation + rotationDiff * easedProgress) % 360;
           setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
         },
@@ -262,7 +262,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           }, 1000);
         }
       });
-      
+
       // Store for cleanup
       return () => {
         decelerationTween.kill();
@@ -291,10 +291,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     if (prefersReducedMotion()) return;
 
-    const PRE_PULSE_DURATION = 1000; // Match CSS animation duration
-    const ROTATION_DURATION = 2000;
-    const PAUSE_DURATION = 4000;
-    const TOTAL_CYCLE = PRE_PULSE_DURATION + ROTATION_DURATION + PAUSE_DURATION;
+    const ROTATION_DURATION = 2000; // 2 seconds for smooth rotation
+    const PAUSE_DURATION = 4500; // 4.5 seconds to display each power - more contemplative
+    const PRE_PULSE_DURATION = 1200; // 1.2 seconds for pre-pulse animation - slightly more anticipatory
+    const TOTAL_CYCLE = PRE_PULSE_DURATION + ROTATION_DURATION + PAUSE_DURATION; // 7.7 seconds total
 
     const performTransition = (currentIndex: number) => {
       setIsAnimating(true);
@@ -489,8 +489,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     gsap.to(sectionRef.current, {
       background: `radial-gradient(ellipse at top, rgba(${selectedPower.bgColor}, 0.05) 0%, transparent 60%)`,
-      duration: 0.8,
-      ease: "power2.out"
+      duration: 1.2,
+      ease: "power3.inOut",
     });
   }, [selectedIndex]);
 
