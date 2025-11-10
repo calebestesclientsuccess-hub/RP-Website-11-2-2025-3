@@ -95,7 +95,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-card/50 p-3 rounded-lg border border-border">
               <p className="text-xs text-muted-foreground mb-1">Monthly Investment</p>
-              <p className="text-lg font-bold font-mono text-tertiary" data-testid="text-monthly-investment">
+              <p className="text-lg font-bold font-mono" data-testid="text-monthly-investment">
                 {formatCurrency(monthlyInvestment)}
               </p>
             </div>
@@ -110,13 +110,13 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-card/50 p-3 rounded-lg border border-border">
               <p className="text-xs text-muted-foreground mb-1">Cost per Meeting</p>
-              <p className="text-lg font-bold font-mono text-tertiary" data-testid="text-cost-per-meeting">
+              <p className="text-lg font-bold font-mono" data-testid="text-cost-per-meeting">
                 {formatCurrency(costPerMeeting)}
               </p>
             </div>
             <div className="bg-card/50 p-3 rounded-lg border border-border">
               <p className="text-xs text-muted-foreground mb-1">ROI</p>
-              <p className="text-lg font-bold font-mono text-tertiary" data-testid="text-roi">
+              <p className="text-lg font-bold font-mono" data-testid="text-roi">
                 {formatNumber(roi)}x
               </p>
             </div>
@@ -124,7 +124,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
 
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
             <p className="text-xs text-muted-foreground mb-1">Projected New LTV/Month</p>
-            <p className="text-3xl font-bold text-tertiary font-mono" data-testid="text-projected-ltv">
+            <p className="text-3xl font-bold font-mono" data-testid="text-projected-ltv">
               {formatCurrency(projectedLTVPerMonth)}
             </p>
           </div>
