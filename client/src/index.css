@@ -639,15 +639,15 @@
      GRADIENT TEXT SYSTEM - Progressive Enhancement
      ================================================ */
 
-  /* Base gradient text class with fallback - LIGHT MODE - Nearly all red with subtle dark hint */
+  /* Base gradient text class with fallback - LIGHT MODE - Mostly solid red with tiny shadow */
   html:not(.dark) .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: var(--gradient-fallback);
     font-weight: 600; /* Improve readability */
 
-    /* Layer 1: Vertical gradient - 180deg from bright red through reds with tiny dark accent */
+    /* Layer 1: Vertical gradient - nearly solid red with just a hint of depth at bottom */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, #FF2A00 0%, #E02020 30%, #C01818 60%, #A01010 85%, #4A0A15 96%, #1C0329 100%);
+      background: linear-gradient(180deg, #E63946 0%, #E63946 88%, #D62839 94%, #A01515 98%, #5A0A0A 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -655,15 +655,15 @@
     }
   }
 
-  /* Dark mode gradient - Nearly all red with subtle dark hint */
+  /* Dark mode gradient - Mostly solid red with tiny shadow */
   html.dark .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: hsl(0 0% 91%);
     font-weight: 600;
 
-    /* Layer 1: Vertical gradient - 180deg from bright red through reds with tiny dark accent */
+    /* Layer 1: Vertical gradient - nearly solid red with just a hint of depth at bottom */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, #FF2A00 0%, #E02020 30%, #C01818 60%, #A01010 85%, #4A0A15 96%, #1C0329 100%);
+      background: linear-gradient(180deg, #E63946 0%, #E63946 88%, #D62839 94%, #A01515 98%, #5A0A0A 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
