@@ -7,6 +7,19 @@ import { gsap } from 'gsap';
 import { prefersReducedMotion } from "@/lib/animationConfig";
 import { cn } from "@/lib/utils";
 
+// Add CSS keyframes for smooth transitions
+const fadeInKeyframes = `
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+`;
 
 interface Power {
   id: string;
@@ -221,8 +234,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         orbitAnimationRef.current.kill();
       }
 
-      // Find which power is currently closest to the left (180°) position
+      // Always move FORWARD to the next power position (maintain momentum)
       const currentRotation = orbitRotation % 360;
+      
+      // Find which power is currently closest to left (180°)
       let nearestPowerIndex = 0;
       let minDistance = 360;
       
@@ -236,17 +251,29 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         }
       });
 
-      // Calculate target rotation to position this power exactly at 180°
+      // Always move FORWARD - if we're past the nearest, go to the NEXT one
+      // This maintains visual momentum and feels more natural
       const nearestPowerAngle = powers[nearestPowerIndex].angle;
-      let targetRotation = 180 - nearestPowerAngle;
+      const nearestTotalAngle = (nearestPowerAngle + currentRotation) % 360;
+      
+      let targetPowerIndex = nearestPowerIndex;
+      
+      // If nearest power is behind us (angle > 180), move to next power forward
+      if (nearestTotalAngle > 180) {
+        targetPowerIndex = (nearestPowerIndex + 1) % powers.length;
+      }
 
-      // Normalize target rotation to 0-360 range
+      // Calculate target rotation
+      const targetPowerAngle = powers[targetPowerIndex].angle;
+      let targetRotation = 180 - targetPowerAngle;
+
+      // Normalize target rotation
       while (targetRotation < 0) targetRotation += 360;
       while (targetRotation >= 360) targetRotation -= 360;
 
-      // Calculate clockwise-only rotation (never counter-clockwise)
+      // Calculate clockwise-only rotation
       let rotationDiff = targetRotation - currentRotation;
-      if (rotationDiff < 0) rotationDiff += 360; // Always move clockwise
+      if (rotationDiff < 0) rotationDiff += 360;
 
       const decelerationTween = gsap.to({ value: 0 }, {
         value: 1,
@@ -260,7 +287,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         },
         onComplete: () => {
           setOrbitRotation(targetRotation);
-          setSelectedIndex(nearestPowerIndex);
+          setSelectedIndex(targetPowerIndex);
 
           // Wait 1 second before starting auto-tour
           setTimeout(() => {
@@ -300,7 +327,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     const ROTATION_DURATION = 2000; // 2 seconds for smooth rotation
     const PAUSE_DURATION = 4500; // 4.5 seconds to display each power - more contemplative
     const PRE_PULSE_DURATION = 1000; // 1 second matches CSS animation (ends at 30% = 300ms of 1000ms)
-    const TOTAL_CYCLE = PRE_PULSE_DURATION + ROTATION_DURATION + PAUSE_DURATION; // 7.5 seconds total
+    const DRAMATIC_BEAT = 250; // Brief pause after pulse before rotation - creates anticipation
+    const INFO_BOX_FADE_DURATION = 400; // Smooth content transition
+    const TOTAL_CYCLE = PRE_PULSE_DURATION + DRAMATIC_BEAT + ROTATION_DURATION + PAUSE_DURATION;
 
     const performTransition = (currentIndex: number) => {
       setIsAnimating(true);
@@ -329,21 +358,26 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       // Wait for pre-pulse to complete
       timeline.to({}, { duration: PRE_PULSE_DURATION / 1000 });
 
+      // Dramatic beat - brief pause after pulse
+      timeline.to({}, { duration: DRAMATIC_BEAT / 1000 });
+
       // Then smoothly rotate with cinematic easing
-      // UPDATE selectedIndex IMMEDIATELY when rotation starts so info box matches
+      // UPDATE selectedIndex when rotation is 70% complete for perfect sync
       timeline.to(
         { value: 0 },
         {
           value: 1,
           duration: ROTATION_DURATION / 1000,
           ease: "power3.out",
-          onStart: () => {
-            // Update selectedIndex at the START of rotation
-            // This ensures the info box always shows the power that's moving to the left
-            setSelectedIndex(nextIndex);
-          },
           onUpdate: function() {
             const progress = this.progress();
+            
+            // Update selectedIndex at 70% rotation progress
+            // This ensures visual and content sync perfectly
+            if (progress >= 0.7 && selectedIndex !== nextIndex) {
+              setSelectedIndex(nextIndex);
+            }
+            
             const newRotation = (currentRotation + rotationIncrement * progress) % 360;
             setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
           }
@@ -605,6 +639,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
   return (
     <>
+      <style>{fadeInKeyframes}</style>
       <VideoSchema
         name="Your Fullstack Sales Unit - GTM Engine in Action"
         description="Watch how Revenue Party's GTM Engine combines elite BDR pods with AI-powered systems to deliver guaranteed qualified appointments."
@@ -722,7 +757,13 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           {/* Info Box */}
           {showInfoBox && (
             <Card className="-mt-16 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
-              <div className="space-y-4">
+              <div 
+                key={selectedPower.id}
+                className="space-y-4 animate-in fade-in duration-400"
+                style={{
+                  animation: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div
