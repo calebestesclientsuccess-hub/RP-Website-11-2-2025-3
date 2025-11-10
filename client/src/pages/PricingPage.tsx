@@ -1,4 +1,3 @@
-
 import { Helmet } from 'react-helmet-async';
 
 import { SEO } from "@/components/SEO";
@@ -156,12 +155,12 @@ export default function PricingPage() {
         keywords="GTM pricing, BDR pod cost, sales system pricing, transparent pricing, guaranteed sales appointments, cost per meeting"
         canonical="/pricing"
       />
-      
+
       {/* Hero Module */}
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
         {/* Light grid dots pattern (light mode only) */}
         <div className="light-grid-dots" />
-        
+
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <motion.h1 
@@ -226,7 +225,7 @@ export default function PricingPage() {
                       MOST POPULAR
                     </Badge>
                   )}
-                  
+
                   <div className="mb-6">
                     <h3 className="text-2xl font-bold mb-1" data-testid={`heading-plan-${plan.id}`}>
                       {plan.name}

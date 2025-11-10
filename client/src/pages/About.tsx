@@ -114,16 +114,16 @@ export default function About() {
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
         <StaticGradientBg />
-        
+
         {/* Light grid dots pattern (light mode only) */}
         <div className="light-grid-dots" />
-        
+
         <div className="sun-rays-container">
           <div className="sun-ray"></div>
           <div className="sun-ray"></div>
           <div className="sun-ray"></div>
         </div>
-        
+
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <motion.div
@@ -139,7 +139,7 @@ export default function About() {
                 <span className="gradient-text gradient-hero">Culture.</span>
               </h1>
               <p 
-                className="text-xl md:text-2xl text-muted-foreground leading-relaxed"
+                className="text-xl md:text-2xl leading-relaxed"
                 data-testid="text-hero-subheading"
               >
                 Our culture is our product. It's the 'Why' behind our Elite Talent and the reason our GTM Engines win.
@@ -160,7 +160,7 @@ export default function About() {
               This is the 'Why' Behind<br />
               <span className="gradient-text gradient-hero">Our Elite Talent</span>
             </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-culture-intro">
+            <p className="text-xl leading-relaxed" data-testid="text-culture-intro">
               You're not just hiring a BDR; you're investing in an asset forged by a system of excellence. Competitors sell you a 'dedicated' rep operating in a silo like a Lone Wolf. They burn out (34% churn) and quit.
             </p>
           </div>
@@ -182,12 +182,12 @@ export default function About() {
                     <h3 className="text-3xl font-bold mb-4">
                       Community: Our Pods Operate, Learn, and Win Together
                     </h3>
-                    <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+                    <p className="text-lg leading-relaxed mb-6">
                       BDRs operate in pods, not silos. Collective learning is your asset.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-8 ml-0 md:ml-22">
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
@@ -196,13 +196,13 @@ export default function About() {
                       </div>
                       <div>
                         <h4 className="font-bold text-lg mb-2">Problem-Solving Velocity</h4>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <p className="leading-relaxed">
                           When a rep hits an objection, they don't 'go it alone.' They bring it to the pod, and 10+ elite operators swarm it. Problem solved in minutes, not weeks.
                         </p>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
@@ -210,7 +210,7 @@ export default function About() {
                       </div>
                       <div>
                         <h4 className="font-bold text-lg mb-2">Collective Intelligence</h4>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <p className="leading-relaxed">
                           Every breakthrough, every winning script, every strategic insight becomes pod knowledge—amplifying performance across your entire operation.
                         </p>
                       </div>
@@ -238,12 +238,12 @@ export default function About() {
                     <h3 className="text-3xl font-bold mb-4">
                       Competition: Radical Transparency Drives Elite Performance
                     </h3>
-                    <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+                    <p className="text-lg leading-relaxed mb-6">
                       Teams compete with radical transparency. Internal drive ensures you get our A-game every day—not a rep 'quiet quitting'.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 gap-8 ml-0 md:ml-22">
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
@@ -252,13 +252,13 @@ export default function About() {
                       </div>
                       <div>
                         <h4 className="font-bold text-lg mb-2">Performance Visibility</h4>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <p className="leading-relaxed">
                           Every metric is visible to the entire pod. No hiding, no sandbagging. Elite performers rise, and everyone elevates to match.
                         </p>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
@@ -266,7 +266,7 @@ export default function About() {
                       </div>
                       <div>
                         <h4 className="font-bold text-lg mb-2">Internal Motivation</h4>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <p className="leading-relaxed">
                           Competition breeds excellence. Your BDR isn't just working for you—they're competing to be the best in their cohort. That drive is your advantage.
                         </p>
                       </div>
@@ -296,10 +296,10 @@ export default function About() {
                 Don't Just Outsource.<br />
                 <span className="gradient-text gradient-hero">Build Your Future Department.</span>
               </h2>
-              <p className="text-xl text-muted-foreground leading-relaxed mb-8">
+              <p className="text-xl leading-relaxed mb-8">
                 We are not a typical agency. We are a strategic partner that builds, operates, and transfers a complete sales asset to you. You can run it in-house whenever you're ready. The IP, playbooks, and processes are 100% yours.
               </p>
-              
+
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -307,31 +307,31 @@ export default function About() {
                   </div>
                   <div>
                     <h4 className="font-bold text-lg mb-2">Build</h4>
-                    <p className="text-muted-foreground leading-relaxed">
+                    <p className="leading-relaxed">
                       We architect your complete GTM system from the ground up—strategy, talent, technology, and processes designed specifically for your business.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <span className="text-primary font-bold">2</span>
                   </div>
                   <div>
                     <h4 className="font-bold text-lg mb-2">Operate</h4>
-                    <p className="text-muted-foreground leading-relaxed">
+                    <p className="leading-relaxed">
                       We run your revenue engine with our elite talent and proven systems, delivering guaranteed results while documenting every strategic decision.
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <span className="text-primary font-bold">3</span>
                   </div>
                   <div>
                     <h4 className="font-bold text-lg mb-2">Transfer</h4>
-                    <p className="text-muted-foreground leading-relaxed">
+                    <p className="leading-relaxed">
                       When you're ready to bring it in-house, you get 100% of the IP, playbooks, and learnings. You've built a permanent asset, not rented temporary capacity.
                     </p>
                   </div>
@@ -351,39 +351,39 @@ export default function About() {
                     <Sparkles className="w-8 h-8 text-primary" />
                     <h3 className="text-2xl font-bold">Your Permanent Assets</h3>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
                       <Check className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                      <p className="text-muted-foreground">
+                      <p>
                         <strong className="text-foreground">Impact Selling OS:</strong> Your proprietary strategic framework and methodology
                       </p>
                     </div>
-                    
+
                     <div className="flex items-start gap-3">
                       <Check className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                      <p className="text-muted-foreground">
+                      <p>
                         <strong className="text-foreground">Proven Playbooks:</strong> Battle-tested scripts, sequences, and workflows optimized for your market
                       </p>
                     </div>
-                    
+
                     <div className="flex items-start gap-3">
                       <Check className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                      <p className="text-muted-foreground">
+                      <p>
                         <strong className="text-foreground">Performance Data:</strong> Complete analytics and insights on what works in your specific GTM motion
                       </p>
                     </div>
-                    
+
                     <div className="flex items-start gap-3">
                       <Check className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                      <p className="text-muted-foreground">
+                      <p>
                         <strong className="text-foreground">Hiring Blueprint:</strong> Exact criteria and process to replicate elite talent when scaling in-house
                       </p>
                     </div>
-                    
+
                     <div className="flex items-start gap-3">
                       <Check className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                      <p className="text-muted-foreground">
+                      <p>
                         <strong className="text-foreground">Tech Stack Architecture:</strong> Documented integrations and configurations ready for handoff
                       </p>
                     </div>
@@ -403,7 +403,7 @@ export default function About() {
               The Four Architects<br />
               <span className="gradient-text gradient-hero">Who Build Your Engine</span>
             </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-xl leading-relaxed">
               Your success is engineered by a dedicated team of specialists, each mastering a critical dimension of your GTM system.
             </p>
           </div>
@@ -431,11 +431,11 @@ export default function About() {
                         <Badge variant="secondary" className="mb-3">
                           {architect.title}
                         </Badge>
-                        <p className="text-sm text-muted-foreground italic">
+                        <p className="text-sm italic">
                           {architect.specialty}
                         </p>
                       </div>
-                      <p className="text-muted-foreground leading-relaxed">
+                      <p className="leading-relaxed">
                         {architect.description}
                       </p>
                     </div>
@@ -461,7 +461,7 @@ export default function About() {
               The Math of<br />
               <span className="gradient-text gradient-hero">Smarter Investment</span>
             </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-xl leading-relaxed">
               See how Revenue Party's Build-Operate-Transfer model compares to traditional hiring and commodity agencies.
             </p>
           </div>
@@ -499,7 +499,7 @@ export default function About() {
                   <div className="p-4 bg-card/50 rounded-lg flex items-center">
                     <p className="font-semibold">{row.feature}</p>
                   </div>
-                  
+
                   <div className="p-4 bg-primary/5 rounded-lg border border-primary/20 flex items-center gap-2">
                     {row.revParty.isGood ? (
                       <Check className="w-5 h-5 text-primary flex-shrink-0" />
@@ -508,7 +508,7 @@ export default function About() {
                     )}
                     <p className="text-foreground font-medium">{row.revParty.value}</p>
                   </div>
-                  
+
                   <div className="p-4 bg-card rounded-lg border border-card-border flex items-center gap-2">
                     {row.agency.isGood ? (
                       <Check className="w-5 h-5 text-primary flex-shrink-0" />
@@ -517,7 +517,7 @@ export default function About() {
                     )}
                     <p className="text-muted-foreground">{row.agency.value}</p>
                   </div>
-                  
+
                   <div className="p-4 bg-card rounded-lg border border-card-border flex items-center gap-2">
                     {row.traditional.isGood ? (
                       <Check className="w-5 h-5 text-primary flex-shrink-0" />
@@ -544,7 +544,7 @@ export default function About() {
                       <span className="text-sm font-medium">{row.revParty.value}</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between gap-3 p-3 bg-card rounded-lg border border-card-border">
                     <span className="font-medium text-sm text-muted-foreground">Agency</span>
                     <div className="flex items-center gap-2">
@@ -552,7 +552,7 @@ export default function About() {
                       <span className="text-sm text-muted-foreground">{row.agency.value}</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between gap-3 p-3 bg-card rounded-lg border border-card-border">
                     <span className="font-medium text-sm text-muted-foreground">Traditional</span>
                     <div className="flex items-center gap-2">
@@ -586,10 +586,10 @@ export default function About() {
               Ready to Build<br />
               <span className="gradient-text gradient-hero">With The Best?</span>
             </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed mb-8">
+            <p className="text-xl leading-relaxed mb-8">
               Our culture is your competitive advantage. Schedule a GTM Audit to meet the Architects and see how we'll build your revenue engine.
             </p>
-            
+
             <Button 
               size="lg" 
               className="text-lg px-8 py-6 shadow-lg" 

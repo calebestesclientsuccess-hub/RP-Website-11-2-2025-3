@@ -118,7 +118,7 @@ export default function GTMEnginePage() {
               <span className="gradient-text gradient-hero">It's a Complete Revenue Generation System.</span>
             </motion.h1>
             <motion.p 
-              className="text-xl md:text-2xl text-muted-foreground leading-relaxed"
+              className="text-xl md:text-2xl leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
@@ -144,7 +144,7 @@ export default function GTMEnginePage() {
               What You Get: The 3 Core Components of<br />
               <span className="gradient-text gradient-hero">Your GTM Engine</span>
             </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-asset-description">
+            <p className="text-xl leading-relaxed" data-testid="text-asset-description">
               A GTM Engine is not a person; it's a complete, managed system of talent, strategy, and technology designed to build a permanent pipeline asset.
             </p>
           </div>
@@ -170,7 +170,7 @@ export default function GTMEnginePage() {
                     Elite Talent{" "}
                     <span className="text-muted-foreground text-2xl">(The "Fully Loaded BDR Pod")</span>
                   </h3>
-                  <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
+                  <div className="space-y-4 leading-relaxed mb-6">
                     <p>
                       This is the antidote to the 'Lone Wolf Fallacy.' You don't get a single, isolated rep; you get a pod of trained operators.
                     </p>
@@ -178,7 +178,7 @@ export default function GTMEnginePage() {
                       This pod is built, trained, and forged by our Talent Architect.
                     </p>
                   </div>
-                  <div className="space-y-2 mb-6 text-muted-foreground">
+                  <div className="space-y-2 mb-6">
                     <p><strong>• Dedicated & Managed:</strong> Your pod works for you, managed by us. We handle the 1:1s, performance, and 'Management Tax'.</p>
                     <p><strong>• Community-Powered:</strong> Pods operate in a culture of "Community + Competition," solving problems faster than any single rep.</p>
                     <p><strong>• Ramped in Days, Not Months:</strong> Our pods are system-ready and pipeline-productive in Week 2.</p>
@@ -209,7 +209,7 @@ export default function GTMEnginePage() {
                     The Signal Factory{" "}
                     <span className="text-muted-foreground text-2xl">(The "AI-Powered Engine")</span>
                   </h3>
-                  <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
+                  <div className="space-y-4 leading-relaxed mb-6">
                     <p>
                       This is the antidote to the 'Black Box Problem.' We replace vanity 'activity' metrics with a transparent, AI-powered data engine that finds buyers before they're in-market.
                     </p>
@@ -217,7 +217,7 @@ export default function GTMEnginePage() {
                       This engine is engineered and maintained by our AI Architect.
                     </p>
                   </div>
-                  <div className="space-y-2 mb-6 text-muted-foreground">
+                  <div className="space-y-2 mb-6">
                     <p><strong>• Find "Allbound" Signals:</strong> We combine inbound intent data with outbound ICP triggers.</p>
                     <p><strong>• AI-Powered, Human-Verified:</strong> Our AI finds the signals; our human operators validate the intent.</p>
                     <p><strong>• Full Tech Stack Included:</strong> The engine includes the full stack of sequencing, data, and analytics tools.</p>
@@ -248,7 +248,7 @@ export default function GTMEnginePage() {
                     Strategic Framework{" "}
                     <span className="text-muted-foreground text-2xl">(The "Impact Selling OS")</span>
                   </h3>
-                  <div className="space-y-4 text-muted-foreground leading-relaxed mb-6">
+                  <div className="space-y-4 leading-relaxed mb-6">
                     <p>
                       This is the antidote to the 'Zero-IP Trap.' The GTM Engine is built on a strategic playbook that you 100% own.
                     </p>
@@ -256,7 +256,7 @@ export default function GTMEnginePage() {
                       This framework is designed by our Visionary Architect, and protected by our Brand Guardian.
                     </p>
                   </div>
-                  <div className="space-y-2 mb-6 text-muted-foreground">
+                  <div className="space-y-2 mb-6">
                     <p><strong>• Your Playbook, Your IP:</strong> We build your GTM playbook with you, and it stays with you forever.</p>
                     <p><strong>• Documented & Scalable:</strong> A living system for messaging, objection handling, and tactics.</p>
                     <p><strong>• Based on "Impact Selling":</strong> Our methodology (detailed below) that kills 'sales pressure' and builds trust.</p>
@@ -275,7 +275,7 @@ export default function GTMEnginePage() {
                             </div>
                           </AccordionTrigger>
                           <AccordionContent data-testid={`accordion-content-${tenet.id}`}>
-                            <p className="text-muted-foreground leading-relaxed pl-4 border-l-2 border-primary">
+                            <p className="leading-relaxed pl-4 border-l-2 border-primary">
                               {tenet.details}
                             </p>
                           </AccordionContent>
@@ -301,7 +301,7 @@ export default function GTMEnginePage() {
               The 4-Month<br />
               <span className="gradient-text gradient-hero">"Build & Ramp"</span>
             </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-build-ramp-description">
+            <p className="text-xl leading-relaxed" data-testid="text-build-ramp-description">
               Our Transparent Path to Your Guaranteed Asset
             </p>
           </div>
@@ -312,7 +312,7 @@ export default function GTMEnginePage() {
             <Card className="p-8 bg-primary/5 border-2 border-primary max-w-2xl mx-auto">
               <Zap className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-2xl font-bold mb-3">The Guarantee</h3>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-lg">
                 Starting <strong>Month 5</strong>, your GTM Engine delivers{" "}
                 <span className="text-primary font-bold">20+ SQOs per SDR per month</span>, guaranteed. 
                 Every month except December. Reliability you can bank on.
@@ -347,23 +347,23 @@ export default function GTMEnginePage() {
                     <Badge variant="destructive">34% Failure Rate</Badge>
                   </div>
                 </div>
-                <p className="text-muted-foreground leading-relaxed mb-4">
+                <p className="leading-relaxed mb-4">
                   With a traditional "Lone Wolf" hire, if they quit (34% probability), your pipeline crashes to <strong>zero</strong> for 6-9 months while you recruit, hire, and ramp a replacement.
                 </p>
                 <ul className="space-y-2">
-                  <li className="flex items-start gap-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
                     <span className="text-destructive mt-1">✕</span>
                     <span>Single point of failure</span>
                   </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
                     <span className="text-destructive mt-1">✕</span>
                     <span>6-9 month recovery time</span>
                   </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
                     <span className="text-destructive mt-1">✕</span>
                     <span>Pipeline crashes to zero</span>
                   </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
                     <span className="text-destructive mt-1">✕</span>
                     <span>No documented playbook</span>
                   </li>
@@ -382,23 +382,23 @@ export default function GTMEnginePage() {
                     <Badge variant="default">100% Protected</Badge>
                   </div>
                 </div>
-                <p className="text-muted-foreground leading-relaxed mb-4">
+                <p className="leading-relaxed mb-4">
                   Our GTM Engine is an <strong>asset</strong>. The Impact Selling OS and Signal Factory are documented and owned by you. If an operator leaves, the system remains. We slot in a new Impact-certified SDR, and your pipeline is protected.
                 </p>
                 <ul className="space-y-2">
-                  <li className="flex items-start gap-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                     <span>System-based reliability</span>
                   </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                     <span>Instant operator replacement</span>
                   </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                     <span>Pipeline continuity guaranteed</span>
                   </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
                     <CheckCircle2 className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                     <span>100% IP ownership forever</span>
                   </li>
@@ -408,7 +408,7 @@ export default function GTMEnginePage() {
           </div>
 
           <div className="text-center mt-12">
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl leading-relaxed max-w-2xl mx-auto">
               This is the reliability you're investing in. Not just performance—<strong>guaranteed</strong> performance with zero single points of failure.
             </p>
           </div>
@@ -425,7 +425,7 @@ export default function GTMEnginePage() {
             See the Results<br />
             <span className="gradient-text gradient-hero">This Engine Produces</span>
           </h2>
-          <p className="text-xl text-muted-foreground leading-relaxed mb-8" data-testid="text-cta-description">
+          <p className="text-xl leading-relaxed mb-8" data-testid="text-cta-description">
             The architecture is the "how." The results are the "why." See the proof of what a guaranteed GTM Engine can build.
           </p>
           <Button size="lg" className="text-lg px-8 py-6 shadow-lg" data-testid="button-see-proof" asChild>
