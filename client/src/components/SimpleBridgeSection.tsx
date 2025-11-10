@@ -50,7 +50,7 @@ export default function SimpleBridgeSection() {
           gsap.to(systemTextRef.current, {
             opacity: 1,
             y: 0,
-            duration: 1,
+            duration: 3,
             ease: 'power3.out'
           });
         },
