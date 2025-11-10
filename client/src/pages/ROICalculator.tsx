@@ -253,14 +253,13 @@ export default function ROICalculator() {
       {/* Calculator Section - 2 Column Layout */}
       <section className="py-16 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-8">
-
-            {/* Column 1: Your Inputs */}
-            <div className="space-y-6">
-              {/* Share Report Button - Anchored to left above Part 1 */}
+          {/* Container with relative positioning for floating button */}
+          <div className="relative pt-16">
+            {/* Share Report Button - Floating above Part 1 */}
+            <div className="absolute top-0 left-0">
               <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="secondary" data-testid="button-share-report" className="mb-6">
+                  <Button variant="secondary" data-testid="button-share-report">
                     <Mail className="w-4 h-4 mr-2" />
                     Send My Report
                   </Button>
@@ -317,9 +316,14 @@ export default function ROICalculator() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+            </div>
 
-              {/* Part 1: Your Business Value */}
-              <Card className="p-6" data-testid="card-business-value">
+            {/* Grid with 2 columns - perfectly aligned at top */}
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* Column 1: Your Inputs */}
+              <div className="space-y-6">
+                {/* Part 1: Your Business Value */}
+                <Card className="p-6" data-testid="card-business-value">
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
                     <Target className="w-6 h-6 text-primary" />
@@ -611,6 +615,7 @@ export default function ROICalculator() {
                   )}
                 </div>
               </Card>
+              </div>
             </div>
           </div>
         </div>
