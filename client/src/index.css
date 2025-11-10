@@ -639,28 +639,27 @@
      GRADIENT TEXT SYSTEM - Progressive Enhancement
      ================================================ */
 
-  /* Base gradient text class - Rich crimson with subtle depth */
+  /* Base gradient text class - Pure single-tone crimson */
   html:not(.dark) .gradient-text {
-    /* Deep crimson red with darker purple undertone */
-    color: #B8143C;
+    /* Pure crimson red - the color you loved */
+    color: #DC143C;
     font-weight: 600;
     
-    /* Subtle dimensional depth - shadow angled to avoid bottom fade */
+    /* Minimal shadow for depth without tone variation */
     text-shadow: 
-      1px 0 2px rgba(40, 0, 25, 0.12),
-      0 0 6px rgba(180, 20, 60, 0.08);
+      0 1px 2px rgba(0, 0, 0, 0.08);
   }
 
-  /* Dark mode - Vibrant crimson with gentle glow */
+  /* Dark mode - Pure crimson with subtle glow */
   html.dark .gradient-text {
-    /* Rich crimson red with darker purple undertone */
-    color: #B8143C;
+    /* Pure crimson red - same beautiful color */
+    color: #DC143C;
     font-weight: 600;
     
-    /* Gentle glow with horizontal shadow to avoid bottom fade */
+    /* Subtle glow that doesn't alter the color */
     text-shadow: 
-      1px 0 2px rgba(40, 0, 25, 0.25),
-      0 0 10px rgba(180, 20, 60, 0.12);
+      0 1px 2px rgba(0, 0, 0, 0.15),
+      0 0 8px rgba(220, 20, 60, 0.1);
   }
 
   /* Optional pulsing - apply with .gradient-text-pulse class */
