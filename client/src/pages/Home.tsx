@@ -27,14 +27,10 @@ export default function Home() {
   const [hasPlayed, setHasPlayed] = useState(false);
   const scrollAwayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollAwayStartRef = useRef<number | null>(null);
-  const [expandedCards, setExpandedCards] = useState<{ [key: string]: boolean }>({
-    talent: false,
-    playbook: false,
-    signal: false,
-  });
+  const [allCardsExpanded, setAllCardsExpanded] = useState(false);
 
-  const toggleCardExpansion = (cardKey: string) => {
-    setExpandedCards(prev => ({ ...prev, [cardKey]: !prev[cardKey] }));
+  const toggleAllCards = () => {
+    setAllCardsExpanded(prev => !prev);
   };
 
   // Auto-scroll page down slightly on initial load
@@ -258,7 +254,7 @@ export default function Home() {
               <div
                 role="button"
                 tabIndex={0}
-                aria-expanded={expandedCards.talent}
+                aria-expanded={allCardsExpanded}
                 aria-label="Expand or collapse Sales Team information"
                 className={cn(
                   "group relative p-8 rounded-xl transition-all duration-500 ease-out flex flex-col w-full cursor-pointer",
@@ -266,15 +262,13 @@ export default function Home() {
                   "border border-rose-600/30",
                   "hover:border-rose-600/50 hover:bg-card/70 hover:shadow-lg hover:scale-[1.02]",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2",
-                  expandedCards.talent && "bg-card/70 border-rose-600/50"
+                  allCardsExpanded && "bg-card/70 border-rose-600/50"
                 )}
-                onMouseEnter={() => toggleCardExpansion('talent')}
-                onMouseLeave={() => toggleCardExpansion('talent')}
-                onClick={() => toggleCardExpansion('talent')}
+                onClick={toggleAllCards}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    toggleCardExpansion('talent');
+                    toggleAllCards();
                   }
                 }}
               >
@@ -299,12 +293,12 @@ export default function Home() {
                   <div
                     className={cn(
                       "leading-relaxed transition-all duration-500 ease-out opacity-70",
-                      expandedCards.talent ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
+                      allCardsExpanded ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
                     )}
                   >
                     <p className="relative">
                       Elite Sales Talent, equipped and trained by our Architects. The majority of our talent pipeline come with 5 - 15 years of experience at Y-Combinator companies. They're all extensively vetted for core skills, such as university level writing, reading, and arithmetic, and then taken through a rigorous set of sales interviews. Once selected most salespeople are trained by RP Architects for 4-6 weeks before being assigned to a campaign.
-                      {!expandedCards.talent && (
+                      {!allCardsExpanded && (
                         <span className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card/50 via-card/80 to-transparent pointer-events-none" />
                       )}
                     </p>
@@ -312,18 +306,18 @@ export default function Home() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleCardExpansion('talent');
+                      toggleAllCards();
                     }}
-                    aria-label={expandedCards.talent ? 'Show less information' : 'Read more information'}
+                    aria-label={allCardsExpanded ? 'Show less information' : 'Read more information'}
                     className="flex items-center justify-center gap-2 mt-auto pt-3 text-sm font-semibold text-rose-600 hover:text-rose-600/90 transition-all duration-300 hover:gap-3 group/btn touch-manipulation"
                   >
                     <span className="relative">
-                      {expandedCards.talent ? 'Show less' : 'Read more'}
+                      {allCardsExpanded ? 'Show less' : 'Read more'}
                       <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-rose-600 group-hover/btn:w-full transition-all duration-300" />
                     </span>
                     <ChevronDown className={cn(
                       "w-4 h-4 transition-all duration-500 ease-out group-hover/btn:scale-110",
-                      expandedCards.talent && 'rotate-180'
+                      allCardsExpanded && 'rotate-180'
                     )} />
                   </button>
                 </div>
@@ -341,7 +335,7 @@ export default function Home() {
               <div
                 role="button"
                 tabIndex={0}
-                aria-expanded={expandedCards.playbook}
+                aria-expanded={allCardsExpanded}
                 aria-label="Expand or collapse Playbook information"
                 className={cn(
                   "group relative p-8 rounded-xl transition-all duration-500 ease-out flex flex-col w-full cursor-pointer",
@@ -349,15 +343,13 @@ export default function Home() {
                   "border border-indigo-500/30",
                   "hover:border-indigo-500/50 hover:bg-card/70 hover:shadow-lg hover:scale-[1.02]",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2",
-                  expandedCards.playbook && "bg-card/70 border-indigo-500/50"
+                  allCardsExpanded && "bg-card/70 border-indigo-500/50"
                 )}
-                onMouseEnter={() => toggleCardExpansion('playbook')}
-                onMouseLeave={() => toggleCardExpansion('playbook')}
-                onClick={() => toggleCardExpansion('playbook')}
+                onClick={toggleAllCards}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    toggleCardExpansion('playbook');
+                    toggleAllCards();
                   }
                 }}
               >
@@ -382,12 +374,12 @@ export default function Home() {
                   <div
                     className={cn(
                       "leading-relaxed transition-all duration-500 ease-out opacity-70",
-                      expandedCards.playbook ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
+                      allCardsExpanded ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
                     )}
                   >
                     <p className="relative">
                       Our salespeople study the playbook for days before they pick up the phone, but that's just the beginning. The playbook is continuously improved, and ultimately, you walk away with proof of product-market-fit -- with knowledge of exactly what value propositions, what scripts and collateral and emails will win new business. 100% your IP.
-                      {!expandedCards.playbook && (
+                      {!allCardsExpanded && (
                         <span className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card/50 via-card/80 to-transparent pointer-events-none" />
                       )}
                     </p>
@@ -395,18 +387,18 @@ export default function Home() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleCardExpansion('playbook');
+                      toggleAllCards();
                     }}
-                    aria-label={expandedCards.playbook ? 'Show less information' : 'Read more information'}
+                    aria-label={allCardsExpanded ? 'Show less information' : 'Read more information'}
                     className="flex items-center justify-center gap-2 mt-auto pt-3 text-sm font-semibold text-indigo-500 hover:text-indigo-500/90 transition-all duration-300 hover:gap-3 group/btn touch-manipulation"
                   >
                     <span className="relative">
-                      {expandedCards.playbook ? 'Show less' : 'Read more'}
+                      {allCardsExpanded ? 'Show less' : 'Read more'}
                       <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-indigo-500 group-hover/btn:w-full transition-all duration-300" />
                     </span>
                     <ChevronDown className={cn(
                       "w-4 h-4 transition-all duration-500 ease-out group-hover/btn:scale-110",
-                      expandedCards.playbook && 'rotate-180'
+                      allCardsExpanded && 'rotate-180'
                     )} />
                   </button>
                 </div>
@@ -424,7 +416,7 @@ export default function Home() {
               <div
                 role="button"
                 tabIndex={0}
-                aria-expanded={expandedCards.signal}
+                aria-expanded={allCardsExpanded}
                 aria-label="Expand or collapse Signal Factory information"
                 className={cn(
                   "group relative p-8 rounded-xl transition-all duration-500 ease-out flex flex-col w-full cursor-pointer",
@@ -432,15 +424,13 @@ export default function Home() {
                   "border border-emerald-500/30",
                   "hover:border-emerald-500/50 hover:bg-card/70 hover:shadow-lg hover:scale-[1.02]",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
-                  expandedCards.signal && "bg-card/70 border-emerald-500/50"
+                  allCardsExpanded && "bg-card/70 border-emerald-500/50"
                 )}
-                onMouseEnter={() => toggleCardExpansion('signal')}
-                onMouseLeave={() => toggleCardExpansion('signal')}
-                onClick={() => toggleCardExpansion('signal')}
+                onClick={toggleAllCards}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    toggleCardExpansion('signal');
+                    toggleAllCards();
                   }
                 }}
               >
@@ -465,12 +455,12 @@ export default function Home() {
                   <div
                     className={cn(
                       "leading-relaxed transition-all duration-500 ease-out opacity-70",
-                      expandedCards.signal ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
+                      allCardsExpanded ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
                     )}
                   >
                     <p className="relative">
                       We combine Gemini with both code custom-written for you, and our proprietary AI and automation templates in Clay and N8N. Prompt Engineers then construct pipelines for contents, email, summaries, AI-powered automations and more. Like the Playbook, it begins as hypothesis. But once we see what works, we document it. This is also 100% your IP. You will own the blueprint, and we'll help you use it to build your own when you're ready.
-                      {!expandedCards.signal && (
+                      {!allCardsExpanded && (
                         <span className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-card/50 via-card/80 to-transparent pointer-events-none" />
                       )}
                     </p>
@@ -478,18 +468,18 @@ export default function Home() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleCardExpansion('signal');
+                      toggleAllCards();
                     }}
-                    aria-label={expandedCards.signal ? 'Show less information' : 'Read more information'}
+                    aria-label={allCardsExpanded ? 'Show less information' : 'Read more information'}
                     className="flex items-center justify-center gap-2 mt-auto pt-3 text-sm font-semibold text-emerald-500 hover:text-emerald-500/90 transition-all duration-300 hover:gap-3 group/btn touch-manipulation"
                   >
                     <span className="relative">
-                      {expandedCards.signal ? 'Show less' : 'Read more'}
+                      {allCardsExpanded ? 'Show less' : 'Read more'}
                       <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-emerald-500 group-hover/btn:w-full transition-all duration-300" />
                     </span>
                     <ChevronDown className={cn(
                       "w-4 h-4 transition-all duration-500 ease-out group-hover/btn:scale-110",
-                      expandedCards.signal && 'rotate-180'
+                      allCardsExpanded && 'rotate-180'
                     )} />
                   </button>
                 </div>
