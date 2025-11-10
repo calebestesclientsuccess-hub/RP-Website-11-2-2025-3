@@ -1,0 +1,48 @@
+Here is the prompt for Replit, designed to align both calculators and ensure maximum clarity for an executive-level audience.
+
+---
+
+**Subject: Final Executive Alignment for Both ROI Calculators (Copy & Logic)**
+
+**Goal:** This is the final polish. The goal is to align the terminology on *both* the simple (hero) calculator and the full-page "deeper dive" calculator. All changes are designed to make the tools perfectly clear, credible, and consistent for an executive audience.
+
+---
+
+### Task 1: Standardize All Terminology (Apply Everywhere)
+
+This is the most critical task. We must standardize these terms across *both* calculator pages, the email reports, and any share dialogs.
+
+1.  **Input Label:**
+    * **Change From:** `New Client Value` (or `Your Client Value`)
+    * **Change To:** `Average LTV`
+
+2.  **Output Labels:**
+    * **Change From:** `Additional Monthly Revenue` (or `Projected New LTV Booked Per Month`)
+    * **Change To:** `New Revenue Booked Per Month`
+
+3.  **Annual Output Labels:**
+    * **Change From:** `Additional Annual Revenue` (or `Projected New LTV Booked Per Year`)
+    * **Change To:** `New Revenue Booked Per Year`
+
+### Task 2: Add LTV Definition (Tooltip)
+
+To give "Average LTV" clear context, add a `(?)` icon next to the `Average LTV` label on both calculator pages. On hover, it should display the following info box:
+
+> **Based on a $5K/mo Client**
+>
+> Our default LTV of $120,000 imagines an average client value of $5,000 MRR over a 24-month lifetime. Adjust the slider to match your company's average LTV.
+
+### Task 3: Fix Full-Page Calculator Logic Bug
+
+On the full-page ("deeper dive") calculator, fix the display bug from the last review:
+
+* **The Bug:** The "Monthly Guaranteed SQOs" output card (in "The Results") does not update when a new "GTM Engine" is selected. It stays at "20.0".
+* **The Fix:** Make this card dynamic. When a user selects the "2-SDR GTM Pod" (which guarantees 40 SQOs), the "Monthly Guaranteed SQOs" card must update to display "40.0".
+
+### Final Verification Checklist
+
+Please verify these key items remain true:
+
+* The "40x+ ROI" headline is still present and correct based on the default values.
+* The 11-month annual calculation (`Monthly * 11`) is working.
+* The `*December excluded for training` disclaimer is present and italicized under the annual figures.
