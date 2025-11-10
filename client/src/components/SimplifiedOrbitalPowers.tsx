@@ -599,17 +599,17 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-0">
-          <h2 className="text-5xl md:text-6xl font-bold mb-0">
+        <div className="text-center">
+          <h2 className="text-5xl md:text-6xl font-bold mb-1">
             <span className="gradient-text gradient-hero">The Fullstack Sales Unit</span>
           </h2>
-          <p className="text-2xl md:text-3xl italic max-w-3xl mx-auto mb-2">
+          <p className="text-2xl md:text-3xl italic max-w-3xl mx-auto mb-0">
             Elite Sales Talent, equipped and trained by RP Architects.
           </p>
         </div>
 
         {/* Main Container */}
-        <div ref={containerRef} className="relative mx-auto" style={{ maxWidth: '900px' }}>
+        <div ref={containerRef} className="relative mx-auto -mt-4" style={{ maxWidth: '900px' }}>
           {/* Orbital Container */}
           <div className="relative mx-auto h-[500px] md:h-[600px] flex items-center justify-center">
 
