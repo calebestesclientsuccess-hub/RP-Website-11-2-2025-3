@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRight, Play } from "lucide-react";
+import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRight, Play, Zap } from "lucide-react";
 import { gsap } from 'gsap';
 import { prefersReducedMotion } from "@/lib/animationConfig";
+import { cn } from "@/lib/utils";
+
 
 interface Power {
   id: string;
@@ -175,6 +177,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [orbitRotation, setOrbitRotation] = useState(0);
   const [showPlayButton, setShowPlayButton] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [hoveredPower, setHoveredPower] = useState<string | null>(null);
+  const [currentPower, setCurrentPower] = useState<string | null>(null);
 
   // Orbital rotation animation - rotate the entire orbital system
   useEffect(() => {
@@ -323,25 +327,28 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     const newIndex = (selectedIndex - 1 + powers.length) % powers.length;
     setSelectedIndex(newIndex);
     setInitialPulse(false);
+    setCurrentPower(powers[newIndex].id);
   };
 
   const handleNext = () => {
     const newIndex = (selectedIndex + 1) % powers.length;
     setSelectedIndex(newIndex);
     setInitialPulse(false);
+    setCurrentPower(powers[newIndex].id);
   };
 
   const handleBadgeClick = (index: number) => {
     setSelectedIndex(index);
     setShowInfoBox(true);
     setInitialPulse(false);
+    setCurrentPower(powers[index].id);
   };
 
   const selectedPower = powers[selectedIndex];
 
   return (
     <>
-      <VideoSchema 
+      <VideoSchema
         name="Your Fullstack Sales Unit - GTM Engine in Action"
         description="Watch how Revenue Party's GTM Engine combines elite BDR pods with AI-powered systems to deliver guaranteed qualified appointments."
         thumbnailUrl="https://revenueparty.com/apple-touch-icon.png"
@@ -349,14 +356,14 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         duration="PT2M"
         contentUrl={`https://revenueparty.com${videoSrc}`}
       />
-      <section 
+      <section
       ref={sectionRef}
-      className="py-8 px-4 md:px-6 lg:px-8 bg-background transition-all duration-700" 
+      className="py-8 px-4 md:px-6 lg:px-8 bg-background transition-all duration-700"
       data-testid="section-orbital-powers"
     >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-2">
+        <div className="text-center mb-6">
           <h2 className="text-5xl md:text-6xl font-bold mb-2">
             <span className="gradient-text gradient-hero">The Fullstack Sales Unit</span>
           </h2>
@@ -372,7 +379,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
             {/* Central Video */}
             <div className="relative z-20">
-              <div 
+              <div
                 className="relative rounded-2xl overflow-hidden"
                 style={{
                   width: 'min(90vw, 640px)',
@@ -451,17 +458,21 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       onClick={() => handleBadgeClick(index)}
                       className="group cursor-pointer transition-all duration-300 hover:scale-110 relative"
                       data-testid={`power-badge-${power.id}`}
+                      onMouseEnter={() => setHoveredPower(power.id)}
+                      onMouseLeave={() => setHoveredPower(null)}
                     >
-                      <div 
-                        className={`
+                      <div
+                        className={cn(
+                          `
                           relative rounded-full p-3 bg-background/90 backdrop-blur-sm
                           border-2 ${power.color} shadow-lg
                           group-hover:shadow-xl transition-all duration-300
                           ${index === selectedIndex ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-110' : ''}
-                        `}
+                        `,
+                        )}
                         style={{
-                          boxShadow: index === selectedIndex 
-                            ? `0 0 30px ${power.glowColor}, 0 0 60px ${power.glowColor}` 
+                          boxShadow: index === selectedIndex
+                            ? `0 0 30px ${power.glowColor}, 0 0 60px ${power.glowColor}`
                             : `0 0 20px ${power.glowColor}`
                         }}
                       >
@@ -484,31 +495,31 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Info Box */}
           {showInfoBox && (
-            <Card className="-mt-12 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
+            <Card className="-mt-6 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div 
+                    <div
                       className={`p-2 rounded-full ${selectedPower.color}`}
                       style={{ backgroundColor: `${selectedPower.glowColor}20` }}
                     >
                       {selectedPower.icon}
                     </div>
-                    <h3 className="text-2xl font-bold">{selectedPower.title}</h3>
+                    <h3 className={`text-2xl font-bold ${selectedPower.color}`}>{selectedPower.title}</h3>
                   </div>
                   <div className="flex gap-2">
-                    <Button 
-                      size="icon" 
-                      variant="outline" 
+                    <Button
+                      size="icon"
+                      variant="outline"
                       onClick={handlePrevious}
                       className="hover:scale-110 transition-transform"
                       data-testid="button-previous-power"
                     >
                       <ChevronLeft className="h-5 w-5" />
                     </Button>
-                    <Button 
-                      size="icon" 
-                      variant="outline" 
+                    <Button
+                      size="icon"
+                      variant="outline"
                       onClick={handleNext}
                       className="hover:scale-110 transition-transform"
                       data-testid="button-next-power"
