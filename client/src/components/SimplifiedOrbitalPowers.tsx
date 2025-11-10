@@ -330,11 +330,15 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         {
           value: 1,
           duration: ROTATION_DURATION / 1000,
-          ease: "power2.inOut",
+          ease: "power4.out", // Match deceleration curve for consistency
           onUpdate: function() {
             const progress = this.progress();
             const newRotation = (currentAngle + angleDiff * progress) % 360;
             setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
+          },
+          onStart: () => {
+            // Trigger background morph at rotation start for seamless feel
+            setSelectedIndex(nextIndex);
           }
         }
       );
@@ -348,8 +352,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       currentTourIndex = (currentTourIndex + 1) % powers.length;
     };
 
-    // Initial transition after initial pause (matches subsequent cycles)
-    const initialTimeout = setTimeout(runTransition, PAUSE_DURATION);
+    // Initial transition after longer pause for contemplative introduction
+    const INITIAL_PAUSE = 5500; // 5.5 seconds - slightly longer first pause
+    const initialTimeout = setTimeout(runTransition, INITIAL_PAUSE);
 
     // Then continue with interval - full cycle time
     tourIntervalRef.current = setInterval(runTransition, TOTAL_CYCLE);
