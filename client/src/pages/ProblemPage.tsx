@@ -12,7 +12,7 @@ export default function ProblemPage() {
 
   return (
     <>
-      <SEO 
+      <SEO
         title="The $198K Lone Wolf Trap: Why Internal SDR Hiring Fails"
         description="Hiring an internal SDR costs $198,000+ with 34% failure rate. Learn the 3 traps of traditional sales hiring and the system-based alternative."
         keywords="internal sdr hiring cost, sales hiring mistakes, lone wolf trap, sdr failure rate, cost of bad sales hire"
@@ -36,14 +36,14 @@ export default function ProblemPage() {
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="mb-6 flex justify-center"
             >
-              <Badge 
+              <Badge
                 className="badge-texture bg-primary text-white border-primary text-sm px-4 py-1.5"
                 data-testid="badge-hero-trap"
               >
                 The Lone Wolf Trap
               </Badge>
             </motion.div>
-            <motion.h1 
+            <motion.h1
               className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -53,8 +53,8 @@ export default function ProblemPage() {
               Stop Solving Systems Problems{" "}
               <span className="gradient-text gradient-hero">with Headcount Solutions.</span>
             </motion.h1>
-            <motion.p 
-              className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-3xl mx-auto"
+            <motion.p
+              className="text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
@@ -78,7 +78,7 @@ export default function ProblemPage() {
                 The Two-Option Trap<br />
                 <span className="gradient-text gradient-hero">That Guarantees Failure</span>
               </h2>
-              <div className="space-y-6 text-lg text-muted-foreground leading-relaxed" data-testid="text-false-dichotomy">
+              <div className="space-y-6 text-lg leading-relaxed" data-testid="text-false-dichotomy">
                 <p>
                   B2B leaders are told they have two choices for building pipeline: hire internally or outsource to an agency.
                 </p>
@@ -107,7 +107,7 @@ export default function ProblemPage() {
                 Trap 1: The Internal Hire<br />
                 <span className="gradient-text gradient-hero">(The '$198,000 Mistake')</span>
               </h2>
-              <p className="text-lg text-muted-foreground leading-relaxed max-w-4xl" data-testid="text-trap-1-intro">
+              <p className="text-lg leading-relaxed max-w-4xl" data-testid="text-trap-1-intro">
                 You write the 'perfect' job description. You screen 100+ candidates. You hire a rep with a great resume. Six months later, you have no pipeline, the rep is burned out, and you're back at square one—minus $198,000.
               </p>
             </motion.div>
@@ -123,7 +123,7 @@ export default function ProblemPage() {
                 <h3 className="text-2xl md:text-3xl font-bold mb-4" data-testid="heading-hiring-drag">
                   The "Hiring Drag"
                 </h3>
-                <p className="text-lg text-muted-foreground leading-relaxed" data-testid="text-hiring-drag">
+                <p className="text-lg leading-relaxed" data-testid="text-hiring-drag">
                   The 3-6 month process of sourcing, interviewing, and onboarding that produces zero pipeline. By the time your rep is 'ramped,' they're already looking for their next job.
                 </p>
               </motion.div>
@@ -138,7 +138,7 @@ export default function ProblemPage() {
                 <h3 className="text-2xl md:text-3xl font-bold mb-4" data-testid="heading-management-tax">
                   The "Management Tax"
                 </h3>
-                <p className="text-lg text-muted-foreground leading-relaxed" data-testid="text-management-tax">
+                <p className="text-lg leading-relaxed" data-testid="text-management-tax">
                   The hidden cost of your time (or your sales leader's time) spent on 1:1s, training, and performance management instead of closing revenue. This 'tax' is invisible and it's killing your growth.
                 </p>
               </motion.div>
@@ -153,7 +153,7 @@ export default function ProblemPage() {
                 <h3 className="text-2xl md:text-3xl font-bold mb-4" data-testid="heading-lone-wolf-fallacy">
                   The "Lone Wolf Fallacy"
                 </h3>
-                <p className="text-lg text-muted-foreground leading-relaxed" data-testid="text-lone-wolf-fallacy">
+                <p className="text-lg leading-relaxed" data-testid="text-lone-wolf-fallacy">
                   The belief that one person, armed with a laptop and a phone, can successfully build a predictable pipeline. They operate in a silo, have no data, no system, and no support. They are set up to fail.
                 </p>
               </motion.div>
@@ -178,7 +178,7 @@ export default function ProblemPage() {
                 Trap 2: The Outsourcing Agency<br />
                 <span className="gradient-text gradient-hero">(The 'Suicide Mission')</span>
               </h2>
-              <p className="text-lg text-muted-foreground leading-relaxed max-w-4xl" data-testid="text-trap-2-intro">
+              <p className="text-lg leading-relaxed max-w-4xl" data-testid="text-trap-2-intro">
                 You're tired of the hiring drag, so you sign a 12-month contract with a 'leading' B2B appointment setting service. They promise you 10 meetings a month. What you get is a list of unqualified leads and a bill.
               </p>
             </motion.div>
@@ -194,7 +194,7 @@ export default function ProblemPage() {
                 <h3 className="text-2xl md:text-3xl font-bold mb-4" data-testid="heading-black-box">
                   The "Black Box Problem"
                 </h3>
-                <p className="text-lg text-muted-foreground leading-relaxed" data-testid="text-black-box">
+                <p className="text-lg leading-relaxed" data-testid="text-black-box">
                   You have no idea how they're getting meetings. You don't know the messaging, you can't see the data, and you have no control. You're flying blind.
                 </p>
               </motion.div>
@@ -209,7 +209,7 @@ export default function ProblemPage() {
                 <h3 className="text-2xl md:text-3xl font-bold mb-4" data-testid="heading-activity-mirage">
                   The "Activity Mirage"
                 </h3>
-                <p className="text-lg text-muted-foreground leading-relaxed" data-testid="text-activity-mirage">
+                <p className="text-lg leading-relaxed" data-testid="text-activity-mirage">
                   They send you impressive dashboards showing 1,000s of 'activities.' But 'activity' is not 'progress.' These are vanity metrics designed to hide a total lack of qualified pipeline.
                 </p>
               </motion.div>
@@ -224,7 +224,7 @@ export default function ProblemPage() {
                 <h3 className="text-2xl md:text-3xl font-bold mb-4" data-testid="heading-zero-ip">
                   The "Zero-IP Trap"
                 </h3>
-                <p className="text-lg text-muted-foreground leading-relaxed" data-testid="text-zero-ip">
+                <p className="text-lg leading-relaxed" data-testid="text-zero-ip">
                   This is the most dangerous trap. After 12 months, you fire the agency. What do you have to show for it? Nothing. They leave and take 100% of the IP, the learnings, and the playbooks with them. You are left with zero assets.
                 </p>
               </motion.div>
@@ -252,7 +252,7 @@ export default function ProblemPage() {
                     The Diagnosis: You Don't Have a Person Problem.<br />
                     <span className="gradient-text gradient-hero">You Have an Architecture Problem.</span>
                   </h2>
-                  <div className="space-y-4 text-lg text-muted-foreground leading-relaxed" data-testid="text-diagnosis">
+                  <div className="space-y-4 text-lg leading-relaxed" data-testid="text-diagnosis">
                     <p>
                       The 'Lone Wolf' hire and the 'Black Box' agency are just symptoms. The disease is a broken GTM architecture.
                     </p>
@@ -322,12 +322,12 @@ export default function ProblemPage() {
                 See the Architecture<br />
                 <span className="gradient-text gradient-hero">That Solves This</span>
               </h2>
-              <p className="text-xl text-muted-foreground leading-relaxed mb-8 max-w-2xl mx-auto" data-testid="text-cta">
+              <p className="text-xl leading-relaxed mb-8 max-w-2xl mx-auto" data-testid="text-cta">
                 Stop buying 'activity' and 'headcount.' It's time to build a permanent, scalable revenue generation system.
               </p>
-              <Button 
-                size="lg" 
-                className="text-lg px-8 py-6 shadow-lg" 
+              <Button
+                size="lg"
+                className="text-lg px-8 py-6 shadow-lg"
                 data-testid="button-cta-gtm-engine"
                 asChild
               >
@@ -343,10 +343,10 @@ export default function ProblemPage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center"
               >
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   variant="outline"
-                  className="text-base px-6 py-5" 
+                  className="text-base px-6 py-5"
                   data-testid="button-read-manifesto"
                   asChild
                 >
@@ -354,10 +354,10 @@ export default function ProblemPage() {
                     Read the Manifesto: The Lone Wolf Trap
                   </Link>
                 </Button>
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   variant="outline"
-                  className="text-base px-6 py-5" 
+                  className="text-base px-6 py-5"
                   data-testid="button-view-sdr-guide"
                   asChild
                 >
