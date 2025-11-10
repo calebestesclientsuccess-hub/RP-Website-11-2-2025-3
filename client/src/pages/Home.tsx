@@ -13,7 +13,7 @@ import SoftwareApplicationSchema from "@/components/SoftwareApplicationSchema";
 import LeadMagnetHero from "@/components/LeadMagnetHero";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import { WidgetZone } from "@/components/WidgetZone";
-import { ArrowRight, Users, Target, Zap } from "lucide-react";
+import { ArrowRight, Users, Target, Zap, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
@@ -266,12 +266,25 @@ export default function Home() {
                   A team of well equipped SDRs, not a single Lone Wolf rep.
                 </p>
                 <div 
-                  className={`leading-relaxed cursor-pointer transition-all duration-300 opacity-70 ${
-                    expandedCards.talent ? '' : 'expandable-card'
-                  }`}
+                  className="group relative"
                   onClick={() => toggleCardExpansion('talent')}
                 >
-                  Elite Sales Talent, equipped and trained by our Architects. The majority of our talent pipeline come with 5 - 15 years of experience at Y-Combinator companies. They're all extensively vetted for core skills, such as university level writing, reading, and arithmetic, and then taken through a rigorous set of sales interviews. Once selected most salespeople are trained by RP Architects for 4-6 weeks before being assigned to a campaign.
+                  <div 
+                    className={`leading-relaxed cursor-pointer transition-all duration-500 ease-out opacity-70 hover:opacity-85 ${
+                      expandedCards.talent ? 'max-h-[500px]' : 'max-h-[72px] overflow-hidden'
+                    }`}
+                  >
+                    <p className="relative">
+                      Elite Sales Talent, equipped and trained by our Architects. The majority of our talent pipeline come with 5 - 15 years of experience at Y-Combinator companies. They're all extensively vetted for core skills, such as university level writing, reading, and arithmetic, and then taken through a rigorous set of sales interviews. Once selected most salespeople are trained by RP Architects for 4-6 weeks before being assigned to a campaign.
+                      {!expandedCards.talent && (
+                        <span className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+                      )}
+                    </p>
+                  </div>
+                  <button className="flex items-center gap-2 mt-3 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                    <span>{expandedCards.talent ? 'Show less' : 'Read more'}</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expandedCards.talent ? 'rotate-180' : ''}`} />
+                  </button>
                 </div>
               </Card>
             </motion.div>
@@ -293,12 +306,25 @@ export default function Home() {
                   Our strategic framework, fully customized to your business.
                 </p>
                 <div 
-                  className={`leading-relaxed cursor-pointer transition-all duration-300 opacity-70 ${
-                    expandedCards.playbook ? '' : 'expandable-card'
-                  }`}
+                  className="group relative"
                   onClick={() => toggleCardExpansion('playbook')}
                 >
-                  Our salespeople study the playbook for days before they pick up the phone, but that's just the beginning. The playbook is continuously improved, and ultimately, you walk away with proof of product-market-fit -- with knowledge of exactly what value propositions, what scripts and collateral and emails will win new business. 100% your IP.
+                  <div 
+                    className={`leading-relaxed cursor-pointer transition-all duration-500 ease-out opacity-70 hover:opacity-85 ${
+                      expandedCards.playbook ? 'max-h-[500px]' : 'max-h-[72px] overflow-hidden'
+                    }`}
+                  >
+                    <p className="relative">
+                      Our salespeople study the playbook for days before they pick up the phone, but that's just the beginning. The playbook is continuously improved, and ultimately, you walk away with proof of product-market-fit -- with knowledge of exactly what value propositions, what scripts and collateral and emails will win new business. 100% your IP.
+                      {!expandedCards.playbook && (
+                        <span className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+                      )}
+                    </p>
+                  </div>
+                  <button className="flex items-center gap-2 mt-3 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                    <span>{expandedCards.playbook ? 'Show less' : 'Read more'}</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expandedCards.playbook ? 'rotate-180' : ''}`} />
+                  </button>
                 </div>
               </Card>
             </motion.div>
@@ -320,12 +346,25 @@ export default function Home() {
                   Our AI-Powered Engine, customized to fuel your business.
                 </p>
                 <div 
-                  className={`leading-relaxed cursor-pointer transition-all duration-300 opacity-70 ${
-                    expandedCards.signal ? '' : 'expandable-card'
-                  }`}
+                  className="group relative"
                   onClick={() => toggleCardExpansion('signal')}
                 >
-                  We combine Gemini with both code custom-written for you, and our proprietary AI and automation templates in Clay and N8N. Prompt Engineers then construct pipelines for contents, email, summaries, AI-powered automations and more. Like the Playbook, it begins as hypothesis. But once we see what works, we document it. This is also 100% your IP. You will own the blueprint, and we'll help you use it to build your own when you're ready.
+                  <div 
+                    className={`leading-relaxed cursor-pointer transition-all duration-500 ease-out opacity-70 hover:opacity-85 ${
+                      expandedCards.signal ? 'max-h-[500px]' : 'max-h-[72px] overflow-hidden'
+                    }`}
+                  >
+                    <p className="relative">
+                      We combine Gemini with both code custom-written for you, and our proprietary AI and automation templates in Clay and N8N. Prompt Engineers then construct pipelines for contents, email, summaries, AI-powered automations and more. Like the Playbook, it begins as hypothesis. But once we see what works, we document it. This is also 100% your IP. You will own the blueprint, and we'll help you use it to build your own when you're ready.
+                      {!expandedCards.signal && (
+                        <span className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+                      )}
+                    </p>
+                  </div>
+                  <button className="flex items-center gap-2 mt-3 text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                    <span>{expandedCards.signal ? 'Show less' : 'Read more'}</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expandedCards.signal ? 'rotate-180' : ''}`} />
+                  </button>
                 </div>
               </Card>
             </motion.div>
