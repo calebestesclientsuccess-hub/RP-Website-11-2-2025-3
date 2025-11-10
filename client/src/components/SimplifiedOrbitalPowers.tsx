@@ -346,6 +346,65 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
   const selectedPower = powers[selectedIndex];
 
+  // Dummy variable for videoEl as it's not directly used in the provided original snippet's HTML structure
+  // In a real scenario, this would be the actual video element or its container.
+  const videoEl = (
+    <div
+      className="relative rounded-2xl overflow-hidden"
+      style={{
+        width: 'min(90vw, 640px)',
+        height: 'min(50vh, 360px)',
+        boxShadow: `
+          0 0 0 2px rgba(192, 192, 192, 0.3),
+          0 0 40px rgba(${selectedPower.bgColor}, 0.3),
+          0 0 80px rgba(${selectedPower.bgColor}, 0.2),
+          0 0 120px rgba(${selectedPower.bgColor}, 0.15),
+          0 0 160px rgba(${selectedPower.bgColor}, 0.1)
+        `
+      }}
+    >
+      <video
+        ref={videoRef}
+        className="w-full h-full object-contain bg-black"
+        muted
+        playsInline
+        preload="auto"
+        controls={false}
+        data-testid="orbital-video"
+      >
+        <source src="/bdr-pod-video.webm" type="video/webm" />
+        <source src={videoSrc} type="video/mp4" />
+      </video>
+
+      {/* Play button overlay for when autoplay is blocked */}
+      {showPlayButton && !videoError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <Button
+            size="lg"
+            onClick={handleManualPlay}
+            className="rounded-full w-20 h-20 shadow-2xl"
+            data-testid="button-play-video"
+          >
+            <Play className="w-10 h-10" />
+          </Button>
+        </div>
+      )}
+
+      {/* Error message when video can't load */}
+      {videoError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm p-8">
+          <div className="text-center space-y-4">
+            <div className="text-4xl">📹</div>
+            <p className="text-white font-semibold">Video Unavailable</p>
+            <p className="text-white/70 text-sm max-w-xs">
+              The video could not be loaded. Please check back later or contact support.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <>
       <VideoSchema
@@ -379,60 +438,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
             {/* Central Video */}
             <div className="relative z-20">
-              <div
-                className="relative rounded-2xl overflow-hidden"
-                style={{
-                  width: 'min(90vw, 640px)',
-                  height: 'min(50vh, 360px)',
-                  boxShadow: `
-                    0 0 0 2px rgba(192, 192, 192, 0.3),
-                    0 0 40px rgba(${selectedPower.bgColor}, 0.3),
-                    0 0 80px rgba(${selectedPower.bgColor}, 0.2),
-                    0 0 120px rgba(${selectedPower.bgColor}, 0.15),
-                    0 0 160px rgba(${selectedPower.bgColor}, 0.1)
-                  `
-                }}
-              >
-                <video
-                  ref={videoRef}
-                  className="w-full h-full object-contain bg-black"
-                  muted
-                  playsInline
-                  preload="auto"
-                  controls={false}
-                  data-testid="orbital-video"
-                >
-                  <source src="/bdr-pod-video.webm" type="video/webm" />
-                  <source src={videoSrc} type="video/mp4" />
-                </video>
-
-                {/* Play button overlay for when autoplay is blocked */}
-                {showPlayButton && !videoError && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-                    <Button
-                      size="lg"
-                      onClick={handleManualPlay}
-                      className="rounded-full w-20 h-20 shadow-2xl"
-                      data-testid="button-play-video"
-                    >
-                      <Play className="w-10 h-10" />
-                    </Button>
-                  </div>
-                )}
-
-                {/* Error message when video can't load */}
-                {videoError && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm p-8">
-                    <div className="text-center space-y-4">
-                      <div className="text-4xl">📹</div>
-                      <p className="text-white font-semibold">Video Unavailable</p>
-                      <p className="text-white/70 text-sm max-w-xs">
-                        The video could not be loaded. Please check back later or contact support.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {videoEl}
             </div>
 
             {/* Orbital Badges */}
