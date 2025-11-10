@@ -41,7 +41,7 @@ export function InternalHireCostCalculator() {
             <h3 className="text-2xl md:text-3xl font-bold">The True Cost of 1 Internal SDR</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            This is what you're actually paying for <span className="font-semibold text-destructive">just one SDR/BDR</span> hire
+            This is what you're actually paying for <span className="font-semibold">just one SDR/BDR</span> hire.
           </p>
         </div>
 
@@ -168,7 +168,7 @@ export function InternalHireCostCalculator() {
                 {formatCurrency(totalWithRisk)}
               </p>
               <p className="text-xs text-muted-foreground mt-3">
-                That's <span className="font-bold text-destructive text-sm">$198K for just 1 SDR</span> when you factor in the risk of them leaving or failing
+                That's <span className="font-bold text-sm">$198K for just 1 SDR</span> when you factor in the risk of them leaving, let alone the statistical chance of failure.
               </p>
               <p className="text-xs text-muted-foreground mt-2 italic">
                 And you get zero guarantee they'll perform.
