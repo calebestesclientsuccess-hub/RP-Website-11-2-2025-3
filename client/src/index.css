@@ -644,22 +644,15 @@
     /* Pure crimson red - the color you loved */
     color: #DC143C;
     font-weight: 600;
-    
-    /* Minimal shadow for depth without tone variation */
-    text-shadow: 
-      0 1px 2px rgba(0, 0, 0, 0.08);
+    text-shadow: none;
   }
 
-  /* Dark mode - Pure crimson with subtle glow */
+  /* Dark mode - Pure crimson */
   html.dark .gradient-text {
     /* Pure crimson red - same beautiful color */
     color: #DC143C;
     font-weight: 600;
-    
-    /* Subtle glow that doesn't alter the color */
-    text-shadow: 
-      0 1px 2px rgba(0, 0, 0, 0.15),
-      0 0 8px rgba(220, 20, 60, 0.1);
+    text-shadow: none;
   }
 
   /* Optional pulsing - apply with .gradient-text-pulse class */
