@@ -438,8 +438,19 @@
   }
 
   /* Global body text color rule - white in dark mode, black in light mode */
-  p, span, div, li, td, th, label, figcaption, blockquote, address, time, small, strong, em, b, i, u, mark, code, pre, kbd, samp, var, sub, sup {
-    color: hsl(var(--foreground));
+  /* Target base text elements that don't have explicit color classes */
+  p:not([class*="text-"]):not([class*="gradient-"]),
+  span:not([class*="text-"]):not([class*="gradient-"]),
+  div:not([class*="text-"]):not([class*="gradient-"]),
+  li:not([class*="text-"]):not([class*="gradient-"]),
+  td:not([class*="text-"]):not([class*="gradient-"]),
+  th:not([class*="text-"]):not([class*="gradient-"]),
+  label:not([class*="text-"]):not([class*="gradient-"]),
+  figcaption:not([class*="text-"]):not([class*="gradient-"]),
+  blockquote:not([class*="text-"]):not([class*="gradient-"]),
+  address:not([class*="text-"]):not([class*="gradient-"]),
+  time:not([class*="text-"]):not([class*="gradient-"]) {
+    color: hsl(var(--foreground)) !important;
   }
 }
 
