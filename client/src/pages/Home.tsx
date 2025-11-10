@@ -618,7 +618,7 @@ export default function Home() {
       <WidgetZone zone="zone-6" className="my-8" />
 
       {/* Final CTA Module */}
-      <section className="py-20 px-4 md:px-6 lg:px-8 bg-primary/5">
+      <section className="py-20 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-primary/5 to-muted/30">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold" data-testid="heading-final-cta">
             The Blueprint is Clear.<br />
