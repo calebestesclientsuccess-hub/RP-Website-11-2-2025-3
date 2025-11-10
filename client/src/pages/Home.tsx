@@ -246,7 +246,7 @@ export default function Home() {
           </div>
 
           {/* 3 Core Components */}
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
+          <div className="grid md:grid-cols-3 gap-8 mb-12 max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -258,8 +258,8 @@ export default function Home() {
                 className={cn(
                   "group relative p-8 rounded-xl transition-all duration-300",
                   "bg-card/50 backdrop-blur-sm",
-                  "border border-amber-500/30",
-                  "hover:border-amber-500/50 hover:bg-card/70",
+                  "border border-rose-600/30",
+                  "hover:border-rose-600/50 hover:bg-card/70",
                   expandedCards.talent && "bg-card/70"
                 )}
                 onMouseEnter={() => toggleCardExpansion('talent')}
@@ -269,14 +269,14 @@ export default function Home() {
                 {/* Icon with coordinated glow */}
                 <div className="mb-6 flex justify-center">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-xl group-hover:bg-amber-500/30 transition-all duration-300" />
-                    <div className="relative bg-amber-500/10 p-4 rounded-full border border-amber-500/30 group-hover:border-amber-500/50 transition-all duration-300">
-                      <Users className="w-8 h-8 text-amber-500" />
+                    <div className="absolute inset-0 bg-rose-600/20 rounded-full blur-xl group-hover:bg-rose-600/30 transition-all duration-300" />
+                    <div className="relative bg-rose-600/10 p-4 rounded-full border border-rose-600/30 group-hover:border-rose-600/50 transition-all duration-300">
+                      <Users className="w-8 h-8 text-rose-600" />
                     </div>
                   </div>
                 </div>
                 {/* Heading - Priority 1 */}
-                <h3 className="text-2xl font-bold mb-3 text-amber-500">
+                <h3 className="text-2xl font-bold mb-3 text-rose-600">
                   Your Fully Loaded Sales Team
                 </h3>
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80">
@@ -297,11 +297,11 @@ export default function Home() {
                   </div>
                   <button
                     onClick={() => toggleCardExpansion('talent')}
-                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-amber-500 hover:text-amber-500/90 transition-all duration-300 hover:gap-3 group/btn"
+                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-rose-600 hover:text-rose-600/90 transition-all duration-300 hover:gap-3 group/btn"
                   >
                     <span className="relative">
                       {expandedCards.talent ? 'Show less' : 'Read more'}
-                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-amber-500 group-hover/btn:w-full transition-all duration-300" />
+                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-rose-600 group-hover/btn:w-full transition-all duration-300" />
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${expandedCards.talent ? 'rotate-180' : ''} group-hover/btn:scale-110`} />
                   </button>
@@ -320,8 +320,8 @@ export default function Home() {
                 className={cn(
                   "group relative p-8 rounded-xl transition-all duration-300",
                   "bg-card/50 backdrop-blur-sm",
-                  "border border-purple-500/30",
-                  "hover:border-purple-500/50 hover:bg-card/70",
+                  "border border-indigo-500/30",
+                  "hover:border-indigo-500/50 hover:bg-card/70",
                   expandedCards.playbook && "bg-card/70"
                 )}
                 onMouseEnter={() => toggleCardExpansion('playbook')}
@@ -331,14 +331,14 @@ export default function Home() {
                 {/* Icon with coordinated glow */}
                 <div className="mb-6 flex justify-center">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-xl group-hover:bg-purple-500/30 transition-all duration-300" />
-                    <div className="relative bg-purple-500/10 p-4 rounded-full border border-purple-500/30 group-hover:border-purple-500/50 transition-all duration-300">
-                      <Target className="w-8 h-8 text-purple-500" />
+                    <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-xl group-hover:bg-indigo-500/30 transition-all duration-300" />
+                    <div className="relative bg-indigo-500/10 p-4 rounded-full border border-indigo-500/30 group-hover:border-indigo-500/50 transition-all duration-300">
+                      <Target className="w-8 h-8 text-indigo-500" />
                     </div>
                   </div>
                 </div>
                 {/* Heading - Priority 1 */}
-                <h3 className="text-2xl font-bold mb-3 text-purple-500">
+                <h3 className="text-2xl font-bold mb-3 text-indigo-500">
                   Your Playbook
                 </h3>
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 px-1 opacity-80">
@@ -359,11 +359,11 @@ export default function Home() {
                   </div>
                   <button
                     onClick={() => toggleCardExpansion('playbook')}
-                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-purple-500 hover:text-purple-500/90 transition-all duration-300 hover:gap-3 group/btn"
+                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-indigo-500 hover:text-indigo-500/90 transition-all duration-300 hover:gap-3 group/btn"
                   >
                     <span className="relative">
                       {expandedCards.playbook ? 'Show less' : 'Read more'}
-                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-purple-500 group-hover/btn:w-full transition-all duration-300" />
+                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-indigo-500 group-hover/btn:w-full transition-all duration-300" />
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${expandedCards.playbook ? 'rotate-180' : ''} group-hover/btn:scale-110`} />
                   </button>
@@ -382,8 +382,8 @@ export default function Home() {
                 className={cn(
                   "group relative p-8 rounded-xl transition-all duration-300",
                   "bg-card/50 backdrop-blur-sm",
-                  "border border-cyan-500/30",
-                  "hover:border-cyan-500/50 hover:bg-card/70",
+                  "border border-emerald-500/30",
+                  "hover:border-emerald-500/50 hover:bg-card/70",
                   expandedCards.signal && "bg-card/70"
                 )}
                 onMouseEnter={() => toggleCardExpansion('signal')}
@@ -393,14 +393,14 @@ export default function Home() {
                 {/* Icon with coordinated glow */}
                 <div className="mb-6 flex justify-center">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-xl group-hover:bg-cyan-500/30 transition-all duration-300" />
-                    <div className="relative bg-cyan-500/10 p-4 rounded-full border border-cyan-500/30 group-hover:border-cyan-500/50 transition-all duration-300">
-                      <Zap className="w-8 h-8 text-cyan-500" />
+                    <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl group-hover:bg-emerald-500/30 transition-all duration-300" />
+                    <div className="relative bg-emerald-500/10 p-4 rounded-full border border-emerald-500/30 group-hover:border-emerald-500/50 transition-all duration-300">
+                      <Zap className="w-8 h-8 text-emerald-500" />
                     </div>
                   </div>
                 </div>
                 {/* Heading - Priority 1 */}
-                <h3 className="text-2xl font-bold mb-3 text-cyan-500">
+                <h3 className="text-2xl font-bold mb-3 text-emerald-500">
                   Your Signal Factory
                 </h3>
                 <p className="leading-relaxed italic text-sm font-semibold mb-4 opacity-80">
@@ -421,11 +421,11 @@ export default function Home() {
                   </div>
                   <button
                     onClick={() => toggleCardExpansion('signal')}
-                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-cyan-500 hover:text-cyan-500/90 transition-all duration-300 hover:gap-3 group/btn"
+                    className="flex items-center gap-2 mt-3 text-sm font-semibold text-emerald-500 hover:text-emerald-500/90 transition-all duration-300 hover:gap-3 group/btn"
                   >
                     <span className="relative">
                       {expandedCards.signal ? 'Show less' : 'Read more'}
-                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-cyan-500 group-hover/btn:w-full transition-all duration-300" />
+                      <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-emerald-500 group-hover/btn:w-full transition-all duration-300" />
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${expandedCards.signal ? 'rotate-180' : ''} group-hover/btn:scale-110`} />
                   </button>
