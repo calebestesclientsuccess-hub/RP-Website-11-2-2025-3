@@ -436,6 +436,11 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  /* Global body text color rule - white in dark mode, black in light mode */
+  p, span, div, li, td, th, label, figcaption, blockquote, address, time, small, strong, em, b, i, u, mark, code, pre, kbd, samp, var, sub, sup {
+    color: hsl(var(--foreground));
+  }
 }
 
 /**
