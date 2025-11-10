@@ -139,23 +139,15 @@ export default function Home() {
                   </Badge>
                 </motion.div>
                 <motion.h1
-                  className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
+                  className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
                   data-testid="heading-hero"
                 >
-                  <div>Your Next Sales Hire Shouldn't Be a Person. It</div>
+                  <div>Your Next Sales Hire Shouldn't Be a Person.</div>
+                  <div className="gradient-text gradient-hero">It Should Be a Revenue Generation System.</div>
                 </motion.h1>
-                <motion.h2
-                  className="text-4xl md:text-5xl lg:text-6xl font-bold gradient-text mb-8"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                  data-testid="subheading-hero"
-                >
-                  <div>Should Be a Revenue Generation System.</div>
-                </motion.h2>
                 <motion.p
                   className="text-lg md:text-xl leading-relaxed"
                   initial={{ opacity: 0, y: 20 }}
