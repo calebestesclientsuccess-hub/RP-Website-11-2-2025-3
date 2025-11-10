@@ -168,7 +168,10 @@ export function InternalHireCostCalculator() {
                 {formatCurrency(totalWithRisk)}
               </p>
               <p className="text-xs text-muted-foreground mt-3">
-                That's <span className="font-bold text-destructive">$198K for just 1 SDR</span> when you factor in the risk of them leaving or failing
+                That's <span className="font-bold text-destructive text-sm">$198K for just 1 SDR</span> when you factor in the risk of them leaving or failing
+              </p>
+              <p className="text-xs text-muted-foreground mt-2 italic">
+                And you get zero guarantee they'll perform.
               </p>
             </motion.div>
 

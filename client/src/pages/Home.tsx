@@ -18,6 +18,7 @@ import { Link } from "wouter";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils"; // Assuming cn utility is available
+import { InternalHireCostCalculator } from "@/components/InternalHireCostCalculator";
 
 // Video is served from public directory
 const podVideo = "/bdr-pod-video.mp4";
@@ -230,7 +231,7 @@ export default function Home() {
       <section className="relative z-10 py-32 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-background via-background/95 to-background" data-testid="section-solution">
         {/* Dramatic background treatment */}
         <div className="absolute inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent opacity-50" />
-        
+
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-solution">
