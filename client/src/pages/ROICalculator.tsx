@@ -258,67 +258,65 @@ export default function ROICalculator() {
             {/* Column 1: Your Inputs */}
             <div className="space-y-6">
               {/* Share Report Button - Anchored to left above Part 1 */}
-              <div className="flex justify-start">
-                <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="secondary" data-testid="button-share-report">
-                      <Mail className="w-4 h-4 mr-2" />
-                      Send My Report
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent data-testid="dialog-share-report">
-                    <DialogHeader>
-                      <DialogTitle>Send Your ROI Report</DialogTitle>
-                      <DialogDescription>
-                        Enter email addresses (comma-separated for multiple recipients) to send your customized ROI analysis.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email-recipients">Email Recipients</Label>
-                        <Input
-                          id="email-recipients"
-                          placeholder="email@example.com, colleague@example.com"
-                          value={recipientEmails}
-                          onChange={(e) => setRecipientEmails(e.target.value)}
-                          data-testid="input-email-recipients"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Separate multiple emails with commas
-                        </p>
-                      </div>
-
-                      {/* Report Preview */}
-                      <div className="p-4 bg-muted/30 rounded-lg space-y-2 text-sm">
-                        <p className="font-semibold">Report will include:</p>
-                        <ul className="space-y-1 text-muted-foreground">
-                          <li>• LTV: {formatCurrency(ltv[0])}</li>
-                          <li>• Close Rate: {closeRate[0]}%</li>
-                          <li>• Selected Engine: {config.name}</li>
-                          <li>• Monthly ROI: {monthlyROI > 0 ? `${formatNumber(monthlyROI, 0)}x` : '0x'}</li>
-                          <li>• Projected LTV/Month: {projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}</li>
-                        </ul>
-                      </div>
+              <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="secondary" data-testid="button-share-report" className="mb-6">
+                    <Mail className="w-4 h-4 mr-2" />
+                    Send My Report
+                  </Button>
+                </DialogTrigger>
+                <DialogContent data-testid="dialog-share-report">
+                  <DialogHeader>
+                    <DialogTitle>Send Your ROI Report</DialogTitle>
+                    <DialogDescription>
+                      Enter email addresses (comma-separated for multiple recipients) to send your customized ROI analysis.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email-recipients">Email Recipients</Label>
+                      <Input
+                        id="email-recipients"
+                        placeholder="email@example.com, colleague@example.com"
+                        value={recipientEmails}
+                        onChange={(e) => setRecipientEmails(e.target.value)}
+                        data-testid="input-email-recipients"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Separate multiple emails with commas
+                      </p>
                     </div>
-                    <DialogFooter>
-                      <Button
-                        variant="outline"
-                        onClick={() => setShareDialogOpen(false)}
-                        data-testid="button-cancel-share"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleShareReport}
-                        disabled={shareReportMutation.isPending}
-                        data-testid="button-send-report"
-                      >
-                        {shareReportMutation.isPending ? "Sending..." : "Send Report"}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
+
+                    {/* Report Preview */}
+                    <div className="p-4 bg-muted/30 rounded-lg space-y-2 text-sm">
+                      <p className="font-semibold">Report will include:</p>
+                      <ul className="space-y-1 text-muted-foreground">
+                        <li>• LTV: {formatCurrency(ltv[0])}</li>
+                        <li>• Close Rate: {closeRate[0]}%</li>
+                        <li>• Selected Engine: {config.name}</li>
+                        <li>• Monthly ROI: {monthlyROI > 0 ? `${formatNumber(monthlyROI, 0)}x` : '0x'}</li>
+                        <li>• Projected LTV/Month: {projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShareDialogOpen(false)}
+                      data-testid="button-cancel-share"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleShareReport}
+                      disabled={shareReportMutation.isPending}
+                      data-testid="button-send-report"
+                    >
+                      {shareReportMutation.isPending ? "Sending..." : "Send Report"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               {/* Part 1: Your Business Value */}
               <Card className="p-6" data-testid="card-business-value">
