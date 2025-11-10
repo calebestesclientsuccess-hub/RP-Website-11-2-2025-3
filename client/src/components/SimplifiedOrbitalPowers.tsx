@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,8 +7,8 @@ import { gsap } from 'gsap';
 import { prefersReducedMotion } from "@/lib/animationConfig";
 import { cn } from "@/lib/utils";
 
-// Add CSS keyframes for smooth transitions
-const fadeInKeyframes = `
+// Add CSS keyframes for smooth transitions and cinematic effects
+const cinematicKeyframes = `
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -18,6 +18,61 @@ const fadeInKeyframes = `
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes cinematicPulse {
+  0%, 100% {
+    transform: scale(1) translateZ(0);
+    box-shadow: 
+      0 0 20px rgba(255, 255, 255, 0.4),
+      0 0 40px rgba(255, 255, 255, 0.2),
+      0 0 60px rgba(255, 255, 255, 0.1);
+  }
+  25% {
+    transform: scale(1.08) translateZ(0);
+    box-shadow: 
+      0 0 30px rgba(255, 255, 255, 0.6),
+      0 0 60px rgba(255, 255, 255, 0.4),
+      0 0 90px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    transform: scale(1.12) translateZ(0);
+    box-shadow: 
+      0 0 40px rgba(255, 255, 255, 0.8),
+      0 0 80px rgba(255, 255, 255, 0.5),
+      0 0 120px rgba(255, 255, 255, 0.3);
+  }
+  75% {
+    transform: scale(1.08) translateZ(0);
+    box-shadow: 
+      0 0 30px rgba(255, 255, 255, 0.6),
+      0 0 60px rgba(255, 255, 255, 0.4),
+      0 0 90px rgba(255, 255, 255, 0.2);
+  }
+}
+
+@keyframes spotlightGlow {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.cinematic-highlight {
+  animation: cinematicPulse 1.5s ease-in-out infinite;
+  position: relative;
+  z-index: 50;
+}
+
+.cinematic-highlight::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  animation: spotlightGlow 1.5s ease-in-out infinite;
+  pointer-events: none;
 }
 `;
 
@@ -191,6 +246,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [prePulseActive, setPrePulseActive] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState(180); // Default to left position
+  const [preVideoPhase, setPreVideoPhase] = useState<'rotating' | 'decelerating' | 'highlighting' | 'ready'>('rotating');
+  const [highlightedIconIndex, setHighlightedIconIndex] = useState<number | null>(null);
+  const [cinematicReady, setCinematicReady] = useState(false);
+  const preVideoTimelineRef = useRef<gsap.core.Timeline | null>(null);
 
   // Calculate responsive selection position based on viewport
   useEffect(() => {
@@ -198,8 +257,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       const isMobile = window.innerWidth < 768;
       
       if (isMobile) {
-        // Mobile: bottom-left (225°) for better visibility - 7 o'clock position
-        setSelectedPosition(225);
+        // Mobile: bottom-center (270°) for optimal visibility - 6 o'clock position
+        setSelectedPosition(270);
       } else {
         // Desktop/Tablet: left side (180°) - 9 o'clock position
         setSelectedPosition(180);
@@ -213,15 +272,15 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
   // Orbital rotation animation - starts when section enters viewport
   useEffect(() => {
-    if (prefersReducedMotion()) return;
+    if (prefersReducedMotion() || preVideoPhase !== 'rotating') return;
 
     const rotationObj = { value: orbitRotation };
 
-    // Much slower rotation: 120 seconds per full rotation (0.5 RPM)
-    // This creates a gentle, sophisticated movement
+    // Faster initial rotation for more dynamic entry (45 seconds per rotation)
+    // This will slow down dramatically before video starts
     orbitAnimationRef.current = gsap.to(rotationObj, {
       value: orbitRotation + 360,
-      duration: 120,
+      duration: 45,
       ease: "none",
       repeat: -1,
       onUpdate: () => {
@@ -232,7 +291,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     return () => {
       orbitAnimationRef.current?.kill();
     };
-  }, []);
+  }, [preVideoPhase]);
 
   // Handle video end and start deceleration
   useEffect(() => {
@@ -480,6 +539,127 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       });
   };
 
+  // Cinematic pre-video sequence orchestration
+  const executePreVideoSequence = useCallback(() => {
+    if (prefersReducedMotion()) {
+      // Skip cinematic sequence for reduced motion preference
+      const video = videoRef.current;
+      if (video) {
+        video.play().catch(() => setShowPlayButton(true));
+      }
+      return;
+    }
+
+    // Create a cinematic timeline
+    const timeline = gsap.timeline();
+    
+    // Phase 1: Deceleration (3 seconds)
+    setPreVideoPhase('decelerating');
+    
+    // Kill the continuous rotation
+    if (orbitAnimationRef.current) {
+      orbitAnimationRef.current.kill();
+    }
+    
+    const currentRotation = orbitRotation;
+    
+    // Find the bottom-left icon position for initial highlighting
+    // Mobile: 240° (8 o'clock) - easier to see for mobile users
+    // Desktop: 225° (7:30 position) - elegant side position
+    const bottomLeftAngle = window.innerWidth < 768 ? 240 : 225;
+    
+    // Find which power should be at bottom-left
+    let targetPowerIndex = 0;
+    powers.forEach((power, idx) => {
+      const totalAngle = (power.angle + currentRotation) % 360;
+      if (Math.abs(totalAngle - bottomLeftAngle) < 30) {
+        targetPowerIndex = idx;
+      }
+    });
+    
+    // Calculate rotation to position target power at bottom-left
+    const targetPowerAngle = powers[targetPowerIndex].angle;
+    let targetRotation = bottomLeftAngle - targetPowerAngle;
+    while (targetRotation < 0) targetRotation += 360;
+    while (targetRotation >= 360) targetRotation -= 360;
+    
+    // Smooth deceleration to bottom-left position
+    timeline.to({ value: currentRotation }, {
+      value: targetRotation,
+      duration: 3,
+      ease: "power3.out",
+      onUpdate: function() {
+        const progress = this.progress();
+        const newRotation = currentRotation + (targetRotation - currentRotation) * progress;
+        setOrbitRotation(newRotation % 360);
+      }
+    });
+    
+    // Phase 2: Highlighting (1.5 seconds)
+    timeline.call(() => {
+      setPreVideoPhase('highlighting');
+      setHighlightedIconIndex(targetPowerIndex);
+      setPrePulseActive(true);
+    });
+    
+    timeline.to({}, { duration: 1.5 }); // Hold for pulsating effect
+    
+    // Phase 3: Dramatic 360° rotation to bottom-center (2.5 seconds)
+    timeline.call(() => {
+      setPrePulseActive(false);
+    });
+    
+    const bottomCenterAngle = window.innerWidth < 768 ? 270 : 180; // Mobile: bottom-center, Desktop: left
+    let finalRotation = bottomCenterAngle - targetPowerAngle;
+    
+    // Ensure we do almost a full 360° rotation
+    if (Math.abs(finalRotation - targetRotation) < 300) {
+      finalRotation += 360;
+    }
+    
+    timeline.to({ value: targetRotation }, {
+      value: finalRotation,
+      duration: 2.5,
+      ease: "power2.inOut",
+      onUpdate: function() {
+        const progress = this.progress();
+        const newRotation = targetRotation + (finalRotation - targetRotation) * progress;
+        setOrbitRotation(newRotation % 360);
+        
+        // Update selected index when reaching destination
+        if (progress > 0.8) {
+          setSelectedIndex(targetPowerIndex);
+        }
+      }
+    });
+    
+    // Phase 4: Ready and play video
+    timeline.call(() => {
+      setPreVideoPhase('ready');
+      setCinematicReady(true);
+      setHighlightedIconIndex(null);
+      
+      // Now play the video
+      const video = videoRef.current;
+      if (video) {
+        video.play()
+          .then(() => {
+            setHasPlayed(true);
+            setShowPlayButton(false);
+            setVideoError(false);
+            setTimeout(() => setShowInfoBox(true), 1000);
+            setTimeout(() => setInitialPulse(false), 3000);
+          })
+          .catch((error) => {
+            console.log('Video autoplay prevented:', error);
+            setShowPlayButton(true);
+          });
+      }
+    });
+    
+    preVideoTimelineRef.current = timeline;
+  }, [videoRef, orbitRotation, powers, selectedPosition]);
+
   // Video play and initial animations
   useEffect(() => {
     if (!videoRef.current) return;
@@ -502,53 +682,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         return;
       }
 
-      // iOS Safari often only reaches readyState 2 (HAVE_CURRENT_DATA)
-      if (video.readyState >= 2) {
-        video.play()
-          .then(() => {
-            setHasPlayed(true);
-            setShowPlayButton(false);
-            setVideoError(false);
-            setTimeout(() => setShowInfoBox(true), 1000);
-            setTimeout(() => setInitialPulse(false), 3000);
-          })
-          .catch((error) => {
-            console.log('Video autoplay prevented:', error);
-            // Show play button for manual playback
-            setShowPlayButton(true);
-          });
-      } else {
-        // Wait for enough data to be loaded
-        const playHandler = () => {
-          if (video.error) {
-            handleError();
-            return;
-          }
-
-          video.play()
-            .then(() => {
-              setHasPlayed(true);
-              setShowPlayButton(false);
-              setVideoError(false);
-              setTimeout(() => setShowInfoBox(true), 1000);
-              setTimeout(() => setInitialPulse(false), 3000);
-            })
-            .catch((error) => {
-              console.log('Video autoplay prevented:', error);
-              setShowPlayButton(true);
-            });
-        };
-
-        video.addEventListener('loadeddata', playHandler, { once: true });
-        video.addEventListener('canplay', playHandler, { once: true });
-
-        // Timeout fallback for error detection
-        setTimeout(() => {
-          if (video.readyState === 0 && video.networkState === 3) {
-            handleError();
-          }
-        }, 3000);
-      }
+      // Execute cinematic sequence instead of direct play
+      executePreVideoSequence();
     };
 
     const observer = new IntersectionObserver(
@@ -576,7 +711,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         clearInterval(tourIntervalRef.current);
       }
     };
-  }, [hasPlayed, videoError, videoRef]);
+  }, [hasPlayed, videoError, videoRef, executePreVideoSequence, orbitRotation]);
 
   // Background color morphing
   useEffect(() => {
@@ -635,8 +770,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     <div
       className="relative rounded-2xl overflow-hidden"
       style={{
-        width: 'min(90vw, 640px)',
-        height: 'min(50vh, 360px)',
+        width: window.innerWidth < 768 ? 'min(85vw, 320px)' : 'min(90vw, 640px)',
+        height: window.innerWidth < 768 ? 'min(35vh, 200px)' : 'min(50vh, 360px)',
         boxShadow: `
           0 0 0 2px rgba(192, 192, 192, 0.3),
           0 0 40px rgba(${selectedPower.bgColor}, 0.3),
@@ -690,7 +825,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
   return (
     <>
-      <style>{fadeInKeyframes}</style>
+      <style>{cinematicKeyframes}</style>
       <VideoSchema
         name="Your Fullstack Sales Unit - GTM Engine in Action"
         description="Watch how Revenue Party's GTM Engine combines elite BDR pods with AI-powered systems to deliver guaranteed qualified appointments."
@@ -717,8 +852,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
         {/* Main Container */}
         <div ref={containerRef} className="relative mx-auto -mt-6" style={{ maxWidth: '900px' }}>
-          {/* Orbital Container */}
-          <div className="relative mx-auto h-[500px] md:h-[600px] flex items-center justify-center">
+          {/* Orbital Container - Adjusted height for mobile */}
+          <div className="relative mx-auto h-[450px] md:h-[600px] flex items-center justify-center">
 
             {/* Central Video */}
             <div className="relative z-20">
@@ -728,11 +863,15 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             {/* Orbital Badges */}
             <div className="orbital-badges-container absolute inset-0 pointer-events-none">
               {powers.map((power, index) => {
-                const radius = 320;
+                // Responsive radius for better mobile positioning
+                const isMobile = window.innerWidth < 768;
+                const radius = isMobile ? 180 : 320; // Smaller radius on mobile
                 const totalAngle = power.angle + orbitRotation;
                 const angleRad = (totalAngle * Math.PI) / 180;
                 const x = Math.cos(angleRad) * radius;
-                const y = Math.sin(angleRad) * radius * 0.6;
+                // Adjust vertical scaling for mobile to ensure bottom positioning
+                const yScale = isMobile ? 0.8 : 0.6; // More vertical on mobile
+                const y = Math.sin(angleRad) * radius * yScale;
 
                 // Determine if this badge is at the selected position (responsive based on viewport)
                 const normalizedAngle = totalAngle % 360;
@@ -776,24 +915,31 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                           border-2 ${power.color} shadow-lg
                           group-hover:shadow-2xl
                           ${isAtSelectedPosition ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}
+                          ${highlightedIconIndex === index ? 'cinematic-highlight' : ''}
                         `,
                         )}
                         style={{
-                          boxShadow: isAtSelectedPosition
+                          boxShadow: highlightedIconIndex === index
+                            ? undefined // Let cinematic-highlight CSS handle it
+                            : isAtSelectedPosition
                             ? `0 0 30px ${power.glowColor}, 0 0 60px ${power.glowColor}`
                             : `0 0 20px ${power.glowColor}`,
-                          animation: showPrePulse
+                          animation: highlightedIconIndex === index 
+                            ? undefined // Let cinematic-highlight CSS handle it
+                            : showPrePulse
                             ? 'orbital-badge-pre-pulse 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' // Longer, bouncier
                             : showSustainedPulse
                             ? 'orbital-badge-pulse 4s cubic-bezier(0.4, 0, 0.2, 1) infinite' // Slower pulse
                             : 'none',
                           transform: hoveredPower === power.id 
                             ? 'scale(1.15) rotate(5deg)' // Slight rotation on hover
+                            : highlightedIconIndex === index
+                            ? undefined // Let cinematic-highlight CSS handle it
                             : isAtSelectedPosition 
                             ? 'scale(1.12)' 
                             : 'scale(1)',
-                          transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                          willChange: (showPrePulse || showSustainedPulse) ? 'transform, filter' : 'auto',
+                          transition: highlightedIconIndex === index ? undefined : 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                          willChange: (showPrePulse || showSustainedPulse || highlightedIconIndex === index) ? 'transform, filter' : 'auto',
                           backfaceVisibility: 'hidden',
                           WebkitBackfaceVisibility: 'hidden'
                         }}
