@@ -145,8 +145,8 @@ export default function Home() {
                   transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
                   data-testid="heading-hero"
                 >
-                  <div>Your Next Sales Hire Shouldn't Be a Person.</div>
-                  <div className="gradient-text gradient-hero">It Should Be a Revenue Generation System.</div>
+                  <div className="mb-0">Your Next Sales Hire Shouldn't Be a Person.</div>
+                  <div className="gradient-text gradient-hero mt-0">It Should Be a Revenue Generation System.</div>
                 </motion.h1>
                 <motion.p
                   className="text-lg md:text-xl leading-relaxed"
