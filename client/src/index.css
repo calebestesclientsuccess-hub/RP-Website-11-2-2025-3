@@ -726,8 +726,16 @@
 
   /* Context-aware gradient intensities - LIGHT MODE */
   html:not(.dark) .gradient-hero {
-    background-image: linear-gradient(90deg, hsl(348, 83%, 47%) 0%, hsl(0, 10%, 20%) 90%);
-    filter: saturate(1.2) brightness(1.05);
+    background: linear-gradient(
+      180deg,
+      #FF2A00 0%,
+      #FF2A00 30%,
+      #2D1B69 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
   }
 
   html:not(.dark) .gradient-card {
