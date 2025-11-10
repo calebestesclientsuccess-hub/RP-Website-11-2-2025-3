@@ -274,12 +274,12 @@ export default function Home() {
                     <Target className="w-8 h-8 text-primary" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">The Method</h3>
+                <h3 className="text-2xl font-bold mb-4">Your Playbook</h3>
                 <p className="leading-relaxed italic text-lg mb-4">
-                  Impact Selling: how we make good salespeople great
+                  Our strategic framework, fully customized to your ICP, value proposition, and competitor landscape.
                 </p>
                 <p className="leading-relaxed">
-                  The operating system and strategic playbook that makes talent effective. We customize your Playbook with the scripts, emails, and collateral that worked. You own 100% of the IP.
+                  Our salespeople study the playbook for days before they pick up the phone, but that's just the beginning. The playbook is continuously improved, and ultimately, you walk away with proof of product-market-fit -- with knowledge of exactly what value propositions, what scripts and collateral and emails will win new business. 100% your IP.
                 </p>
               </Card>
             </motion.div>
