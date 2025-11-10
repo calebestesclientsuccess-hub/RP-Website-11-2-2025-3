@@ -449,9 +449,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                   >
                     <button
                       onClick={() => handleBadgeClick(index)}
-                      className={`group cursor-pointer transition-all duration-300 hover:scale-110 relative ${
-                        index === selectedIndex && initialPulse ? 'animate-pulse' : ''
-                      }`}
+                      className="group cursor-pointer transition-all duration-300 hover:scale-110 relative"
                       data-testid={`power-badge-${power.id}`}
                     >
                       <div 
