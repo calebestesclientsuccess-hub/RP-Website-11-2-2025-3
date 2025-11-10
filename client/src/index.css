@@ -639,36 +639,61 @@
      GRADIENT TEXT SYSTEM - Progressive Enhancement
      ================================================ */
 
-  /* Base gradient text class with fallback - LIGHT MODE - Mostly solid red with tiny shadow */
+  /* Base gradient text class - GLOWING BLOOD CRIMSON with purple undertones */
   html:not(.dark) .gradient-text {
-    /* Layer 0: Legacy browser fallback (outside @supports) */
-    color: var(--gradient-fallback);
-    font-weight: 600; /* Improve readability */
+    /* Blood crimson with slight purple undertone */
+    color: #C41E3A;
+    font-weight: 600;
+    
+    /* Multi-layer glow effect - creates luminescent appearance */
+    text-shadow:
+      0 0 10px rgba(196, 30, 58, 0.8),      /* Inner crimson glow */
+      0 0 20px rgba(196, 30, 58, 0.6),      /* Mid crimson glow */
+      0 0 30px rgba(139, 0, 139, 0.4),      /* Purple outer glow */
+      0 0 40px rgba(139, 0, 139, 0.3),      /* Extended purple glow */
+      0 0 2px rgba(196, 30, 58, 1);         /* Sharp inner edge */
+  }
 
-    /* Layer 1: Vertical gradient - nearly solid red with just a hint of depth at bottom */
-    @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, #E63946 0%, #E63946 88%, #D62839 94%, #A01515 98%, #5A0A0A 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-size: 100% 100%;
+  /* Dark mode - Even more pronounced glow against dark background */
+  html.dark .gradient-text {
+    /* Slightly brighter blood crimson for dark mode */
+    color: #DC143C;
+    font-weight: 600;
+    
+    /* Enhanced multi-layer glow - more visible against dark background */
+    text-shadow:
+      0 0 10px rgba(220, 20, 60, 0.9),      /* Inner crimson glow */
+      0 0 20px rgba(220, 20, 60, 0.7),      /* Mid crimson glow */
+      0 0 35px rgba(147, 51, 234, 0.5),     /* Purple outer glow */
+      0 0 50px rgba(147, 51, 234, 0.4),     /* Extended purple glow */
+      0 0 70px rgba(88, 28, 135, 0.3),      /* Deep purple halo */
+      0 0 2px rgba(220, 20, 60, 1);         /* Sharp inner edge */
+  }
+
+  /* Optional pulsing glow - apply with .gradient-text-pulse class */
+  @keyframes crimson-pulse {
+    0%, 100% {
+      text-shadow:
+        0 0 10px rgba(220, 20, 60, 0.9),
+        0 0 20px rgba(220, 20, 60, 0.7),
+        0 0 35px rgba(147, 51, 234, 0.5),
+        0 0 50px rgba(147, 51, 234, 0.4),
+        0 0 70px rgba(88, 28, 135, 0.3),
+        0 0 2px rgba(220, 20, 60, 1);
+    }
+    50% {
+      text-shadow:
+        0 0 15px rgba(220, 20, 60, 1),
+        0 0 30px rgba(220, 20, 60, 0.8),
+        0 0 45px rgba(147, 51, 234, 0.6),
+        0 0 60px rgba(147, 51, 234, 0.5),
+        0 0 80px rgba(88, 28, 135, 0.4),
+        0 0 3px rgba(220, 20, 60, 1);
     }
   }
 
-  /* Dark mode gradient - Mostly solid red with tiny shadow */
-  html.dark .gradient-text {
-    /* Layer 0: Legacy browser fallback (outside @supports) */
-    color: hsl(0 0% 91%);
-    font-weight: 600;
-
-    /* Layer 1: Vertical gradient - nearly solid red with just a hint of depth at bottom */
-    @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(180deg, #E63946 0%, #E63946 88%, #D62839 94%, #A01515 98%, #5A0A0A 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-size: 100% 100%;
-    }
+  .gradient-text-pulse {
+    animation: crimson-pulse 3s ease-in-out infinite;
   }
 
   /* ================================================
