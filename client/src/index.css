@@ -641,26 +641,26 @@
 
   /* Base gradient text class - Rich crimson with subtle depth */
   html:not(.dark) .gradient-text {
-    /* Deep crimson red - the color you loved */
-    color: #DC143C;
+    /* Deep crimson red with darker purple undertone */
+    color: #B8143C;
     font-weight: 600;
     
-    /* Subtle dimensional depth for richness */
+    /* Subtle dimensional depth - shadow angled to avoid bottom fade */
     text-shadow: 
-      0 1px 2px rgba(0, 0, 0, 0.15),
-      0 0 8px rgba(220, 20, 60, 0.1);
+      1px 0 2px rgba(40, 0, 25, 0.12),
+      0 0 6px rgba(180, 20, 60, 0.08);
   }
 
   /* Dark mode - Vibrant crimson with gentle glow */
   html.dark .gradient-text {
-    /* Rich crimson red - same beautiful color */
-    color: #DC143C;
+    /* Rich crimson red with darker purple undertone */
+    color: #B8143C;
     font-weight: 600;
     
-    /* Gentle glow that makes it pop on dark backgrounds */
+    /* Gentle glow with horizontal shadow to avoid bottom fade */
     text-shadow: 
-      0 1px 3px rgba(0, 0, 0, 0.3),
-      0 0 12px rgba(220, 20, 60, 0.15);
+      1px 0 2px rgba(40, 0, 25, 0.25),
+      0 0 10px rgba(180, 20, 60, 0.12);
   }
 
   /* Optional pulsing - apply with .gradient-text-pulse class */
