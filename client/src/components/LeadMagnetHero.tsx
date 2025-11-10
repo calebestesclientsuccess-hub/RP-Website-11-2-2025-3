@@ -36,11 +36,6 @@ export default function LeadMagnetHero() {
   const { data: featureFlag } = useQuery<{ enabled: boolean }>({
     queryKey: ["/api/public/feature-flags/revenue-architecture-playbook"],
   });
-
-  // Don't render if feature is disabled
-  if (featureFlag && !featureFlag.enabled) {
-    return null;
-  }
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -86,6 +81,11 @@ export default function LeadMagnetHero() {
       });
     },
   });
+
+  // Don't render if feature is disabled
+  if (featureFlag && !featureFlag.enabled) {
+    return null;
+  }
 
   return (
     <AnimatePresence mode="wait">
