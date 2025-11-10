@@ -99,22 +99,22 @@ export default function Home() {
         duration="PT2M"
         contentUrl={`https://revenueparty.com${podVideo}`}
       />
-      
+
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
         {/* Animated gradient mesh background */}
         <StaticGradientBg />
-        
+
         {/* Light grid dots pattern (light mode only) */}
         <div className="light-grid-dots" />
-        
+
         {/* Sun rays animation (light mode only) */}
         <div className="sun-rays-container">
           <div className="sun-ray"></div>
           <div className="sun-ray"></div>
           <div className="sun-ray"></div>
         </div>
-        
+
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
@@ -123,7 +123,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
-                  className="mb-6"
+                  className="mb-3"
                 >
                   <Badge 
                     className="badge-texture bg-community text-white border-community text-sm px-4 py-1.5"
@@ -446,7 +446,7 @@ export default function Home() {
           >
             <Link href="/gtm-audit">Schedule My GTM Audit</Link>
           </Button>
-          
+
           {/* Secondary CTA / Lead Magnet Module */}
           <div className="pt-12 border-t border-border/50">
             <h3 className="text-2xl font-bold mb-4" data-testid="heading-secondary-cta">
