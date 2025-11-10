@@ -609,7 +609,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         </div>
 
         {/* Main Container */}
-        <div ref={containerRef} className="relative mx-auto -mt-4" style={{ maxWidth: '900px' }}>
+        <div ref={containerRef} className="relative mx-auto -mt-6" style={{ maxWidth: '900px' }}>
           {/* Orbital Container */}
           <div className="relative mx-auto h-[500px] md:h-[600px] flex items-center justify-center">
 
