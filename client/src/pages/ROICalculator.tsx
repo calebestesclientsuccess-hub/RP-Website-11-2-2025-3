@@ -252,8 +252,8 @@ export default function ROICalculator() {
               Interactive ROI Calculator
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-hero">
-              Calculate the ROI of<br />
-              <span className="gradient-text gradient-hero">a Guaranteed Sales Asset</span>
+              Calculate the ROI of a<br />
+              <span className="gradient-text gradient-hero">Guaranteed Sales Asset</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-4xl mx-auto mb-8" data-testid="text-hero-subtitle">
               Stop guessing with $198k hires. Design a guaranteed revenue engine and see the 40x+ ROI.
