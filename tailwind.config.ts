@@ -27,6 +27,11 @@ export default {
           foreground: "hsl(var(--community-foreground) / <alpha-value>)",
           border: "var(--community-border)",
         },
+        tertiary: {
+          DEFAULT: "hsl(var(--tertiary) / <alpha-value>)",
+          foreground: "hsl(var(--tertiary-foreground) / <alpha-value>)",
+          border: "var(--tertiary-border)",
+        },
         indigo: {
           DEFAULT: "hsl(var(--indigo) / <alpha-value>)",
           foreground: "hsl(var(--indigo-foreground) / <alpha-value>)",

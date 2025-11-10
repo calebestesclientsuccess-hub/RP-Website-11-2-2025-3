@@ -30,7 +30,7 @@
   /* WCAG AA Compliant Red-Focused Gradient Colors (4.5:1+ contrast on white) */
   --gradient-dark-red-hsl: 0 85% 38%;   /* Darkest red: Deep crimson */
   --gradient-start-hsl: 0 75% 45%;      /* Primary red: Vibrant red */
-  --gradient-pink-hsl: 350 65% 50%;     /* Pink-red: Warm transition */  
+  --gradient-pink-hsl: 350 65% 50%;     /* Pink-red: Warm transition */
   --gradient-magenta-hsl: 330 60% 52%;  /* Magenta-pink: Softer end */
 
   /* Fallback uses the primary red */
@@ -92,6 +92,10 @@
   --community: 258 56% 44%;
 
   --community-foreground: 0 0% 100%;
+
+  /* Tertiary CTA: Purple - RGB(95, 61, 182) */
+  --tertiary: 258 47% 46%;
+  --tertiary-foreground: 0 0% 100%;
 
   /* Community: Deep Indigo #2e294e */
   --indigo: 249 29% 24%;
@@ -179,6 +183,7 @@
      Button Pattern:
      - Primary: Red (--primary) for main CTAs
      - Secondary: Contextual colors for supporting actions
+     - Tertiary: Purple (--tertiary) for less prominent CTAs
      - All buttons use hover-elevate and active-elevate-2
 
      Badge Pattern:
@@ -234,6 +239,10 @@
   /* Community color borders */
   --community-border: hsl(var(--community));
   --community-border: hsl(from hsl(var(--community)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  /* Tertiary CTA color borders */
+  --tertiary-border: hsl(var(--tertiary));
+  --tertiary-border: hsl(from hsl(var(--tertiary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 
   --indigo-border: hsl(var(--indigo));
   --indigo-border: hsl(from hsl(var(--indigo)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
@@ -302,6 +311,10 @@
   --community: 258 56% 44%;
 
   --community-foreground: 0 0% 100%;
+
+  /* Tertiary CTA: Purple - RGB(95, 61, 182) for dark mode */
+  --tertiary: 258 47% 46%;
+  --tertiary-foreground: 0 0% 100%;
 
   /* Community: Deep Indigo - good contrast maintained */
   --indigo: 249 40% 45%;
@@ -403,6 +416,10 @@
   /* Community color borders */
   --community-border: hsl(var(--community));
   --community-border: hsl(from hsl(var(--community)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  /* Tertiary CTA color borders */
+  --tertiary-border: hsl(var(--tertiary));
+  --tertiary-border: hsl(from hsl(var(--tertiary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 
   --indigo-border: hsl(var(--indigo));
   --indigo-border: hsl(from hsl(var(--indigo)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
@@ -745,7 +762,7 @@
      ================================================ */
 
   .light-depth {
-    box-shadow: 
+    box-shadow:
       /* Fill light - inner subtle gradient */
       inset 0 1px 1px -1px hsla(0, 0%, 100%, calc(0.5 * var(--shadow-intensity))),
       /* Ambient shadow - soft overall */
@@ -792,7 +809,7 @@
   html.performance-tier-2 .light-grid-iso,
   html.performance-tier-3 .light-grid-iso {
     display: block;
-    background-image: 
+    background-image:
       linear-gradient(30deg, hsla(var(--border), 0.3) 1px, transparent 1px),
       linear-gradient(-30deg, hsla(var(--border), 0.3) 1px, transparent 1px);
     background-size: 40px 69.28px; /* Perfect isometric ratio */
@@ -806,7 +823,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: 
+    background:
       radial-gradient(
         ellipse at 20% 30%,
         hsla(var(--gradient-start-hsl), 0.05) 0%,
@@ -858,7 +875,7 @@
 .gradient-mesh-layer {
   position: absolute;
   inset: 0;
-  background: 
+  background:
     radial-gradient(
       ellipse 800px 400px at 20% 30%,
       rgba(239, 35, 60, 0.35),
@@ -887,7 +904,7 @@
 .gradient-mesh-layer-secondary {
   position: absolute;
   inset: 0;
-  background: 
+  background:
     linear-gradient(
       135deg,
       rgba(239, 35, 60, 0.25) 0%,
@@ -909,7 +926,7 @@
   position: absolute;
   inset: 0;
   opacity: 0.6;
-  background: 
+  background:
     radial-gradient(
       circle at 25% 25%,
       rgba(239, 35, 60, 0.15) 0%,
@@ -1024,11 +1041,11 @@
 
 /* Pulse glow animation for orbital badges */
 @keyframes pulse-glow {
-  0%, 100% { 
+  0%, 100% {
     opacity: 1;
     filter: brightness(1);
   }
-  50% { 
+  50% {
     opacity: 0.9;
     filter: brightness(1.2);
   }
@@ -1043,7 +1060,9 @@
   position: relative;
   background-image: linear-gradient(180deg, hsl(348, 83%, 47%) 0%, hsl(0, 10%, 20%) 90%);
   background-repeat: no-repeat;
-  box-shadow: 
+
+  /* Worn ink effect - enhanced shadows */
+  box-shadow:
     inset 0 1px 2px rgba(0, 0, 0, 0.08),
     inset 0 -1px 1px rgba(255, 255, 255, 0.1),
     0 1px 2px rgba(0, 0, 0, 0.05);
@@ -1068,14 +1087,14 @@
   }
   50% {
     opacity: 1;
-    text-shadow: 
+    text-shadow:
       0 0 20px rgba(212, 17, 17, 0.6),
       0 0 30px rgba(212, 17, 17, 0.4),
       0 0 40px rgba(212, 17, 17, 0.3);
   }
   100% {
     opacity: 1;
-    text-shadow: 
+    text-shadow:
       0 0 15px rgba(212, 17, 17, 0.5),
       0 0 25px rgba(212, 17, 17, 0.3),
       0 0 35px rgba(212, 17, 17, 0.2);
@@ -1119,8 +1138,8 @@
   );
   background-size: 200% 200%;
   animation: border-glow-rotate 3s linear infinite;
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -1267,7 +1286,7 @@ html:not(.dark) .shadcn-card {
 
 /* 3. Prismatic Glass Effects - Rainbow shadow halos (light mode only) */
 html:not(.dark) .shadcn-card {
-  box-shadow: 
+  box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.08),
     0 0 0 1px rgba(0, 0, 0, 0.02),
     /* Prismatic chromatic aberration */
@@ -1308,7 +1327,7 @@ html:not(.dark) .shadcn-card:hover::after {
 /* Prismatic button effects - target actual button elements only */
 html:not(.dark) button.inline-flex.items-center.justify-center,
 html:not(.dark) a.inline-flex.items-center.justify-center[role="button"] {
-  box-shadow: 
+  box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.05),
     0.5px 0.5px 0 rgba(255, 0, 255, 0.04),
     -0.5px 0.5px 0 rgba(0, 255, 255, 0.03);
@@ -1320,7 +1339,7 @@ html:not(.dark) .badge-texture {
   background-repeat: no-repeat;
 
   /* Worn ink effect - enhanced shadows */
-  box-shadow: 
+  box-shadow:
     inset 0 1px 3px rgba(0, 0, 0, 0.14),
     inset 0 -1px 2px rgba(255, 255, 255, 0.18),
     0 2px 5px rgba(0, 0, 0, 0.10),
@@ -1333,7 +1352,7 @@ html:not(.dark) .badge-texture {
 
 html:not(.dark) .badge-texture:hover {
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     inset 0 1px 3px rgba(0, 0, 0, 0.14),
     inset 0 -1px 2px rgba(255, 255, 255, 0.18),
     0 6px 12px rgba(0, 0, 0, 0.14),
@@ -1604,18 +1623,18 @@ html:not(.dark) .sun-ray:nth-child(3) {
    ================================================ */
 
 /* Scoped transition selectors for better performance */
-body, 
-header, 
-main, 
-footer, 
+body,
+header,
+main,
+footer,
 nav,
-.card, 
-.btn, 
+.card,
+.btn,
 .sidebar,
 .badge,
 .input,
 [data-theme-aware] {
-  transition: 
+  transition:
     background-color var(--theme-transition-duration) ease-out,
     border-color var(--theme-transition-duration) ease-out,
     color var(--theme-transition-duration) ease-out,
@@ -1646,10 +1665,10 @@ nav,
 
 /* Data shimmer for numbers */
 @keyframes data-shimmer {
-  0% { 
+  0% {
     background-position: -200% center;
   }
-  100% { 
+  100% {
     background-position: 200% center;
   }
 }
