@@ -181,25 +181,28 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   // Orbital rotation animation - slow, cinematic rotation during video
   useEffect(() => {
     if (prefersReducedMotion()) return;
+    
+    // Only start rotation once video has started playing
+    if (!hasPlayed) return;
 
-    const rotationObj = { value: 0 };
+    const rotationObj = { value: orbitRotation };
 
     // Much slower rotation: 120 seconds per full rotation (0.5 RPM)
     // This creates a gentle, sophisticated movement
     orbitAnimationRef.current = gsap.to(rotationObj, {
-      value: 360,
+      value: orbitRotation + 360,
       duration: 120,
       ease: "none",
       repeat: -1,
       onUpdate: () => {
-        setOrbitRotation(rotationObj.value);
+        setOrbitRotation(rotationObj.value % 360);
       }
     });
 
     return () => {
       orbitAnimationRef.current?.kill();
     };
-  }, []);
+  }, [hasPlayed]);
 
   // Handle video end and start deceleration
   useEffect(() => {
@@ -285,13 +288,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     const PAUSE_DURATION = 4000;
     const TOTAL_CYCLE = PRE_PULSE_DURATION + ROTATION_DURATION + PAUSE_DURATION;
 
-    let currentAnimationIndex = selectedIndex;
-
-    const performTransition = () => {
+    const performTransition = (currentIndex: number) => {
       setIsAnimating(true);
       
-      const nextIndex = (currentAnimationIndex + 1) % powers.length;
-      const currentAngle = powers[currentAnimationIndex].angle;
+      const nextIndex = (currentIndex + 1) % powers.length;
+      const currentAngle = powers[currentIndex].angle;
       const targetAngle = powers[nextIndex].angle;
 
       // Calculate clockwise-only rotation
@@ -309,7 +310,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           setSelectedIndex(nextIndex);
           setPrePulseActive(false);
           setIsAnimating(false);
-          currentAnimationIndex = nextIndex; // Update local index
         }
       });
 
@@ -332,11 +332,19 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       );
     };
 
+    // Track the current index in closure
+    let currentTourIndex = selectedIndex;
+    
+    const runTransition = () => {
+      performTransition(currentTourIndex);
+      currentTourIndex = (currentTourIndex + 1) % powers.length;
+    };
+
     // Initial transition after initial pause (matches subsequent cycles)
-    const initialTimeout = setTimeout(performTransition, PAUSE_DURATION);
+    const initialTimeout = setTimeout(runTransition, PAUSE_DURATION);
 
     // Then continue with interval - full cycle time
-    tourIntervalRef.current = setInterval(performTransition, TOTAL_CYCLE);
+    tourIntervalRef.current = setInterval(runTransition, TOTAL_CYCLE);
 
     return () => {
       clearTimeout(initialTimeout);

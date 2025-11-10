@@ -1046,9 +1046,9 @@
     transform: scale(1) translateZ(0);
     filter: brightness(1);
   }
-  50% {
-    transform: scale(1.12) translateZ(0);
-    filter: brightness(1.25);
+  30% {
+    transform: scale(1.15) translateZ(0);
+    filter: brightness(1.4);
   }
   100% {
     transform: scale(1) translateZ(0);
