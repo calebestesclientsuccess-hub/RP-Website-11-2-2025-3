@@ -422,8 +422,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-5xl md:text-6xl font-bold mb-4">
+        <div className="text-center mb-4">
+          <h2 className="text-5xl md:text-6xl font-bold mb-2">
             <span className="gradient-text gradient-hero">The Fullstack Sales Unit</span>
           </h2>
           <p className="text-2xl md:text-3xl italic max-w-3xl mx-auto">
@@ -434,7 +434,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         {/* Main Container */}
         <div ref={containerRef} className="relative mx-auto" style={{ maxWidth: '900px' }}>
           {/* Orbital Container */}
-          <div className="relative mx-auto h-[550px] md:h-[650px] flex items-center justify-center">
+          <div className="relative mx-auto h-[500px] md:h-[600px] flex items-center justify-center">
 
             {/* Central Video */}
             <div className="relative z-20">
@@ -501,7 +501,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Info Box */}
           {showInfoBox && (
-            <Card className="-mt-6 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
+            <Card className="-mt-16 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
