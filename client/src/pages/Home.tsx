@@ -603,6 +603,11 @@ export default function Home() {
             <HeroROICalculator testIdSuffix="-bottom" />
           </div>
 
+          {/* Internal Hire Cost Calculator Teaser */}
+          <div className="max-w-2xl mx-auto mb-12">
+            <InternalHireCostCalculator />
+          </div>
+
           {/* CTA for Full Calculator */}
           <div className="text-center">
             <Button
