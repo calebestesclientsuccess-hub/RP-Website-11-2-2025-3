@@ -146,9 +146,7 @@ export default function Home() {
                   data-testid="heading-hero"
                 >
                   <div>Your Next Sales Hire Shouldn't Be a Person.</div>
-                  <div className="gradient-text gradient-hero">It Should Be a</div>
-                  <div className="gradient-text gradient-hero">Revenue</div>
-                  <div className="gradient-text gradient-hero">Generation System.</div>
+                  <div className="gradient-text gradient-hero">It Should Be a Revenue Generation System.</div>
                 </motion.h1>
                 <motion.p
                   className="text-lg md:text-xl leading-relaxed"
