@@ -89,7 +89,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           {/* LTV Slider */}
           <div>
             <div className="flex justify-between mb-1.5">
-              <label className="text-xs font-medium">New Client Value</label>
+              <label className="text-xs font-medium">Average LTV</label>
               <span className="text-xs font-mono font-bold text-muted-foreground" data-testid="text-ltv-value">
                 {formatCurrency(ltv[0])}
               </span>
@@ -143,14 +143,14 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           {/* Side by side revenue metrics */}
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
-              <p className="text-xs text-muted-foreground mb-0.5">Additional Monthly Revenue</p>
+              <p className="text-xs text-muted-foreground mb-0.5">New Revenue Booked Per Month</p>
               <p className="text-xl font-bold font-mono" data-testid="text-projected-ltv">
                 {formatCurrency(projectedLTVPerMonth)}
               </p>
             </div>
 
             <div className="bg-primary/10 p-3 rounded-lg border border-primary/30">
-              <p className="text-xs text-muted-foreground mb-0.5">Additional Annual Revenue</p>
+              <p className="text-xs text-muted-foreground mb-0.5">New Revenue Booked Per Year</p>
               <p className="text-xl font-bold font-mono" data-testid="text-projected-ltv-annual">
                 {formatCurrency(projectedLTVPerYear)}
               </p>

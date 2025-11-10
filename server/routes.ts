@@ -668,7 +668,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       <p>Here's your personalized ROI analysis for a guaranteed sales engine:</p>
       
       <div class="metric">
-        <div class="metric-label">Your Average 24-Month Client LTV</div>
+        <div class="metric-label">Average LTV</div>
         <div class="metric-value">${formatCurrency(ltv)}</div>
       </div>
       

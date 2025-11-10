@@ -302,12 +302,12 @@ export default function ROICalculator() {
                     <div className="p-4 bg-muted/30 rounded-lg space-y-2 text-sm">
                       <p className="font-semibold">Report will include:</p>
                       <ul className="space-y-1 text-muted-foreground">
-                        <li>• LTV: {formatCurrency(ltv[0])}</li>
+                        <li>• Average LTV: {formatCurrency(ltv[0])}</li>
                         <li>• Close Rate: {closeRate[0]}%</li>
                         <li>• Selected Engine: {config.name}</li>
                         <li>• Monthly ROI: {monthlyROI > 0 ? `${formatNumber(monthlyROI, 0)}x` : '0x'}</li>
-                        <li>• New Revenue/Month: {projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}</li>
-                        <li>• New Revenue/Year: {projectedLTVPerYear > 0 ? formatCurrency(projectedLTVPerYear) : '$0'}</li>
+                        <li>• New Revenue Booked Per Month: {projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}</li>
+                        <li>• New Revenue Booked Per Year: {projectedLTVPerYear > 0 ? formatCurrency(projectedLTVPerYear) : '$0'}</li>
                       </ul>
                     </div>
                   </div>
@@ -349,7 +349,18 @@ export default function ROICalculator() {
                   {/* Input 1: LTV */}
                   <div>
                     <div className="flex justify-between mb-3">
-                      <Label className="text-base font-semibold">New Client Value</Label>
+                      <div className="flex items-center gap-2">
+                        <Label className="text-base font-semibold">Average LTV</Label>
+                        <span className="group relative">
+                          <span className="cursor-help text-muted-foreground">(?)</span>
+                          <div className="absolute left-0 top-6 hidden group-hover:block w-72 p-3 bg-popover border border-border rounded-lg shadow-lg z-10">
+                            <p className="font-semibold text-sm mb-1">Based on a $5K/mo Client</p>
+                            <p className="text-xs text-muted-foreground">
+                              Our default LTV of $120,000 imagines an average client value of $5,000 MRR over a 24-month lifetime. Adjust the slider to match your company's average LTV.
+                            </p>
+                          </div>
+                        </span>
+                      </div>
                       <span className="text-lg font-mono font-bold gradient-text-purple" data-testid="text-ltv-value">
                         {formatCurrency(ltv[0])}
                       </span>
@@ -516,9 +527,9 @@ export default function ROICalculator() {
                   <div className="p-4 bg-background rounded-lg border border-border">
                     <p className="text-sm text-muted-foreground mb-1">Monthly Guaranteed SQOs</p>
                     <p className="text-2xl font-bold font-mono gradient-text-purple" data-testid="text-monthly-sqos">
-                      {monthlySQOs > 0 ? formatNumber(monthlySQOs, 1) : 'None'}
+                      {config.guaranteedSQOs > 0 ? formatNumber(config.guaranteedSQOs, 1) : 'None'}
                     </p>
-                    {monthlySQOs === 0 && (
+                    {config.guaranteedSQOs === 0 && (
                       <p className="text-xs text-destructive mt-1 flex items-center gap-1">
                         <XCircle className="w-3 h-3" />
                         No guarantee with internal hire
