@@ -285,14 +285,13 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     const PAUSE_DURATION = 4000;
     const TOTAL_CYCLE = PRE_PULSE_DURATION + ROTATION_DURATION + PAUSE_DURATION;
 
-    const performTransition = () => {
-      if (isAnimating) return; // Prevent overlapping animations
+    let currentAnimationIndex = selectedIndex;
 
+    const performTransition = () => {
       setIsAnimating(true);
       
-      const currentIndex = selectedIndex;
-      const nextIndex = (currentIndex + 1) % powers.length;
-      const currentAngle = powers[currentIndex].angle;
+      const nextIndex = (currentAnimationIndex + 1) % powers.length;
+      const currentAngle = powers[currentAnimationIndex].angle;
       const targetAngle = powers[nextIndex].angle;
 
       // Calculate clockwise-only rotation
@@ -302,17 +301,15 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       // Start pre-pulse
       setPrePulseActive(true);
 
-      // End pre-pulse after full duration
-      setTimeout(() => {
-        setPrePulseActive(false);
-      }, PRE_PULSE_DURATION);
-
       // Create single smooth animation timeline
       const timeline = gsap.timeline({
         onComplete: () => {
+          // Update state synchronously
           setOrbitRotation(targetAngle);
-          setSelectedIndex(nextIndex); // ✓ Update AFTER rotation completes
+          setSelectedIndex(nextIndex);
+          setPrePulseActive(false);
           setIsAnimating(false);
+          currentAnimationIndex = nextIndex; // Update local index
         }
       });
 
@@ -348,8 +345,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         tourIntervalRef.current = null;
       }
       gsap.killTweensOf({});
+      setIsAnimating(false);
+      setPrePulseActive(false);
     };
-  }, [playbackMode, isAnimating]);
+  }, [playbackMode]);
 
   // Manual play handler for when autoplay is blocked
   const handleManualPlay = () => {
