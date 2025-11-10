@@ -252,12 +252,12 @@ export default function Home() {
                     <Users className="w-8 h-8 text-primary" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">The Fullstack Sales Unit</h3>
+                <h3 className="text-2xl font-bold mb-4">Your Fully Loaded Sales Team</h3>
                 <p className="leading-relaxed italic text-lg mb-4">
-                  Elite Sales Talent, equipped and trained by RP Architects.
+                  A dedicated, managed, and battle-tested team of SDRs, not a single Lone Wolf rep.
                 </p>
                 <p className="leading-relaxed">
-                  A dedicated, managed, and battle-tested team of SDRs, not a single 'Lone Wolf' rep.
+                  Elite Sales Talent, equipped and trained by our Architects. The majority of our talent pipeline come with 5 - 15 years of experience at Y-Combinator companies. They're all extensively vetted for core skills, such as university level writing, reading, and arithmetic, and then taken through a rigorous set of sales interviews. Once selected most salespeople are trained by RP Architects for 4-6 weeks before being assigned to a campaign.
                 </p>
               </Card>
             </motion.div>
@@ -301,7 +301,7 @@ export default function Home() {
                   Our AI-Powered Engine, customized to fuel your business.
                 </p>
                 <p className="leading-relaxed">
-                  The AI-powered tech stack that finds and qualifies buyers before they're 'in-market'.
+                  We combine Gemini with both code custom-written for you, and our proprietary AI and automation templates in Clay and N8N. Prompt Engineers then construct pipelines for contents, email, summaries, AI-powered automations and more. Like the Playbook, it begins as hypothesis. But once we see what works, we document it. This is also 100% your IP. You will own the blueprint, and we'll help you use it to build your own when you're ready.
                 </p>
               </Card>
             </motion.div>
