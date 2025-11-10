@@ -89,7 +89,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
           {/* LTV Slider */}
           <div>
             <div className="flex justify-between mb-1.5">
-              <label className="text-xs font-medium">2-Year Client Value</label>
+              <label className="text-xs font-medium">New Client Value</label>
               <span className="text-xs font-mono font-bold text-muted-foreground" data-testid="text-ltv-value">
                 {formatCurrency(ltv[0])}
               </span>
