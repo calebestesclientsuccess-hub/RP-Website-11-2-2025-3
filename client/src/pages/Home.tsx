@@ -143,7 +143,7 @@ export default function Home() {
                   <span className="gradient-text gradient-hero">It Should Be a Revenue Generation System.</span>
                 </motion.h1>
                 <motion.p 
-                  className="text-lg md:text-xl text-foreground leading-relaxed"
+                  className="text-lg md:text-xl leading-relaxed"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
@@ -193,10 +193,10 @@ export default function Home() {
               <span className="gradient-text gradient-hero">You Don't Have to Make</span>
             </h2>
             <div className="space-y-4">
-              <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-trap-description">
+              <p className="text-xl leading-relaxed" data-testid="text-trap-description">
                 Founders are forced to choose between two bad options: the slow, expensive '<span className="gradient-text gradient-hero">$198,000</span> Mistake' of a failed internal hire, or the 'Outsourcing Suicide Mission' that gives you zero IP and zero control.
               </p>
-              <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-trap-disease">
+              <p className="text-xl leading-relaxed" data-testid="text-trap-disease">
                 Both are symptoms of the same disease: solving a system problem with a headcount solution.
               </p>
             </div>
@@ -247,8 +247,8 @@ export default function Home() {
                     <Users className="w-8 h-8 text-primary" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Elite Talent <span className="text-muted-foreground">(The "Fully Loaded BDR Pod")</span></h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <h3 className="text-2xl font-bold mb-4">Elite Talent <span>(The "Fully Loaded BDR Pod")</span></h3>
+                <p className="leading-relaxed">
                   A dedicated, managed, and battle-tested team of BDRs, not a single 'Lone Wolf' rep.
                 </p>
               </Card>
@@ -266,8 +266,8 @@ export default function Home() {
                     <Target className="w-8 h-8 text-primary" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Strategic Framework <span className="text-muted-foreground">(The "Impact Selling OS")</span></h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <h3 className="text-2xl font-bold mb-4">Strategic Framework <span>(The "Impact Selling OS")</span></h3>
+                <p className="leading-relaxed">
                   The operating system and strategic playbook that makes talent effective. You own 100% of the IP.
                 </p>
               </Card>
@@ -285,8 +285,8 @@ export default function Home() {
                     <Zap className="w-8 h-8 text-primary" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">The Signal Factory <span className="text-muted-foreground">(Your AI-Powered Engine)</span></h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <h3 className="text-2xl font-bold mb-4">The Signal Factory <span>(Your AI-Powered Engine)</span></h3>
+                <p className="leading-relaxed">
                   The AI-powered tech stack that finds and qualifies buyers before they're 'in-market'.
                 </p>
               </Card>
@@ -321,7 +321,7 @@ export default function Home() {
               Proven Results.<br />
               <span className="gradient-text gradient-hero">No Black Box.</span>
             </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-proof-description">
+            <p className="text-xl leading-relaxed" data-testid="text-proof-description">
               The GTM Engine model is built on transparency and performance.
             </p>
           </div>
@@ -337,7 +337,7 @@ export default function Home() {
               <Card className="p-8 text-center light-depth hover-elevate transition-all h-full" data-testid="metric-ramp">
                 <h3 className="text-6xl font-bold gradient-text gradient-hero mb-4">3-5x</h3>
                 <h4 className="text-2xl font-bold mb-3">Faster Ramp</h4>
-                <p className="text-muted-foreground">Pipeline productive in <span className="gradient-text gradient-hero">14 days</span>, not <span className="gradient-text gradient-hero">6 months</span>.</p>
+                <p>Pipeline productive in <span className="gradient-text gradient-hero">14 days</span>, not <span className="gradient-text gradient-hero">6 months</span>.</p>
               </Card>
             </motion.div>
 
@@ -350,7 +350,7 @@ export default function Home() {
               <Card className="p-8 text-center light-depth hover-elevate transition-all h-full" data-testid="metric-savings">
                 <h3 className="text-6xl font-bold gradient-text gradient-hero mb-4">60%+</h3>
                 <h4 className="text-2xl font-bold mb-3">Cost Savings</h4>
-                <p className="text-muted-foreground">vs. the <span className="gradient-text gradient-hero">$198k+</span> total cost of a failed internal hire.</p>
+                <p>vs. the <span className="gradient-text gradient-hero">$198k+</span> total cost of a failed internal hire.</p>
               </Card>
             </motion.div>
 
@@ -363,7 +363,7 @@ export default function Home() {
               <Card className="p-8 text-center light-depth hover-elevate transition-all h-full" data-testid="metric-pipeline">
                 <h3 className="text-6xl font-bold gradient-text gradient-hero mb-4">$2M</h3>
                 <h4 className="text-2xl font-bold mb-3">Pipeline Asset</h4>
-                <p className="text-muted-foreground">Teaser from 'Antidote' case study.</p>
+                <p>Teaser from 'Antidote' case study.</p>
               </Card>
             </motion.div>
           </div>
@@ -398,7 +398,7 @@ export default function Home() {
               Stop Guessing.<br />
               <span className="gradient-text gradient-hero">Calculate Your True ROI.</span>
             </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-roi-calculator-description">
+            <p className="text-xl leading-relaxed" data-testid="text-roi-calculator-description">
               A single internal hire costs over <span className="gradient-text gradient-hero">$198,000</span> when you factor in salary, benefits, management tax, and hiring drag. Use our calculator to see the true cost of the 'Lone Wolf' model compared to deploying a GTM Engine.
             </p>
           </div>
@@ -435,7 +435,7 @@ export default function Home() {
             The Blueprint is Clear.<br />
             <span className="gradient-text gradient-hero">Schedule Your GTM Audit.</span>
           </h2>
-          <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-final-cta-description">
+          <p className="text-xl leading-relaxed" data-testid="text-final-cta-description">
             Stop the hiring/firing cycle. Let's audit your GTM architecture and design a system that scales.
           </p>
           <Button 
@@ -452,7 +452,7 @@ export default function Home() {
             <h3 className="text-2xl font-bold mb-4" data-testid="heading-secondary-cta">
               Not ready for an audit?
             </h3>
-            <p className="text-lg text-muted-foreground mb-6" data-testid="text-secondary-cta-description">
+            <p className="text-lg mb-6" data-testid="text-secondary-cta-description">
               Take our 3-minute GTM Readiness Assessment to diagnose your current system's bottlenecks.
             </p>
             <Link href="/assessment">
