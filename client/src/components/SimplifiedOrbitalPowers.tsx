@@ -6,7 +6,6 @@ import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRig
 import { gsap } from 'gsap';
 import { prefersReducedMotion } from "@/lib/animationConfig";
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
 
 
 interface Power {
@@ -163,7 +162,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const badgeRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const infoBoxRef = useRef<HTMLDivElement>(null); // Ref for the info box
   const [selectedIndex, setSelectedIndex] = useState(2);
   const [showInfoBox, setShowInfoBox] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
@@ -227,7 +225,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       const currentRotation = orbitRotation % 360;
       let nearestPowerIndex = 0;
       let minDistance = 360;
-
+      
       powers.forEach((power, idx) => {
         const totalAngle = (power.angle + currentRotation) % 360;
         const distance = Math.abs(totalAngle - 180);
@@ -308,7 +306,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       setIsAnimating(true);
 
       const nextIndex = (currentIndex + 1) % powers.length;
-
+      
       // Calculate rotation needed to move to next power
       // We need to rotate 60° clockwise (one power position)
       const currentRotation = orbitRotation;
@@ -539,24 +537,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     }
   };
 
-  // Determine which power is at the selected position (180 degrees = leftmost)
-  const selectedPower = useMemo(() => {
-    // The selected position is at 180 degrees (leftmost)
-    const normalizedRotation = ((orbitRotation % 360) + 360) % 360;
-
-    // Each power is separated by 360/6 = 60 degrees
-    const degreesPerPower = 360 / powers.length;
-
-    // Calculate which power index should be at 180 degrees
-    // When rotation is 0, power at index 0 is at 0 degrees
-    // To find which power is at 180 degrees, we calculate:
-    // (180 - normalizedRotation) / degreesPerPower
-    const rotationOffset = normalizedRotation / degreesPerPower;
-    const indexAt180 = Math.round((180 / degreesPerPower - rotationOffset + powers.length * 10) % powers.length);
-
-    return powers[indexAt180];
-  }, [orbitRotation, powers]);
-
+  const selectedPower = powers[selectedIndex];
 
   // Dummy variable for videoEl as it's not directly used in the provided original snippet's HTML structure
   // In a real scenario, this would be the actual video element or its container.
@@ -665,14 +646,14 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 // Determine if this badge is at the selected position (180° = left)
                 const normalizedAngle = totalAngle % 360;
                 const isAtSelectedPosition = Math.abs(normalizedAngle - 180) < 5; // Within 5° of left position
-
+                
                 // Determine if this is the NEXT badge (the one about to be selected)
                 const nextIndex = (selectedIndex + 1) % powers.length;
                 const isNextBadge = index === nextIndex;
-
+                
                 // Show pre-pulse only on the next badge that's about to rotate to selected position
                 const showPrePulse = isNextBadge && prePulseActive && isAnimating;
-
+                
                 // Show sustained pulse only on currently selected badge at left position
                 const showSustainedPulse = isAtSelectedPosition && !isAnimating;
 
@@ -704,14 +685,14 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                         )}
                         style={{
                           boxShadow: isAtSelectedPosition
-                            ? `0 0 30px ${power.glowColor}, 0 0 60px ${power.glowColor}, inset 0 0 20px ${power.glowColor}20`
-                            : undefined,
+                            ? `0 0 30px ${power.glowColor}, 0 0 60px ${power.glowColor}`
+                            : `0 0 20px ${power.glowColor}`,
                           animation: showPrePulse
                             ? 'orbital-badge-pre-pulse 1s cubic-bezier(0.4, 0, 0.2, 1)'
-                            : showSustainedPulse && selectedPower.id === power.id
+                            : showSustainedPulse
                             ? 'orbital-badge-pulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite'
                             : 'none',
-                          willChange: (showPrePulse || (showSustainedPulse && selectedPower.id === power.id)) ? 'transform, filter' : 'auto',
+                          willChange: (showPrePulse || showSustainedPulse) ? 'transform, filter' : 'auto',
                           backfaceVisibility: 'hidden',
                           WebkitBackfaceVisibility: 'hidden'
                         }}
