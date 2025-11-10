@@ -728,8 +728,9 @@
   html:not(.dark) .gradient-hero {
     background: linear-gradient(
       180deg,
-      #FF2A00 0%,
-      #FF2A00 30%,
+      #DC143C 0%,
+      #DC143C 60%,
+      #8B0A50 85%,
       #2D1B69 100%
     );
     -webkit-background-clip: text;
@@ -753,8 +754,9 @@
   html.dark .gradient-hero {
     background: linear-gradient(
       180deg,
-      #FF2A00 0%,
-      #FF2A00 30%,
+      #DC143C 0%,
+      #DC143C 60%,
+      #8B0A50 85%,
       #2D1B69 100%
     );
     -webkit-background-clip: text;
