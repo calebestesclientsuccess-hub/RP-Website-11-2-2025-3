@@ -1927,3 +1927,34 @@ html.performance-tier-3 .animate-light-scan {
   background-color: hsl(var(--primary));
   pointer-events: none;
 }
+
+/* Add any additional custom styles here */
+
+/* Expandable card styles */
+.expandable-card {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  position: relative;
+}
+
+.expandable-card:hover {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.expandable-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1.5em;
+  background: linear-gradient(to bottom, transparent, var(--card));
+  pointer-events: none;
+}
+
+.expandable-card:hover::after {
+  display: none;
+}

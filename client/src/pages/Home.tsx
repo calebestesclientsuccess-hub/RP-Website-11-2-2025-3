@@ -26,6 +26,15 @@ export default function Home() {
   const [hasPlayed, setHasPlayed] = useState(false);
   const scrollAwayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollAwayStartRef = useRef<number | null>(null);
+  const [expandedCards, setExpandedCards] = useState<{ [key: string]: boolean }>({
+    talent: false,
+    playbook: false,
+    signal: false,
+  });
+
+  const toggleCardExpansion = (cardKey: string) => {
+    setExpandedCards(prev => ({ ...prev, [cardKey]: !prev[cardKey] }));
+  };
 
   // Auto-scroll page down slightly on initial load
   useEffect(() => {
@@ -253,12 +262,17 @@ export default function Home() {
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Your Fully Loaded Sales Team</h3>
-                <p className="leading-relaxed italic text-lg mb-4">
-                  A dedicated, managed, and battle-tested team of SDRs, not a single Lone Wolf rep.
+                <p className="leading-relaxed italic text-xs font-semibold mb-4">
+                  A team of well trained and equipped SDRs, not a single Lone Wolf rep.
                 </p>
-                <p className="leading-relaxed">
+                <div 
+                  className={`leading-relaxed cursor-pointer transition-all duration-300 ${
+                    expandedCards.talent ? '' : 'expandable-card'
+                  }`}
+                  onClick={() => toggleCardExpansion('talent')}
+                >
                   Elite Sales Talent, equipped and trained by our Architects. The majority of our talent pipeline come with 5 - 15 years of experience at Y-Combinator companies. They're all extensively vetted for core skills, such as university level writing, reading, and arithmetic, and then taken through a rigorous set of sales interviews. Once selected most salespeople are trained by RP Architects for 4-6 weeks before being assigned to a campaign.
-                </p>
+                </div>
               </Card>
             </motion.div>
 
@@ -275,12 +289,17 @@ export default function Home() {
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Your Playbook</h3>
-                <p className="leading-relaxed italic text-lg mb-4">
-                  Our strategic framework, fully customized to your ICP, value proposition, and competitor landscape.
+                <p className="leading-relaxed italic text-xs font-semibold mb-4">
+                  Our strategic framework, fully customized to your business.
                 </p>
-                <p className="leading-relaxed">
+                <div 
+                  className={`leading-relaxed cursor-pointer transition-all duration-300 ${
+                    expandedCards.playbook ? '' : 'expandable-card'
+                  }`}
+                  onClick={() => toggleCardExpansion('playbook')}
+                >
                   Our salespeople study the playbook for days before they pick up the phone, but that's just the beginning. The playbook is continuously improved, and ultimately, you walk away with proof of product-market-fit -- with knowledge of exactly what value propositions, what scripts and collateral and emails will win new business. 100% your IP.
-                </p>
+                </div>
               </Card>
             </motion.div>
 
@@ -296,13 +315,18 @@ export default function Home() {
                     <Zap className="w-8 h-8 text-primary" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">The Signal Factory</h3>
-                <p className="leading-relaxed italic text-lg mb-4">
+                <h3 className="text-2xl font-bold mb-4">Your Signal Factory</h3>
+                <p className="leading-relaxed italic text-xs font-semibold mb-4">
                   Our AI-Powered Engine, customized to fuel your business.
                 </p>
-                <p className="leading-relaxed">
+                <div 
+                  className={`leading-relaxed cursor-pointer transition-all duration-300 ${
+                    expandedCards.signal ? '' : 'expandable-card'
+                  }`}
+                  onClick={() => toggleCardExpansion('signal')}
+                >
                   We combine Gemini with both code custom-written for you, and our proprietary AI and automation templates in Clay and N8N. Prompt Engineers then construct pipelines for contents, email, summaries, AI-powered automations and more. Like the Playbook, it begins as hypothesis. But once we see what works, we document it. This is also 100% your IP. You will own the blueprint, and we'll help you use it to build your own when you're ready.
-                </p>
+                </div>
               </Card>
             </motion.div>
           </div>
