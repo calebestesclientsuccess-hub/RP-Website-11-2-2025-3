@@ -226,10 +226,13 @@ export default function Home() {
       {/* Middle Widget Zone 1 */}
       <WidgetZone zone="zone-2" className="my-8" />
 
-      {/* Solution Module - "The System" */}
-      <section className="relative z-10 py-20 px-4 md:px-6 lg:px-8" data-testid="section-solution">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16">
+      {/* Unified Product Showcase - The Fullstack Sales Unit */}
+      <section className="relative z-10 py-32 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-background via-background/95 to-background" data-testid="section-solution">
+        {/* Dramatic background treatment */}
+        <div className="absolute inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent opacity-50" />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-solution">
               Don't Hire a Rep.<br />
               <span className="gradient-text gradient-hero">Deploy an Engine.</span>
@@ -237,7 +240,7 @@ export default function Home() {
           </div>
 
           {/* 3 Core Components */}
-          <div className="grid md:grid-cols-3 gap-8 mb-12 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 mb-20 max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -482,8 +485,13 @@ export default function Home() {
             </motion.div>
           </div>
 
+          {/* Video Showcase - Seamlessly Integrated */}
+          <div className="mt-24">
+            <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
+          </div>
+
           {/* CTA */}
-          <div className="text-center">
+          <div className="text-center mt-16">
             <Button
               size="lg"
               variant="outline"
@@ -498,9 +506,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Your Fullstack Sales Unit - The Product Reveal */}
-      <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
 
       {/* Proof Module - "Social Proof" */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-background">

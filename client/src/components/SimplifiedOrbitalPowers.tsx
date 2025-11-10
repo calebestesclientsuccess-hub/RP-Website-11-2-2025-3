@@ -356,15 +356,15 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         duration="PT2M"
         contentUrl={`https://revenueparty.com${videoSrc}`}
       />
-      <section
+      <div
       ref={sectionRef}
-      className="py-8 px-4 md:px-6 lg:px-8 bg-background transition-all duration-700"
+      className="transition-all duration-700"
       data-testid="section-orbital-powers"
     >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-6">
-          <h2 className="text-5xl md:text-6xl font-bold mb-2">
+        <div className="text-center mb-12">
+          <h2 className="text-5xl md:text-6xl font-bold mb-4">
             <span className="gradient-text gradient-hero">The Fullstack Sales Unit</span>
           </h2>
           <p className="text-2xl md:text-3xl italic max-w-3xl mx-auto">
@@ -554,7 +554,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           )}
         </div>
       </div>
-    </section>
+    </div>
   </>
   );
 }
