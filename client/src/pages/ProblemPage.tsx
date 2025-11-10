@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { WidgetZone } from "@/components/WidgetZone";
+import { InternalHireCostCalculator } from "@/components/InternalHireCostCalculator";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle, DollarSign } from "lucide-react";
@@ -163,6 +164,36 @@ export default function ProblemPage() {
 
         {/* Widget Zone 26 */}
         <WidgetZone zone="zone-26" className="my-8" />
+
+        {/* Internal Hire Cost Calculator Module */}
+        <section className="py-20 px-4 md:px-6 lg:px-8 bg-muted/30">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="mb-12 text-center"
+            >
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-cost-calculator">
+                Calculate the Real Cost<br />
+                <span className="gradient-text gradient-hero">Of Your $198K Mistake</span>
+              </h2>
+              <p className="text-lg leading-relaxed max-w-3xl mx-auto" data-testid="text-calculator-intro">
+                Most founders think they're hiring a "$75K SDR." Here's what they're actually buying:
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <InternalHireCostCalculator />
+            </motion.div>
+          </div>
+        </section>
 
         {/* Trap 2 Module - "The Outsourcing Agency" */}
         <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">

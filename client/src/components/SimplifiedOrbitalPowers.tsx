@@ -18,7 +18,6 @@ interface Power {
   angle: number;
   description: string;
   details: string[];
-  cta: string;
   content: {
     whatItIs: string;
     value: string;
@@ -41,7 +40,6 @@ const powers: Power[] = [
       "Automated personalization engine",
       "Message optimization & A/B testing"
     ],
-    cta: "Explore AI Tools",
     content: {
       whatItIs: "An advanced AI-powered system that automates prospect research, message personalization, and campaign optimization using machine learning algorithms.",
       value: "Increases response rates by 3x through hyper-personalization at scale, saving 15+ hours per week on manual research and writing.",
@@ -62,7 +60,6 @@ const powers: Power[] = [
       "Messaging & positioning strategy",
       "Multi-channel campaign design"
     ],
-    cta: "Meet the Team",
     content: {
       whatItIs: "Senior GTM experts with 10+ years experience designing and executing revenue strategies for B2B SaaS companies from Series A to IPO.",
       value: "Reduces time to product-market fit by 6-12 months. Increases pipeline velocity by 40% through proven frameworks.",
@@ -83,7 +80,6 @@ const powers: Power[] = [
       "Data hygiene & reporting",
       "Process automation & workflows"
     ],
-    cta: "Learn More",
     content: {
       whatItIs: "Complete revenue operations management including CRM optimization, data orchestration, and process automation across all GTM systems.",
       value: "Eliminates 20+ hours/week of manual tasks, improves data accuracy to 99%, and provides real-time performance visibility.",
@@ -104,7 +100,6 @@ const powers: Power[] = [
       "Real-time call coaching",
       "Performance analytics & feedback"
     ],
-    cta: "See Coaching",
     content: {
       whatItIs: "Elite sales coaches who've trained top 1% BDRs at companies like Salesforce, MongoDB, and Snowflake, providing daily 1:1 and group coaching.",
       value: "Accelerates ramp time from 3 months to 3 weeks. Increases meeting conversion rates by 2.5x through proven methodologies.",
@@ -125,7 +120,6 @@ const powers: Power[] = [
       "Intent data & enrichment",
       "Advanced analytics dashboard"
     ],
-    cta: "View Stack",
     content: {
       whatItIs: "Pre-integrated stack of 15+ enterprise tools including Outreach, ZoomInfo, 6sense, Gong, and custom automation platforms.",
       value: "Saves $200,000+ in annual tool costs through volume licensing. Eliminates 3-month implementation timeline.",
@@ -146,7 +140,6 @@ const powers: Power[] = [
       "Gamified performance tracking",
       "Team challenges & rewards"
     ],
-    cta: "Join Community",
     content: {
       whatItIs: "Private community of 500+ elite BDRs sharing tactics, templates, and strategies with gamified challenges and monthly competitions.",
       value: "Increases team performance by 35% through peer learning. Reduces turnover by 50% through engagement and culture.",
@@ -551,10 +544,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                     <p className="text-sm text-muted-foreground">{selectedPower.content.inHouseCost}</p>
                   </div>
                 </div>
-
-                <Button variant="default" className="w-full" data-testid={`button-cta-${selectedPower.id}`}>
-                  {selectedPower.cta}
-                </Button>
               </div>
             </Card>
           )}
