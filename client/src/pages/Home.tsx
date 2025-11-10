@@ -169,8 +169,8 @@ export default function Home() {
                 </Button>
                 <Button 
                   size="lg" 
-                  variant="outline"
-                  className="text-lg px-8 py-6" 
+                  variant="secondary"
+                  className="secondary-cta text-lg px-8 py-6" 
                   data-testid="button-hero-take-assessment"
                   asChild
                 >
