@@ -123,7 +123,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
-                  className="mb-4"
+                  className="-mb-2"
                 >
                   <Badge 
                     className="badge-texture bg-community text-white border-community text-sm px-4 py-1.5"
