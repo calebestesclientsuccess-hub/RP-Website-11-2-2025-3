@@ -232,10 +232,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       // Decelerate to the nearest position over 4 seconds with ultra-smooth easing
       let targetRotation = nearestPowerAngle;
 
-      // Calculate shortest path
+      // Calculate clockwise-only rotation (never counter-clockwise)
       let rotationDiff = targetRotation - currentRotation;
-      if (rotationDiff > 180) rotationDiff -= 360;
-      if (rotationDiff < -180) rotationDiff += 360;
+      if (rotationDiff < 0) rotationDiff += 360; // Always move clockwise
 
       gsap.to({ value: 0 }, {
         value: 1,
@@ -290,55 +289,54 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       if (isAnimating) return; // Prevent overlapping animations
 
       setIsAnimating(true);
-      setSelectedIndex(prev => {
-        const nextIndex = (prev + 1) % powers.length;
-        const currentAngle = powers[prev].angle;
-        const targetAngle = powers[nextIndex].angle;
+      
+      const currentIndex = selectedIndex;
+      const nextIndex = (currentIndex + 1) % powers.length;
+      const currentAngle = powers[currentIndex].angle;
+      const targetAngle = powers[nextIndex].angle;
 
-        // Calculate clockwise-only rotation
-        let angleDiff = targetAngle - currentAngle;
-        if (angleDiff < 0) angleDiff += 360; // Always move clockwise (positive direction)
+      // Calculate clockwise-only rotation
+      let angleDiff = targetAngle - currentAngle;
+      if (angleDiff < 0) angleDiff += 360; // Always move clockwise (positive direction)
 
-        // Start pre-pulse
-        setPrePulseActive(true);
+      // Start pre-pulse
+      setPrePulseActive(true);
 
-        // End pre-pulse after full duration
-        setTimeout(() => {
-          setPrePulseActive(false);
-        }, PRE_PULSE_DURATION);
+      // End pre-pulse after full duration
+      setTimeout(() => {
+        setPrePulseActive(false);
+      }, PRE_PULSE_DURATION);
 
-        // Create single smooth animation timeline
-        const timeline = gsap.timeline({
-          onComplete: () => {
-            setOrbitRotation(targetAngle);
-            setIsAnimating(false);
-          }
-        });
-
-        // Wait for pre-pulse to complete
-        timeline.to({}, { duration: PRE_PULSE_DURATION / 1000 });
-
-        // Then smoothly rotate with cinematic easing
-        timeline.to(
-          { value: 0 },
-          {
-            value: 1,
-            duration: ROTATION_DURATION / 1000,
-            ease: "power2.inOut",
-            onUpdate: function() {
-              const progress = this.progress();
-              const newRotation = (currentAngle + angleDiff * progress) % 360;
-              setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
-            }
-          }
-        );
-
-        return nextIndex;
+      // Create single smooth animation timeline
+      const timeline = gsap.timeline({
+        onComplete: () => {
+          setOrbitRotation(targetAngle);
+          setSelectedIndex(nextIndex); // ✓ Update AFTER rotation completes
+          setIsAnimating(false);
+        }
       });
+
+      // Wait for pre-pulse to complete
+      timeline.to({}, { duration: PRE_PULSE_DURATION / 1000 });
+
+      // Then smoothly rotate with cinematic easing
+      timeline.to(
+        { value: 0 },
+        {
+          value: 1,
+          duration: ROTATION_DURATION / 1000,
+          ease: "power2.inOut",
+          onUpdate: function() {
+            const progress = this.progress();
+            const newRotation = (currentAngle + angleDiff * progress) % 360;
+            setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
+          }
+        }
+      );
     };
 
-    // Initial transition after a brief pause
-    const initialTimeout = setTimeout(performTransition, 1000);
+    // Initial transition after initial pause (matches subsequent cycles)
+    const initialTimeout = setTimeout(performTransition, PAUSE_DURATION);
 
     // Then continue with interval - full cycle time
     tourIntervalRef.current = setInterval(performTransition, TOTAL_CYCLE);
