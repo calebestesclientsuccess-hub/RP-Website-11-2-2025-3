@@ -29,10 +29,10 @@ const powers: Power[] = [
   {
     id: "ai-architect",
     title: "AI Architect",
-    icon: <Brain className="w-6 h-6" />,
+    icon: <Brain className="w-6 h-6" style={{ color: '#5E4DB8' }} />,
     color: "text-violet-blue",
-    glowColor: "rgba(100, 80, 200, 0.4)",
-    bgColor: "100, 80, 200",
+    glowColor: "rgba(94, 77, 184, 0.4)",
+    bgColor: "94, 77, 184",
     angle: 0,
     description: "Intelligent systems that research, personalize, and optimize at scale.",
     details: [
@@ -49,7 +49,7 @@ const powers: Power[] = [
   {
     id: "gtm-strategist",
     title: "GTM Strategist",
-    icon: <Target className="w-6 h-6" />,
+    icon: <Target className="w-6 h-6" style={{ color: '#ef233c' }} />,
     color: "text-primary",
     glowColor: "rgba(239, 35, 60, 0.4)",
     bgColor: "239, 35, 60",
@@ -69,7 +69,7 @@ const powers: Power[] = [
   {
     id: "revops",
     title: "RevOps",
-    icon: <Settings className="w-6 h-6" />,
+    icon: <Settings className="w-6 h-6" style={{ color: '#D25A28' }} />,
     color: "text-burnt-orange",
     glowColor: "rgba(210, 90, 40, 0.4)",
     bgColor: "210, 90, 40",
@@ -89,10 +89,10 @@ const powers: Power[] = [
   {
     id: "coach",
     title: "Elite Coach",
-    icon: <Users className="w-6 h-6" />,
+    icon: <Users className="w-6 h-6" style={{ color: '#9F8FFF' }} />,
     color: "text-community",
-    glowColor: "rgba(88, 50, 175, 0.4)",
-    bgColor: "88, 50, 175",
+    glowColor: "rgba(159, 143, 255, 0.4)",
+    bgColor: "159, 143, 255",
     angle: 180,
     description: "World-class coaching that elevates your BDRs to top 1% performance.",
     details: [
@@ -109,7 +109,7 @@ const powers: Power[] = [
   {
     id: "tools",
     title: "Tech Stack",
-    icon: <Wrench className="w-6 h-6" />,
+    icon: <Wrench className="w-6 h-6" style={{ color: '#4CAF50' }} />,
     color: "text-signal-green",
     glowColor: "rgba(76, 175, 80, 0.4)",
     bgColor: "76, 175, 80",
@@ -129,10 +129,10 @@ const powers: Power[] = [
   {
     id: "community",
     title: "Community & Competition",
-    icon: <Trophy className="w-6 h-6" />,
-    color: "text-primary",
-    glowColor: "rgba(239, 35, 60, 0.4)",
-    bgColor: "239, 35, 60",
+    icon: <Trophy className="w-6 h-6" style={{ color: '#C41E58' }} />,
+    color: "text-magenta-rose",
+    glowColor: "rgba(196, 30, 88, 0.4)",
+    bgColor: "196, 30, 88",
     angle: 300,
     description: "A culture of collaboration and healthy competition that drives results.",
     details: [
