@@ -26,7 +26,7 @@ import {
   Target,
   Zap,
   ArrowRight,
-  Share2
+  Mail
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -157,8 +157,21 @@ export default function ROICalculator() {
     },
     onSuccess: () => {
       toast({
-        title: "Report Shared!",
-        description: "Your ROI report has been sent successfully.",
+        title: "Report Sent!",
+        description: (
+          <div className="space-y-3">
+            <p>Your ROI report has been sent successfully.</p>
+            <Button
+              asChild
+              className="w-full gradient-button-crimson-blue animate-pulse hover:animate-none shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <Link href="/assessment">
+                Take Full Assessment
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
+          </div>
+        ),
       });
       setShareDialogOpen(false);
       setRecipientEmails("");
@@ -234,15 +247,15 @@ export default function ROICalculator() {
               <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="secondary" data-testid="button-share-report">
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share My Report
+                    <Mail className="w-4 h-4 mr-2" />
+                    Send My Report
                   </Button>
                 </DialogTrigger>
                 <DialogContent data-testid="dialog-share-report">
                   <DialogHeader>
-                    <DialogTitle>Share Your ROI Report</DialogTitle>
+                    <DialogTitle>Send Your ROI Report</DialogTitle>
                     <DialogDescription>
-                      Enter email addresses (comma-separated for multiple recipients) to share your customized ROI analysis.
+                      Enter email addresses (comma-separated for multiple recipients) to send your customized ROI analysis.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
