@@ -598,13 +598,12 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Centered Calculator */}
-          <div className="flex justify-center mb-12">
-            <HeroROICalculator testIdSuffix="-bottom" />
-          </div>
-
-          {/* Internal Hire Cost Calculator Teaser */}
-          <div className="max-w-2xl mx-auto mb-12">
+          {/* Internal Hire Cost Calculator Section */}
+          <div className="max-w-4xl mx-auto mb-12">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-12 text-center leading-tight">
+              <div className="mb-2">The True Cost of</div>
+              <div className="gradient-text gradient-hero">1 Internal SDR</div>
+            </h1>
             <InternalHireCostCalculator />
           </div>
 
