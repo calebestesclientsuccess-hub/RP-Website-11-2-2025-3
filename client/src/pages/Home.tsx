@@ -240,7 +240,7 @@ export default function Home() {
           </div>
 
           {/* 3 Core Components */}
-          <div className="grid md:grid-cols-3 gap-4 md:gap-6 mb-20 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 mb-20 max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
