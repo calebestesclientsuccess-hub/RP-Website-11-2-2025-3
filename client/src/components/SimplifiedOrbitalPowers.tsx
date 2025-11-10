@@ -295,10 +295,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         const currentAngle = powers[prev].angle;
         const targetAngle = powers[nextIndex].angle;
 
-        // Calculate shortest path for rotation
+        // Calculate clockwise-only rotation
         let angleDiff = targetAngle - currentAngle;
-        if (angleDiff > 180) angleDiff -= 360;
-        if (angleDiff < -180) angleDiff += 360;
+        if (angleDiff < 0) angleDiff += 360; // Always move clockwise (positive direction)
 
         // Start pre-pulse
         setPrePulseActive(true);
