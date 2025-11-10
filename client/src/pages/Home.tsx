@@ -27,6 +27,11 @@ export default function Home() {
   const scrollAwayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollAwayStartRef = useRef<number | null>(null);
 
+  // Auto-scroll page down slightly on initial load
+  useEffect(() => {
+    window.scrollTo({ top: 60, behavior: 'instant' });
+  }, []);
+
   // Handle video playback and scroll behavior
   useEffect(() => {
     const video = videoRef.current;
