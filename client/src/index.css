@@ -639,15 +639,15 @@
      GRADIENT TEXT SYSTEM - Progressive Enhancement
      ================================================ */
 
-  /* Base gradient text class with fallback - LIGHT MODE - Crimson to Midnight Purple */
+  /* Base gradient text class with fallback - LIGHT MODE - Vertical red to dark purple */
   html:not(.dark) .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: var(--gradient-fallback);
     font-weight: 600; /* Improve readability */
 
-    /* Layer 1: Horizontal 4-stop crimson-to-midnight gradient for capable browsers */
+    /* Layer 1: Vertical gradient - 180deg from bright red to deep purple/black */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(90deg, rgba(207, 45, 45, 1) 13%, rgba(184, 35, 35, 0.99) 54%, rgba(76, 9, 89, 1) 75%, rgba(28, 3, 41, 1) 92%);
+      background: linear-gradient(180deg, #FF2A00 0%, #8B0000 50%, #1C0329 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -655,15 +655,15 @@
     }
   }
 
-  /* Dark mode gradient - Crimson to Midnight Purple */
+  /* Dark mode gradient - Vertical red to dark purple */
   html.dark .gradient-text {
     /* Layer 0: Legacy browser fallback (outside @supports) */
     color: hsl(0 0% 91%);
     font-weight: 600;
 
-    /* Layer 1: Horizontal 4-stop crimson-to-midnight gradient for capable browsers */
+    /* Layer 1: Vertical gradient - 180deg from bright red to deep purple/black */
     @supports (background-clip: text) or (-webkit-background-clip: text) {
-      background: linear-gradient(90deg, rgba(207, 45, 45, 1) 13%, rgba(184, 35, 35, 0.99) 54%, rgba(76, 9, 89, 1) 75%, rgba(28, 3, 41, 1) 92%);
+      background: linear-gradient(180deg, #FF2A00 0%, #8B0000 50%, #1C0329 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
