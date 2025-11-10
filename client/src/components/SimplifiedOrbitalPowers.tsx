@@ -324,35 +324,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       // Wait for pre-pulse to complete
       timeline.to({}, { duration: PRE_PULSE_DURATION / 1000 });
 
-      // Get scale factor based on device (recalculate each time for responsiveness)
-      const isMobile = window.innerWidth < 768;
-      const scaleMultiplier = isMobile ? 1.3 : 1.5;
-
-      // Animate scaling of the current badge during pre-pulse
-      const currentBadge = badgeRefs.current[currentIndex];
-      if (currentBadge) {
-        // Kill any existing animations on this badge first
-        gsap.killTweensOf(currentBadge);
-        
-        const scaleUpTween = gsap.to(currentBadge, {
-          scale: scaleMultiplier,
-          duration: ROTATION_DURATION / 1000,
-          ease: "power2.inOut",
-          delay: PRE_PULSE_DURATION / 1000,
-          onComplete: () => {
-            // Scale back down after rotation
-            gsap.to(currentBadge, {
-              scale: 1,
-              duration: 0.3,
-              ease: "power2.out"
-            });
-          }
-        });
-        
-        // Add to timeline for proper cleanup
-        timeline.add(scaleUpTween, 0);
-      }
-
       // Then smoothly rotate with cinematic easing
       timeline.to(
         { value: 0 },
@@ -389,10 +360,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         clearInterval(tourIntervalRef.current);
         tourIntervalRef.current = null;
       }
-      // Kill all GSAP animations on badge elements
-      badgeRefs.current.forEach(badge => {
-        if (badge) gsap.killTweensOf(badge);
-      });
       gsap.killTweensOf({ value: 0 }); // Kill rotation tweens
       setIsAnimating(false);
       setPrePulseActive(false);
