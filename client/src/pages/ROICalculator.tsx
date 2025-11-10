@@ -233,7 +233,7 @@ export default function ROICalculator() {
             <div className="flex justify-end max-w-7xl mx-auto">
               <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" data-testid="button-share-report">
+                  <Button variant="secondary" data-testid="button-share-report">
                     <Share2 className="w-4 h-4 mr-2" />
                     Share My Report
                   </Button>
