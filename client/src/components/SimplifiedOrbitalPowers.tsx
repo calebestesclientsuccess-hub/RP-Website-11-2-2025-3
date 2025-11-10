@@ -333,7 +333,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     };
   }, [videoRef, orbitRotation]);
 
-  // Auto-tour system - rotate through powers with smooth transitions
+  // Auto-tour system - rotate through powers with CINEMATIC transitions
   useEffect(() => {
     if (playbackMode !== 'autoTour') {
       // Clear any existing interval
@@ -348,60 +348,92 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     if (prefersReducedMotion()) return;
 
-    const ROTATION_DURATION = 2000; // 2 seconds for smooth rotation
-    const PAUSE_DURATION = 4500; // 4.5 seconds to display each power - more contemplative
-    const PRE_PULSE_DURATION = 1000; // 1 second matches CSS animation (ends at 30% = 300ms of 1000ms)
-    const DRAMATIC_BEAT = 250; // Brief pause after pulse before rotation - creates anticipation
-    const INFO_BOX_FADE_DURATION = 400; // Smooth content transition
-    const TOTAL_CYCLE = PRE_PULSE_DURATION + DRAMATIC_BEAT + ROTATION_DURATION + PAUSE_DURATION;
+    // CINEMATIC TIMING: Slower, more deliberate pacing
+    const ANTICIPATION_DURATION = 400; // Wind-up before rotation (new!)
+    const ROTATION_DURATION = 1800; // Slightly faster rotation (was 2000)
+    const OVERSHOOT_DURATION = 350; // Subtle overshoot + settle (new!)
+    const PAUSE_DURATION = 6000; // Longer contemplation (was 4500) - let it breathe
+    const PRE_PULSE_DURATION = 1200; // Longer pre-pulse for emphasis (was 1000)
+    const DRAMATIC_BEAT = 180; // Tighter beat (was 250) - tension before release
+    const TOTAL_CYCLE = PRE_PULSE_DURATION + DRAMATIC_BEAT + ANTICIPATION_DURATION + ROTATION_DURATION + OVERSHOOT_DURATION + PAUSE_DURATION;
 
     const performTransition = (currentIndex: number) => {
       setIsAnimating(true);
 
       const nextIndex = (currentIndex + 1) % powers.length;
       
-      // Calculate rotation needed to move to next power
-      // We need to rotate 60° clockwise (one power position)
       const currentRotation = orbitRotation;
       const rotationIncrement = 60; // Move one position clockwise
       const targetRotation = (currentRotation + rotationIncrement) % 360;
 
-      // Start pre-pulse on the NEXT badge (the one about to become selected)
+      // Start pre-pulse on the NEXT badge
       setPrePulseActive(true);
 
-      // Create single smooth animation timeline
+      // CINEMATIC TIMELINE with anticipation & overshoot
       const timeline = gsap.timeline({
         onComplete: () => {
-          // Update all states synchronously at completion
           setOrbitRotation(targetRotation);
           setPrePulseActive(false);
           setIsAnimating(false);
         }
       });
 
-      // Wait for pre-pulse to complete
+      // Pre-pulse (building tension)
       timeline.to({}, { duration: PRE_PULSE_DURATION / 1000 });
 
-      // Dramatic beat - brief pause after pulse
+      // Dramatic beat (the held breath)
       timeline.to({}, { duration: DRAMATIC_BEAT / 1000 });
 
-      // Then smoothly rotate with cinematic easing
+      // ANTICIPATION: Subtle counter-rotation (wind-up)
+      timeline.to(
+        { value: 0 },
+        {
+          value: 1,
+          duration: ANTICIPATION_DURATION / 1000,
+          ease: "power2.in", // Accelerate into the wind-up
+          onUpdate: function() {
+            const progress = this.progress();
+            // Counter-rotate 3° backward (like pulling back a slingshot)
+            const anticipationRotation = currentRotation - (3 * progress);
+            setOrbitRotation(anticipationRotation < 0 ? anticipationRotation + 360 : anticipationRotation);
+          }
+        }
+      );
+
+      // MAIN ROTATION: Fast acceleration, smooth deceleration
       timeline.to(
         { value: 0 },
         {
           value: 1,
           duration: ROTATION_DURATION / 1000,
-          ease: "power3.out",
+          ease: "power2.out", // Disney-style ease
           onUpdate: function() {
             const progress = this.progress();
-            const newRotation = (currentRotation + rotationIncrement * progress) % 360;
+            // Rotate from anticipation point (currentRotation - 3°) to target
+            const newRotation = (currentRotation - 3 + (rotationIncrement + 3) * progress) % 360;
             setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
             
-            // Update selectedIndex when badge is 75% through rotation
-            // At this point it's visually entering the selected zone
-            if (progress >= 0.75 && selectedIndex !== nextIndex) {
+            // Update selectedIndex at 70% (earlier for better sync)
+            if (progress >= 0.70 && selectedIndex !== nextIndex) {
               setSelectedIndex(nextIndex);
             }
+          }
+        }
+      );
+
+      // OVERSHOOT & SETTLE: Slight overshoot then elastic settle
+      timeline.to(
+        { value: 0 },
+        {
+          value: 1,
+          duration: OVERSHOOT_DURATION / 1000,
+          ease: "elastic.out(1, 0.5)", // Subtle elastic settle
+          onUpdate: function() {
+            const progress = this.progress();
+            // Overshoot by 2° then settle back
+            const overshoot = 2 * (1 - progress);
+            const settleRotation = (targetRotation + overshoot) % 360;
+            setOrbitRotation(settleRotation < 0 ? settleRotation + 360 : settleRotation);
           }
         }
       );
@@ -415,8 +447,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       currentTourIndex = (currentTourIndex + 1) % powers.length;
     };
 
-    // Initial transition after longer pause for contemplative introduction
-    const INITIAL_PAUSE = 5500; // 5.5 seconds - slightly longer first pause
+    // LONGER initial pause - let viewers discover the interface
+    const INITIAL_PAUSE = 7500; // 7.5 seconds (was 5.5)
     const initialTimeout = setTimeout(runTransition, INITIAL_PAUSE);
 
     // Then continue with interval - full cycle time
@@ -731,18 +763,21 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                   >
                     <button
                       onClick={() => handleBadgeClick(index)}
-                      className="group cursor-pointer transition-all duration-300 hover:scale-110 relative"
+                      className="group cursor-pointer relative"
                       data-testid={`power-badge-${power.id}`}
                       onMouseEnter={() => setHoveredPower(power.id)}
                       onMouseLeave={() => setHoveredPower(null)}
+                      style={{
+                        transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' // Bouncy hover
+                      }}
                     >
                       <div
                         className={cn(
                           `
                           relative rounded-full p-3 bg-background/90 backdrop-blur-sm
                           border-2 ${power.color} shadow-lg
-                          group-hover:shadow-xl transition-all duration-300
-                          ${isAtSelectedPosition ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-110' : ''}
+                          group-hover:shadow-2xl
+                          ${isAtSelectedPosition ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}
                         `,
                         )}
                         style={{
@@ -750,10 +785,16 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                             ? `0 0 30px ${power.glowColor}, 0 0 60px ${power.glowColor}`
                             : `0 0 20px ${power.glowColor}`,
                           animation: showPrePulse
-                            ? 'orbital-badge-pre-pulse 1s cubic-bezier(0.4, 0, 0.2, 1)'
+                            ? 'orbital-badge-pre-pulse 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' // Longer, bouncier
                             : showSustainedPulse
-                            ? 'orbital-badge-pulse 3s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+                            ? 'orbital-badge-pulse 4s cubic-bezier(0.4, 0, 0.2, 1) infinite' // Slower pulse
                             : 'none',
+                          transform: hoveredPower === power.id 
+                            ? 'scale(1.15) rotate(5deg)' // Slight rotation on hover
+                            : isAtSelectedPosition 
+                            ? 'scale(1.12)' 
+                            : 'scale(1)',
+                          transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
                           willChange: (showPrePulse || showSustainedPulse) ? 'transform, filter' : 'auto',
                           backfaceVisibility: 'hidden',
                           WebkitBackfaceVisibility: 'hidden'
