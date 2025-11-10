@@ -175,6 +175,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [playbackMode, setPlaybackMode] = useState<'rotating' | 'decelerating' | 'autoTour' | 'manual'>('rotating');
   const tourIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [prePulseActive, setPrePulseActive] = useState(false);
 
   // Orbital rotation animation - slow, cinematic rotation during video
   useEffect(() => {
@@ -276,9 +277,17 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         const nextIndex = (prev + 1) % powers.length;
         const targetAngle = powers[nextIndex].angle;
         
+        // Start pre-pulse 0.8 seconds before rotation to signal movement
+        setPrePulseActive(true);
+        
+        setTimeout(() => {
+          setPrePulseActive(false);
+        }, 800);
+        
         // Animate rotation to the target angle with elegant easing
         gsap.to({}, {
           duration: 1.5,
+          delay: 0.8, // Delay rotation to allow pre-pulse to complete
           ease: "power3.inOut", // Smoother, more refined easing
           onUpdate: function() {
             const progress = this.progress();
@@ -299,7 +308,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         
         return nextIndex;
       });
-    }, 5500); // 1.5s animation + 4s pause between transitions
+    }, 6300); // 0.8s pre-pulse + 1.5s animation + 4s pause between transitions
 
     return () => {
       if (tourIntervalRef.current) {
@@ -608,7 +617,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                           boxShadow: index === selectedIndex
                             ? `0 0 30px ${power.glowColor}, 0 0 60px ${power.glowColor}`
                             : `0 0 20px ${power.glowColor}`,
-                          animation: index === selectedIndex ? 'orbital-badge-pulse 2s ease-in-out infinite' : 'none'
+                          animation: index === selectedIndex 
+                            ? prePulseActive 
+                              ? 'orbital-badge-pre-pulse 0.8s ease-in-out' 
+                              : 'orbital-badge-pulse 2s ease-in-out infinite'
+                            : 'none'
                         }}
                       >
                         {power.icon}
