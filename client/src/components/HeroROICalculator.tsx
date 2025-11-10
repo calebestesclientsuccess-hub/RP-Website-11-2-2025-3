@@ -20,9 +20,9 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
   const investmentIncrement = (monthlyInvestment[0] - 15000) / 7500;
   const guaranteedSQOs = 20 + (investmentIncrement * 10);
   
-  // Annual calculations (220 meetings = 11 months, excluding December)
+  // Annual calculations (11 months, excluding December for training)
   const annualInvestment = monthlyInvestment[0] * 12;
-  const annualSQOs = 220;
+  const annualSQOs = guaranteedSQOs * 11; // Dynamic: monthly meetings × 11 months
 
   const closedDealsPerMonth = guaranteedSQOs * (closeRate[0] / 100);
   const projectedLTVPerMonth = closedDealsPerMonth * ltv[0];
