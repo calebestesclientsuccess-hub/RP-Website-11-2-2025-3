@@ -172,6 +172,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [videoError, setVideoError] = useState(false);
   const [hoveredPower, setHoveredPower] = useState<string | null>(null);
   const [currentPower, setCurrentPower] = useState<string | null>(null);
+  const [playbackMode, setPlaybackMode] = useState<'rotating' | 'decelerating' | 'autoTour' | 'manual'>('rotating');
+  const tourIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [videoEnded, setVideoEnded] = useState(false);
 
   // Orbital rotation animation - rotate the entire orbital system
   useEffect(() => {
@@ -193,6 +196,113 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       orbitAnimationRef.current?.kill();
     };
   }, []);
+
+  // Handle video end and start deceleration
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleVideoEnd = () => {
+      setVideoEnded(true);
+      setPlaybackMode('decelerating');
+
+      if (prefersReducedMotion()) {
+        // Skip deceleration, go straight to auto-tour
+        setPlaybackMode('autoTour');
+        return;
+      }
+
+      // Kill the continuous rotation
+      if (orbitAnimationRef.current) {
+        orbitAnimationRef.current.kill();
+      }
+
+      // Calculate the nearest power position to land on
+      const currentRotation = orbitRotation % 360;
+      const powerAngles = powers.map(p => p.angle);
+      const nearestPowerAngle = powerAngles.reduce((prev, curr) => {
+        return Math.abs(curr - currentRotation) < Math.abs(prev - currentRotation) ? curr : prev;
+      });
+      const nearestPowerIndex = powers.findIndex(p => p.angle === nearestPowerAngle);
+
+      // Decelerate to the nearest position over 2.5 seconds
+      const targetRotation = nearestPowerAngle + (currentRotation > nearestPowerAngle ? 360 : 0);
+      
+      gsap.to({}, {
+        duration: 2.5,
+        ease: "power2.out",
+        onUpdate: function() {
+          const progress = this.progress();
+          const currentSpeed = (1 - progress) * 6; // Decelerate from 6 deg/frame to 0
+          const newRotation = currentRotation + (targetRotation - currentRotation) * progress;
+          setOrbitRotation(newRotation % 360);
+        },
+        onComplete: () => {
+          setOrbitRotation(nearestPowerAngle);
+          setSelectedIndex(nearestPowerIndex);
+          setPlaybackMode('autoTour');
+        }
+      });
+    };
+
+    video.addEventListener('ended', handleVideoEnd);
+
+    return () => {
+      video.removeEventListener('ended', handleVideoEnd);
+    };
+  }, [videoRef, orbitRotation]);
+
+  // Auto-tour system - rotate through powers every 3.5 seconds
+  useEffect(() => {
+    if (playbackMode !== 'autoTour') {
+      // Clear any existing interval
+      if (tourIntervalRef.current) {
+        clearInterval(tourIntervalRef.current);
+        tourIntervalRef.current = null;
+      }
+      return;
+    }
+
+    if (prefersReducedMotion()) return;
+
+    // Start the auto-tour
+    tourIntervalRef.current = setInterval(() => {
+      setSelectedIndex(prev => {
+        const nextIndex = (prev + 1) % powers.length;
+        const targetAngle = powers[nextIndex].angle;
+        
+        // Animate rotation to the target angle
+        gsap.to({}, {
+          duration: 1,
+          ease: "power2.inOut",
+          onUpdate: function() {
+            const progress = this.progress();
+            const currentAngle = powers[prev].angle;
+            let angleDiff = targetAngle - currentAngle;
+            
+            // Handle wrapping around 360 degrees
+            if (angleDiff > 180) angleDiff -= 360;
+            if (angleDiff < -180) angleDiff += 360;
+            
+            const newRotation = (currentAngle + angleDiff * progress) % 360;
+            setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
+          },
+          onComplete: () => {
+            setOrbitRotation(targetAngle);
+          }
+        });
+        
+        return nextIndex;
+      });
+    }, 3500);
+
+    return () => {
+      if (tourIntervalRef.current) {
+        clearInterval(tourIntervalRef.current);
+        tourIntervalRef.current = null;
+      }
+    };
+  }, [playbackMode]);
 
   // Manual play handler for when autoplay is blocked
   const handleManualPlay = () => {
@@ -300,6 +410,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     return () => {
       video.removeEventListener('error', handleError);
       observer.disconnect();
+      
+      // Cleanup intervals
+      if (tourIntervalRef.current) {
+        clearInterval(tourIntervalRef.current);
+      }
     };
   }, [hasPlayed, videoError, videoRef]);
 
@@ -321,6 +436,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     setSelectedIndex(newIndex);
     setInitialPulse(false);
     setCurrentPower(powers[newIndex].id);
+    
+    // User interaction cancels auto-tour
+    if (playbackMode === 'autoTour') {
+      setPlaybackMode('manual');
+    }
   };
 
   const handleNext = () => {
@@ -328,6 +448,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     setSelectedIndex(newIndex);
     setInitialPulse(false);
     setCurrentPower(powers[newIndex].id);
+    
+    // User interaction cancels auto-tour
+    if (playbackMode === 'autoTour') {
+      setPlaybackMode('manual');
+    }
   };
 
   const handleBadgeClick = (index: number) => {
@@ -335,6 +460,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     setShowInfoBox(true);
     setInitialPulse(false);
     setCurrentPower(powers[index].id);
+    
+    // User interaction cancels auto-tour
+    if (playbackMode === 'autoTour') {
+      setPlaybackMode('manual');
+    }
   };
 
   const selectedPower = powers[selectedIndex];
