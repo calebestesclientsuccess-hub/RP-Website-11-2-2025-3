@@ -11,12 +11,12 @@ import { PDFPreview } from "@/components/PDFPreview";
 // Validate if a URL is a valid HTTP/HTTPS URL or relative path
 const isValidUrl = (url: string | null | undefined): boolean => {
   if (!url || typeof url !== 'string') return false;
-  
+
   // Accept relative paths (e.g., "/uploads/pdfs/file.pdf")
   if (url.startsWith('/')) {
     return url.length > 1; // Must be more than just "/"
   }
-  
+
   // Validate absolute URLs
   try {
     const parsed = new URL(url);
@@ -81,7 +81,7 @@ export default function AssessmentResult() {
   }
 
   const { assessment, result, score } = data;
-  
+
   // Handle missing result data
   if (!result) {
     return (
@@ -97,7 +97,7 @@ export default function AssessmentResult() {
       </div>
     );
   }
-  
+
   // Validate PDF URL before showing download buttons
   const hasValidPdfUrl = isValidUrl(result.pdfUrl);
 
@@ -143,7 +143,7 @@ export default function AssessmentResult() {
                     )}
                   </div>
                 </div>
-                
+
                 {hasValidPdfUrl && (
                   <Button
                     asChild
