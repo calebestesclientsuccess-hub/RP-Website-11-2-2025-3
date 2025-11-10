@@ -306,8 +306,8 @@ export default function ROICalculator() {
                         <li>• Close Rate: {closeRate[0]}%</li>
                         <li>• Selected Engine: {config.name}</li>
                         <li>• Monthly ROI: {monthlyROI > 0 ? `${formatNumber(monthlyROI, 0)}x` : '0x'}</li>
-                        <li>• Projected LTV/Month: {projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}</li>
-                        <li>• Projected LTV/Year: {projectedLTVPerYear > 0 ? formatCurrency(projectedLTVPerYear) : '$0'}</li>
+                        <li>• New Revenue/Month: {projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}</li>
+                        <li>• New Revenue/Year: {projectedLTVPerYear > 0 ? formatCurrency(projectedLTVPerYear) : '$0'}</li>
                       </ul>
                     </div>
                   </div>
@@ -349,7 +349,7 @@ export default function ROICalculator() {
                   {/* Input 1: LTV */}
                   <div>
                     <div className="flex justify-between mb-3">
-                      <Label className="text-base font-semibold">2-Year Client Value</Label>
+                      <Label className="text-base font-semibold">New Client Value</Label>
                       <span className="text-lg font-mono font-bold gradient-text-purple" data-testid="text-ltv-value">
                         {formatCurrency(ltv[0])}
                       </span>
@@ -516,7 +516,7 @@ export default function ROICalculator() {
                   <div className="p-4 bg-background rounded-lg border border-border">
                     <p className="text-sm text-muted-foreground mb-1">Monthly Guaranteed SQOs</p>
                     <p className="text-2xl font-bold font-mono gradient-text-purple" data-testid="text-monthly-sqos">
-                      {monthlySQOs > 0 ? monthlySQOs : 'None'}
+                      {monthlySQOs > 0 ? formatNumber(monthlySQOs, 1) : 'None'}
                     </p>
                     {monthlySQOs === 0 && (
                       <p className="text-xs text-destructive mt-1 flex items-center gap-1">
@@ -552,17 +552,17 @@ export default function ROICalculator() {
                     )}
                   </div>
 
-                  {/* Projected New LTV Booked Per Month */}
+                  {/* New Revenue Booked Per Month */}
                   <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
-                    <p className="text-sm text-muted-foreground mb-1">Projected New LTV Booked Per Month</p>
+                    <p className="text-sm text-muted-foreground mb-1">New Revenue Booked Per Month</p>
                     <p className="text-3xl font-bold font-mono gradient-text-purple" data-testid="text-projected-ltv">
                       {projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}
                     </p>
                   </div>
 
-                  {/* Projected Annual Revenue (NEW) */}
+                  {/* New Revenue Booked Per Year */}
                   <div className="p-4 bg-primary/10 rounded-lg border border-primary/30">
-                    <p className="text-sm text-muted-foreground mb-1">Projected New LTV Booked Per Year</p>
+                    <p className="text-sm text-muted-foreground mb-1">New Revenue Booked Per Year</p>
                     <p className="text-3xl font-bold font-mono gradient-text-purple" data-testid="text-projected-ltv-annual">
                       {projectedLTVPerYear > 0 ? formatCurrency(projectedLTVPerYear) : '$0'}
                     </p>

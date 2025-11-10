@@ -703,12 +703,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       </div>
       
       <div class="metric">
-        <div class="metric-label">Projected New LTV Booked per Month</div>
+        <div class="metric-label">New Revenue Booked Per Month</div>
         <div class="metric-value">${projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}</div>
       </div>
       
       <div class="metric">
-        <div class="metric-label">Projected New LTV Booked per Year</div>
+        <div class="metric-label">New Revenue Booked Per Year</div>
         <div class="metric-value">${data.projectedLTVPerYear > 0 ? formatCurrency(data.projectedLTVPerYear) : '$0'}</div>
         <p style="margin: 5px 0 0 0; font-size: 12px; color: #6b7280;">Based on ${data.annualSQOs} meetings/year*<br><em>*December excluded for training</em></p>
       </div>
