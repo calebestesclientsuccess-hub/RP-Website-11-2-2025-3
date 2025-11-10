@@ -252,9 +252,12 @@ export default function Home() {
                     <Users className="w-8 h-8 text-primary" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Elite Talent <span>(The "Fully Loaded BDR Pod")</span></h3>
+                <h3 className="text-2xl font-bold mb-4">The Fullstack Sales Unit</h3>
+                <p className="leading-relaxed italic text-lg mb-4">
+                  Elite Sales Talent, equipped and trained by RP Architects.
+                </p>
                 <p className="leading-relaxed">
-                  A dedicated, managed, and battle-tested team of BDRs, not a single 'Lone Wolf' rep.
+                  A dedicated, managed, and battle-tested team of SDRs, not a single 'Lone Wolf' rep.
                 </p>
               </Card>
             </motion.div>
@@ -271,9 +274,12 @@ export default function Home() {
                     <Target className="w-8 h-8 text-primary" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">Strategic Framework <span>(The "Impact Selling OS")</span></h3>
+                <h3 className="text-2xl font-bold mb-4">The Method</h3>
+                <p className="leading-relaxed italic text-lg mb-4">
+                  Impact Selling: how we make good salespeople great
+                </p>
                 <p className="leading-relaxed">
-                  The operating system and strategic playbook that makes talent effective. You own 100% of the IP.
+                  The operating system and strategic playbook that makes talent effective. We customize your Playbook with the scripts, emails, and collateral that worked. You own 100% of the IP.
                 </p>
               </Card>
             </motion.div>
@@ -290,7 +296,10 @@ export default function Home() {
                     <Zap className="w-8 h-8 text-primary" />
                   </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">The Signal Factory <span>(Your AI-Powered Engine)</span></h3>
+                <h3 className="text-2xl font-bold mb-4">The Signal Factory</h3>
+                <p className="leading-relaxed italic text-lg mb-4">
+                  Our AI-Powered Engine, customized to fuel your business.
+                </p>
                 <p className="leading-relaxed">
                   The AI-powered tech stack that finds and qualifies buyers before they're 'in-market'.
                 </p>

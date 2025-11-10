@@ -358,10 +358,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         {/* Section Header */}
         <div className="text-center mb-2">
           <h2 className="text-5xl md:text-6xl font-bold mb-2">
-            <span className="gradient-text gradient-hero">Your Fullstack Sales Unit</span>
+            <span className="gradient-text gradient-hero">The Fullstack Sales Unit</span>
           </h2>
-          <p className="text-xl md:text-2xl max-w-3xl mx-auto">
-            More than SDRs. A complete system engineered to deliver predictable revenue.
+          <p className="text-2xl md:text-3xl italic max-w-3xl mx-auto">
+            Elite Sales Talent, equipped and trained by RP Architects.
           </p>
         </div>
 
