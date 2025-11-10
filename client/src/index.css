@@ -1424,7 +1424,7 @@ html:not(.dark) .shadcn-card::after {
     135deg,
     rgba(255, 0, 0, 0.04) 0%,
     rgba(255, 127, 0, 0.03) 16%,
-    rgba(255, 255, 0, 0.025) 33%,
+    rgba(255, 255, 0, 0.025) 50%,
     rgba(0, 255, 0, 0.03) 50%,
     rgba(0, 0, 255, 0.04) 66%,
     rgba(75, 0, 130, 0.035) 83%,
@@ -1957,4 +1957,10 @@ html.performance-tier-3 .animate-light-scan {
 
 .expandable-card:hover::after {
   display: none;
+}
+
+/* Applying the requested padding to the paragraph style */
+p.leading-relaxed.italic.text-xs.font-semibold.mb-4 {
+  padding-left: 0.25rem; /* Corresponds to px-1 in Tailwind */
+  padding-right: 0.25rem; /* Corresponds to px-1 in Tailwind */
 }

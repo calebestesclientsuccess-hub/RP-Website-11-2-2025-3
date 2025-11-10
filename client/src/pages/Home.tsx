@@ -263,7 +263,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Your Fully Loaded Sales Team</h3>
                 <p className="leading-relaxed italic text-xs font-semibold mb-4">
-                  A team of well trained and equipped SDRs, not a single Lone Wolf rep.
+                  A team of well equipped SDRs, not a single Lone Wolf rep.
                 </p>
                 <div 
                   className={`leading-relaxed cursor-pointer transition-all duration-300 ${
@@ -289,7 +289,7 @@ export default function Home() {
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Your Playbook</h3>
-                <p className="leading-relaxed italic text-xs font-semibold mb-4">
+                <p className="leading-relaxed italic text-xs font-semibold mb-4 px-1">
                   Our strategic framework, fully customized to your business.
                 </p>
                 <div 
