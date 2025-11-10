@@ -33,11 +33,6 @@ export default function Home() {
     setAllCardsExpanded(prev => !prev);
   };
 
-  // Auto-scroll page down slightly on initial load
-  useEffect(() => {
-    window.scrollTo({ top: 60, behavior: 'instant' });
-  }, []);
-
   // Handle video playback and scroll behavior
   useEffect(() => {
     const video = videoRef.current;

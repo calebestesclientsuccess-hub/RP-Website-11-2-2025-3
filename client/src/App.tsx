@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
@@ -60,11 +60,27 @@ import AssessmentResult from "@/pages/AssessmentResult";
 import NotFound from "@/pages/not-found";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { useEffect } from "react";
 
+
+function ScrollToTop() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    // Scroll to top on route change, unless there's a hash in the URL
+    if (!window.location.hash) {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [location]);
+
+  return null;
+}
 
 function Router() {
   return (
-    <Switch>
+    <>
+      <ScrollToTop />
+      <Switch>
       {/* Core Pages */}
       <Route path="/" component={Home} />
       <Route path="/problem" component={ProblemPage} />
@@ -132,7 +148,8 @@ function Router() {
 
       {/* Fallback */}
       <Route component={NotFound} />
-    </Switch>
+      </Switch>
+    </>
   );
 }
 
