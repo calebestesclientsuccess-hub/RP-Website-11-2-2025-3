@@ -12,15 +12,25 @@ interface HeroROICalculatorProps {
 export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps) {
   const [ltv, setLtv] = useState([120000]);
   const [closeRate, setCloseRate] = useState([25]);
+  const [monthlyInvestment, setMonthlyInvestment] = useState([15000]);
   const [, setLocation] = useLocation();
 
-  const monthlyInvestment = 15000;
-  const guaranteedSQOs = 40;
-  const costPerMeeting = monthlyInvestment / guaranteedSQOs;
+  // Calculate guaranteed meetings based on investment
+  // Base: $15K = 20 meetings, each additional $7.5K = +10 meetings
+  const investmentIncrement = (monthlyInvestment[0] - 15000) / 7500;
+  const guaranteedSQOs = 20 + (investmentIncrement * 10);
+  
+  // Annual calculations (220 meetings = 11 months, excluding December)
+  const annualInvestment = monthlyInvestment[0] * 12;
+  const annualSQOs = 220;
 
   const closedDealsPerMonth = guaranteedSQOs * (closeRate[0] / 100);
   const projectedLTVPerMonth = closedDealsPerMonth * ltv[0];
-  const roi = projectedLTVPerMonth / monthlyInvestment;
+  const roi = projectedLTVPerMonth / monthlyInvestment[0];
+  
+  const closedDealsPerYear = annualSQOs * (closeRate[0] / 100);
+  const projectedLTVPerYear = closedDealsPerYear * ltv[0];
+  const annualROI = projectedLTVPerYear / annualInvestment;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -46,13 +56,31 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
       
       <Card className="p-6 bg-card/95 backdrop-blur-md border-primary/40 shadow-2xl relative" data-testid="card-hero-roi">
         <div className="mb-5">
-          <h3 className="text-2xl font-bold mb-1">My ROI: The GTM Engine</h3>
+          <h3 className="text-2xl font-bold mb-1">The $15K Investment That Returns 40x</h3>
           <p className="text-xs text-muted-foreground">
-            See the math behind the system
+            Adjust for your business to see the math
           </p>
         </div>
 
         <div className="space-y-4">
+          {/* Investment Slider */}
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="text-sm font-medium">Monthly Investment</label>
+              <span className="text-sm font-mono font-bold text-muted-foreground" data-testid="text-investment-value">
+                {formatCurrency(monthlyInvestment[0])}
+              </span>
+            </div>
+            <Slider
+              value={monthlyInvestment}
+              onValueChange={setMonthlyInvestment}
+              min={15000}
+              max={45000}
+              step={7500}
+              data-testid="slider-investment"
+            />
+          </div>
+
           {/* LTV Slider */}
           <div>
             <div className="flex justify-between mb-2">
@@ -94,28 +122,13 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
         <div className="mt-5 pt-5 border-t border-border space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-card/50 p-3 rounded-lg border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Monthly Investment</p>
-              <p className="text-lg font-bold font-mono" data-testid="text-monthly-investment">
-                {formatCurrency(monthlyInvestment)}
-              </p>
-            </div>
-            <div className="bg-card/50 p-3 rounded-lg border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Guaranteed SQOs</p>
+              <p className="text-xs text-muted-foreground mb-1">Guaranteed Meetings/Mo</p>
               <p className="text-lg font-bold font-mono" data-testid="text-guaranteed-sqos">
                 {guaranteedSQOs}
               </p>
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
             <div className="bg-card/50 p-3 rounded-lg border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Cost per Meeting</p>
-              <p className="text-lg font-bold font-mono" data-testid="text-cost-per-meeting">
-                {formatCurrency(costPerMeeting)}
-              </p>
-            </div>
-            <div className="bg-card/50 p-3 rounded-lg border border-border">
-              <p className="text-xs text-muted-foreground mb-1">ROI</p>
+              <p className="text-xs text-muted-foreground mb-1">Monthly ROI</p>
               <p className="text-lg font-bold font-mono" data-testid="text-roi">
                 {formatNumber(roi)}x
               </p>
@@ -126,6 +139,23 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
             <p className="text-xs text-muted-foreground mb-1">Projected New LTV/Month</p>
             <p className="text-3xl font-bold font-mono" data-testid="text-projected-ltv">
               {formatCurrency(projectedLTVPerMonth)}
+            </p>
+          </div>
+
+          <div className="bg-primary/10 p-4 rounded-lg border border-primary/30">
+            <p className="text-xs text-muted-foreground mb-1">Projected New LTV/Year</p>
+            <p className="text-3xl font-bold font-mono" data-testid="text-projected-ltv-annual">
+              {formatCurrency(projectedLTVPerYear)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Based on 220 meetings (Dec excluded for training)
+            </p>
+          </div>
+
+          <div className="bg-card/50 p-3 rounded-lg border border-border">
+            <p className="text-xs text-muted-foreground mb-1">Annual ROI</p>
+            <p className="text-2xl font-bold font-mono" data-testid="text-annual-roi">
+              {formatNumber(annualROI)}x
             </p>
           </div>
 
