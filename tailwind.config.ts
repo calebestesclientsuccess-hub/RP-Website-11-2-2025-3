@@ -32,15 +32,20 @@ export default {
           foreground: "hsl(var(--tertiary-foreground) / <alpha-value>)",
           border: "var(--tertiary-border)",
         },
-        indigo: {
-          DEFAULT: "hsl(var(--indigo) / <alpha-value>)",
-          foreground: "hsl(var(--indigo-foreground) / <alpha-value>)",
-          border: "var(--indigo-border)",
+        "signal-green": {
+          DEFAULT: "hsl(var(--signal-green) / <alpha-value>)",
+          foreground: "hsl(var(--signal-green-foreground) / <alpha-value>)",
+          border: "var(--signal-green-border)",
         },
-        "purple-dark": {
-          DEFAULT: "hsl(var(--purple-dark) / <alpha-value>)",
-          foreground: "hsl(var(--purple-dark-foreground) / <alpha-value>)",
-          border: "var(--purple-dark-border)",
+        "burnt-orange": {
+          DEFAULT: "hsl(var(--burnt-orange) / <alpha-value>)",
+          foreground: "hsl(var(--burnt-orange-foreground) / <alpha-value>)",
+          border: "var(--burnt-orange-border)",
+        },
+        "violet-blue": {
+          DEFAULT: "hsl(var(--violet-blue) / <alpha-value>)",
+          foreground: "hsl(var(--violet-blue-foreground) / <alpha-value>)",
+          border: "var(--violet-blue-border)",
         },
         card: {
           DEFAULT: "hsl(var(--card) / <alpha-value>)",
@@ -84,6 +89,7 @@ export default {
           "3": "hsl(var(--chart-3) / <alpha-value>)",
           "4": "hsl(var(--chart-4) / <alpha-value>)",
           "5": "hsl(var(--chart-5) / <alpha-value>)",
+          "6": "hsl(var(--chart-6) / <alpha-value>)",
         },
         sidebar: {
           ring: "hsl(var(--sidebar-ring) / <alpha-value>)",

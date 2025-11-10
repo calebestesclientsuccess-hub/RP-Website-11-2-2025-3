@@ -97,15 +97,28 @@
   --tertiary: 258 47% 46%;
   --tertiary-foreground: 0 0% 100%;
 
-  /* Community: Deep Indigo #2e294e */
-  --indigo: 249 29% 24%;
+  /* Signal Factory Green (new color) - RGB(76, 175, 80) */
+  --signal-green: 125 57% 49%;
+  --signal-green-foreground: 0 0% 100%;
 
-  --indigo-foreground: 0 0% 98%;
+  /* Burnt Orange (new color) - RGB(210, 90, 40) */
+  --burnt-orange: 15 73% 50%;
+  --burnt-orange-foreground: 0 0% 100%;
 
-  /* Community: Purple Dark #42349c */
-  --purple-dark: 251 49% 40%;
+  /* Violet Blue (kept distinct) - RGB(100, 80, 200) */
+  --violet-blue: 255 43% 59%;
+  --violet-blue-foreground: 0 0% 100%;
 
-  --purple-dark-foreground: 0 0% 98%;
+  /* Fallback uses the primary red */
+  --gradient-fallback: hsl(var(--gradient-start-hsl));
+
+  /* Community: Deep Indigo #2e294e - CUT */
+  /* --indigo: 249 29% 24%; */
+  /* --indigo-foreground: 0 0% 98%; */
+
+  /* Community: Purple Dark #42349c - CUT */
+  /* --purple-dark: 251 49% 40%; */
+  /* --purple-dark-foreground: 0 0% 98%; */
 
   /* Warm grey secondary */
   --secondary: 20 6% 89%;
@@ -136,9 +149,12 @@
   /* Chart colors using brand palette */
   --chart-1: 0 100% 50%;        /* Competition red */
   --chart-2: 252 67% 53%;       /* Community purple */
-  --chart-3: 249 29% 24%;       /* Indigo */
-  --chart-4: 251 49% 40%;       /* Purple dark */
-  --chart-5: 354 70% 55%;       /* Coral variation */
+  --chart-3: 249 40% 45%;       /* Indigo - CUT, replaced by burnt orange */
+  --chart-4: 251 55% 55%;       /* Purple dark - CUT */
+  --chart-5: 354 75% 60%;       /* Coral variation */
+  --chart-6: var(--signal-green); /* Signal Factory Green */
+  --chart-7: var(--burnt-orange); /* Burnt Orange */
+  --chart-8: var(--violet-blue); /* Violet Blue */
 
   /* ================================================
      TYPOGRAPHY SYSTEM - Global font definitions
@@ -244,11 +260,17 @@
   --tertiary-border: hsl(var(--tertiary));
   --tertiary-border: hsl(from hsl(var(--tertiary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 
-  --indigo-border: hsl(var(--indigo));
-  --indigo-border: hsl(from hsl(var(--indigo)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  /* Signal Factory Green borders */
+  --signal-green-border: hsl(var(--signal-green));
+  --signal-green-border: hsl(from hsl(var(--signal-green)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 
-  --purple-dark-border: hsl(var(--purple-dark));
-  --purple-dark-border: hsl(from hsl(var(--purple-dark)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  /* Burnt Orange borders */
+  --burnt-orange-border: hsl(var(--burnt-orange));
+  --burnt-orange-border: hsl(from hsl(var(--burnt-orange)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  /* Violet Blue borders */
+  --violet-blue-border: hsl(var(--violet-blue));
+  --violet-blue-border: hsl(from hsl(var(--violet-blue)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
 .dark {
@@ -316,15 +338,25 @@
   --tertiary: 258 47% 46%;
   --tertiary-foreground: 0 0% 91%;
 
-  /* Community: Deep Indigo - good contrast maintained */
-  --indigo: 249 40% 45%;
+  /* Signal Factory Green - accessible dark mode variant */
+  --signal-green: 125 57% 59%;
+  --signal-green-foreground: 0 0% 100%;
 
-  --indigo-foreground: 0 0% 91%;
+  /* Burnt Orange - accessible dark mode variant */
+  --burnt-orange: 15 73% 60%;
+  --burnt-orange-foreground: 0 0% 100%;
 
-  /* Community: Purple Dark - darkened for accessibility */
-  --purple-dark: 251 55% 45%;
+  /* Violet Blue - accessible dark mode variant */
+  --violet-blue: 255 43% 69%;
+  --violet-blue-foreground: 0 0% 100%;
 
-  --purple-dark-foreground: 0 0% 91%;
+  /* Community: Deep Indigo - good contrast maintained (CUT) */
+  /* --indigo: 249 40% 45%; */
+  /* --indigo-foreground: 0 0% 91%; */
+
+  /* Community: Purple Dark - darkened for accessibility (CUT) */
+  /* --purple-dark: 251 55% 45%; */
+  /* --purple-dark-foreground: 0 0% 91%; */
 
   /* Purple-tinted secondary */
   --secondary: 249 8% 16%;
@@ -359,9 +391,12 @@
   /* Chart colors using brand palette - brighter for dark mode */
   --chart-1: 0 100% 55%;        /* Competition red */
   --chart-2: 252 67% 65%;       /* Community purple */
-  --chart-3: 249 40% 45%;       /* Indigo */
-  --chart-4: 251 55% 55%;       /* Purple dark */
+  --chart-3: 249 40% 45%;       /* Indigo - CUT */
+  --chart-4: 251 55% 55%;       /* Purple dark - CUT */
   --chart-5: 354 75% 60%;       /* Coral variation */
+  --chart-6: var(--signal-green); /* Signal Factory Green */
+  --chart-7: var(--burnt-orange); /* Burnt Orange */
+  --chart-8: var(--violet-blue); /* Violet Blue */
 
   /* Calculator Colors - Dark mode variants */
   --calculator-accent: var(--community);           /* Purple for sliders and values */
@@ -421,11 +456,17 @@
   --tertiary-border: hsl(var(--tertiary));
   --tertiary-border: hsl(from hsl(var(--tertiary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 
-  --indigo-border: hsl(var(--indigo));
-  --indigo-border: hsl(from hsl(var(--indigo)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  /* Signal Factory Green borders */
+  --signal-green-border: hsl(var(--signal-green));
+  --signal-green-border: hsl(from hsl(var(--signal-green)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 
-  --purple-dark-border: hsl(var(--purple-dark));
-  --purple-dark-border: hsl(from hsl(var(--purple-dark)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  /* Burnt Orange borders */
+  --burnt-orange-border: hsl(var(--burnt-orange));
+  --burnt-orange-border: hsl(from hsl(var(--burnt-orange)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  /* Violet Blue borders */
+  --violet-blue-border: hsl(var(--violet-blue));
+  --violet-blue-border: hsl(from hsl(var(--violet-blue)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
 @layer base {
@@ -643,7 +684,7 @@
   .gradient-text {
     color: #B80D2E;
     font-weight: 600;
-    text-shadow: 
+    text-shadow:
       0 0 20px rgba(184, 13, 46, 0.24),
       0 0 40px rgba(184, 13, 46, 0.16),
       0 0 60px rgba(184, 13, 46, 0.08);
@@ -652,13 +693,13 @@
 
   @keyframes gradient-text-pulse {
     0%, 100% {
-      text-shadow: 
+      text-shadow:
         0 0 20px rgba(184, 13, 46, 0.24),
         0 0 40px rgba(184, 13, 46, 0.16),
         0 0 60px rgba(184, 13, 46, 0.08);
     }
     50% {
-      text-shadow: 
+      text-shadow:
         0 0 30px rgba(184, 13, 46, 0.32),
         0 0 50px rgba(184, 13, 46, 0.20),
         0 0 70px rgba(184, 13, 46, 0.12);
@@ -686,7 +727,7 @@
   border: 1px solid rgba(220, 20, 60, 0.5);
 }
 
-  
+
 
   /* ================================================
      LIGHT MODE DEPTH SYSTEM - Multi-layer shadows
@@ -997,18 +1038,18 @@
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* Indigo color utilities for Signal Factory */
-.bg-indigo\/20 {
-  background-color: rgb(99 102 241 / 0.2);
-}
+/* Indigo color utilities for Signal Factory (CUT) */
+/* .bg-indigo\/20 { */
+/*   background-color: rgb(99 102 241 / 0.2); */
+/* } */
 
-.border-indigo\/30 {
-  border-color: rgb(99 102 241 / 0.3);
-}
+/* .border-indigo\/30 { */
+/*   border-color: rgb(99 102 241 / 0.3); */
+/* } */
 
-.text-indigo {
-  color: rgb(99 102 241);
-}
+/* .text-indigo { */
+/*   color: rgb(99 102 241); */
+/* } */
 
 /* Community (purple) color utilities for Playbook */
 .bg-community\/20 {
@@ -1022,6 +1063,46 @@
 .text-community {
   color: hsl(var(--community));
 }
+
+/* Signal Factory Green color utilities */
+.bg-signal-green\/20 {
+  background-color: hsl(var(--signal-green) / 0.2);
+}
+
+.border-signal-green\/30 {
+  border-color: hsl(var(--signal-green) / 0.3);
+}
+
+.text-signal-green {
+  color: hsl(var(--signal-green));
+}
+
+/* Burnt Orange color utilities */
+.bg-burnt-orange\/20 {
+  background-color: hsl(var(--burnt-orange) / 0.2);
+}
+
+.border-burnt-orange\/30 {
+  border-color: hsl(var(--burnt-orange) / 0.3);
+}
+
+.text-burnt-orange {
+  color: hsl(var(--burnt-orange));
+}
+
+/* Violet Blue color utilities */
+.bg-violet-blue\/20 {
+  background-color: hsl(var(--violet-blue) / 0.2);
+}
+
+.border-violet-blue\/30 {
+  border-color: hsl(var(--violet-blue) / 0.3);
+}
+
+.text-violet-blue {
+  color: hsl(var(--violet-blue));
+}
+
 
 /* Dark mode - deep shadows for dimension */
 .dark .badge-texture {
@@ -1306,29 +1387,42 @@ html:not(.dark) .badge-texture[class*="bg-community"] {
   animation: watercolor-drift 15s ease-in-out infinite;
 }
 
-html:not(.dark) .badge-texture[class*="bg-indigo"] {
+html:not(.dark) .badge-texture[class*="bg-signal-green"] {
   background: linear-gradient(
     135deg,
-    hsl(249 29% 24%) 0%,
-    hsl(249 25% 32%) 30%,
-    hsl(249 29% 24%) 60%,
-    hsl(249 20% 36%) 100%
+    hsl(var(--signal-green)) 0%,
+    hsl(calc(var(--signal-green) + 10)) 30%,
+    hsl(var(--signal-green)) 60%,
+    hsl(calc(var(--signal-green) + 20)) 100%
   ) !important;
   background-size: 200% 200%;
   animation: watercolor-drift 15s ease-in-out infinite;
 }
 
-html:not(.dark) .badge-texture[class*="bg-purple-dark"] {
+html:not(.dark) .badge-texture[class*="bg-burnt-orange"] {
   background: linear-gradient(
     135deg,
-    hsl(251 49% 40%) 0%,
-    hsl(251 45% 46%) 30%,
-    hsl(251 49% 40%) 60%,
-    hsl(251 42% 50%) 100%
+    hsl(var(--burnt-orange)) 0%,
+    hsl(calc(var(--burnt-orange) + 10)) 30%,
+    hsl(var(--burnt-orange)) 60%,
+    hsl(calc(var(--burnt-orange) + 20)) 100%
   ) !important;
   background-size: 200% 200%;
   animation: watercolor-drift 15s ease-in-out infinite;
 }
+
+html:not(.dark) .badge-texture[class*="bg-violet-blue"] {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--violet-blue)) 0%,
+    hsl(calc(var(--violet-blue) + 10)) 30%,
+    hsl(var(--violet-blue)) 60%,
+    hsl(calc(var(--violet-blue) + 20)) 100%
+  ) !important;
+  background-size: 200% 200%;
+  animation: watercolor-drift 15s ease-in-out infinite;
+}
+
 
 html:not(.dark) .badge-texture[class*="bg-destructive"] {
   background: linear-gradient(
