@@ -1027,6 +1027,18 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+/* Subtle pulse animation for selected orbital badge */
+@keyframes orbital-badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.05);
+    filter: brightness(1.15);
+  }
+}
+
 /* Badge Texture - Unified dark/light mode paper effect */
 .badge-texture {
   position: relative;

@@ -605,7 +605,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                         style={{
                           boxShadow: index === selectedIndex
                             ? `0 0 30px ${power.glowColor}, 0 0 60px ${power.glowColor}`
-                            : `0 0 20px ${power.glowColor}`
+                            : `0 0 20px ${power.glowColor}`,
+                          animation: index === selectedIndex ? 'orbital-badge-pulse 2s ease-in-out infinite' : 'none'
                         }}
                       >
                         {power.icon}
