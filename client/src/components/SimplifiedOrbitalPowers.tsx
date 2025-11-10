@@ -232,13 +232,17 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       // Target rotation: Always position selected icon at 180° (leftmost position)
       // Calculate how much we need to rotate to get the selected power to 180°
       const targetPowerAngle = nearestPowerAngle;
-      const targetRotation = 180 - targetPowerAngle;
+      let targetRotation = 180 - targetPowerAngle;
+      
+      // Normalize target rotation to 0-360 range
+      while (targetRotation < 0) targetRotation += 360;
+      while (targetRotation >= 360) targetRotation -= 360;
 
       // Calculate clockwise-only rotation (never counter-clockwise)
       let rotationDiff = targetRotation - currentRotation;
       if (rotationDiff < 0) rotationDiff += 360; // Always move clockwise
 
-      gsap.to({ value: 0 }, {
+      const decelerationTween = gsap.to({ value: 0 }, {
         value: 1,
         duration: 3, // Full 3 seconds for extremely smooth deceleration
         ease: "power1.out", // Gentle, gradual deceleration curve
@@ -258,6 +262,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           }, 1000);
         }
       });
+      
+      // Store for cleanup
+      return () => {
+        decelerationTween.kill();
+      };
     };
 
     video.addEventListener('ended', handleVideoEnd);
@@ -315,14 +324,17 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       // Wait for pre-pulse to complete
       timeline.to({}, { duration: PRE_PULSE_DURATION / 1000 });
 
-      // Get scale factor based on device
+      // Get scale factor based on device (recalculate each time for responsiveness)
       const isMobile = window.innerWidth < 768;
       const scaleMultiplier = isMobile ? 1.3 : 1.5;
 
       // Animate scaling of the current badge during pre-pulse
       const currentBadge = badgeRefs.current[currentIndex];
       if (currentBadge) {
-        gsap.to(currentBadge, {
+        // Kill any existing animations on this badge first
+        gsap.killTweensOf(currentBadge);
+        
+        const scaleUpTween = gsap.to(currentBadge, {
           scale: scaleMultiplier,
           duration: ROTATION_DURATION / 1000,
           ease: "power2.inOut",
@@ -336,6 +348,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             });
           }
         });
+        
+        // Add to timeline for proper cleanup
+        timeline.add(scaleUpTween, 0);
       }
 
       // Then smoothly rotate with cinematic easing
@@ -374,7 +389,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         clearInterval(tourIntervalRef.current);
         tourIntervalRef.current = null;
       }
-      gsap.killTweensOf({});
+      // Kill all GSAP animations on badge elements
+      badgeRefs.current.forEach(badge => {
+        if (badge) gsap.killTweensOf(badge);
+      });
+      gsap.killTweensOf({ value: 0 }); // Kill rotation tweens
       setIsAnimating(false);
       setPrePulseActive(false);
     };
