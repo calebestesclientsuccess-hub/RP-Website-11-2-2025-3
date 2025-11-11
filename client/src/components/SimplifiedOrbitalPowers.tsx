@@ -1,14 +1,12 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Brain, Target, Settings, Users, Wrench, Trophy, ChevronLeft, ChevronRight, Play, Zap } from "lucide-react";
+import { Brain, Target, Settings, Users, Wrench, Trophy, Play } from "lucide-react";
 import { gsap } from 'gsap';
 import { prefersReducedMotion } from "@/lib/animationConfig";
-import { cn } from "@/lib/utils";
 
-// Add CSS keyframes for smooth transitions and cinematic effects
-const cinematicKeyframes = `
+// Simple fade-in for info box
+const simpleKeyframes = `
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -18,87 +16,6 @@ const cinematicKeyframes = `
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-@keyframes cinematicPulse {
-  0%, 100% {
-    transform: scale(1) translateZ(0);
-    box-shadow: 
-      0 0 20px rgba(255, 255, 255, 0.4),
-      0 0 40px rgba(255, 255, 255, 0.2),
-      0 0 60px rgba(255, 255, 255, 0.1);
-  }
-  25% {
-    transform: scale(1.08) translateZ(0);
-    box-shadow: 
-      0 0 30px rgba(255, 255, 255, 0.6),
-      0 0 60px rgba(255, 255, 255, 0.4),
-      0 0 90px rgba(255, 255, 255, 0.2);
-  }
-  50% {
-    transform: scale(1.12) translateZ(0);
-    box-shadow: 
-      0 0 40px rgba(255, 255, 255, 0.8),
-      0 0 80px rgba(255, 255, 255, 0.5),
-      0 0 120px rgba(255, 255, 255, 0.3);
-  }
-  75% {
-    transform: scale(1.08) translateZ(0);
-    box-shadow: 
-      0 0 30px rgba(255, 255, 255, 0.6),
-      0 0 60px rgba(255, 255, 255, 0.4),
-      0 0 90px rgba(255, 255, 255, 0.2);
-  }
-}
-
-@keyframes spotlightGlow {
-  0%, 100% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.9;
-  }
-}
-
-@keyframes orbital-badge-pre-pulse {
-  0% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-  50% {
-    transform: scale(1.15);
-    filter: brightness(1.3);
-  }
-  100% {
-    transform: scale(1.12);
-    filter: brightness(1.2);
-  }
-}
-
-@keyframes orbital-badge-pulse {
-  0%, 100% {
-    transform: scale(1.12);
-    filter: brightness(1.15);
-  }
-  50% {
-    transform: scale(1.18);
-    filter: brightness(1.25);
-  }
-}
-
-.cinematic-highlight {
-  animation: cinematicPulse 1.5s ease-in-out infinite;
-  position: relative;
-  z-index: 50;
-}
-
-.cinematic-highlight::before {
-  content: '';
-  position: absolute;
-  inset: -20px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-  animation: spotlightGlow 1.5s ease-in-out infinite;
-  pointer-events: none;
 }
 `;
 
@@ -253,74 +170,27 @@ interface SimplifiedOrbitalPowersProps {
 import VideoSchema from "@/components/VideoSchema";
 
 export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbitalPowersProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
-  const badgeRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState(2);
-  const [showInfoBox, setShowInfoBox] = useState(true); // Show by default - don't depend on autoplay
+  const [selectedIndex] = useState(2);
+  const [showInfoBox, setShowInfoBox] = useState(true);
   const [hasPlayed, setHasPlayed] = useState(false);
-  const [initialPulse, setInitialPulse] = useState(true);
   const orbitAnimationRef = useRef<gsap.core.Tween | null>(null);
   const [orbitRotation, setOrbitRotation] = useState(0);
   const [showPlayButton, setShowPlayButton] = useState(false);
   const [videoError, setVideoError] = useState(false);
-  const [hoveredPower, setHoveredPower] = useState<string | null>(null);
-  const [currentPower, setCurrentPower] = useState<string | null>(null);
-  const [playbackMode, setPlaybackMode] = useState<'rotating' | 'decelerating' | 'autoTour' | 'manual'>('rotating');
-  const tourIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [videoEnded, setVideoEnded] = useState(false);
-  const [prePulseActive, setPrePulseActive] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [selectedPosition, setSelectedPosition] = useState(180); // Default to left position
-  const [preVideoPhase, setPreVideoPhase] = useState<'rotating' | 'decelerating' | 'highlighting' | 'ready'>('rotating');
-  const [highlightedIconIndex, setHighlightedIconIndex] = useState<number | null>(null);
-  const [cinematicReady, setCinematicReady] = useState(false);
-  const preVideoTimelineRef = useRef<gsap.core.Timeline | null>(null);
-  const autoTourTimelineRef = useRef<gsap.core.Timeline | null>(null);
-  const decelerationTweenRef = useRef<gsap.core.Tween | null>(null);
-  const orbitRotationRef = useRef(0);
-  const selectedPositionRef = useRef(180);
 
-  // Sync refs with state for stable event handler access
+  
+
+  // Simple continuous rotation - starts when section is in view
   useEffect(() => {
-    orbitRotationRef.current = orbitRotation;
-  }, [orbitRotation]);
+    if (prefersReducedMotion()) return;
 
-  useEffect(() => {
-    selectedPositionRef.current = selectedPosition;
-  }, [selectedPosition]);
+    const rotationObj = { value: 0 };
 
-  // Calculate responsive selection position based on viewport
-  useEffect(() => {
-    const updateSelectionPosition = () => {
-      const isMobile = window.innerWidth < 768;
-
-      if (isMobile) {
-        // Mobile: bottom-left (240°) for optimal visibility - 8 o'clock position
-        // This aligns with the pre-video sequence and makes icon-to-text correlation clear
-        setSelectedPosition(240);
-      } else {
-        // Desktop/Tablet: left side (180°) - 9 o'clock position
-        setSelectedPosition(180);
-      }
-    };
-
-    updateSelectionPosition();
-    window.addEventListener('resize', updateSelectionPosition);
-    return () => window.removeEventListener('resize', updateSelectionPosition);
-  }, []);
-
-  // Orbital rotation animation - starts when section enters viewport
-  useEffect(() => {
-    if (prefersReducedMotion() || preVideoPhase !== 'rotating') return;
-
-    const rotationObj = { value: orbitRotation };
-
-    // Faster initial rotation for more dynamic entry (45 seconds per rotation)
-    // This will slow down dramatically before video starts
+    // Slow, steady 60-second rotation
     orbitAnimationRef.current = gsap.to(rotationObj, {
-      value: orbitRotation + 360,
-      duration: 45,
+      value: 360,
+      duration: 60,
       ease: "none",
       repeat: -1,
       onUpdate: () => {
@@ -331,247 +201,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     return () => {
       orbitAnimationRef.current?.kill();
     };
-  }, [preVideoPhase]);
+  }, []);
 
-  // Handle video end and start deceleration - stable listener with ref-based state
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+  
 
-    const handleVideoEnd = () => {
-      setVideoEnded(true);
-      setPlaybackMode('decelerating');
-
-      if (prefersReducedMotion()) {
-        // Skip deceleration, go straight to auto-tour
-        setPlaybackMode('autoTour');
-        return;
-      }
-
-      // Kill the continuous rotation
-      if (orbitAnimationRef.current) {
-        orbitAnimationRef.current.kill();
-      }
-
-      // Kill any existing deceleration tween
-      if (decelerationTweenRef.current) {
-        decelerationTweenRef.current.kill();
-        decelerationTweenRef.current = null;
-      }
-
-      // Read current state from refs for stable access
-      const currentRotation = orbitRotationRef.current % 360;
-      const selectedPos = selectedPositionRef.current;
-
-      // Find which power is currently closest to selected position (responsive)
-      let nearestPowerIndex = 0;
-      let minDistance = 360;
-
-      powers.forEach((power, idx) => {
-        const totalAngle = (power.angle + currentRotation) % 360;
-        const distance = Math.abs(totalAngle - selectedPos);
-        const wrappedDistance = Math.min(distance, 360 - distance);
-        if (wrappedDistance < minDistance) {
-          minDistance = wrappedDistance;
-          nearestPowerIndex = idx;
-        }
-      });
-
-      // Always move FORWARD - if we're past the nearest, go to the NEXT one
-      const nearestPowerAngle = powers[nearestPowerIndex].angle;
-      const nearestTotalAngle = (nearestPowerAngle + currentRotation) % 360;
-
-      let targetPowerIndex = nearestPowerIndex;
-
-      // If nearest power is behind us, move to next power forward
-      if (nearestTotalAngle > selectedPos) {
-        targetPowerIndex = (nearestPowerIndex + 1) % powers.length;
-      }
-
-      // Calculate target rotation using responsive selection position
-      const targetPowerAngle = powers[targetPowerIndex].angle;
-      let targetRotation = selectedPos - targetPowerAngle;
-
-      // Normalize target rotation
-      while (targetRotation < 0) targetRotation += 360;
-      while (targetRotation >= 360) targetRotation -= 360;
-
-      // Calculate clockwise-only rotation
-      let rotationDiff = targetRotation - currentRotation;
-      if (rotationDiff < 0) rotationDiff += 360;
-
-      // Create and store deceleration tween
-      decelerationTweenRef.current = gsap.to({ value: 0 }, {
-        value: 1,
-        duration: 3, // Full 3 seconds for smooth deceleration
-        ease: "power3.out",
-        onUpdate: function() {
-          const progress = this.progress();
-          const easedProgress = gsap.parseEase("power3.out")(progress);
-          const newRotation = (currentRotation + rotationDiff * easedProgress) % 360;
-          setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
-        },
-        onComplete: () => {
-          setOrbitRotation(targetRotation);
-          setSelectedIndex(targetPowerIndex);
-
-          // Wait 1 second before starting auto-tour
-          setTimeout(() => {
-            setPlaybackMode('autoTour');
-          }, 1000);
-        }
-      });
-    };
-
-    video.addEventListener('ended', handleVideoEnd);
-
-    return () => {
-      video.removeEventListener('ended', handleVideoEnd);
-      // Kill deceleration tween on cleanup
-      if (decelerationTweenRef.current) {
-        decelerationTweenRef.current.kill();
-        decelerationTweenRef.current = null;
-      }
-    };
-  }, [videoRef]);
-
-  // Auto-tour system - rotate through powers with CINEMATIC transitions
-  useEffect(() => {
-    if (playbackMode !== 'autoTour') {
-      // Clear any existing interval
-      if (tourIntervalRef.current) {
-        clearInterval(tourIntervalRef.current);
-        tourIntervalRef.current = null;
-      }
-      setIsAnimating(false);
-      setPrePulseActive(false);
-      return;
-    }
-
-    if (prefersReducedMotion()) return;
-
-    // CINEMATIC TIMING: Slower, more deliberate pacing
-    const ANTICIPATION_DURATION = 400; // Wind-up before rotation (new!)
-    const ROTATION_DURATION = 1800; // Slightly faster rotation (was 2000)
-    const OVERSHOOT_DURATION = 350; // Subtle overshoot + settle (new!)
-    const PAUSE_DURATION = 6000; // Longer contemplation (was 4500) - let it breathe
-    const PRE_PULSE_DURATION = 1200; // Longer pre-pulse for emphasis (was 1000)
-    const DRAMATIC_BEAT = 180; // Tighter beat (was 250) - tension before release
-    const TOTAL_CYCLE = PRE_PULSE_DURATION + DRAMATIC_BEAT + ANTICIPATION_DURATION + ROTATION_DURATION + OVERSHOOT_DURATION + PAUSE_DURATION;
-
-    const performTransition = (currentIndex: number) => {
-      setIsAnimating(true);
-
-      const nextIndex = (currentIndex + 1) % powers.length;
-
-      const currentRotation = orbitRotation;
-      
-      // Calculate rotation to position next badge at selectedPosition
-      // This ensures consistent anchoring across all phases (240° mobile, 180° desktop)
-      const nextPowerAngle = powers[nextIndex].angle;
-      let targetRotation = selectedPosition - nextPowerAngle;
-      
-      // Normalize target rotation
-      while (targetRotation < 0) targetRotation += 360;
-      while (targetRotation >= 360) targetRotation -= 360;
-      
-      // Calculate clockwise rotation increment
-      let rotationIncrement = targetRotation - currentRotation;
-      if (rotationIncrement < 0) rotationIncrement += 360;
-
-      // Start pre-pulse on the NEXT badge
-      setPrePulseActive(true);
-
-      // Kill any existing timeline before creating a new one
-      if (autoTourTimelineRef.current) {
-        autoTourTimelineRef.current.kill();
-      }
-      
-      // CINEMATIC TIMELINE with anticipation & overshoot
-      const timeline = gsap.timeline({
-        onComplete: () => {
-          setOrbitRotation(targetRotation);
-          setSelectedIndex(nextIndex); // Update index only after animation completes
-          setPrePulseActive(false);
-          setIsAnimating(false);
-        }
-      });
-      
-      // Store timeline for cleanup
-      autoTourTimelineRef.current = timeline;
-
-      // Pre-pulse (building tension)
-      timeline.to({}, { duration: PRE_PULSE_DURATION / 1000 });
-
-      // Dramatic beat (the held breath)
-      timeline.to({}, { duration: DRAMATIC_BEAT / 1000 });
-
-      // MAIN ROTATION: Smooth clockwise-only acceleration → deceleration
-      // CRITICAL: NO counter-clockwise motion - only forward clockwise movement
-      timeline.to(
-        { value: 0 },
-        {
-          value: 1,
-          duration: (ANTICIPATION_DURATION + ROTATION_DURATION) / 1000,
-          ease: "power2.inOut", // Smooth ease-in, ease-out for cinematic feel
-          onUpdate: function() {
-            const progress = this.progress();
-            // CLOCKWISE-ONLY: Start at currentRotation, move forward by rotationIncrement
-            const newRotation = (currentRotation + rotationIncrement * progress) % 360;
-            setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
-          }
-        }
-      );
-
-      // OVERSHOOT & SETTLE: Slight overshoot then elastic settle
-      timeline.to(
-        { value: 0 },
-        {
-          value: 1,
-          duration: OVERSHOOT_DURATION / 1000,
-          ease: "elastic.out(1, 0.5)", // Subtle elastic settle
-          onUpdate: function() {
-            const progress = this.progress();
-            // Overshoot by 2° then settle back
-            const overshoot = 2 * (1 - progress);
-            const settleRotation = (targetRotation + overshoot) % 360;
-            setOrbitRotation(settleRotation < 0 ? settleRotation + 360 : settleRotation);
-          }
-        }
-      );
-    };
-
-    // Track the current index in closure
-    let currentTourIndex = selectedIndex;
-
-    const runTransition = () => {
-      performTransition(currentTourIndex);
-      currentTourIndex = (currentTourIndex + 1) % powers.length;
-    };
-
-    // LONGER initial pause - let viewers discover the interface
-    const INITIAL_PAUSE = 7500; // 7.5 seconds (was 5.5)
-    const initialTimeout = setTimeout(() => {
-      runTransition();
-      // Start interval only AFTER the initial transition completes
-      tourIntervalRef.current = setInterval(runTransition, TOTAL_CYCLE);
-    }, INITIAL_PAUSE);
-
-    return () => {
-      clearTimeout(initialTimeout);
-      if (tourIntervalRef.current) {
-        clearInterval(tourIntervalRef.current);
-        tourIntervalRef.current = null;
-      }
-      // Kill the active auto-tour timeline
-      if (autoTourTimelineRef.current) {
-        autoTourTimelineRef.current.kill();
-        autoTourTimelineRef.current = null;
-      }
-      setIsAnimating(false);
-      setPrePulseActive(false);
-    };
-  }, [playbackMode, selectedIndex, selectedPosition, powers]);
+  
 
   // Manual play handler for when autoplay is blocked
   const handleManualPlay = () => {
@@ -582,160 +216,19 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       .then(() => {
         setHasPlayed(true);
         setShowPlayButton(false);
-        setTimeout(() => setShowInfoBox(true), 1000);
-        setTimeout(() => setInitialPulse(false), 3000);
+        setTimeout(() => setShowInfoBox(true), 500);
       })
       .catch((error) => {
         console.error('Manual play failed:', error);
       });
   };
 
-  // Cinematic pre-video sequence orchestration
-  const executePreVideoSequence = useCallback(() => {
-    if (prefersReducedMotion()) {
-      // Skip cinematic sequence for reduced motion preference
-      const video = videoRef.current;
-      if (video) {
-        video.play().catch(() => setShowPlayButton(true));
-      }
-      return;
-    }
-
-    // Create a cinematic timeline
-    const timeline = gsap.timeline();
-
-    // Phase 1: Deceleration (3 seconds)
-    setPreVideoPhase('decelerating');
-
-    // Kill the continuous rotation
-    if (orbitAnimationRef.current) {
-      orbitAnimationRef.current.kill();
-    }
-
-    const currentRotation = orbitRotation;
-
-    // Find the bottom-left icon position for initial highlighting
-    // Mobile: 240° (8 o'clock) - easier to see for mobile users
-    // Desktop: 225° (7:30 position) - elegant side position
-    const bottomLeftAngle = window.innerWidth < 768 ? 240 : 225;
-
-    // Find which power should be at bottom-left using closest match
-    let targetPowerIndex = 0;
-    let minDistance = 360;
-    
-    powers.forEach((power, idx) => {
-      const totalAngle = (power.angle + currentRotation) % 360;
-      const distance = Math.abs(totalAngle - bottomLeftAngle);
-      // Handle wraparound (e.g., 350° is close to 10°)
-      const wrappedDistance = Math.min(distance, 360 - distance);
-      
-      if (wrappedDistance < minDistance) {
-        minDistance = wrappedDistance;
-        targetPowerIndex = idx;
-      }
-    });
-
-    // Calculate rotation to position target power at bottom-left
-    const targetPowerAngle = powers[targetPowerIndex].angle;
-    let targetRotation = bottomLeftAngle - targetPowerAngle;
-    while (targetRotation < 0) targetRotation += 360;
-    while (targetRotation >= 360) targetRotation -= 360;
-
-    // CRITICAL: Calculate clockwise-only delta for deceleration
-    let decelerationDelta = targetRotation - currentRotation;
-    if (decelerationDelta < 0) decelerationDelta += 360; // Force clockwise
-
-    // Smooth clockwise-only deceleration to bottom-left position
-    timeline.to({ value: 0 }, {
-      value: 1,
-      duration: 3,
-      ease: "power3.out",
-      onUpdate: function() {
-        const progress = this.progress();
-        const newRotation = (currentRotation + decelerationDelta * progress) % 360;
-        setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
-      }
-    });
-
-    // Phase 2: Highlighting (1.5 seconds)
-    timeline.call(() => {
-      setPreVideoPhase('highlighting');
-      setHighlightedIconIndex(targetPowerIndex);
-      setPrePulseActive(true);
-    });
-
-    timeline.to({}, { duration: 1.5 }); // Hold for pulsating effect
-
-    // Phase 3: Dramatic 360° rotation to bottom-center (2.5 seconds)
-    timeline.call(() => {
-      setPrePulseActive(false);
-    });
-
-    // Use responsive selectedPosition for final anchor position
-    // This ensures alignment with the rest of the system (240° mobile, 180° desktop)
-    let finalRotation = selectedPosition - targetPowerAngle;
-    while (finalRotation < 0) finalRotation += 360;
-    while (finalRotation >= 360) finalRotation -= 360;
-
-    // CRITICAL: Calculate clockwise-only delta for full 360° rotation
-    let fullRotationDelta = finalRotation - targetRotation;
-    if (fullRotationDelta < 0) fullRotationDelta += 360; // Force clockwise
-    
-    // Ensure we do almost a full 360° rotation (add 360 if too short)
-    if (fullRotationDelta < 300) {
-      fullRotationDelta += 360;
-    }
-
-    timeline.to({ value: 0 }, {
-      value: 1,
-      duration: 2.5,
-      ease: "power2.inOut",
-      onUpdate: function() {
-        const progress = this.progress();
-        const newRotation = (targetRotation + fullRotationDelta * progress) % 360;
-        setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
-
-        // Update selected index when reaching destination
-        if (progress > 0.8) {
-          setSelectedIndex(targetPowerIndex);
-        }
-      }
-    });
-
-    // Phase 4: Ready and play video
-    timeline.call(() => {
-      setPreVideoPhase('ready');
-      setCinematicReady(true);
-      setHighlightedIconIndex(null);
-
-      // Now play the video
-      const video = videoRef.current;
-      if (video) {
-        video.play()
-          .then(() => {
-            setHasPlayed(true);
-            setShowPlayButton(false);
-            setVideoError(false);
-            setTimeout(() => setShowInfoBox(true), 1000);
-            setTimeout(() => setInitialPulse(false), 3000);
-          })
-          .catch((error) => {
-            console.log('Video autoplay prevented:', error);
-            setShowPlayButton(true);
-          });
-      }
-    });
-
-    preVideoTimelineRef.current = timeline;
-  }, [videoRef, orbitRotation, powers, selectedPosition]);
-
-  // Video play and initial animations
+  // Simple video play on scroll
   useEffect(() => {
     if (!videoRef.current) return;
 
     const video = videoRef.current;
 
-    // Handle video errors
     const handleError = () => {
       console.error('Video load error:', video.error);
       setVideoError(true);
@@ -744,27 +237,24 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     video.addEventListener('error', handleError);
 
-    const attemptPlay = () => {
-      // Check for video errors first
-      if (video.error) {
-        handleError();
-        return;
-      }
-
-      // Execute cinematic sequence instead of direct play
-      executePreVideoSequence();
-    };
-
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasPlayed && !videoError) {
-            // Start video immediately when section enters viewport
-            attemptPlay();
+            video.play()
+              .then(() => {
+                setHasPlayed(true);
+                setShowPlayButton(false);
+                setTimeout(() => setShowInfoBox(true), 500);
+              })
+              .catch((error) => {
+                console.log('Video autoplay prevented:', error);
+                setShowPlayButton(true);
+              });
           }
         });
       },
-      { threshold: 0.1 } // Lower threshold for earlier trigger
+      { threshold: 0.1 }
     );
 
     if (sectionRef.current) {
@@ -774,163 +264,12 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     return () => {
       video.removeEventListener('error', handleError);
       observer.disconnect();
-
-      // Cleanup intervals
-      if (tourIntervalRef.current) {
-        clearInterval(tourIntervalRef.current);
-      }
-      
-      // Cleanup pre-video timeline
-      if (preVideoTimelineRef.current) {
-        preVideoTimelineRef.current.kill();
-        preVideoTimelineRef.current = null;
-      }
     };
-  }, [hasPlayed, videoError, videoRef, executePreVideoSequence, orbitRotation]);
+  }, [hasPlayed, videoError, videoRef]);
 
-  // Background color morphing
-  useEffect(() => {
-    if (!sectionRef.current || prefersReducedMotion()) return;
+  
 
-    const selectedPower = powers[selectedIndex];
-
-    gsap.to(sectionRef.current, {
-      background: `radial-gradient(ellipse at top, rgba(${selectedPower.bgColor}, 0.05) 0%, transparent 60%)`,
-      duration: 1.2,
-      ease: "power3.inOut",
-    });
-  }, [selectedIndex]);
-
-  // Shared helper to stop ALL competing GSAP timelines
-  const stopAllTimelines = () => {
-    if (orbitAnimationRef.current) {
-      orbitAnimationRef.current.kill();
-      orbitAnimationRef.current = null;
-    }
-    if (autoTourTimelineRef.current) {
-      autoTourTimelineRef.current.kill();
-      autoTourTimelineRef.current = null;
-    }
-    if (decelerationTweenRef.current) {
-      decelerationTweenRef.current.kill();
-      decelerationTweenRef.current = null;
-    }
-    if (preVideoTimelineRef.current) {
-      preVideoTimelineRef.current.kill();
-      preVideoTimelineRef.current = null;
-    }
-    setIsAnimating(false);
-    setPrePulseActive(false);
-  };
-
-  /**
-   * CINEMATIC CLOCKWISE ROTATION HELPER
-   * Ensures ALL rotation is smooth, fluid, and ALWAYS clockwise
-   * @param targetIndex - Badge index to rotate to
-   * @param options - Animation options (duration, onComplete, etc.)
-   */
-  const rotateClockwiseTo = (targetIndex: number, options: {
-    duration?: number;
-    ease?: string;
-    onComplete?: () => void;
-  } = {}) => {
-    const {
-      duration = 1.2, // Default cinematic duration
-      ease = "power2.out", // Smooth cinematic ease
-      onComplete
-    } = options;
-
-    stopAllTimelines(); // Kill any competing animations
-    
-    const currentRotation = orbitRotationRef.current % 360;
-    const targetPowerAngle = powers[targetIndex].angle;
-    const selectedPos = selectedPositionRef.current;
-    
-    // Calculate target rotation to position badge at selectedPosition
-    let targetRotation = selectedPos - targetPowerAngle;
-    while (targetRotation < 0) targetRotation += 360;
-    while (targetRotation >= 360) targetRotation -= 360;
-    
-    // CRITICAL: Calculate CLOCKWISE-ONLY delta
-    let clockwiseDelta = targetRotation - currentRotation;
-    if (clockwiseDelta < 0) clockwiseDelta += 360; // Force clockwise
-    
-    // Create smooth GSAP animation
-    const tween = gsap.to({ value: 0 }, {
-      value: 1,
-      duration,
-      ease,
-      onUpdate: function() {
-        const progress = this.progress();
-        const newRotation = (currentRotation + clockwiseDelta * progress) % 360;
-        setOrbitRotation(newRotation);
-      },
-      onComplete: () => {
-        setOrbitRotation(targetRotation);
-        setSelectedIndex(targetIndex);
-        if (onComplete) onComplete();
-      }
-    });
-    
-    // Store for cleanup
-    autoTourTimelineRef.current = tween as any;
-  };
-
-  const handlePrevious = () => {
-    const newIndex = (selectedIndex - 1 + powers.length) % powers.length;
-    
-    // CINEMATIC: Smooth clockwise rotation (faster for manual control)
-    rotateClockwiseTo(newIndex, {
-      duration: 0.8, // Snappier for manual interaction
-      ease: "power2.out",
-      onComplete: () => {
-        setInitialPulse(false);
-        setCurrentPower(powers[newIndex].id);
-      }
-    });
-
-    // User interaction cancels auto-tour
-    if (playbackMode === 'autoTour') {
-      setPlaybackMode('manual');
-    }
-  };
-
-  const handleNext = () => {
-    const newIndex = (selectedIndex + 1) % powers.length;
-    
-    // CINEMATIC: Smooth clockwise rotation (faster for manual control)
-    rotateClockwiseTo(newIndex, {
-      duration: 0.8, // Snappier for manual interaction
-      ease: "power2.out",
-      onComplete: () => {
-        setInitialPulse(false);
-        setCurrentPower(powers[newIndex].id);
-      }
-    });
-
-    // User interaction cancels auto-tour
-    if (playbackMode === 'autoTour') {
-      setPlaybackMode('manual');
-    }
-  };
-
-  const handleBadgeClick = (index: number) => {
-    // CINEMATIC: Smooth clockwise rotation (fastest for direct selection)
-    rotateClockwiseTo(index, {
-      duration: 0.6, // Quickest for direct badge clicks
-      ease: "power2.out",
-      onComplete: () => {
-        setShowInfoBox(true);
-        setInitialPulse(false);
-        setCurrentPower(powers[index].id);
-      }
-    });
-
-    // User interaction cancels auto-tour
-    if (playbackMode === 'autoTour') {
-      setPlaybackMode('manual');
-    }
-  };
+  
 
   const selectedPower = powers[selectedIndex] || powers[0];
 
@@ -995,7 +334,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
   return (
     <>
-      <style>{cinematicKeyframes}</style>
+      <style>{simpleKeyframes}</style>
       <VideoSchema
         name="Your Fullstack Sales Unit - GTM Engine in Action"
         description="Watch how Revenue Party's GTM Engine combines elite BDR pods with AI-powered systems to deliver guaranteed qualified appointments."
@@ -1030,103 +369,36 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               {videoEl}
             </div>
 
-            {/* Orbital Badges */}
+            {/* Orbital Badges - Static, no interactivity */}
             <div className="orbital-badges-container absolute inset-0 pointer-events-none">
               {powers.map((power, index) => {
-                // Responsive radius for better mobile positioning
                 const isMobile = window.innerWidth < 768;
-                const radius = isMobile ? 180 : 320; // Smaller radius on mobile
+                const radius = isMobile ? 180 : 320;
                 const totalAngle = power.angle + orbitRotation;
                 const angleRad = (totalAngle * Math.PI) / 180;
                 const x = Math.cos(angleRad) * radius;
-                // Adjust vertical scaling for mobile to ensure bottom positioning
-                const yScale = isMobile ? 0.8 : 0.6; // More vertical on mobile
+                const yScale = isMobile ? 0.8 : 0.6;
                 const y = Math.sin(angleRad) * radius * yScale;
-
-                // Determine if this badge is at the selected position (responsive based on viewport)
-                const normalizedAngle = totalAngle % 360;
-                // Relaxed threshold to prevent flickering during overshoot/settle (8°)
-                const isAtSelectedPosition = !isAnimating && Math.abs(normalizedAngle - selectedPosition) < 8;
-
-                // Determine if this is the NEXT badge (the one about to be selected)
-                const nextIndex = (selectedIndex + 1) % powers.length;
-                const isNextBadge = index === nextIndex;
-
-                // Pulse logic: exactly one badge pulses at all times
-                // During animation: pre-pulse on next badge
-                // During pause: sustained pulse on current selected badge
-                // Disabled during pre-video phase (cinematic-highlight takes priority)
-                const isCinematicPhase = preVideoPhase !== 'ready' && preVideoPhase !== 'rotating';
-                const showPrePulse = !isCinematicPhase && isNextBadge && prePulseActive && isAnimating;
-                const showSustainedPulse = !isCinematicPhase && index === selectedIndex && !isAnimating;
 
                 return (
                   <div
                     key={power.id}
-                    ref={el => badgeRefs.current[index] = el}
-                    className="absolute left-1/2 top-1/2 pointer-events-auto"
+                    className="absolute left-1/2 top-1/2"
                     style={{
                       transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
                       zIndex: 30
                     }}
                   >
-                    <button
-                      onClick={() => handleBadgeClick(index)}
-                      className="group cursor-pointer relative"
-                      data-testid={`power-badge-${power.id}`}
-                      onMouseEnter={() => setHoveredPower(power.id)}
-                      onMouseLeave={() => setHoveredPower(null)}
+                    <div
+                      className="relative rounded-full p-3 bg-background/90 backdrop-blur-sm border-2 shadow-lg"
                       style={{
-                        transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' // Bouncy hover
+                        borderColor: `hsl(var(--${power.color.replace('text-', '')}))`,
+                        boxShadow: `0 0 20px ${power.glowColor}`
                       }}
+                      data-testid={`power-badge-${power.id}`}
                     >
-                      <div
-                        className={cn(
-                          `
-                          relative rounded-full p-3 bg-background/90 backdrop-blur-sm
-                          border-2 ${power.color} shadow-lg
-                          group-hover:shadow-2xl
-                          ${isAtSelectedPosition ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}
-                          ${highlightedIconIndex === index ? 'cinematic-highlight' : ''}
-                        `,
-                        )}
-                        style={{
-                          boxShadow: highlightedIconIndex === index
-                            ? undefined // Let cinematic-highlight CSS handle it
-                            : isAtSelectedPosition
-                            ? `0 0 30px ${power.glowColor}, 0 0 60px ${power.glowColor}`
-                            : `0 0 20px ${power.glowColor}`,
-                          animation: highlightedIconIndex === index 
-                            ? undefined // Let cinematic-highlight CSS handle it
-                            : showPrePulse
-                            ? 'orbital-badge-pre-pulse 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' // Longer, bouncier
-                            : showSustainedPulse
-                            ? 'orbital-badge-pulse 4s cubic-bezier(0.4, 0, 0.2, 1) infinite' // Slower pulse
-                            : 'none',
-                          transform: hoveredPower === power.id 
-                            ? 'scale(1.15) rotate(5deg)' // Slight rotation on hover
-                            : highlightedIconIndex === index
-                            ? undefined // Let cinematic-highlight CSS handle it
-                            : isAtSelectedPosition 
-                            ? 'scale(1.12)' 
-                            : 'scale(1)',
-                          transition: highlightedIconIndex === index ? undefined : 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                          willChange: (showPrePulse || showSustainedPulse || highlightedIconIndex === index) ? 'transform, filter' : 'auto',
-                          backfaceVisibility: 'hidden',
-                          WebkitBackfaceVisibility: 'hidden'
-                        }}
-                      >
-                        {power.icon}
-                      </div>
-
-                      <div className={`
-                        absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap
-                        text-sm font-medium ${power.color}
-                        opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                      `}>
-                        {power.title}
-                      </div>
-                    </button>
+                      {power.icon}
+                    </div>
                   </div>
                 );
               })}
@@ -1143,36 +415,14 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                   animation: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`p-2 rounded-full ${selectedPower.color}`}
-                      style={{ backgroundColor: `${selectedPower.glowColor}20` }}
-                    >
-                      {selectedPower.icon}
-                    </div>
-                    <h3 className={`text-2xl font-bold ${selectedPower.color}`}>{selectedPower.title}</h3>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`p-2 rounded-full ${selectedPower.color}`}
+                    style={{ backgroundColor: `${selectedPower.glowColor}20` }}
+                  >
+                    {selectedPower.icon}
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={handlePrevious}
-                      className="hover:scale-110 transition-transform"
-                      data-testid="button-previous-power"
-                    >
-                      <ChevronLeft className="h-5 w-5" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={handleNext}
-                      className="hover:scale-110 transition-transform"
-                      data-testid="button-next-power"
-                    >
-                      <ChevronRight className="h-5 w-5" />
-                    </Button>
-                  </div>
+                  <h3 className={`text-2xl font-bold ${selectedPower.color}`}>{selectedPower.title}</h3>
                 </div>
 
                 <p className="text-muted-foreground">{selectedPower.description}</p>
