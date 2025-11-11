@@ -69,7 +69,7 @@ const powers: Power[] = [
   {
     id: "ai-architect",
     title: "AI Architect",
-    icon: <Brain className="w-6 h-6" strokeWidth={2} style={{ stroke: "#4CAF50" }} />,
+    icon: <Brain className="w-6 h-6" strokeWidth={2} style={{ stroke: "hsl(125 57% 49%)" }} />,
     color: "text-signal-green",
     glowColor: "rgba(76, 175, 80, 0.4)",
     bgColor: "76, 175, 80",
@@ -129,7 +129,7 @@ const powers: Power[] = [
   {
     id: "tools",
     title: "Tech Stack",
-    icon: <Wrench className="w-6 h-6" strokeWidth={2} style={{ stroke: "#4CAF50" }} />,
+    icon: <Wrench className="w-6 h-6" strokeWidth={2} style={{ stroke: "hsl(125 57% 49%)" }} />,
     color: "text-signal-green",
     glowColor: "rgba(76, 175, 80, 0.4)",
     bgColor: "76, 175, 80",
