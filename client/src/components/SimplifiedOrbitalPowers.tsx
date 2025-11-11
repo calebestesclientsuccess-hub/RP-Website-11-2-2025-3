@@ -60,6 +60,32 @@ const cinematicKeyframes = `
   }
 }
 
+@keyframes orbital-badge-pre-pulse {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.15);
+    filter: brightness(1.3);
+  }
+  100% {
+    transform: scale(1.12);
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes orbital-badge-pulse {
+  0%, 100% {
+    transform: scale(1.12);
+    filter: brightness(1.15);
+  }
+  50% {
+    transform: scale(1.18);
+    filter: brightness(1.25);
+  }
+}
+
 .cinematic-highlight {
   animation: cinematicPulse 1.5s ease-in-out infinite;
   position: relative;
@@ -250,6 +276,19 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [highlightedIconIndex, setHighlightedIconIndex] = useState<number | null>(null);
   const [cinematicReady, setCinematicReady] = useState(false);
   const preVideoTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  const autoTourTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  const decelerationTweenRef = useRef<gsap.core.Tween | null>(null);
+  const orbitRotationRef = useRef(0);
+  const selectedPositionRef = useRef(180);
+
+  // Sync refs with state for stable event handler access
+  useEffect(() => {
+    orbitRotationRef.current = orbitRotation;
+  }, [orbitRotation]);
+
+  useEffect(() => {
+    selectedPositionRef.current = selectedPosition;
+  }, [selectedPosition]);
 
   // Calculate responsive selection position based on viewport
   useEffect(() => {
@@ -257,8 +296,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       const isMobile = window.innerWidth < 768;
 
       if (isMobile) {
-        // Mobile: bottom-center (270°) for optimal visibility - 6 o'clock position
-        setSelectedPosition(270);
+        // Mobile: bottom-left (240°) for optimal visibility - 8 o'clock position
+        // This aligns with the pre-video sequence and makes icon-to-text correlation clear
+        setSelectedPosition(240);
       } else {
         // Desktop/Tablet: left side (180°) - 9 o'clock position
         setSelectedPosition(180);
@@ -293,7 +333,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     };
   }, [preVideoPhase]);
 
-  // Handle video end and start deceleration
+  // Handle video end and start deceleration - stable listener with ref-based state
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -313,16 +353,23 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         orbitAnimationRef.current.kill();
       }
 
-      // Always move FORWARD to the next power position (maintain momentum)
-      const currentRotation = orbitRotation % 360;
+      // Kill any existing deceleration tween
+      if (decelerationTweenRef.current) {
+        decelerationTweenRef.current.kill();
+        decelerationTweenRef.current = null;
+      }
 
-      // Find which power is currently closest to left (180°)
+      // Read current state from refs for stable access
+      const currentRotation = orbitRotationRef.current % 360;
+      const selectedPos = selectedPositionRef.current;
+
+      // Find which power is currently closest to selected position (responsive)
       let nearestPowerIndex = 0;
       let minDistance = 360;
 
       powers.forEach((power, idx) => {
         const totalAngle = (power.angle + currentRotation) % 360;
-        const distance = Math.abs(totalAngle - 180);
+        const distance = Math.abs(totalAngle - selectedPos);
         const wrappedDistance = Math.min(distance, 360 - distance);
         if (wrappedDistance < minDistance) {
           minDistance = wrappedDistance;
@@ -331,20 +378,19 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       });
 
       // Always move FORWARD - if we're past the nearest, go to the NEXT one
-      // This maintains visual momentum and feels more natural
       const nearestPowerAngle = powers[nearestPowerIndex].angle;
       const nearestTotalAngle = (nearestPowerAngle + currentRotation) % 360;
 
       let targetPowerIndex = nearestPowerIndex;
 
-      // If nearest power is behind us (angle > 180), move to next power forward
-      if (nearestTotalAngle > 180) {
+      // If nearest power is behind us, move to next power forward
+      if (nearestTotalAngle > selectedPos) {
         targetPowerIndex = (nearestPowerIndex + 1) % powers.length;
       }
 
       // Calculate target rotation using responsive selection position
       const targetPowerAngle = powers[targetPowerIndex].angle;
-      let targetRotation = selectedPosition - targetPowerAngle;
+      let targetRotation = selectedPos - targetPowerAngle;
 
       // Normalize target rotation
       while (targetRotation < 0) targetRotation += 360;
@@ -354,10 +400,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       let rotationDiff = targetRotation - currentRotation;
       if (rotationDiff < 0) rotationDiff += 360;
 
-      const decelerationTween = gsap.to({ value: 0 }, {
+      // Create and store deceleration tween
+      decelerationTweenRef.current = gsap.to({ value: 0 }, {
         value: 1,
-        duration: 3, // Full 3 seconds for extremely smooth deceleration
-        ease: "power3.out", // Match auto-tour easing for consistency
+        duration: 3, // Full 3 seconds for smooth deceleration
+        ease: "power3.out",
         onUpdate: function() {
           const progress = this.progress();
           const easedProgress = gsap.parseEase("power3.out")(progress);
@@ -374,19 +421,19 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           }, 1000);
         }
       });
-
-      // Store for cleanup
-      return () => {
-        decelerationTween.kill();
-      };
     };
 
     video.addEventListener('ended', handleVideoEnd);
 
     return () => {
       video.removeEventListener('ended', handleVideoEnd);
+      // Kill deceleration tween on cleanup
+      if (decelerationTweenRef.current) {
+        decelerationTweenRef.current.kill();
+        decelerationTweenRef.current = null;
+      }
     };
-  }, [videoRef, orbitRotation]);
+  }, [videoRef]);
 
   // Auto-tour system - rotate through powers with CINEMATIC transitions
   useEffect(() => {
@@ -418,20 +465,40 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       const nextIndex = (currentIndex + 1) % powers.length;
 
       const currentRotation = orbitRotation;
-      const rotationIncrement = 60; // Move one position clockwise
-      const targetRotation = (currentRotation + rotationIncrement) % 360;
+      
+      // Calculate rotation to position next badge at selectedPosition
+      // This ensures consistent anchoring across all phases (240° mobile, 180° desktop)
+      const nextPowerAngle = powers[nextIndex].angle;
+      let targetRotation = selectedPosition - nextPowerAngle;
+      
+      // Normalize target rotation
+      while (targetRotation < 0) targetRotation += 360;
+      while (targetRotation >= 360) targetRotation -= 360;
+      
+      // Calculate clockwise rotation increment
+      let rotationIncrement = targetRotation - currentRotation;
+      if (rotationIncrement < 0) rotationIncrement += 360;
 
       // Start pre-pulse on the NEXT badge
       setPrePulseActive(true);
 
+      // Kill any existing timeline before creating a new one
+      if (autoTourTimelineRef.current) {
+        autoTourTimelineRef.current.kill();
+      }
+      
       // CINEMATIC TIMELINE with anticipation & overshoot
       const timeline = gsap.timeline({
         onComplete: () => {
           setOrbitRotation(targetRotation);
+          setSelectedIndex(nextIndex); // Update index only after animation completes
           setPrePulseActive(false);
           setIsAnimating(false);
         }
       });
+      
+      // Store timeline for cleanup
+      autoTourTimelineRef.current = timeline;
 
       // Pre-pulse (building tension)
       timeline.to({}, { duration: PRE_PULSE_DURATION / 1000 });
@@ -467,12 +534,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             // Rotate from anticipation point (currentRotation - 3°) to target
             const newRotation = (currentRotation - 3 + (rotationIncrement + 3) * progress) % 360;
             setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
-
-            // Update selectedIndex when the badge is VISUALLY at the selected position
-            // This happens around 85-90% of the rotation
-            if (progress >= 0.85 && selectedIndex !== nextIndex) {
-              setSelectedIndex(nextIndex);
-            }
           }
         }
       );
@@ -505,10 +566,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     // LONGER initial pause - let viewers discover the interface
     const INITIAL_PAUSE = 7500; // 7.5 seconds (was 5.5)
-    const initialTimeout = setTimeout(runTransition, INITIAL_PAUSE);
-
-    // Then continue with interval - full cycle time
-    tourIntervalRef.current = setInterval(runTransition, TOTAL_CYCLE);
+    const initialTimeout = setTimeout(() => {
+      runTransition();
+      // Start interval only AFTER the initial transition completes
+      tourIntervalRef.current = setInterval(runTransition, TOTAL_CYCLE);
+    }, INITIAL_PAUSE);
 
     return () => {
       clearTimeout(initialTimeout);
@@ -516,11 +578,15 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         clearInterval(tourIntervalRef.current);
         tourIntervalRef.current = null;
       }
-      gsap.killTweensOf({ value: 0 }); // Kill rotation tweens
+      // Kill the active auto-tour timeline
+      if (autoTourTimelineRef.current) {
+        autoTourTimelineRef.current.kill();
+        autoTourTimelineRef.current = null;
+      }
       setIsAnimating(false);
       setPrePulseActive(false);
     };
-  }, [playbackMode, selectedIndex, orbitRotation]);
+  }, [playbackMode, selectedIndex, selectedPosition, powers]);
 
   // Manual play handler for when autoplay is blocked
   const handleManualPlay = () => {
@@ -568,11 +634,18 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     // Desktop: 225° (7:30 position) - elegant side position
     const bottomLeftAngle = window.innerWidth < 768 ? 240 : 225;
 
-    // Find which power should be at bottom-left
+    // Find which power should be at bottom-left using closest match
     let targetPowerIndex = 0;
+    let minDistance = 360;
+    
     powers.forEach((power, idx) => {
       const totalAngle = (power.angle + currentRotation) % 360;
-      if (Math.abs(totalAngle - bottomLeftAngle) < 30) {
+      const distance = Math.abs(totalAngle - bottomLeftAngle);
+      // Handle wraparound (e.g., 350° is close to 10°)
+      const wrappedDistance = Math.min(distance, 360 - distance);
+      
+      if (wrappedDistance < minDistance) {
+        minDistance = wrappedDistance;
         targetPowerIndex = idx;
       }
     });
@@ -609,8 +682,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       setPrePulseActive(false);
     });
 
-    const bottomCenterAngle = window.innerWidth < 768 ? 270 : 180; // Mobile: bottom-center, Desktop: left
-    let finalRotation = bottomCenterAngle - targetPowerAngle;
+    // Use responsive selectedPosition for final anchor position
+    // This ensures alignment with the rest of the system (240° mobile, 180° desktop)
+    let finalRotation = selectedPosition - targetPowerAngle;
 
     // Ensure we do almost a full 360° rotation
     if (Math.abs(finalRotation - targetRotation) < 300) {
@@ -709,6 +783,12 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       // Cleanup intervals
       if (tourIntervalRef.current) {
         clearInterval(tourIntervalRef.current);
+      }
+      
+      // Cleanup pre-video timeline
+      if (preVideoTimelineRef.current) {
+        preVideoTimelineRef.current.kill();
+        preVideoTimelineRef.current = null;
       }
     };
   }, [hasPlayed, videoError, videoRef, executePreVideoSequence, orbitRotation]);
@@ -851,7 +931,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         </div>
 
         {/* Main Container */}
-        <div ref={containerRef} className="relative mx-auto -mt-6" style={{ maxWidth: '900px' }}>
+        <div ref={containerRef} className="relative mx-auto -mt-6" style={{ maxWidth: '900px' }} data-playback-mode={playbackMode} data-selected-index={selectedIndex} data-selected-position={selectedPosition} data-testid="orbital-container">
           {/* Orbital Container - Adjusted height for mobile */}
           <div className="relative mx-auto h-[450px] md:h-[600px] flex items-center justify-center">
 
@@ -885,8 +965,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 // Pulse logic: exactly one badge pulses at all times
                 // During animation: pre-pulse on next badge
                 // During pause: sustained pulse on current selected badge
-                const showPrePulse = isNextBadge && prePulseActive && isAnimating;
-                const showSustainedPulse = index === selectedIndex && !isAnimating;
+                // Disabled during pre-video phase (cinematic-highlight takes priority)
+                const isCinematicPhase = preVideoPhase !== 'ready' && preVideoPhase !== 'rotating';
+                const showPrePulse = !isCinematicPhase && isNextBadge && prePulseActive && isAnimating;
+                const showSustainedPulse = !isCinematicPhase && index === selectedIndex && !isAnimating;
 
                 return (
                   <div
