@@ -40,7 +40,7 @@ const powers: Power[] = [
   {
     id: "ai-architect",
     title: "AI Architect",
-    icon: <Brain className="w-6 h-6" style={{ color: '#5E4DB8' }} />,
+    icon: <Brain className="w-6 h-6" style={{ color: '#5E4DB8', strokeWidth: 2 }} />,
     color: "text-violet-blue",
     glowColor: "rgba(94, 77, 184, 0.4)",
     bgColor: "94, 77, 184",
@@ -60,7 +60,7 @@ const powers: Power[] = [
   {
     id: "gtm-strategist",
     title: "GTM Strategist",
-    icon: <Target className="w-6 h-6" style={{ color: '#ef233c' }} />,
+    icon: <Target className="w-6 h-6" style={{ color: '#ef233c', strokeWidth: 2 }} />,
     color: "text-primary",
     glowColor: "rgba(239, 35, 60, 0.4)",
     bgColor: "239, 35, 60",
@@ -80,7 +80,7 @@ const powers: Power[] = [
   {
     id: "revops",
     title: "RevOps",
-    icon: <Settings className="w-6 h-6" style={{ color: '#D25A28' }} />,
+    icon: <Settings className="w-6 h-6" style={{ color: '#D25A28', strokeWidth: 2 }} />,
     color: "text-burnt-orange",
     glowColor: "rgba(210, 90, 40, 0.4)",
     bgColor: "210, 90, 40",
@@ -100,7 +100,7 @@ const powers: Power[] = [
   {
     id: "coach",
     title: "Elite Coach",
-    icon: <Users className="w-6 h-6" style={{ color: '#9F8FFF' }} />,
+    icon: <Users className="w-6 h-6" style={{ color: '#9F8FFF', strokeWidth: 2 }} />,
     color: "text-community",
     glowColor: "rgba(159, 143, 255, 0.4)",
     bgColor: "159, 143, 255",
@@ -120,7 +120,7 @@ const powers: Power[] = [
   {
     id: "tools",
     title: "Tech Stack",
-    icon: <Wrench className="w-6 h-6" style={{ color: '#4CAF50' }} />,
+    icon: <Wrench className="w-6 h-6" style={{ color: '#4CAF50', strokeWidth: 2 }} />,
     color: "text-signal-green",
     glowColor: "rgba(76, 175, 80, 0.4)",
     bgColor: "76, 175, 80",
@@ -140,7 +140,7 @@ const powers: Power[] = [
   {
     id: "community",
     title: "Community & Competition",
-    icon: <Trophy className="w-6 h-6" style={{ color: '#C41E58' }} />,
+    icon: <Trophy className="w-6 h-6" style={{ color: '#C41E58', strokeWidth: 2 }} />,
     color: "text-magenta-rose",
     glowColor: "rgba(196, 30, 88, 0.4)",
     bgColor: "196, 30, 88",
