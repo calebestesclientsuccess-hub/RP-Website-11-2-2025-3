@@ -454,32 +454,43 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Horizontal Icon Row - appears after animation completes */}
           {animationComplete && (
-            <div className="flex justify-center items-center gap-4 mb-6 -mt-8">
-              {powers.map((power, index) => {
-                const isActive = index === activePowerIndex;
-                return (
-                  <button
-                    key={power.id}
-                    onClick={() => setActivePowerIndex(index)}
-                    className="relative rounded-full p-3 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 cursor-pointer"
-                    style={{
-                      boxShadow: isActive 
-                        ? `0 0 30px ${power.glowColor}, 0 0 15px ${power.glowColor}` 
-                        : `0 0 20px ${power.glowColor}`,
-                      animation: isActive ? 'pulse-subtle 2s ease-in-out infinite' : 'none'
-                    }}
-                    data-testid={`power-icon-${power.id}`}
-                  >
-                    {power.icon}
-                  </button>
-                );
-              })}
+            <div className="flex flex-col items-center -mt-4 mb-2">
+              {/* Subtle connector line from video to icons */}
+              <div className="w-px h-6 bg-gradient-to-b from-muted/50 to-transparent mb-3" />
+              
+              <div className="flex justify-center items-center gap-3 md:gap-4 px-4" 
+                style={{ 
+                  maxWidth: window.innerWidth < 768 ? 'min(85vw, 320px)' : 'min(90vw, 640px)' 
+                }}>
+                {powers.map((power, index) => {
+                  const isActive = index === activePowerIndex;
+                  return (
+                    <button
+                      key={power.id}
+                      onClick={() => setActivePowerIndex(index)}
+                      className="relative rounded-full p-2.5 md:p-3 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 cursor-pointer flex-shrink-0"
+                      style={{
+                        boxShadow: isActive 
+                          ? `0 0 30px ${power.glowColor}, 0 0 15px ${power.glowColor}` 
+                          : `0 0 20px ${power.glowColor}`,
+                        animation: isActive ? 'pulse-subtle 2s ease-in-out infinite' : 'none'
+                      }}
+                      data-testid={`power-icon-${power.id}`}
+                    >
+                      {power.icon}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {/* Subtle connector line from icons to text box */}
+              <div className="w-px h-6 bg-gradient-to-b from-transparent via-muted/50 to-transparent mt-3" />
             </div>
           )}
 
           {/* Info Box with Cycling Arrows */}
           {showInfoBox && (
-            <Card className="-mt-8 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
+            <Card className="mt-2 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
               <div
                 key={powers[activePowerIndex].id}
                 className="space-y-4"
@@ -520,7 +531,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Netflix-style Navigation Arrows - Only show after animation completes */}
           {animationComplete && (
-            <div className="flex justify-center items-center gap-8 mb-4 z-30 relative" style={{ marginTop: '-2rem' }}>
+            <div className="flex justify-center items-center gap-8 mt-6 mb-4 z-30 relative">
               <button
                 onClick={() => handleNavigate('prev')}
                 className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 border-muted hover:border-primary hover:bg-primary/10 transition-all duration-300 hover:scale-110"
