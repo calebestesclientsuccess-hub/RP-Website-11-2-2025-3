@@ -506,33 +506,18 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       // Dramatic beat (the held breath)
       timeline.to({}, { duration: DRAMATIC_BEAT / 1000 });
 
-      // ANTICIPATION: Subtle counter-rotation (wind-up)
+      // MAIN ROTATION: Smooth clockwise-only acceleration → deceleration
+      // CRITICAL: NO counter-clockwise motion - only forward clockwise movement
       timeline.to(
         { value: 0 },
         {
           value: 1,
-          duration: ANTICIPATION_DURATION / 1000,
-          ease: "power2.in", // Accelerate into the wind-up
+          duration: (ANTICIPATION_DURATION + ROTATION_DURATION) / 1000,
+          ease: "power2.inOut", // Smooth ease-in, ease-out for cinematic feel
           onUpdate: function() {
             const progress = this.progress();
-            // Counter-rotate 3° backward (like pulling back a slingshot)
-            const anticipationRotation = currentRotation - (3 * progress);
-            setOrbitRotation(anticipationRotation < 0 ? anticipationRotation + 360 : anticipationRotation);
-          }
-        }
-      );
-
-      // MAIN ROTATION: Fast acceleration, smooth deceleration
-      timeline.to(
-        { value: 0 },
-        {
-          value: 1,
-          duration: ROTATION_DURATION / 1000,
-          ease: "power2.out", // Disney-style ease
-          onUpdate: function() {
-            const progress = this.progress();
-            // Rotate from anticipation point (currentRotation - 3°) to target
-            const newRotation = (currentRotation - 3 + (rotationIncrement + 3) * progress) % 360;
+            // CLOCKWISE-ONLY: Start at currentRotation, move forward by rotationIncrement
+            const newRotation = (currentRotation + rotationIncrement * progress) % 360;
             setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
           }
         }
@@ -656,15 +641,19 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     while (targetRotation < 0) targetRotation += 360;
     while (targetRotation >= 360) targetRotation -= 360;
 
-    // Smooth deceleration to bottom-left position
-    timeline.to({ value: currentRotation }, {
-      value: targetRotation,
+    // CRITICAL: Calculate clockwise-only delta for deceleration
+    let decelerationDelta = targetRotation - currentRotation;
+    if (decelerationDelta < 0) decelerationDelta += 360; // Force clockwise
+
+    // Smooth clockwise-only deceleration to bottom-left position
+    timeline.to({ value: 0 }, {
+      value: 1,
       duration: 3,
       ease: "power3.out",
       onUpdate: function() {
         const progress = this.progress();
-        const newRotation = currentRotation + (targetRotation - currentRotation) * progress;
-        setOrbitRotation(newRotation % 360);
+        const newRotation = (currentRotation + decelerationDelta * progress) % 360;
+        setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
       }
     });
 
@@ -685,20 +674,26 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     // Use responsive selectedPosition for final anchor position
     // This ensures alignment with the rest of the system (240° mobile, 180° desktop)
     let finalRotation = selectedPosition - targetPowerAngle;
+    while (finalRotation < 0) finalRotation += 360;
+    while (finalRotation >= 360) finalRotation -= 360;
 
-    // Ensure we do almost a full 360° rotation
-    if (Math.abs(finalRotation - targetRotation) < 300) {
-      finalRotation += 360;
+    // CRITICAL: Calculate clockwise-only delta for full 360° rotation
+    let fullRotationDelta = finalRotation - targetRotation;
+    if (fullRotationDelta < 0) fullRotationDelta += 360; // Force clockwise
+    
+    // Ensure we do almost a full 360° rotation (add 360 if too short)
+    if (fullRotationDelta < 300) {
+      fullRotationDelta += 360;
     }
 
-    timeline.to({ value: targetRotation }, {
-      value: finalRotation,
+    timeline.to({ value: 0 }, {
+      value: 1,
       duration: 2.5,
       ease: "power2.inOut",
       onUpdate: function() {
         const progress = this.progress();
-        const newRotation = targetRotation + (finalRotation - targetRotation) * progress;
-        setOrbitRotation(newRotation % 360);
+        const newRotation = (targetRotation + fullRotationDelta * progress) % 360;
+        setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
 
         // Update selected index when reaching destination
         if (progress > 0.8) {
@@ -828,13 +823,71 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     setPrePulseActive(false);
   };
 
-  const handlePrevious = () => {
-    stopAllTimelines(); // Kill all competing timelines
+  /**
+   * CINEMATIC CLOCKWISE ROTATION HELPER
+   * Ensures ALL rotation is smooth, fluid, and ALWAYS clockwise
+   * @param targetIndex - Badge index to rotate to
+   * @param options - Animation options (duration, onComplete, etc.)
+   */
+  const rotateClockwiseTo = (targetIndex: number, options: {
+    duration?: number;
+    ease?: string;
+    onComplete?: () => void;
+  } = {}) => {
+    const {
+      duration = 1.2, // Default cinematic duration
+      ease = "power2.out", // Smooth cinematic ease
+      onComplete
+    } = options;
+
+    stopAllTimelines(); // Kill any competing animations
     
+    const currentRotation = orbitRotationRef.current % 360;
+    const targetPowerAngle = powers[targetIndex].angle;
+    const selectedPos = selectedPositionRef.current;
+    
+    // Calculate target rotation to position badge at selectedPosition
+    let targetRotation = selectedPos - targetPowerAngle;
+    while (targetRotation < 0) targetRotation += 360;
+    while (targetRotation >= 360) targetRotation -= 360;
+    
+    // CRITICAL: Calculate CLOCKWISE-ONLY delta
+    let clockwiseDelta = targetRotation - currentRotation;
+    if (clockwiseDelta < 0) clockwiseDelta += 360; // Force clockwise
+    
+    // Create smooth GSAP animation
+    const tween = gsap.to({ value: 0 }, {
+      value: 1,
+      duration,
+      ease,
+      onUpdate: function() {
+        const progress = this.progress();
+        const newRotation = (currentRotation + clockwiseDelta * progress) % 360;
+        setOrbitRotation(newRotation);
+      },
+      onComplete: () => {
+        setOrbitRotation(targetRotation);
+        setSelectedIndex(targetIndex);
+        if (onComplete) onComplete();
+      }
+    });
+    
+    // Store for cleanup
+    autoTourTimelineRef.current = tween as any;
+  };
+
+  const handlePrevious = () => {
     const newIndex = (selectedIndex - 1 + powers.length) % powers.length;
-    setSelectedIndex(newIndex);
-    setInitialPulse(false);
-    setCurrentPower(powers[newIndex].id);
+    
+    // CINEMATIC: Smooth clockwise rotation (faster for manual control)
+    rotateClockwiseTo(newIndex, {
+      duration: 0.8, // Snappier for manual interaction
+      ease: "power2.out",
+      onComplete: () => {
+        setInitialPulse(false);
+        setCurrentPower(powers[newIndex].id);
+      }
+    });
 
     // User interaction cancels auto-tour
     if (playbackMode === 'autoTour') {
@@ -843,12 +896,17 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   };
 
   const handleNext = () => {
-    stopAllTimelines(); // Kill all competing timelines
-    
     const newIndex = (selectedIndex + 1) % powers.length;
-    setSelectedIndex(newIndex);
-    setInitialPulse(false);
-    setCurrentPower(powers[newIndex].id);
+    
+    // CINEMATIC: Smooth clockwise rotation (faster for manual control)
+    rotateClockwiseTo(newIndex, {
+      duration: 0.8, // Snappier for manual interaction
+      ease: "power2.out",
+      onComplete: () => {
+        setInitialPulse(false);
+        setCurrentPower(powers[newIndex].id);
+      }
+    });
 
     // User interaction cancels auto-tour
     if (playbackMode === 'autoTour') {
@@ -857,12 +915,16 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   };
 
   const handleBadgeClick = (index: number) => {
-    stopAllTimelines(); // Kill all competing timelines
-    
-    setSelectedIndex(index);
-    setShowInfoBox(true);
-    setInitialPulse(false);
-    setCurrentPower(powers[index].id);
+    // CINEMATIC: Smooth clockwise rotation (fastest for direct selection)
+    rotateClockwiseTo(index, {
+      duration: 0.6, // Quickest for direct badge clicks
+      ease: "power2.out",
+      onComplete: () => {
+        setShowInfoBox(true);
+        setInitialPulse(false);
+        setCurrentPower(powers[index].id);
+      }
+    });
 
     // User interaction cancels auto-tour
     if (playbackMode === 'autoTour') {
