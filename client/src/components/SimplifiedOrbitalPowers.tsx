@@ -401,7 +401,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         </div>
 
         {/* Main Container */}
-        <div className="relative mx-auto -mt-6" style={{ maxWidth: '900px' }} data-testid="orbital-container">
+        <div className="relative mx-auto mt-8" style={{ maxWidth: '900px' }} data-testid="orbital-container">
           {/* Orbital Container - Adjusted height for mobile */}
           <div className="relative mx-auto h-[450px] md:h-[600px] flex items-center justify-center">
 
@@ -454,7 +454,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Navigation Arrows - Between video and icons */}
           {animationComplete && (
-            <div className="flex justify-center items-center gap-8 -mt-4 mb-4 z-30 relative">
+            <div className="flex justify-center items-center gap-8 mt-6 mb-3 z-30 relative">
               <button
                 onClick={() => handleNavigate('prev')}
                 className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 transition-all duration-300 hover:scale-110"
@@ -511,7 +511,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Horizontal Icon Row - appears after animation completes */}
           {animationComplete && (
-            <div className="flex flex-col items-center mb-2">
+            <div className="flex flex-col items-center mb-4">
               <div className="flex justify-center items-center gap-3 md:gap-4 px-4" 
                 style={{ 
                   maxWidth: window.innerWidth < 768 ? 'min(85vw, 320px)' : 'min(90vw, 640px)' 
@@ -536,15 +536,12 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                   );
                 })}
               </div>
-              
-              {/* Subtle connector line from icons to text box */}
-              <div className="w-px h-6 bg-gradient-to-b from-transparent via-muted/50 to-transparent mt-3" />
             </div>
           )}
 
           {/* Info Box with Cycling Arrows */}
           {showInfoBox && (
-            <Card className="mt-2 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
+            <Card className="mt-6 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
               <div
                 key={powers[activePowerIndex].id}
                 className="space-y-4"
