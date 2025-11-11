@@ -432,7 +432,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         {/* Main Container - Unified Section */}
         <div className="relative mx-auto" style={{ maxWidth: '900px' }} data-testid="orbital-container">
           {/* Orbital Container - Compact height */}
-          <div className="relative mx-auto h-[380px] md:h-[480px] flex items-center justify-center">
+          <div className="relative mx-auto h-[360px] md:h-[460px] flex items-center justify-center">
 
             {/* Central Video - click to advance */}
             <div 
@@ -502,66 +502,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             </div>
           </div>
 
-          {/* Navigation Arrows - Between video and icons */}
-          {animationComplete && (
-            <div className="flex justify-center items-center gap-6 mt-2 mb-4 z-30 relative">
-              <button
-                onClick={() => handleNavigate('prev')}
-                className="group p-2.5 rounded-full bg-background/90 backdrop-blur-sm border-2 transition-all duration-300 hover:scale-110"
-                style={{
-                  borderColor: selectedPower.glowColor,
-                  boxShadow: `0 0 20px ${selectedPower.glowColor}, 0 0 10px ${selectedPower.glowColor}`
-                }}
-                aria-label="Previous power"
-                data-testid="nav-arrow-prev"
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="24" 
-                  height="24" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2.5" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  style={{ stroke: selectedPower.color.replace('text-', '') }}
-                >
-                  <path d="m15 18-6-6 6-6"/>
-                </svg>
-              </button>
-
-              <button
-                onClick={() => handleNavigate('next')}
-                className="group p-2.5 rounded-full bg-background/90 backdrop-blur-sm border-2 transition-all duration-300 hover:scale-110"
-                style={{
-                  borderColor: selectedPower.glowColor,
-                  boxShadow: `0 0 20px ${selectedPower.glowColor}, 0 0 10px ${selectedPower.glowColor}`
-                }}
-                aria-label="Next power"
-                data-testid="nav-arrow-next"
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="24" 
-                  height="24" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2.5" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  style={{ stroke: selectedPower.color.replace('text-', '') }}
-                >
-                  <path d="m9 18 6-6-6-6"/>
-                </svg>
-              </button>
-            </div>
-          )}
+          
 
           {/* Horizontal Icon Row - fades in as orbital icons transition out */}
           <div 
-            className="flex flex-col items-center mb-4 transition-opacity duration-700 ease-in"
+            className="flex flex-col items-center mb-8 transition-opacity duration-700 ease-in"
             style={{ 
               opacity: animationComplete ? 1 : 0,
               pointerEvents: animationComplete ? 'auto' : 'none'
@@ -589,7 +534,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                         boxShadow: isActive 
                           ? `0 0 25px ${power.glowColor}, 0 0 12px ${power.glowColor}` 
                           : `0 0 15px ${power.glowColor}`,
-                        animation: isActive ? 'pulse-subtle 2s ease-in-out infinite' : 'none'
+                        animation: isActive ? 'pulse-subtle 2s ease-in-out infinite' : 'none',
+                        opacity: isActive ? 1 : 0.4
                       }}
                       data-testid={`power-icon-${power.id}`}
                     >
@@ -602,7 +548,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Info Box with Cycling Arrows */}
           {showInfoBox && (
-            <Card className="mt-4 p-5 md:p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box"
+            <Card className="mt-6 p-5 md:p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box"
               style={{
                 boxShadow: `0 0 0 1px ${powers[activePowerIndex].glowColor}40, 0 4px 20px rgba(0,0,0,0.1)`
               }}
