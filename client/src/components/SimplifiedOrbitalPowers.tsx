@@ -283,46 +283,27 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   }, [orbitRotation]);
   
   /**
-   * Centralized timer cleanup - prevents timer stacking
-   */
-  const clearAllTimers = useCallback(() => {
-    if (autoAdvanceTimerRef.current) {
-      clearInterval(autoAdvanceTimerRef.current);
-      autoAdvanceTimerRef.current = null;
-    }
-    if (restartTimeoutRef.current) {
-      clearTimeout(restartTimeoutRef.current);
-      restartTimeoutRef.current = null;
-    }
-  }, []);
-  
-  /**
-   * Start auto-advance interval
-   */
-  const startAutoAdvance = useCallback(() => {
-    if (prefersReducedMotion()) return;
-    
-    // Clear any existing timers first
-    clearAllTimers();
-    
-    // Start 5-second auto-advance
-    autoAdvanceTimerRef.current = setInterval(() => {
-      if (!isTransitioningRef.current) {
-        setSelectedIndex(prev => (prev + 1) % powers.length);
-      }
-    }, 5000);
-  }, [clearAllTimers]);
-  
-  /**
-   * Auto-advance to next icon every 5 seconds
+   * Auto-advance to next icon every 5 seconds - runs on mount only
    */
   useEffect(() => {
-    startAutoAdvance();
+    if (prefersReducedMotion()) return;
+    
+    // Start 5-second auto-advance (always advance, even during transitions)
+    autoAdvanceTimerRef.current = setInterval(() => {
+      setSelectedIndex(prev => (prev + 1) % powers.length);
+    }, 5000);
     
     return () => {
-      clearAllTimers();
+      // Cleanup on unmount
+      if (autoAdvanceTimerRef.current) {
+        clearInterval(autoAdvanceTimerRef.current);
+      }
+      if (restartTimeoutRef.current) {
+        clearTimeout(restartTimeoutRef.current);
+      }
     };
-  }, [startAutoAdvance, clearAllTimers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount only
   
   /**
    * When selectedIndex changes, rotate to that position
@@ -335,42 +316,75 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
    * Manual controls - pause auto-advance and move to target
    */
   const handlePrevious = useCallback(() => {
-    // Clear ALL timers (interval and any pending restart timeout)
-    clearAllTimers();
+    // Clear existing interval and any pending restart
+    if (autoAdvanceTimerRef.current) {
+      clearInterval(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
+    if (restartTimeoutRef.current) {
+      clearTimeout(restartTimeoutRef.current);
+      restartTimeoutRef.current = null;
+    }
     
     const newIndex = (selectedIndex - 1 + powers.length) % powers.length;
     setSelectedIndex(newIndex);
     
-    // Schedule restart after 5 seconds (only ONE timeout tracked)
+    // Schedule restart after 5 seconds
     restartTimeoutRef.current = setTimeout(() => {
-      startAutoAdvance();
+      if (!prefersReducedMotion()) {
+        autoAdvanceTimerRef.current = setInterval(() => {
+          setSelectedIndex(prev => (prev + 1) % powers.length);
+        }, 5000);
+      }
     }, 5000);
-  }, [selectedIndex, clearAllTimers, startAutoAdvance]);
+  }, [selectedIndex]);
   
   const handleNext = useCallback(() => {
-    // Clear ALL timers (interval and any pending restart timeout)
-    clearAllTimers();
+    // Clear existing interval and any pending restart
+    if (autoAdvanceTimerRef.current) {
+      clearInterval(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
+    if (restartTimeoutRef.current) {
+      clearTimeout(restartTimeoutRef.current);
+      restartTimeoutRef.current = null;
+    }
     
     const newIndex = (selectedIndex + 1) % powers.length;
     setSelectedIndex(newIndex);
     
-    // Schedule restart after 5 seconds (only ONE timeout tracked)
+    // Schedule restart after 5 seconds
     restartTimeoutRef.current = setTimeout(() => {
-      startAutoAdvance();
+      if (!prefersReducedMotion()) {
+        autoAdvanceTimerRef.current = setInterval(() => {
+          setSelectedIndex(prev => (prev + 1) % powers.length);
+        }, 5000);
+      }
     }, 5000);
-  }, [selectedIndex, clearAllTimers, startAutoAdvance]);
+  }, [selectedIndex]);
   
   const handleBadgeClick = useCallback((index: number) => {
-    // Clear ALL timers (interval and any pending restart timeout)
-    clearAllTimers();
+    // Clear existing interval and any pending restart
+    if (autoAdvanceTimerRef.current) {
+      clearInterval(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
+    if (restartTimeoutRef.current) {
+      clearTimeout(restartTimeoutRef.current);
+      restartTimeoutRef.current = null;
+    }
     
     setSelectedIndex(index);
     
-    // Schedule restart after 5 seconds (only ONE timeout tracked)
+    // Schedule restart after 5 seconds
     restartTimeoutRef.current = setTimeout(() => {
-      startAutoAdvance();
+      if (!prefersReducedMotion()) {
+        autoAdvanceTimerRef.current = setInterval(() => {
+          setSelectedIndex(prev => (prev + 1) % powers.length);
+        }, 5000);
+      }
     }, 5000);
-  }, [clearAllTimers, startAutoAdvance]);
+  }, []);
   
   /**
    * Video playback handling
