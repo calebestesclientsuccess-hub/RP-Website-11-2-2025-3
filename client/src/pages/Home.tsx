@@ -7,7 +7,7 @@ import SimpleBridgeSection from "@/components/SimpleBridgeSection";
 import { SimplifiedOrbitalPowers } from "@/components/SimplifiedOrbitalPowers";
 import { SEO } from "@/components/SEO";
 import { ServiceSchema } from "@/components/ServiceSchema";
-import LocalBusinessSchema from "@/components/LocalBusinessSchema";
+import LocalBusinessSchema from "@/components/schemas/LocalBusinessSchema";
 import VideoSchema from "@/components/VideoSchema";
 import SoftwareApplicationSchema from "@/components/SoftwareApplicationSchema";
 import LeadMagnetHero from "@/components/LeadMagnetHero";
