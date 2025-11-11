@@ -320,8 +320,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     <div
       className="relative rounded-2xl overflow-hidden"
       style={{
-        width: window.innerWidth < 768 ? 'min(85vw, 320px)' : 'min(90vw, 640px)',
-        height: window.innerWidth < 768 ? 'min(35vh, 200px)' : 'min(50vh, 360px)',
+        width: window.innerWidth < 768 ? 'min(90vw, 400px)' : 'min(85vw, 680px)',
+        height: window.innerWidth < 768 ? 'min(50vw, 225px)' : 'min(48vw, 382px)',
         boxShadow: `
           0 0 0 2px rgba(192, 192, 192, 0.3),
           0 0 40px rgba(${selectedPower.bgColor}, 0.3),
@@ -391,19 +391,19 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center">
-          <h2 className="text-5xl md:text-6xl font-bold mb-1">
+        <div className="text-center mb-8">
+          <h2 className="text-5xl md:text-6xl font-bold mb-2">
             <span className="gradient-text gradient-hero">The Fullstack Sales Unit</span>
           </h2>
-          <p className="text-2xl md:text-3xl italic max-w-3xl mx-auto mb-0">
+          <p className="text-xl md:text-2xl italic max-w-3xl mx-auto text-muted-foreground">
             Elite Sales Talent, equipped and trained by RP Architects.
           </p>
         </div>
 
-        {/* Main Container */}
-        <div className="relative mx-auto mt-8" style={{ maxWidth: '900px' }} data-testid="orbital-container">
-          {/* Orbital Container - Adjusted height for mobile */}
-          <div className="relative mx-auto h-[450px] md:h-[600px] flex items-center justify-center">
+        {/* Main Container - Unified Section */}
+        <div className="relative mx-auto" style={{ maxWidth: '900px' }} data-testid="orbital-container">
+          {/* Orbital Container - Compact height */}
+          <div className="relative mx-auto h-[380px] md:h-[480px] flex items-center justify-center">
 
             {/* Central Video - click to advance */}
             <div 
@@ -454,10 +454,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Navigation Arrows - Between video and icons */}
           {animationComplete && (
-            <div className="flex justify-center items-center gap-8 mt-6 mb-3 z-30 relative">
+            <div className="flex justify-center items-center gap-6 mt-4 mb-2 z-30 relative">
               <button
                 onClick={() => handleNavigate('prev')}
-                className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 transition-all duration-300 hover:scale-110"
+                className="group p-2.5 rounded-full bg-background/90 backdrop-blur-sm border-2 transition-all duration-300 hover:scale-110"
                 style={{
                   borderColor: selectedPower.glowColor,
                   boxShadow: `0 0 20px ${selectedPower.glowColor}, 0 0 10px ${selectedPower.glowColor}`
@@ -467,8 +467,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               >
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
-                  width="28" 
-                  height="28" 
+                  width="24" 
+                  height="24" 
                   viewBox="0 0 24 24" 
                   fill="none" 
                   stroke="currentColor" 
@@ -483,7 +483,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
               <button
                 onClick={() => handleNavigate('next')}
-                className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 transition-all duration-300 hover:scale-110"
+                className="group p-2.5 rounded-full bg-background/90 backdrop-blur-sm border-2 transition-all duration-300 hover:scale-110"
                 style={{
                   borderColor: selectedPower.glowColor,
                   boxShadow: `0 0 20px ${selectedPower.glowColor}, 0 0 10px ${selectedPower.glowColor}`
@@ -493,8 +493,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               >
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
-                  width="28" 
-                  height="28" 
+                  width="24" 
+                  height="24" 
                   viewBox="0 0 24 24" 
                   fill="none" 
                   stroke="currentColor" 
@@ -511,10 +511,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Horizontal Icon Row - appears after animation completes */}
           {animationComplete && (
-            <div className="flex flex-col items-center mb-4">
-              <div className="flex justify-center items-center gap-3 md:gap-4 px-4" 
+            <div className="flex flex-col items-center mb-3">
+              <div className="flex justify-center items-center gap-2 md:gap-3 px-4" 
                 style={{ 
-                  maxWidth: window.innerWidth < 768 ? 'min(85vw, 320px)' : 'min(90vw, 640px)' 
+                  maxWidth: window.innerWidth < 768 ? 'min(90vw, 400px)' : 'min(85vw, 680px)' 
                 }}>
                 {powers.map((power, index) => {
                   const isActive = index === activePowerIndex;
@@ -522,11 +522,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                     <button
                       key={power.id}
                       onClick={() => setActivePowerIndex(index)}
-                      className="relative rounded-full p-2.5 md:p-3 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 cursor-pointer flex-shrink-0"
+                      className="relative rounded-full p-2 md:p-2.5 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 cursor-pointer flex-shrink-0"
                       style={{
                         boxShadow: isActive 
-                          ? `0 0 30px ${power.glowColor}, 0 0 15px ${power.glowColor}` 
-                          : `0 0 20px ${power.glowColor}`,
+                          ? `0 0 25px ${power.glowColor}, 0 0 12px ${power.glowColor}` 
+                          : `0 0 15px ${power.glowColor}`,
                         animation: isActive ? 'pulse-subtle 2s ease-in-out infinite' : 'none'
                       }}
                       data-testid={`power-icon-${power.id}`}
@@ -541,38 +541,42 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Info Box with Cycling Arrows */}
           {showInfoBox && (
-            <Card className="mt-6 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
+            <Card className="mt-4 p-5 md:p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box"
+              style={{
+                boxShadow: `0 0 0 1px ${powers[activePowerIndex].glowColor}40, 0 4px 20px rgba(0,0,0,0.1)`
+              }}
+            >
               <div
                 key={powers[activePowerIndex].id}
-                className="space-y-4"
+                className="space-y-3"
                 style={{
                   animation: 'fadeIn 0.3s ease-out'
                 }}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 mb-1">
                   <div
                     className={`p-2 rounded-full ${powers[activePowerIndex].color}`}
                     style={{ backgroundColor: `${powers[activePowerIndex].glowColor}20` }}
                   >
                     {powers[activePowerIndex].icon}
                   </div>
-                  <h3 className={`text-2xl font-bold ${powers[activePowerIndex].color}`}>{powers[activePowerIndex].title}</h3>
+                  <h3 className={`text-xl md:text-2xl font-bold ${powers[activePowerIndex].color}`}>{powers[activePowerIndex].title}</h3>
                 </div>
 
-                <p className="text-muted-foreground">{powers[activePowerIndex].description}</p>
+                <p className="text-muted-foreground leading-relaxed">{powers[activePowerIndex].description}</p>
 
-                <div className="space-y-3">
+                <div className="space-y-2.5 pt-1">
                   <div>
-                    <h4 className="font-semibold mb-2">What It Is:</h4>
-                    <p className="text-sm text-muted-foreground">{powers[activePowerIndex].content.whatItIs}</p>
+                    <h4 className="font-semibold mb-1.5 text-sm">What It Is:</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{powers[activePowerIndex].content.whatItIs}</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2">The Value:</h4>
-                    <p className="text-sm text-muted-foreground">{powers[activePowerIndex].content.value}</p>
+                    <h4 className="font-semibold mb-1.5 text-sm">The Value:</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{powers[activePowerIndex].content.value}</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2">In-House Cost:</h4>
-                    <p className="text-sm text-muted-foreground">{powers[activePowerIndex].content.inHouseCost}</p>
+                    <h4 className="font-semibold mb-1.5 text-sm">In-House Cost:</h4>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{powers[activePowerIndex].content.inHouseCost}</p>
                   </div>
                 </div>
               </div>
