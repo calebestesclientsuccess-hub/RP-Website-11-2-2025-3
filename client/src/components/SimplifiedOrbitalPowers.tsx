@@ -69,10 +69,10 @@ const powers: Power[] = [
   {
     id: "ai-architect",
     title: "AI Architect",
-    icon: <Brain className="w-6 h-6" strokeWidth={2} style={{ stroke: "#5E4DB8" }} />,
-    color: "text-violet-blue",
-    glowColor: "rgba(94, 77, 184, 0.4)",
-    bgColor: "94, 77, 184",
+    icon: <Brain className="w-6 h-6" strokeWidth={2} style={{ stroke: "#4CAF50" }} />,
+    color: "text-signal-green",
+    glowColor: "rgba(76, 175, 80, 0.4)",
+    bgColor: "76, 175, 80",
     angle: 60,
     description: "Intelligent systems that research, personalize, and optimize at scale.",
     details: [
@@ -621,7 +621,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                   >
                     {powers[activePowerIndex].icon}
                   </div>
-                  <h3 className={`text-xl md:text-2xl font-bold ${powers[activePowerIndex].color}`}>{powers[activePowerIndex].title}</h3>
+                  <h3 className={`text-xl md:text-2xl font-bold ${powers[activePowerIndex].color}`}>
+                    {powers[activePowerIndex].title}
+                  </h3>
                 </div>
 
                 <p className="text-muted-foreground leading-relaxed">{powers[activePowerIndex].description}</p>

@@ -1089,6 +1089,19 @@
   color: hsl(var(--violet-blue));
 }
 
+/* Magenta Rose color utilities (Culture: Community & Competition) */
+.bg-magenta-rose\/20 {
+  background-color: rgba(196, 30, 88, 0.2);
+}
+
+.border-magenta-rose\/30 {
+  border-color: rgba(196, 30, 88, 0.3);
+}
+
+.text-magenta-rose {
+  color: #C41E58;
+}
+
 
 /* Dark mode - deep shadows for dimension */
 .dark .badge-texture {
