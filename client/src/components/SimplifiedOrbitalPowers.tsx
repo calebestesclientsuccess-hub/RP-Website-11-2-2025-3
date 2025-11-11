@@ -452,12 +452,66 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             ) : null}
           </div>
 
+          {/* Navigation Arrows - Between video and icons */}
+          {animationComplete && (
+            <div className="flex justify-center items-center gap-8 -mt-4 mb-4 z-30 relative">
+              <button
+                onClick={() => handleNavigate('prev')}
+                className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 transition-all duration-300 hover:scale-110"
+                style={{
+                  borderColor: selectedPower.glowColor,
+                  boxShadow: `0 0 20px ${selectedPower.glowColor}, 0 0 10px ${selectedPower.glowColor}`
+                }}
+                aria-label="Previous power"
+                data-testid="nav-arrow-prev"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="28" 
+                  height="28" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2.5" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  style={{ stroke: selectedPower.color.replace('text-', '') }}
+                >
+                  <path d="m15 18-6-6 6-6"/>
+                </svg>
+              </button>
+
+              <button
+                onClick={() => handleNavigate('next')}
+                className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 transition-all duration-300 hover:scale-110"
+                style={{
+                  borderColor: selectedPower.glowColor,
+                  boxShadow: `0 0 20px ${selectedPower.glowColor}, 0 0 10px ${selectedPower.glowColor}`
+                }}
+                aria-label="Next power"
+                data-testid="nav-arrow-next"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="28" 
+                  height="28" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2.5" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  style={{ stroke: selectedPower.color.replace('text-', '') }}
+                >
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </button>
+            </div>
+          )}
+
           {/* Horizontal Icon Row - appears after animation completes */}
           {animationComplete && (
-            <div className="flex flex-col items-center -mt-4 mb-2">
-              {/* Subtle connector line from video to icons */}
-              <div className="w-px h-6 bg-gradient-to-b from-muted/50 to-transparent mb-3" />
-              
+            <div className="flex flex-col items-center mb-2">
               <div className="flex justify-center items-center gap-3 md:gap-4 px-4" 
                 style={{ 
                   maxWidth: window.innerWidth < 768 ? 'min(85vw, 320px)' : 'min(90vw, 640px)' 
@@ -529,54 +583,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               </Card>
           )}
 
-          {/* Netflix-style Navigation Arrows - Only show after animation completes */}
-          {animationComplete && (
-            <div className="flex justify-center items-center gap-8 mt-6 mb-4 z-30 relative">
-              <button
-                onClick={() => handleNavigate('prev')}
-                className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 border-muted hover:border-primary hover:bg-primary/10 transition-all duration-300 hover:scale-110"
-                aria-label="Previous power"
-                data-testid="nav-arrow-prev"
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="28" 
-                  height="28" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2.5" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  className="group-hover:stroke-primary transition-colors"
-                >
-                  <path d="m15 18-6-6 6-6"/>
-                </svg>
-              </button>
-
-              <button
-                onClick={() => handleNavigate('next')}
-                className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 border-muted hover:border-primary hover:bg-primary/10 transition-all duration-300 hover:scale-110"
-                aria-label="Next power"
-                data-testid="nav-arrow-next"
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="28" 
-                  height="28" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2.5" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  className="group-hover:stroke-primary transition-colors"
-                >
-                  <path d="m9 18 6-6-6-6"/>
-                </svg>
-              </button>
-            </div>
-          )}
+          
         </div>
       </div>
     </div>
