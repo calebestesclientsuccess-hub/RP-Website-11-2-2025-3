@@ -195,6 +195,23 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       repeat: -1,
       onUpdate: () => {
         setOrbitRotation(rotationObj.value % 360);
+        
+        // Calculate which power is closest to bottom (270° position)
+        const targetAngle = 270;
+        let closestIndex = 0;
+        let smallestDiff = 360;
+        
+        powers.forEach((power, index) => {
+          const totalAngle = (power.angle + rotationObj.value) % 360;
+          const diff = Math.abs(((totalAngle - targetAngle + 180) % 360) - 180);
+          
+          if (diff < smallestDiff) {
+            smallestDiff = diff;
+            closestIndex = index;
+          }
+        });
+        
+        setActivePowerIndex(closestIndex);
       }
     });
 
