@@ -120,7 +120,7 @@ const powers: Power[] = [
   {
     id: "tools",
     title: "Tech Stack",
-    icon: <Settings className="w-6 h-6" strokeWidth={2} style={{ stroke: "#4CAF50" }} />,
+    icon: <Wrench className="w-6 h-6" strokeWidth={2} style={{ stroke: "#4CAF50" }} />,
     color: "text-signal-green",
     glowColor: "rgba(76, 175, 80, 0.4)",
     bgColor: "76, 175, 80",
