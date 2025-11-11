@@ -1,7 +1,8 @@
 
 import { Helmet } from 'react-helmet-async';
 
-export function LocalBusinessSchema() {
+export default function LocalBusinessSchema() {
+export { LocalBusinessSchema };
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",

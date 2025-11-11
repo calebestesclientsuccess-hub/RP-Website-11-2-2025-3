@@ -38,7 +38,7 @@ const featuredPromo: FeaturedPromoData = {
   imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=450&fit=crop"
 };
 
-import { BreadcrumbSchema } from "@/components/BreadcrumbSchema";
+import { BreadcrumbSchema } from "@/components/schemas/BreadcrumbSchema";
 
 export default function AgencyTrapGuide() {
   return (
