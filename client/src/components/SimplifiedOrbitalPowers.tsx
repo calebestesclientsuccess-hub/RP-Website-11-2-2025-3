@@ -255,7 +255,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   useEffect(() => {
     const updateSelectionPosition = () => {
       const isMobile = window.innerWidth < 768;
-      
+
       if (isMobile) {
         // Mobile: bottom-center (270°) for optimal visibility - 6 o'clock position
         setSelectedPosition(270);
@@ -315,11 +315,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
       // Always move FORWARD to the next power position (maintain momentum)
       const currentRotation = orbitRotation % 360;
-      
+
       // Find which power is currently closest to left (180°)
       let nearestPowerIndex = 0;
       let minDistance = 360;
-      
+
       powers.forEach((power, idx) => {
         const totalAngle = (power.angle + currentRotation) % 360;
         const distance = Math.abs(totalAngle - 180);
@@ -334,9 +334,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       // This maintains visual momentum and feels more natural
       const nearestPowerAngle = powers[nearestPowerIndex].angle;
       const nearestTotalAngle = (nearestPowerAngle + currentRotation) % 360;
-      
+
       let targetPowerIndex = nearestPowerIndex;
-      
+
       // If nearest power is behind us (angle > 180), move to next power forward
       if (nearestTotalAngle > 180) {
         targetPowerIndex = (nearestPowerIndex + 1) % powers.length;
@@ -416,7 +416,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       setIsAnimating(true);
 
       const nextIndex = (currentIndex + 1) % powers.length;
-      
+
       const currentRotation = orbitRotation;
       const rotationIncrement = 60; // Move one position clockwise
       const targetRotation = (currentRotation + rotationIncrement) % 360;
@@ -467,7 +467,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             // Rotate from anticipation point (currentRotation - 3°) to target
             const newRotation = (currentRotation - 3 + (rotationIncrement + 3) * progress) % 360;
             setOrbitRotation(newRotation < 0 ? newRotation + 360 : newRotation);
-            
+
             // Update selectedIndex when the badge is VISUALLY at the selected position
             // This happens around 85-90% of the rotation
             if (progress >= 0.85 && selectedIndex !== nextIndex) {
@@ -552,22 +552,22 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     // Create a cinematic timeline
     const timeline = gsap.timeline();
-    
+
     // Phase 1: Deceleration (3 seconds)
     setPreVideoPhase('decelerating');
-    
+
     // Kill the continuous rotation
     if (orbitAnimationRef.current) {
       orbitAnimationRef.current.kill();
     }
-    
+
     const currentRotation = orbitRotation;
-    
+
     // Find the bottom-left icon position for initial highlighting
     // Mobile: 240° (8 o'clock) - easier to see for mobile users
     // Desktop: 225° (7:30 position) - elegant side position
     const bottomLeftAngle = window.innerWidth < 768 ? 240 : 225;
-    
+
     // Find which power should be at bottom-left
     let targetPowerIndex = 0;
     powers.forEach((power, idx) => {
@@ -576,13 +576,13 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         targetPowerIndex = idx;
       }
     });
-    
+
     // Calculate rotation to position target power at bottom-left
     const targetPowerAngle = powers[targetPowerIndex].angle;
     let targetRotation = bottomLeftAngle - targetPowerAngle;
     while (targetRotation < 0) targetRotation += 360;
     while (targetRotation >= 360) targetRotation -= 360;
-    
+
     // Smooth deceleration to bottom-left position
     timeline.to({ value: currentRotation }, {
       value: targetRotation,
@@ -594,29 +594,29 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         setOrbitRotation(newRotation % 360);
       }
     });
-    
+
     // Phase 2: Highlighting (1.5 seconds)
     timeline.call(() => {
       setPreVideoPhase('highlighting');
       setHighlightedIconIndex(targetPowerIndex);
       setPrePulseActive(true);
     });
-    
+
     timeline.to({}, { duration: 1.5 }); // Hold for pulsating effect
-    
+
     // Phase 3: Dramatic 360° rotation to bottom-center (2.5 seconds)
     timeline.call(() => {
       setPrePulseActive(false);
     });
-    
+
     const bottomCenterAngle = window.innerWidth < 768 ? 270 : 180; // Mobile: bottom-center, Desktop: left
     let finalRotation = bottomCenterAngle - targetPowerAngle;
-    
+
     // Ensure we do almost a full 360° rotation
     if (Math.abs(finalRotation - targetRotation) < 300) {
       finalRotation += 360;
     }
-    
+
     timeline.to({ value: targetRotation }, {
       value: finalRotation,
       duration: 2.5,
@@ -625,20 +625,20 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         const progress = this.progress();
         const newRotation = targetRotation + (finalRotation - targetRotation) * progress;
         setOrbitRotation(newRotation % 360);
-        
+
         // Update selected index when reaching destination
         if (progress > 0.8) {
           setSelectedIndex(targetPowerIndex);
         }
       }
     });
-    
+
     // Phase 4: Ready and play video
     timeline.call(() => {
       setPreVideoPhase('ready');
       setCinematicReady(true);
       setHighlightedIconIndex(null);
-      
+
       // Now play the video
       const video = videoRef.current;
       if (video) {
@@ -656,7 +656,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           });
       }
     });
-    
+
     preVideoTimelineRef.current = timeline;
   }, [videoRef, orbitRotation, powers, selectedPosition]);
 
@@ -877,11 +877,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 const normalizedAngle = totalAngle % 360;
                 // Tighter threshold for more precise highlighting (3° instead of 5°)
                 const isAtSelectedPosition = Math.abs(normalizedAngle - selectedPosition) < 3;
-                
+
                 // Determine if this is the NEXT badge (the one about to be selected)
                 const nextIndex = (selectedIndex + 1) % powers.length;
                 const isNextBadge = index === nextIndex;
-                
+
                 // Pulse logic: exactly one badge pulses at all times
                 // During animation: pre-pulse on next badge
                 // During pause: sustained pulse on current selected badge
@@ -966,7 +966,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             <Card className="-mt-16 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
               <div 
                 key={selectedPower.id}
-                className="space-y-4 animate-in fade-in duration-400"
+                className="space-y-4"
                 style={{
                   animation: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
