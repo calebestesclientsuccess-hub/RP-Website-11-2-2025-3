@@ -190,37 +190,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [activePowerIndex, setActivePowerIndex] = useState(2); // Initialize with the same index as selectedIndex
   const [hasInitialRotation, setHasInitialRotation] = useState(false);
 
-  // Initial rotation animation - fast spin that slows down
-  useEffect(() => {
-    if (prefersReducedMotion() || hasInitialRotation) return;
-
-    const rotationObj = { value: 0 };
-
-    // Fast initial rotation: almost 2 full rotations (680°), slowing in last 25%
-    gsap.to(rotationObj, {
-      value: 680, // Almost 2 full rotations
-      duration: 3,
-      ease: "power2.out", // Slows down significantly at the end
-      onUpdate: () => {
-        setOrbitRotation(rotationObj.value % 360);
-      },
-      onComplete: () => {
-        setHasInitialRotation(true);
-        // Start continuous slow rotation after initial spin
-        startContinuousRotation();
-      }
-    });
-
-    return () => {
-      gsap.killTweensOf(rotationObj);
-      if (orbitAnimationRef.current) {
-        orbitAnimationRef.current.kill();
-      }
-    };
-  }, [hasInitialRotation]);
-
-  // Continuous rotation after initial spin
-  const startContinuousRotation = () => {
+  // Continuous rotation - extracted as stable function
+  const startContinuousRotation = (fromRotation: number) => {
     if (prefersReducedMotion()) return;
 
     // Kill any existing animation
@@ -228,11 +199,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       orbitAnimationRef.current.kill();
     }
 
-    const rotationObj = { value: orbitRotation };
+    const rotationObj = { value: fromRotation };
 
     // Slow, steady 60-second rotation
     orbitAnimationRef.current = gsap.to(rotationObj, {
-      value: orbitRotation + 360,
+      value: fromRotation + 360,
       duration: 60,
       ease: "none",
       repeat: -1,
@@ -243,6 +214,44 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       }
     });
   };
+
+  // Initial rotation animation - fast spin that slows down, ends with Brain icon at bottom-center
+  useEffect(() => {
+    if (prefersReducedMotion() || hasInitialRotation) return;
+
+    const rotationObj = { value: 0 };
+
+    // Brain icon is at 0°, bottom-center is 270°
+    // So we need to rotate to 270° to position Brain at bottom
+    // Plus almost 2 full rotations = 270 + 720 = 990°
+    const targetRotation = 990;
+
+    gsap.to(rotationObj, {
+      value: targetRotation,
+      duration: 3,
+      ease: "power2.out", // Slows down significantly at the end
+      onUpdate: () => {
+        const normalizedRotation = rotationObj.value % 360;
+        setOrbitRotation(normalizedRotation);
+        updateActivePowerFromRotation(normalizedRotation);
+      },
+      onComplete: () => {
+        setHasInitialRotation(true);
+        const finalRotation = targetRotation % 360;
+        setOrbitRotation(finalRotation);
+        updateActivePowerFromRotation(finalRotation);
+        // Start continuous slow rotation from final position
+        startContinuousRotation(finalRotation);
+      }
+    });
+
+    return () => {
+      gsap.killTweensOf(rotationObj);
+      if (orbitAnimationRef.current) {
+        orbitAnimationRef.current.kill();
+      }
+    };
+  }, [hasInitialRotation]);
 
   // Helper function to determine which power is at bottom
   const updateActivePowerFromRotation = (currentRotation: number) => {
@@ -316,7 +325,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       },
       onComplete: () => {
         // Restart continuous rotation from new position
-        startContinuousRotation();
+        const finalRotation = newRotation % 360;
+        setOrbitRotation(finalRotation);
+        updateActivePowerFromRotation(finalRotation);
+        startContinuousRotation(finalRotation);
       }
     });
   };
@@ -482,11 +494,12 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           {/* Orbital Container - Adjusted height for mobile */}
           <div className="relative mx-auto h-[450px] md:h-[600px] flex items-center justify-center">
 
-            {/* Central Video */}
+            {/* Central Video - click to advance */}
             <div 
               className="relative z-20 cursor-pointer" 
               onClick={() => handleNavigate('next')}
               data-testid="clickable-video"
+              title="Click to see next power"
             >
               {videoEl}
             </div>
@@ -517,12 +530,13 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                   >
                     <div
                       className={`relative rounded-full p-3 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 ${
-                        isActive ? 'animate-pulse-subtle scale-110' : 'hover:scale-105'
+                        isActive ? 'scale-110' : 'hover:scale-105'
                       }`}
                       style={{
                         boxShadow: isActive 
                           ? `0 0 30px ${power.glowColor}, 0 0 15px ${power.glowColor}` 
-                          : `0 0 20px ${power.glowColor}`
+                          : `0 0 20px ${power.glowColor}`,
+                        animation: isActive ? 'pulse-subtle 2s ease-in-out infinite' : 'none'
                       }}
                     >
                       {power.icon}
@@ -575,10 +589,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           )}
 
           {/* Netflix-style Navigation Arrows - Between Video and Text Box */}
-          <div className="flex justify-center items-center gap-8 -mt-8 mb-4 z-30 relative">
+          <div className="flex justify-center items-center gap-8 mb-4 z-30 relative" style={{ marginTop: '-2rem' }}>
             <button
               onClick={() => handleNavigate('prev')}
-              className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 border-muted hover:border-primary hover:bg-primary/10 transition-all duration-300 hover:scale-110 animate-pulse-subtle"
+              className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 border-muted hover:border-primary hover:bg-primary/10 transition-all duration-300 hover:scale-110"
               aria-label="Previous power"
               data-testid="nav-arrow-prev"
             >
@@ -600,7 +614,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
             <button
               onClick={() => handleNavigate('next')}
-              className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 border-muted hover:border-primary hover:bg-primary/10 transition-all duration-300 hover:scale-110 animate-pulse-subtle"
+              className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 border-muted hover:border-primary hover:bg-primary/10 transition-all duration-300 hover:scale-110"
               aria-label="Next power"
               data-testid="nav-arrow-next"
             >
