@@ -369,7 +369,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
 
 
-  const selectedPower = powers[selectedIndex] || powers[0];
+  const selectedPower = powers[activePowerIndex] || powers[0];
 
   // Dummy variable for videoEl as it's not directly used in the provided original snippet's HTML structure
   // In a real scenario, this would be the actual video element or its container.
