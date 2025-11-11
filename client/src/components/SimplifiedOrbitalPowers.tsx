@@ -178,8 +178,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [orbitRotation, setOrbitRotation] = useState(0);
   const [showPlayButton, setShowPlayButton] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [activePowerIndex, setActivePowerIndex] = useState(2); // Initialize with the same index as selectedIndex
 
-  
 
   // Simple continuous rotation - starts when section is in view
   useEffect(() => {
@@ -203,9 +203,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     };
   }, []);
 
-  
 
-  
+
+
 
   // Manual play handler for when autoplay is blocked
   const handleManualPlay = () => {
@@ -267,9 +267,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     };
   }, [hasPlayed, videoError, videoRef]);
 
-  
 
-  
+
+
 
   const selectedPower = powers[selectedIndex] || powers[0];
 
@@ -397,7 +397,13 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       }}
                       data-testid={`power-badge-${power.id}`}
                     >
-                      {power.icon}
+                      {/* Updated icons to remove white outline */}
+                      {index === 0 && <Brain className="w-6 h-6" style={{ fill: power.color }} />}
+                      {index === 1 && <Target className="w-6 h-6" style={{ fill: power.color }} />}
+                      {index === 2 && <Settings className="w-6 h-6" style={{ fill: power.color }} />}
+                      {index === 3 && <Users className="w-6 h-6" style={{ fill: power.color }} />}
+                      {index === 4 && <Wrench className="w-6 h-6" style={{ fill: power.color }} />}
+                      {index === 5 && <Trophy className="w-6 h-6" style={{ fill: power.color }} />}
                     </div>
                   </div>
                 );
@@ -405,11 +411,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             </div>
           </div>
 
-          {/* Info Box */}
+          {/* Info Box with Cycling Arrows */}
           {showInfoBox && (
             <Card className="-mt-16 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
-              <div 
-                key={selectedPower.id}
+              <div
+                key={powers[activePowerIndex].id}
                 className="space-y-4"
                 style={{
                   animation: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -417,31 +423,53 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`p-2 rounded-full ${selectedPower.color}`}
-                    style={{ backgroundColor: `${selectedPower.glowColor}20` }}
+                    className={`p-2 rounded-full ${powers[activePowerIndex].color}`}
+                    style={{ backgroundColor: `${powers[activePowerIndex].glowColor}20` }}
                   >
-                    {selectedPower.icon}
+                    {powers[activePowerIndex].icon}
                   </div>
-                  <h3 className={`text-2xl font-bold ${selectedPower.color}`}>{selectedPower.title}</h3>
+                  <h3 className={`text-2xl font-bold ${powers[activePowerIndex].color}`}>{powers[activePowerIndex].title}</h3>
                 </div>
 
-                <p className="text-muted-foreground">{selectedPower.description}</p>
+                <p className="text-muted-foreground">{powers[activePowerIndex].description}</p>
 
                 <div className="space-y-3">
                   <div>
                     <h4 className="font-semibold mb-2">What It Is:</h4>
-                    <p className="text-sm text-muted-foreground">{selectedPower.content.whatItIs}</p>
+                    <p className="text-sm text-muted-foreground">{powers[activePowerIndex].content.whatItIs}</p>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">The Value:</h4>
-                    <p className="text-sm text-muted-foreground">{selectedPower.content.value}</p>
+                    <p className="text-sm text-muted-foreground">{powers[activePowerIndex].content.value}</p>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">In-House Cost:</h4>
-                    <p className="text-sm text-muted-foreground">{selectedPower.content.inHouseCost}</p>
+                    <p className="text-sm text-muted-foreground">{powers[activePowerIndex].content.inHouseCost}</p>
                   </div>
                 </div>
               </div>
+
+              {/* Previous arrow */}
+              <button
+                onClick={() => setActivePowerIndex((prev) => (prev === 0 ? powers.length - 1 : prev - 1))}
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-card/50 hover:bg-card/80 transition-colors z-10"
+                aria-label="Previous power"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m15 18-6-6 6-6"/>
+                </svg>
+              </button>
+
+              {/* Next arrow */}
+              <button
+                onClick={() => setActivePowerIndex((prev) => (prev === powers.length - 1 ? 0 : prev + 1))}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-card/50 hover:bg-card/80 transition-colors z-10"
+                aria-label="Next power"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </button>
             </Card>
           )}
         </div>
