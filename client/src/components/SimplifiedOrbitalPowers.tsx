@@ -180,31 +180,28 @@ import VideoSchema from "@/components/VideoSchema";
 
 export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbitalPowersProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [selectedIndex] = useState(2);
   const [showInfoBox, setShowInfoBox] = useState(true);
   const [hasPlayed, setHasPlayed] = useState(false);
   const orbitAnimationRef = useRef<gsap.core.Tween | null>(null);
-  const [orbitRotation, setOrbitRotation] = useState(0);
+  const [orbitRotation, setOrbitRotation] = useState(270); // Start with Brain at bottom (270°)
   const [showPlayButton, setShowPlayButton] = useState(false);
   const [videoError, setVideoError] = useState(false);
-  const [activePowerIndex, setActivePowerIndex] = useState(2); // Initialize with the same index as selectedIndex
-  const [hasInitialRotation, setHasInitialRotation] = useState(false);
+  const [activePowerIndex, setActivePowerIndex] = useState(0); // Brain icon (index 0)
 
-  // Continuous rotation - extracted as stable function
-  const startContinuousRotation = (fromRotation: number) => {
+  // Continuous slow rotation like a clock
+  const startContinuousRotation = () => {
     if (prefersReducedMotion()) return;
 
-    // Kill any existing animation
     if (orbitAnimationRef.current) {
       orbitAnimationRef.current.kill();
     }
 
-    const rotationObj = { value: fromRotation };
+    const rotationObj = { value: orbitRotation };
 
-    // Slow, steady 60-second rotation
+    // Slow continuous rotation (90 seconds per full rotation)
     orbitAnimationRef.current = gsap.to(rotationObj, {
-      value: fromRotation + 360,
-      duration: 60,
+      value: orbitRotation + 360,
+      duration: 90,
       ease: "none",
       repeat: -1,
       onUpdate: () => {
@@ -215,55 +212,31 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     });
   };
 
-  // Initial rotation animation - fast spin that slows down, ends with Brain icon at bottom-center
+  // Start rotation on mount
   useEffect(() => {
-    if (prefersReducedMotion() || hasInitialRotation) return;
-
-    const rotationObj = { value: 0 };
-
-    // Brain icon is at 0°, bottom-center is 270°
-    // So we need to rotate to 270° to position Brain at bottom
-    // Plus almost 2 full rotations = 270 + 720 = 990°
-    const targetRotation = 990;
-
-    gsap.to(rotationObj, {
-      value: targetRotation,
-      duration: 3,
-      ease: "power2.out", // Slows down significantly at the end
-      onUpdate: () => {
-        const normalizedRotation = rotationObj.value % 360;
-        setOrbitRotation(normalizedRotation);
-        updateActivePowerFromRotation(normalizedRotation);
-      },
-      onComplete: () => {
-        setHasInitialRotation(true);
-        const finalRotation = targetRotation % 360;
-        setOrbitRotation(finalRotation);
-        updateActivePowerFromRotation(finalRotation);
-        // Start continuous slow rotation from final position
-        startContinuousRotation(finalRotation);
-      }
-    });
+    if (prefersReducedMotion()) return;
+    
+    // Small delay before starting rotation
+    const timeout = setTimeout(() => {
+      startContinuousRotation();
+    }, 500);
 
     return () => {
-      gsap.killTweensOf(rotationObj);
+      clearTimeout(timeout);
       if (orbitAnimationRef.current) {
         orbitAnimationRef.current.kill();
       }
     };
-  }, [hasInitialRotation]);
+  }, []);
 
-  // Helper function to determine which power is at bottom
+  // Determine which power is at bottom-center
   const updateActivePowerFromRotation = (currentRotation: number) => {
-    const targetAngle = 270;
+    const targetAngle = 270; // Bottom-center position
     let closestIndex = 0;
     let smallestDiff = 360;
     
     powers.forEach((power, index) => {
-      // Calculate the actual position of this icon after rotation
       const iconPosition = (power.angle + currentRotation) % 360;
-      
-      // Calculate the smallest angular difference to 270°
       let diff = Math.abs(iconPosition - targetAngle);
       if (diff > 180) diff = 360 - diff;
       
@@ -276,59 +249,54 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     setActivePowerIndex(closestIndex);
   };
 
-  // Handle navigation (manual or click on icon/video)
+  // Navigate to next/previous power with smooth rotation
   const handleNavigate = (direction: 'next' | 'prev') => {
     if (prefersReducedMotion()) {
-      // Just update index without animation
       const newIndex = direction === 'next' 
-        ? (activePowerIndex === powers.length - 1 ? 0 : activePowerIndex + 1)
-        : (activePowerIndex === 0 ? powers.length - 1 : activePowerIndex - 1);
+        ? (activePowerIndex + 1) % powers.length
+        : (activePowerIndex - 1 + powers.length) % powers.length;
       setActivePowerIndex(newIndex);
       return;
     }
 
-    // Kill any existing rotation animation
+    // Kill existing animation
     if (orbitAnimationRef.current) {
       orbitAnimationRef.current.kill();
     }
 
     // Calculate target index
     const newIndex = direction === 'next' 
-      ? (activePowerIndex === powers.length - 1 ? 0 : activePowerIndex + 1)
-      : (activePowerIndex === 0 ? powers.length - 1 : activePowerIndex - 1);
+      ? (activePowerIndex + 1) % powers.length
+      : (activePowerIndex - 1 + powers.length) % powers.length;
     
-    // Calculate how much we need to rotate to bring the target icon to bottom-center (270°)
+    // Calculate rotation needed to bring target icon to bottom-center
     const targetPower = powers[newIndex];
     const currentIconAngle = (targetPower.angle + orbitRotation) % 360;
     const targetAngle = 270;
     
-    // Calculate shortest rotation direction
+    // Calculate shortest rotation
     let rotationDelta = targetAngle - currentIconAngle;
-    
-    // Normalize to -180 to 180 range
     if (rotationDelta > 180) rotationDelta -= 360;
     if (rotationDelta < -180) rotationDelta += 360;
     
-    // Apply the rotation
-    const newRotation = orbitRotation + rotationDelta;
-    
+    const newRotation = (orbitRotation + rotationDelta) % 360;
     const rotationObj = { value: orbitRotation };
     
+    // Smooth clock-like rotation
     gsap.to(rotationObj, {
       value: newRotation,
-      duration: 0.8,
-      ease: "power2.out",
+      duration: 0.6,
+      ease: "power1.inOut",
       onUpdate: () => {
         const currentRotation = rotationObj.value % 360;
         setOrbitRotation(currentRotation);
         updateActivePowerFromRotation(currentRotation);
       },
       onComplete: () => {
-        // Restart continuous rotation from new position
-        const finalRotation = newRotation % 360;
-        setOrbitRotation(finalRotation);
-        updateActivePowerFromRotation(finalRotation);
-        startContinuousRotation(finalRotation);
+        setOrbitRotation(newRotation);
+        updateActivePowerFromRotation(newRotation);
+        // Resume continuous rotation
+        startContinuousRotation();
       }
     });
   };
@@ -554,7 +522,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 key={powers[activePowerIndex].id}
                 className="space-y-4"
                 style={{
-                  animation: 'fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+                  animation: 'fadeIn 0.3s ease-out'
                 }}
               >
                 <div className="flex items-center gap-3">
