@@ -397,13 +397,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       }}
                       data-testid={`power-badge-${power.id}`}
                     >
-                      {/* Updated icons to remove white outline */}
-                      {index === 0 && <Brain className="w-6 h-6" style={{ fill: power.color }} />}
-                      {index === 1 && <Target className="w-6 h-6" style={{ fill: power.color }} />}
-                      {index === 2 && <Settings className="w-6 h-6" style={{ fill: power.color }} />}
-                      {index === 3 && <Users className="w-6 h-6" style={{ fill: power.color }} />}
-                      {index === 4 && <Wrench className="w-6 h-6" style={{ fill: power.color }} />}
-                      {index === 5 && <Trophy className="w-6 h-6" style={{ fill: power.color }} />}
+                      {power.icon}
                     </div>
                   </div>
                 );
