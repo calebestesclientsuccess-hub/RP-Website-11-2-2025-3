@@ -194,7 +194,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       ease: "none",
       repeat: -1,
       onUpdate: () => {
-        setOrbitRotation(rotationObj.value % 360);
+        const currentRotation = rotationObj.value % 360;
+        setOrbitRotation(currentRotation);
         
         // Calculate which power is closest to bottom (270° position)
         const targetAngle = 270;
@@ -202,8 +203,12 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         let smallestDiff = 360;
         
         powers.forEach((power, index) => {
-          const totalAngle = (power.angle + rotationObj.value) % 360;
-          const diff = Math.abs(((totalAngle - targetAngle + 180) % 360) - 180);
+          // Calculate the actual position of this icon after rotation
+          const iconPosition = (power.angle + currentRotation) % 360;
+          
+          // Calculate the smallest angular difference to 270°
+          let diff = Math.abs(iconPosition - targetAngle);
+          if (diff > 180) diff = 360 - diff;
           
           if (diff < smallestDiff) {
             smallestDiff = diff;
@@ -211,6 +216,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           }
         });
         
+        // Only update if the closest index has changed
         setActivePowerIndex(closestIndex);
       }
     });
