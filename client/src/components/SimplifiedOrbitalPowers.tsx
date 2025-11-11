@@ -188,6 +188,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [videoError, setVideoError] = useState(false);
   const [activePowerIndex, setActivePowerIndex] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
+  const [userInteracted, setUserInteracted] = useState(false);
+  const autoAdvanceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Start rotation animation when section comes into view
   const startInitialRotation = () => {
@@ -238,6 +240,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
   // Navigate to next/previous power
   const handleNavigate = (direction: 'next' | 'prev') => {
+    setUserInteracted(true);
+    if (autoAdvanceTimerRef.current) {
+      clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
     const newIndex = direction === 'next' 
       ? (activePowerIndex + 1) % powers.length
       : (activePowerIndex - 1 + powers.length) % powers.length;
@@ -276,7 +283,26 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       setShowPlayButton(false);
     };
 
+    const handleVideoEnded = () => {
+      if (!userInteracted) {
+        // Wait 6 seconds after video ends, then start auto-advancing every 5 seconds
+        autoAdvanceTimerRef.current = setTimeout(() => {
+          handleNavigate('next');
+          
+          // Set up recurring auto-advance every 5 seconds
+          const intervalId = setInterval(() => {
+            if (!userInteracted) {
+              setActivePowerIndex((prev) => (prev + 1) % powers.length);
+            } else {
+              clearInterval(intervalId);
+            }
+          }, 5000);
+        }, 6000);
+      }
+    };
+
     video.addEventListener('error', handleError);
+    video.addEventListener('ended', handleVideoEnded);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -304,9 +330,13 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     return () => {
       video.removeEventListener('error', handleError);
+      video.removeEventListener('ended', handleVideoEnded);
+      if (autoAdvanceTimerRef.current) {
+        clearTimeout(autoAdvanceTimerRef.current);
+      }
       observer.disconnect();
     };
-  }, [hasPlayed, videoError, videoRef]);
+  }, [hasPlayed, videoError, videoRef, userInteracted]);
 
 
 
@@ -454,7 +484,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Navigation Arrows - Between video and icons */}
           {animationComplete && (
-            <div className="flex justify-center items-center gap-6 mt-4 mb-2 z-30 relative">
+            <div className="flex justify-center items-center gap-6 mt-2 mb-4 z-30 relative">
               <button
                 onClick={() => handleNavigate('prev')}
                 className="group p-2.5 rounded-full bg-background/90 backdrop-blur-sm border-2 transition-all duration-300 hover:scale-110"
@@ -511,7 +541,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Horizontal Icon Row - appears after animation completes */}
           {animationComplete && (
-            <div className="flex flex-col items-center mb-3">
+            <div className="flex flex-col items-center mb-4">
               <div className="flex justify-center items-center gap-2 md:gap-3 px-4" 
                 style={{ 
                   maxWidth: window.innerWidth < 768 ? 'min(90vw, 400px)' : 'min(85vw, 680px)' 
@@ -521,7 +551,14 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                   return (
                     <button
                       key={power.id}
-                      onClick={() => setActivePowerIndex(index)}
+                      onClick={() => {
+                        setUserInteracted(true);
+                        if (autoAdvanceTimerRef.current) {
+                          clearTimeout(autoAdvanceTimerRef.current);
+                          autoAdvanceTimerRef.current = null;
+                        }
+                        setActivePowerIndex(index);
+                      }}
                       className="relative rounded-full p-2 md:p-2.5 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 cursor-pointer flex-shrink-0"
                       style={{
                         boxShadow: isActive 
