@@ -360,7 +360,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         </div>
 
         {/* Main Container */}
-        <div ref={containerRef} className="relative mx-auto -mt-6" style={{ maxWidth: '900px' }} data-playback-mode={playbackMode} data-selected-index={selectedIndex} data-selected-position={selectedPosition} data-testid="orbital-container">
+        <div className="relative mx-auto -mt-6" style={{ maxWidth: '900px' }} data-testid="orbital-container">
           {/* Orbital Container - Adjusted height for mobile */}
           <div className="relative mx-auto h-[450px] md:h-[600px] flex items-center justify-center">
 
