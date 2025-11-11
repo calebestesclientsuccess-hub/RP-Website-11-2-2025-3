@@ -186,40 +186,46 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [orbitRotation, setOrbitRotation] = useState(270); // Start with Brain at bottom (270°)
   const [showPlayButton, setShowPlayButton] = useState(false);
   const [videoError, setVideoError] = useState(false);
-  const [activePowerIndex, setActivePowerIndex] = useState(0); // Brain icon (index 0)
-  const [userHasInteracted, setUserHasInteracted] = useState(false); // Track if user has clicked arrows
+  const [activePowerIndex, setActivePowerIndex] = useState(0);
+  const [animationComplete, setAnimationComplete] = useState(false);
 
-  // Continuous slow rotation like a clock (only if user hasn't interacted)
-  const startContinuousRotation = () => {
-    if (prefersReducedMotion() || userHasInteracted) return;
+  // Start rotation animation when section comes into view
+  const startInitialRotation = () => {
+    if (prefersReducedMotion()) {
+      setAnimationComplete(true);
+      return;
+    }
 
     if (orbitAnimationRef.current) {
       orbitAnimationRef.current.kill();
     }
 
-    const rotationObj = { value: orbitRotation };
+    const rotationObj = { value: 0 };
 
-    // Slow continuous rotation (90 seconds per full rotation)
+    // Two full rotations (720°), slowing down in last 25% of second rotation
     orbitAnimationRef.current = gsap.to(rotationObj, {
-      value: orbitRotation + 360,
-      duration: 90,
-      ease: "none",
-      repeat: -1,
+      value: 720,
+      duration: 8,
+      ease: "power2.out", // Eases out, creating the slow-down effect
       onUpdate: () => {
-        const currentRotation = rotationObj.value % 360;
-        setOrbitRotation(currentRotation);
-        updateActivePowerFromRotation(currentRotation);
+        setOrbitRotation(rotationObj.value % 360);
+      },
+      onComplete: () => {
+        setAnimationComplete(true);
+        setOrbitRotation(0); // Reset to starting position
       }
     });
   };
 
-  // Start rotation on mount
+  // Start rotation on mount/scroll into view
   useEffect(() => {
-    if (prefersReducedMotion()) return;
+    if (prefersReducedMotion()) {
+      setAnimationComplete(true);
+      return;
+    }
     
-    // Small delay before starting rotation
     const timeout = setTimeout(() => {
-      startContinuousRotation();
+      startInitialRotation();
     }, 500);
 
     return () => {
@@ -230,78 +236,12 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     };
   }, []);
 
-  // Determine which power is at bottom-center
-  const updateActivePowerFromRotation = (currentRotation: number) => {
-    const targetAngle = 270; // Bottom-center position
-    let closestIndex = 0;
-    let smallestDiff = 360;
-    
-    powers.forEach((power, index) => {
-      const iconPosition = (power.angle + currentRotation) % 360;
-      let diff = Math.abs(iconPosition - targetAngle);
-      if (diff > 180) diff = 360 - diff;
-      
-      if (diff < smallestDiff) {
-        smallestDiff = diff;
-        closestIndex = index;
-      }
-    });
-    
-    setActivePowerIndex(closestIndex);
-  };
-
-  // Navigate to next/previous power with smooth rotation
+  // Navigate to next/previous power
   const handleNavigate = (direction: 'next' | 'prev') => {
-    // Mark that user has interacted - stops automatic rotation permanently
-    setUserHasInteracted(true);
-    
-    if (prefersReducedMotion()) {
-      const newIndex = direction === 'next' 
-        ? (activePowerIndex + 1) % powers.length
-        : (activePowerIndex - 1 + powers.length) % powers.length;
-      setActivePowerIndex(newIndex);
-      return;
-    }
-
-    // Kill existing animation
-    if (orbitAnimationRef.current) {
-      orbitAnimationRef.current.kill();
-    }
-
-    // Calculate target index
     const newIndex = direction === 'next' 
       ? (activePowerIndex + 1) % powers.length
       : (activePowerIndex - 1 + powers.length) % powers.length;
-    
-    // Calculate rotation needed to bring target icon to bottom-center
-    const targetPower = powers[newIndex];
-    const currentIconAngle = (targetPower.angle + orbitRotation) % 360;
-    const targetAngle = 270;
-    
-    // Calculate shortest rotation
-    let rotationDelta = targetAngle - currentIconAngle;
-    if (rotationDelta > 180) rotationDelta -= 360;
-    if (rotationDelta < -180) rotationDelta += 360;
-    
-    const newRotation = (orbitRotation + rotationDelta) % 360;
-    const rotationObj = { value: orbitRotation };
-    
-    // Smooth clock-like rotation
-    gsap.to(rotationObj, {
-      value: newRotation,
-      duration: 0.6,
-      ease: "power1.inOut",
-      onUpdate: () => {
-        const currentRotation = rotationObj.value % 360;
-        setOrbitRotation(currentRotation);
-        updateActivePowerFromRotation(currentRotation);
-      },
-      onComplete: () => {
-        setOrbitRotation(newRotation);
-        updateActivePowerFromRotation(newRotation);
-        // Don't resume continuous rotation - user is now in control
-      }
-    });
+    setActivePowerIndex(newIndex);
   };
 
 
@@ -475,52 +415,71 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               {videoEl}
             </div>
 
-            {/* Orbital Badges - Now clickable */}
-            <div className="orbital-badges-container absolute inset-0">
-              {powers.map((power, index) => {
-                const isMobile = window.innerWidth < 768;
-                const radius = isMobile ? 180 : 320;
-                const totalAngle = power.angle + orbitRotation;
-                const angleRad = (totalAngle * Math.PI) / 180;
-                const x = Math.cos(angleRad) * radius;
-                const yScale = isMobile ? 0.8 : 0.6;
-                const y = Math.sin(angleRad) * radius * yScale;
-
-                const isActive = index === activePowerIndex;
-                
-                return (
-                  <div
-                    key={power.id}
-                    className="absolute left-1/2 top-1/2 cursor-pointer"
-                    style={{
-                      transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
-                      zIndex: 30
-                    }}
-                    onClick={() => handleNavigate('next')}
-                    data-testid={`power-badge-${power.id}`}
-                  >
+            {/* Orbital Badges - Rotate during animation, then settle into horizontal row */}
+            {!animationComplete ? (
+              <div className="orbital-badges-container absolute inset-0">
+                {powers.map((power, index) => {
+                  const isMobile = window.innerWidth < 768;
+                  const radius = isMobile ? 180 : 320;
+                  const totalAngle = power.angle + orbitRotation;
+                  const angleRad = (totalAngle * Math.PI) / 180;
+                  const x = Math.cos(angleRad) * radius;
+                  const yScale = isMobile ? 0.8 : 0.6;
+                  const y = Math.sin(angleRad) * radius * yScale;
+                  
+                  return (
                     <div
-                      className={`relative rounded-full p-3 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 ${
-                        isActive ? 'scale-110' : 'hover:scale-105'
-                      }`}
+                      key={power.id}
+                      className="absolute left-1/2 top-1/2"
                       style={{
-                        boxShadow: isActive 
-                          ? `0 0 30px ${power.glowColor}, 0 0 15px ${power.glowColor}` 
-                          : `0 0 20px ${power.glowColor}`,
-                        animation: isActive ? 'pulse-subtle 2s ease-in-out infinite' : 'none'
+                        transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+                        zIndex: 30
                       }}
+                      data-testid={`power-badge-${power.id}`}
                     >
-                      {power.icon}
+                      <div
+                        className="relative rounded-full p-3 bg-background/90 backdrop-blur-sm shadow-lg"
+                        style={{
+                          boxShadow: `0 0 20px ${power.glowColor}`
+                        }}
+                      >
+                        {power.icon}
+                      </div>
                     </div>
-                  </div>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
+
+          {/* Horizontal Icon Row - appears after animation completes */}
+          {animationComplete && (
+            <div className="flex justify-center items-center gap-4 mb-6 -mt-8">
+              {powers.map((power, index) => {
+                const isActive = index === activePowerIndex;
+                return (
+                  <button
+                    key={power.id}
+                    onClick={() => setActivePowerIndex(index)}
+                    className="relative rounded-full p-3 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 cursor-pointer"
+                    style={{
+                      boxShadow: isActive 
+                        ? `0 0 30px ${power.glowColor}, 0 0 15px ${power.glowColor}` 
+                        : `0 0 20px ${power.glowColor}`,
+                      animation: isActive ? 'pulse-subtle 2s ease-in-out infinite' : 'none'
+                    }}
+                    data-testid={`power-icon-${power.id}`}
+                  >
+                    {power.icon}
+                  </button>
                 );
               })}
             </div>
-          </div>
+          )}
 
           {/* Info Box with Cycling Arrows */}
           {showInfoBox && (
-            <Card className="-mt-16 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
+            <Card className="-mt-8 p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box">
               <div
                 key={powers[activePowerIndex].id}
                 className="space-y-4"
@@ -559,52 +518,54 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               </Card>
           )}
 
-          {/* Netflix-style Navigation Arrows - Between Video and Text Box */}
-          <div className="flex justify-center items-center gap-8 mb-4 z-30 relative" style={{ marginTop: '-2rem' }}>
-            <button
-              onClick={() => handleNavigate('prev')}
-              className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 border-muted hover:border-primary hover:bg-primary/10 transition-all duration-300 hover:scale-110"
-              aria-label="Previous power"
-              data-testid="nav-arrow-prev"
-            >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="28" 
-                height="28" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2.5" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                className="group-hover:stroke-primary transition-colors"
+          {/* Netflix-style Navigation Arrows - Only show after animation completes */}
+          {animationComplete && (
+            <div className="flex justify-center items-center gap-8 mb-4 z-30 relative" style={{ marginTop: '-2rem' }}>
+              <button
+                onClick={() => handleNavigate('prev')}
+                className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 border-muted hover:border-primary hover:bg-primary/10 transition-all duration-300 hover:scale-110"
+                aria-label="Previous power"
+                data-testid="nav-arrow-prev"
               >
-                <path d="m15 18-6-6 6-6"/>
-              </svg>
-            </button>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="28" 
+                  height="28" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2.5" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="group-hover:stroke-primary transition-colors"
+                >
+                  <path d="m15 18-6-6 6-6"/>
+                </svg>
+              </button>
 
-            <button
-              onClick={() => handleNavigate('next')}
-              className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 border-muted hover:border-primary hover:bg-primary/10 transition-all duration-300 hover:scale-110"
-              aria-label="Next power"
-              data-testid="nav-arrow-next"
-            >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="28" 
-                height="28" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2.5" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                className="group-hover:stroke-primary transition-colors"
+              <button
+                onClick={() => handleNavigate('next')}
+                className="group p-3 rounded-full bg-background/90 backdrop-blur-sm border-2 border-muted hover:border-primary hover:bg-primary/10 transition-all duration-300 hover:scale-110"
+                aria-label="Next power"
+                data-testid="nav-arrow-next"
               >
-                <path d="m9 18 6-6-6-6"/>
-              </svg>
-            </button>
-          </div>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="28" 
+                  height="28" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2.5" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="group-hover:stroke-primary transition-colors"
+                >
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
