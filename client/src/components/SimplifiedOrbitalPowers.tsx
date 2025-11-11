@@ -257,7 +257,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const sectionRef = useRef<HTMLDivElement>(null);
   const badgeRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(2);
-  const [showInfoBox, setShowInfoBox] = useState(false);
+  const [showInfoBox, setShowInfoBox] = useState(true); // Show by default - don't depend on autoplay
   const [hasPlayed, setHasPlayed] = useState(false);
   const [initialPulse, setInitialPulse] = useState(true);
   const orbitAnimationRef = useRef<gsap.core.Tween | null>(null);
@@ -806,7 +806,31 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     });
   }, [selectedIndex]);
 
+  // Shared helper to stop ALL competing GSAP timelines
+  const stopAllTimelines = () => {
+    if (orbitAnimationRef.current) {
+      orbitAnimationRef.current.kill();
+      orbitAnimationRef.current = null;
+    }
+    if (autoTourTimelineRef.current) {
+      autoTourTimelineRef.current.kill();
+      autoTourTimelineRef.current = null;
+    }
+    if (decelerationTweenRef.current) {
+      decelerationTweenRef.current.kill();
+      decelerationTweenRef.current = null;
+    }
+    if (preVideoTimelineRef.current) {
+      preVideoTimelineRef.current.kill();
+      preVideoTimelineRef.current = null;
+    }
+    setIsAnimating(false);
+    setPrePulseActive(false);
+  };
+
   const handlePrevious = () => {
+    stopAllTimelines(); // Kill all competing timelines
+    
     const newIndex = (selectedIndex - 1 + powers.length) % powers.length;
     setSelectedIndex(newIndex);
     setInitialPulse(false);
@@ -819,6 +843,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   };
 
   const handleNext = () => {
+    stopAllTimelines(); // Kill all competing timelines
+    
     const newIndex = (selectedIndex + 1) % powers.length;
     setSelectedIndex(newIndex);
     setInitialPulse(false);
@@ -831,6 +857,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   };
 
   const handleBadgeClick = (index: number) => {
+    stopAllTimelines(); // Kill all competing timelines
+    
     setSelectedIndex(index);
     setShowInfoBox(true);
     setInitialPulse(false);
@@ -955,8 +983,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
                 // Determine if this badge is at the selected position (responsive based on viewport)
                 const normalizedAngle = totalAngle % 360;
-                // Tighter threshold for more precise highlighting (3° instead of 5°)
-                const isAtSelectedPosition = Math.abs(normalizedAngle - selectedPosition) < 3;
+                // Relaxed threshold to prevent flickering during overshoot/settle (8°)
+                const isAtSelectedPosition = !isAnimating && Math.abs(normalizedAngle - selectedPosition) < 8;
 
                 // Determine if this is the NEXT badge (the one about to be selected)
                 const nextIndex = (selectedIndex + 1) % powers.length;
