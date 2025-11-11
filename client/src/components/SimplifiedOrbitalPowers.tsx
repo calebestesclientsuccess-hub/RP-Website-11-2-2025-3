@@ -445,41 +445,54 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               {videoEl}
             </div>
 
-            {/* Orbital Badges - Rotate during animation, then settle into horizontal row */}
-            {!animationComplete ? (
-              <div className="orbital-badges-container absolute inset-0">
-                {powers.map((power, index) => {
-                  const isMobile = window.innerWidth < 768;
-                  const radius = isMobile ? 180 : 320;
-                  const totalAngle = power.angle + orbitRotation;
-                  const angleRad = (totalAngle * Math.PI) / 180;
-                  const x = Math.cos(angleRad) * radius;
-                  const yScale = isMobile ? 0.8 : 0.6;
-                  const y = Math.sin(angleRad) * radius * yScale;
-                  
-                  return (
+            {/* Orbital Badges - Rotate during animation, then transition to horizontal row */}
+            <div className="orbital-badges-container absolute inset-0 pointer-events-none">
+              {powers.map((power, index) => {
+                const isMobile = window.innerWidth < 768;
+                const radius = isMobile ? 180 : 320;
+                const totalAngle = power.angle + orbitRotation;
+                const angleRad = (totalAngle * Math.PI) / 180;
+                const x = Math.cos(angleRad) * radius;
+                const yScale = isMobile ? 0.8 : 0.6;
+                const y = Math.sin(angleRad) * radius * yScale;
+                
+                // Calculate final horizontal row position
+                const iconWidth = isMobile ? 40 : 44; // approximate width with padding
+                const gap = isMobile ? 8 : 12;
+                const totalWidth = (iconWidth + gap) * powers.length - gap;
+                const startX = -totalWidth / 2;
+                const finalX = startX + (iconWidth + gap) * index + iconWidth / 2;
+                const finalY = isMobile ? 200 : 260; // position below video
+                
+                // Interpolate between orbital and final position based on animation progress
+                const progress = animationComplete ? 1 : Math.max(0, (orbitRotation - 540) / 180); // starts transitioning in last 180° (from 540° to 720°)
+                const currentX = x + (finalX - x) * progress;
+                const currentY = y + (finalY - y) * progress;
+                const opacity = animationComplete ? 0 : 1 - (progress * 0.3); // slight fade during transition
+                
+                return (
+                  <div
+                    key={power.id}
+                    className="absolute left-1/2 top-1/2 transition-opacity duration-300"
+                    style={{
+                      transform: `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px))`,
+                      opacity,
+                      zIndex: 30
+                    }}
+                    data-testid={`power-badge-${power.id}`}
+                  >
                     <div
-                      key={power.id}
-                      className="absolute left-1/2 top-1/2"
+                      className="relative rounded-full p-3 bg-background/90 backdrop-blur-sm shadow-lg"
                       style={{
-                        transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
-                        zIndex: 30
+                        boxShadow: `0 0 20px ${power.glowColor}`
                       }}
-                      data-testid={`power-badge-${power.id}`}
                     >
-                      <div
-                        className="relative rounded-full p-3 bg-background/90 backdrop-blur-sm shadow-lg"
-                        style={{
-                          boxShadow: `0 0 20px ${power.glowColor}`
-                        }}
-                      >
-                        {power.icon}
-                      </div>
+                      {power.icon}
                     </div>
-                  );
-                })}
-              </div>
-            ) : null}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Navigation Arrows - Between video and icons */}
@@ -539,10 +552,15 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             </div>
           )}
 
-          {/* Horizontal Icon Row - appears after animation completes */}
-          {animationComplete && (
-            <div className="flex flex-col items-center mb-4">
-              <div className="flex justify-center items-center gap-2 md:gap-3 px-4" 
+          {/* Horizontal Icon Row - fades in as orbital icons transition out */}
+          <div 
+            className="flex flex-col items-center mb-4 transition-opacity duration-500"
+            style={{ 
+              opacity: animationComplete ? 1 : 0,
+              pointerEvents: animationComplete ? 'auto' : 'none'
+            }}
+          >
+            <div className="flex justify-center items-center gap-2 md:gap-3 px-4" 
                 style={{ 
                   maxWidth: window.innerWidth < 768 ? 'min(90vw, 400px)' : 'min(85vw, 680px)' 
                 }}>
@@ -574,7 +592,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 })}
               </div>
             </div>
-          )}
 
           {/* Info Box with Cycling Arrows */}
           {showInfoBox && (
