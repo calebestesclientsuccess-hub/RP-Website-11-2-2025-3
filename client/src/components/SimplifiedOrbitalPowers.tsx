@@ -213,12 +213,20 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     return () => {
       gsap.killTweensOf(rotationObj);
+      if (orbitAnimationRef.current) {
+        orbitAnimationRef.current.kill();
+      }
     };
-  }, []);
+  }, [hasInitialRotation]);
 
   // Continuous rotation after initial spin
   const startContinuousRotation = () => {
     if (prefersReducedMotion()) return;
+
+    // Kill any existing animation
+    if (orbitAnimationRef.current) {
+      orbitAnimationRef.current.kill();
+    }
 
     const rotationObj = { value: orbitRotation };
 
@@ -261,11 +269,56 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
   // Handle navigation (manual or click on icon/video)
   const handleNavigate = (direction: 'next' | 'prev') => {
+    if (prefersReducedMotion()) {
+      // Just update index without animation
+      const newIndex = direction === 'next' 
+        ? (activePowerIndex === powers.length - 1 ? 0 : activePowerIndex + 1)
+        : (activePowerIndex === 0 ? powers.length - 1 : activePowerIndex - 1);
+      setActivePowerIndex(newIndex);
+      return;
+    }
+
+    // Kill any existing rotation animation
+    if (orbitAnimationRef.current) {
+      orbitAnimationRef.current.kill();
+    }
+
+    // Calculate target index
     const newIndex = direction === 'next' 
       ? (activePowerIndex === powers.length - 1 ? 0 : activePowerIndex + 1)
       : (activePowerIndex === 0 ? powers.length - 1 : activePowerIndex - 1);
     
-    setActivePowerIndex(newIndex);
+    // Calculate how much we need to rotate to bring the target icon to bottom-center (270°)
+    const targetPower = powers[newIndex];
+    const currentIconAngle = (targetPower.angle + orbitRotation) % 360;
+    const targetAngle = 270;
+    
+    // Calculate shortest rotation direction
+    let rotationDelta = targetAngle - currentIconAngle;
+    
+    // Normalize to -180 to 180 range
+    if (rotationDelta > 180) rotationDelta -= 360;
+    if (rotationDelta < -180) rotationDelta += 360;
+    
+    // Apply the rotation
+    const newRotation = orbitRotation + rotationDelta;
+    
+    const rotationObj = { value: orbitRotation };
+    
+    gsap.to(rotationObj, {
+      value: newRotation,
+      duration: 0.8,
+      ease: "power2.out",
+      onUpdate: () => {
+        const currentRotation = rotationObj.value % 360;
+        setOrbitRotation(currentRotation);
+        updateActivePowerFromRotation(currentRotation);
+      },
+      onComplete: () => {
+        // Restart continuous rotation from new position
+        startContinuousRotation();
+      }
+    });
   };
 
 
