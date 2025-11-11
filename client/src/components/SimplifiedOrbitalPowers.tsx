@@ -187,10 +187,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [showPlayButton, setShowPlayButton] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [activePowerIndex, setActivePowerIndex] = useState(0); // Brain icon (index 0)
+  const [userHasInteracted, setUserHasInteracted] = useState(false); // Track if user has clicked arrows
 
-  // Continuous slow rotation like a clock
+  // Continuous slow rotation like a clock (only if user hasn't interacted)
   const startContinuousRotation = () => {
-    if (prefersReducedMotion()) return;
+    if (prefersReducedMotion() || userHasInteracted) return;
 
     if (orbitAnimationRef.current) {
       orbitAnimationRef.current.kill();
@@ -251,6 +252,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
   // Navigate to next/previous power with smooth rotation
   const handleNavigate = (direction: 'next' | 'prev') => {
+    // Mark that user has interacted - stops automatic rotation permanently
+    setUserHasInteracted(true);
+    
     if (prefersReducedMotion()) {
       const newIndex = direction === 'next' 
         ? (activePowerIndex + 1) % powers.length
@@ -295,8 +299,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       onComplete: () => {
         setOrbitRotation(newRotation);
         updateActivePowerFromRotation(newRotation);
-        // Resume continuous rotation
-        startContinuousRotation();
+        // Don't resume continuous rotation - user is now in control
       }
     });
   };
