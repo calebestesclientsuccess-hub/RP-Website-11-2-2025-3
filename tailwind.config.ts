@@ -164,6 +164,7 @@ export default {
         "rotate-slow": "rotate-slow 20s linear infinite",
         "rotate-reverse": "rotate-reverse 15s linear infinite",
         "fade-up": "fade-up 0.6s ease-out",
+        "pulse-subtle": "pulse-subtle 2s ease-in-out infinite",
       },
     },
   },
