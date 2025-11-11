@@ -1,5 +1,5 @@
 import { SEO } from "@/components/SEO";
-import { FAQSchema } from "@/components/schemas/FAQSchema";
+import { FAQSchema } from "@/components/FAQSchema";
 import { Button } from "@/components/ui/button";
 import { WidgetZone } from "@/components/WidgetZone";
 import { Link } from "wouter";
