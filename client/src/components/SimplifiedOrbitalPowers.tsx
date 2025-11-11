@@ -47,33 +47,13 @@ interface Power {
 
 const powers: Power[] = [
   {
-    id: "ai-architect",
-    title: "AI Architect",
-    icon: <Brain className="w-6 h-6" strokeWidth={2} style={{ stroke: "#5E4DB8" }} />,
-    color: "text-violet-blue",
-    glowColor: "rgba(94, 77, 184, 0.4)",
-    bgColor: "94, 77, 184",
-    angle: 0,
-    description: "Intelligent systems that research, personalize, and optimize at scale.",
-    details: [
-      "AI-powered prospect research",
-      "Automated personalization engine",
-      "Message optimization & A/B testing"
-    ],
-    content: {
-      whatItIs: "An advanced AI-powered system that automates prospect research, message personalization, and campaign optimization using machine learning algorithms.",
-      value: "Increases response rates by 3x through hyper-personalization at scale, saving 15+ hours per week on manual research and writing.",
-      inHouseCost: "$180,000/yr (AI engineer) + $50,000/yr (tools & infrastructure)"
-    }
-  },
-  {
     id: "gtm-strategist",
     title: "GTM Strategist",
     icon: <Target className="w-6 h-6" strokeWidth={2} style={{ stroke: "#ef233c" }} />,
     color: "text-primary",
     glowColor: "rgba(239, 35, 60, 0.4)",
     bgColor: "239, 35, 60",
-    angle: 60,
+    angle: 0,
     description: "Expert strategists who design and refine your entire revenue playbook.",
     details: [
       "ICP & persona development",
@@ -87,23 +67,23 @@ const powers: Power[] = [
     }
   },
   {
-    id: "revops",
-    title: "RevOps",
-    icon: <Settings className="w-6 h-6" strokeWidth={2} style={{ stroke: "#D25A28" }} />,
-    color: "text-burnt-orange",
-    glowColor: "rgba(210, 90, 40, 0.4)",
-    bgColor: "210, 90, 40",
-    angle: 120,
-    description: "Full revenue operations management ensuring seamless system performance.",
+    id: "ai-architect",
+    title: "AI Architect",
+    icon: <Brain className="w-6 h-6" strokeWidth={2} style={{ stroke: "#5E4DB8" }} />,
+    color: "text-violet-blue",
+    glowColor: "rgba(94, 77, 184, 0.4)",
+    bgColor: "94, 77, 184",
+    angle: 60,
+    description: "Intelligent systems that research, personalize, and optimize at scale.",
     details: [
-      "CRM & tool optimization",
-      "Data hygiene & reporting",
-      "Process automation & workflows"
+      "AI-powered prospect research",
+      "Automated personalization engine",
+      "Message optimization & A/B testing"
     ],
     content: {
-      whatItIs: "Complete revenue operations management including CRM optimization, data orchestration, and process automation across all GTM systems.",
-      value: "Eliminates 20+ hours/week of manual tasks, improves data accuracy to 99%, and provides real-time performance visibility.",
-      inHouseCost: "$140,000/yr (RevOps Manager) + $30,000/yr (tools & integrations)"
+      whatItIs: "An advanced AI-powered system that automates prospect research, message personalization, and campaign optimization using machine learning algorithms.",
+      value: "Increases response rates by 3x through hyper-personalization at scale, saving 15+ hours per week on manual research and writing.",
+      inHouseCost: "$180,000/yr (AI engineer) + $50,000/yr (tools & infrastructure)"
     }
   },
   {
@@ -113,7 +93,7 @@ const powers: Power[] = [
     color: "text-community",
     glowColor: "rgba(159, 143, 255, 0.4)",
     bgColor: "159, 143, 255",
-    angle: 180,
+    angle: 120,
     description: "World-class coaching that elevates your BDRs to top 1% performance.",
     details: [
       "Daily skill development",
@@ -124,6 +104,26 @@ const powers: Power[] = [
       whatItIs: "Elite sales coaches who've trained top 1% BDRs at companies like Salesforce, MongoDB, and Snowflake, providing daily 1:1 and group coaching.",
       value: "Accelerates ramp time from 3 months to 3 weeks. Increases meeting conversion rates by 2.5x through proven methodologies.",
       inHouseCost: "$175,000/yr (Sales Enablement Manager) + $60,000/yr (training programs)"
+    }
+  },
+  {
+    id: "revops",
+    title: "RevOps",
+    icon: <Settings className="w-6 h-6" strokeWidth={2} style={{ stroke: "#D25A28" }} />,
+    color: "text-burnt-orange",
+    glowColor: "rgba(210, 90, 40, 0.4)",
+    bgColor: "210, 90, 40",
+    angle: 180,
+    description: "Full revenue operations management ensuring seamless system performance.",
+    details: [
+      "CRM & tool optimization",
+      "Data hygiene & reporting",
+      "Process automation & workflows"
+    ],
+    content: {
+      whatItIs: "Complete revenue operations management including CRM optimization, data orchestration, and process automation across all GTM systems.",
+      value: "Eliminates 20+ hours/week of manual tasks, improves data accuracy to 99%, and provides real-time performance visibility.",
+      inHouseCost: "$140,000/yr (RevOps Manager) + $30,000/yr (tools & integrations)"
     }
   },
   {
@@ -204,17 +204,16 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     const rotationObj = { value: 0 };
 
-    // Two full rotations (720°), slowing down in last 25% of second rotation
+    // Two full rotations (720°), with smooth cinematic easing
     orbitAnimationRef.current = gsap.to(rotationObj, {
       value: 720,
-      duration: 8,
-      ease: "power2.out", // Eases out, creating the slow-down effect
+      duration: 9,
+      ease: "power1.inOut", // Smoother, more cinematic easing
       onUpdate: () => {
-        setOrbitRotation(rotationObj.value % 360);
+        setOrbitRotation(rotationObj.value);
       },
       onComplete: () => {
         setAnimationComplete(true);
-        setOrbitRotation(0); // Reset to starting position
       }
     });
   };
@@ -457,23 +456,31 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 const y = Math.sin(angleRad) * radius * yScale;
                 
                 // Calculate final horizontal row position
-                const iconWidth = isMobile ? 40 : 44; // approximate width with padding
+                const iconWidth = isMobile ? 40 : 44;
                 const gap = isMobile ? 8 : 12;
                 const totalWidth = (iconWidth + gap) * powers.length - gap;
                 const startX = -totalWidth / 2;
                 const finalX = startX + (iconWidth + gap) * index + iconWidth / 2;
-                const finalY = isMobile ? 200 : 260; // position below video
+                const finalY = isMobile ? 200 : 260;
                 
-                // Interpolate between orbital and final position based on animation progress
-                const progress = animationComplete ? 1 : Math.max(0, (orbitRotation - 540) / 180); // starts transitioning in last 180° (from 540° to 720°)
+                // Cinematic transition: starts at 480° (2/3 through), completes at 720°
+                // This gives more time for the transition and makes it smoother
+                const transitionStart = 480;
+                const transitionEnd = 720;
+                const transitionRange = transitionEnd - transitionStart;
+                const rawProgress = Math.max(0, Math.min(1, (orbitRotation - transitionStart) / transitionRange));
+                
+                // Apply easing to the progress for smoother transition
+                const progress = animationComplete ? 1 : rawProgress * rawProgress * (3 - 2 * rawProgress); // smoothstep easing
+                
                 const currentX = x + (finalX - x) * progress;
                 const currentY = y + (finalY - y) * progress;
-                const opacity = animationComplete ? 0 : 1 - (progress * 0.3); // slight fade during transition
+                const opacity = animationComplete ? 0 : 1 - (progress * 0.4);
                 
                 return (
                   <div
                     key={power.id}
-                    className="absolute left-1/2 top-1/2 transition-opacity duration-300"
+                    className="absolute left-1/2 top-1/2 transition-all duration-700 ease-out"
                     style={{
                       transform: `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px))`,
                       opacity,
@@ -554,7 +561,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           {/* Horizontal Icon Row - fades in as orbital icons transition out */}
           <div 
-            className="flex flex-col items-center mb-4 transition-opacity duration-500"
+            className="flex flex-col items-center mb-4 transition-opacity duration-700 ease-in"
             style={{ 
               opacity: animationComplete ? 1 : 0,
               pointerEvents: animationComplete ? 'auto' : 'none'
