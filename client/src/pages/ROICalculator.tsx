@@ -138,11 +138,11 @@ export default function ROICalculator() {
 
   // Calculate results based on selected engine
   const config = engineConfigs[selectedEngine];
-  
+
   // Dynamic calculation for 3-SDR+ ticker
   let monthlyInvestment = config.monthlyCost;
   let monthlySQOs = config.guaranteedSQOs;
-  
+
   if (selectedEngine === "3-sdr-plus") {
     // Formula: Base cost is $7,500, then $7,500 per SDR
     // 1 SDR = $12.5K, 2 SDRs = $15K, 3 SDRs = $22.5K, 4 SDRs = $30K, etc.
@@ -150,7 +150,7 @@ export default function ROICalculator() {
     monthlyInvestment = 7500 + (sdrCount * 7500);
     monthlySQOs = sdrCount * 10; // 10 meetings per SDR
   }
-  
+
   const costPerMeeting = monthlySQOs > 0 ? monthlyInvestment / monthlySQOs : 0;
   const projectedDealsPerMonth = monthlySQOs * (closeRate[0] / 100);
   const projectedLTVPerMonth = projectedDealsPerMonth * ltv[0];
@@ -434,18 +434,67 @@ export default function ROICalculator() {
                   </h2>
                 </div>
 
+                {/* Internal Hire Warning - Separate Box */}
+                <div className="mb-6 p-4 border-2 border-destructive/30 bg-destructive/5 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1">
+                      <AlertTriangle className="w-5 h-5 text-destructive" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-semibold text-base">Compare Against: Internal "Lone Wolf" Hire</h3>
+                        <Badge variant="destructive" className="text-xs">High Risk</Badge>
+                      </div>
+                      <div className="space-y-1 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-4 h-4" />
+                          <span>Cost: <span className="font-semibold text-foreground">$16,500/mo</span> <span className="text-xs">($198k/yr TCO)</span></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <XCircle className="w-4 h-4 text-destructive" />
+                          <span>Guaranteed SQOs: <span className="font-semibold text-destructive">0</span></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-destructive" />
+                          <span>Reliability: <span className="font-semibold text-destructive">Single Point of Failure</span></span>
+                        </div>
+                      </div>
+                      <Button
+                        variant={selectedEngine === "lone-wolf" ? "default" : "outline"}
+                        size="sm"
+                        className="mt-3"
+                        onClick={() => setSelectedEngine("lone-wolf")}
+                      >
+                        {selectedEngine === "lone-wolf" ? "Selected for Comparison" : "Use for Comparison"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Main GTM Engine Options */}
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                    GTM Engine Options
+                  </h3>
+                </div>
+
                 <RadioGroup
                   value={selectedEngine}
                   onValueChange={(value) => setSelectedEngine(value as EngineOption)}
                   className="space-y-4"
                   data-testid="radio-group-engine"
                 >
-                  {(Object.keys(engineConfigs) as EngineOption[]).map((key) => {
+                  {(Object.keys(engineConfigs) as EngineOption[]).filter(key => {
+                    // Only show non-lone-wolf and non-enterprise options
+                    // Enterprise only shows if sdrCount >= 10
+                    if (key === "lone-wolf") return false;
+                    if (key === "enterprise" && sdrCount < 10) return false;
+                    return true;
+                  }).map((key) => {
                     const config = engineConfigs[key];
-                    const isLoneWolf = key === "lone-wolf";
                     const isTickerBased = key === "3-sdr-plus";
                     const isEnterprise = key === "enterprise";
-                    
+
                     // Calculate dynamic values for ticker
                     const tickerCost = isTickerBased ? 12500 + ((sdrCount - 1) * 7500) : config.monthlyCost;
                     const tickerSQOs = isTickerBased ? sdrCount * 10 : config.guaranteedSQOs;
@@ -457,140 +506,126 @@ export default function ROICalculator() {
                           selectedEngine === key
                             ? 'border-primary bg-primary/5'
                             : 'border-border'
-                        } ${isLoneWolf ? 'border-destructive/30 bg-destructive/5' : ''} ${isEnterprise ? 'border-primary/30 bg-primary/5' : ''}`}
+                        } ${isEnterprise ? 'border-primary/30 bg-primary/5' : ''}`}
                         data-testid={`radio-option-${key}`}
                       >
-                        <div className="flex items-start gap-3">
-                          <RadioGroupItem
-                            value={key}
-                            id={key}
-                            className="mt-1"
-                            data-testid={`radio-button-${key}`}
-                          />
-                          <Label
-                            htmlFor={key}
-                            className="flex-1 cursor-pointer"
-                          >
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="font-semibold text-base">{config.name}</span>
-                              {config.isRecommended && (
-                                <Badge variant="default" className="text-xs" data-testid="badge-recommended">
-                                  Recommended
-                                </Badge>
-                              )}
-                              {isLoneWolf && (
-                                <Badge variant="destructive" className="text-xs" data-testid="badge-warning">
-                                  High Risk
-                                </Badge>
-                              )}
-                            </div>
-                            
-                            {isEnterprise ? (
-                              <div className="space-y-2 text-sm">
-                                <p className="text-muted-foreground">{config.description}</p>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  asChild
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <Link href="/audit">
-                                    Schedule GTM Audit
-                                    <ArrowRight className="w-4 h-4 ml-2" />
-                                  </Link>
-                                </Button>
-                              </div>
-                            ) : (
-                              <>
-                                <div className="space-y-1 text-sm">
-                                  <div className="flex items-center gap-2">
-                                    <DollarSign className="w-4 h-4 text-muted-foreground" />
-                                    <span className="text-muted-foreground">
-                                      Cost: <span className="font-semibold text-foreground">
-                                        {formatCurrency(isTickerBased ? tickerCost : config.monthlyCost)}/mo
-                                      </span>
-                                      {isLoneWolf && <span className="text-xs ml-1">({config.description})</span>}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <TrendingUp className="w-4 h-4 text-muted-foreground" />
-                                    <span className="text-muted-foreground">
-                                      Guaranteed SQOs: <span className="font-semibold text-foreground">
-                                        {isTickerBased ? `${tickerSQOs}/month` : config.guaranteedSQOs > 0 ? `${config.guaranteedSQOs}/month` : '0'}
-                                      </span>
-                                      {!isLoneWolf && (config.guaranteedSQOs > 0 || isTickerBased) && (
-                                        <span className="text-xs ml-1">(from Month 5)</span>
-                                      )}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    {isLoneWolf ? (
-                                      <AlertTriangle className="w-4 h-4 text-destructive" />
-                                    ) : (
-                                      <Shield className="w-4 h-4 text-green-600 dark:text-green-400" />
-                                    )}
-                                    <span className="text-muted-foreground">
-                                      Reliability: <span className={`font-semibold ${
-                                        isLoneWolf
-                                          ? 'text-destructive'
-                                          : 'text-green-600 dark:text-green-400'
-                                      }`}>
-                                        {config.reliability}
-                                      </span>
-                                    </span>
-                                  </div>
-                                </div>
-                                
-                                {/* Ticker for 3-SDR+ */}
-                                {isTickerBased && (
-                                  <div className="mt-3 pt-3 border-t border-border">
-                                    <div className="flex items-center justify-between gap-4">
-                                      <span className="text-sm font-medium">Number of SDRs:</span>
-                                      <div className="flex items-center gap-3">
-                                        <Button
-                                          variant="outline"
-                                          size="icon"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (selectedEngine !== key) {
-                                              setSelectedEngine(key as EngineOption);
-                                            }
-                                            setSdrCount(Math.max(3, sdrCount - 1));
-                                          }}
-                                          disabled={sdrCount <= 3}
-                                          data-testid="button-decrease-sdr"
-                                        >
-                                          -
-                                        </Button>
-                                        <span className="text-xl font-bold font-mono w-12 text-center" data-testid="text-sdr-count">
-                                          {sdrCount}
-                                        </span>
-                                        <Button
-                                          variant="outline"
-                                          size="icon"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (selectedEngine !== key) {
-                                              setSelectedEngine(key as EngineOption);
-                                            }
-                                            setSdrCount(Math.min(10, sdrCount + 1));
-                                          }}
-                                          disabled={sdrCount >= 10}
-                                          data-testid="button-increase-sdr"
-                                        >
-                                          +
-                                        </Button>
-                                      </div>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mt-2">
-                                      {sdrCount} SDRs × 10 meetings = {tickerSQOs} meetings/month
-                                    </p>
-                                  </div>
-                                )}
-                              </>
+                        <RadioGroupItem
+                          value={key}
+                          id={key}
+                          className="mt-1"
+                          data-testid={`radio-button-${key}`}
+                        />
+                        <Label
+                          htmlFor={key}
+                          className="flex-1 cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-semibold text-base">{config.name}</span>
+                            {config.isRecommended && (
+                              <Badge variant="default" className="text-xs" data-testid="badge-recommended">
+                                Recommended
+                              </Badge>
                             )}
-                          </Label>
-                        </div>
+                          </div>
+
+                          {isEnterprise ? (
+                            <div className="space-y-2 text-sm">
+                              <p className="text-muted-foreground">{config.description}</p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Link href="/audit">
+                                  Schedule GTM Audit
+                                  <ArrowRight className="w-4 h-4 ml-2" />
+                                </Link>
+                              </Button>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="space-y-1 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <DollarSign className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-muted-foreground">
+                                    Cost: <span className="font-semibold text-foreground">
+                                      {formatCurrency(isTickerBased ? tickerCost : config.monthlyCost)}/mo
+                                    </span>
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                                  <span className="text-muted-foreground">
+                                    Guaranteed SQOs: <span className="font-semibold text-foreground">
+                                      {isTickerBased ? `${tickerSQOs}/month` : config.guaranteedSQOs > 0 ? `${config.guaranteedSQOs}/month` : '0'}
+                                    </span>
+                                    {!isLoneWolf && (config.guaranteedSQOs > 0 || isTickerBased) && (
+                                      <span className="text-xs ml-1">(from Month 5)</span>
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Shield className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                  <span className="text-muted-foreground">
+                                    Reliability: <span className={`font-semibold ${
+                                      'text-green-600 dark:text-green-400'
+                                    }`}>
+                                      {config.reliability}
+                                    </span>
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Ticker for 3-SDR+ */}
+                              {isTickerBased && (
+                                <div className="mt-3 pt-3 border-t border-border">
+                                  <div className="flex items-center justify-between gap-4">
+                                    <span className="text-sm font-medium">Number of SDRs:</span>
+                                    <div className="flex items-center gap-3">
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (selectedEngine !== key) {
+                                            setSelectedEngine(key as EngineOption);
+                                          }
+                                          setSdrCount(Math.max(3, sdrCount - 1));
+                                        }}
+                                        disabled={sdrCount <= 3}
+                                        data-testid="button-decrease-sdr"
+                                      >
+                                        -
+                                      </Button>
+                                      <span className="text-xl font-bold font-mono w-12 text-center" data-testid="text-sdr-count">
+                                        {sdrCount}
+                                      </span>
+                                      <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (selectedEngine !== key) {
+                                            setSelectedEngine(key as EngineOption);
+                                          }
+                                          setSdrCount(Math.min(10, sdrCount + 1));
+                                        }}
+                                        disabled={sdrCount >= 10}
+                                        data-testid="button-increase-sdr"
+                                      >
+                                        +
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-2">
+                                    {sdrCount} SDRs × 10 meetings = {tickerSQOs} meetings/month
+                                  </p>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </Label>
                       </div>
                     );
                   })}
