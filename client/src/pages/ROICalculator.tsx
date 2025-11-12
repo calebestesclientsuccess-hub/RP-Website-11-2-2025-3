@@ -144,9 +144,10 @@ export default function ROICalculator() {
   let monthlySQOs = config.guaranteedSQOs;
   
   if (selectedEngine === "3-sdr-plus") {
-    // Formula: Each SDR costs $7,500 (after first SDR at $12.5K base)
-    // 1 SDR = $12.5K, 2 SDRs = $15K, 3 SDRs = $22.5K, etc.
-    monthlyInvestment = 12500 + ((sdrCount - 1) * 7500);
+    // Formula: Base cost is $7,500, then $7,500 per SDR
+    // 1 SDR = $12.5K, 2 SDRs = $15K, 3 SDRs = $22.5K, 4 SDRs = $30K, etc.
+    // This is: $7,500 base + (sdrCount × $7,500)
+    monthlyInvestment = 7500 + (sdrCount * 7500);
     monthlySQOs = sdrCount * 10; // 10 meetings per SDR
   }
   
@@ -541,7 +542,7 @@ export default function ROICalculator() {
                                 </div>
                                 
                                 {/* Ticker for 3-SDR+ */}
-                                {isTickerBased && selectedEngine === key && (
+                                {isTickerBased && (
                                   <div className="mt-3 pt-3 border-t border-border">
                                     <div className="flex items-center justify-between gap-4">
                                       <span className="text-sm font-medium">Number of SDRs:</span>
@@ -551,6 +552,9 @@ export default function ROICalculator() {
                                           size="icon"
                                           onClick={(e) => {
                                             e.stopPropagation();
+                                            if (selectedEngine !== key) {
+                                              setSelectedEngine(key as EngineOption);
+                                            }
                                             setSdrCount(Math.max(3, sdrCount - 1));
                                           }}
                                           disabled={sdrCount <= 3}
@@ -566,6 +570,9 @@ export default function ROICalculator() {
                                           size="icon"
                                           onClick={(e) => {
                                             e.stopPropagation();
+                                            if (selectedEngine !== key) {
+                                              setSelectedEngine(key as EngineOption);
+                                            }
                                             setSdrCount(Math.min(10, sdrCount + 1));
                                           }}
                                           disabled={sdrCount >= 10}
