@@ -185,6 +185,7 @@ import { useMemo, useCallback } from "react";
 export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbitalPowersProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [hasPlayed, setHasPlayed] = useState(false);
+  const [hasScrolledIntoView, setHasScrolledIntoView] = useState(false);
   const orbitAnimationRef = useRef<gsap.core.Tween | null>(null);
   const [orbitRotation, setOrbitRotation] = useState(270);
   const [showPlayButton, setShowPlayButton] = useState(false);
@@ -238,8 +239,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     });
   }, [orbitRotation]);
 
-  // Start rotation on mount - single initialization
+  // Start rotation when scrolled into view - single initialization
   useEffect(() => {
+    // Only trigger animation when scrolled into view
+    if (!hasScrolledIntoView) return;
+
     if (prefersReducedMotion()) {
       setAnimationComplete(true);
       return;
@@ -258,8 +262,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       }
     };
 
-    // Small delay to ensure DOM is ready
-    timeoutId = setTimeout(initAnimation, 300);
+    // Small delay to ensure smooth transition
+    timeoutId = setTimeout(initAnimation, 100);
 
     return () => {
       mounted = false;
@@ -271,7 +275,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         orbitAnimationRef.current = null;
       }
     };
-  }, []);
+  }, [hasScrolledIntoView]);
 
   // Utility to clear all auto-advance timers
   const clearAutoAdvance = useCallback(() => {
@@ -342,16 +346,22 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasPlayed && !videoError) {
-            video.play()
-              .then(() => {
-                setHasPlayed(true);
-                setShowPlayButton(false);
-              })
-              .catch((error) => {
-                console.log('Video autoplay prevented:', error);
-                setShowPlayButton(true);
-              });
+          if (entry.isIntersecting) {
+            // Trigger scroll state for animation (only once)
+            setHasScrolledIntoView(true);
+            
+            // Handle video playback
+            if (!hasPlayed && !videoError) {
+              video.play()
+                .then(() => {
+                  setHasPlayed(true);
+                  setShowPlayButton(false);
+                })
+                .catch((error) => {
+                  console.log('Video autoplay prevented:', error);
+                  setShowPlayButton(true);
+                });
+            }
           }
         });
       },
