@@ -541,7 +541,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         controls={false}
         data-testid="orbital-video"
       >
-        <source src="/bdr-pod-video.webm" type="video/webm" />
+        <source src="/sdr-pod-video.webm" type="video/webm" />
         <source src={videoSrc} type="video/mp4" />
       </video>
 

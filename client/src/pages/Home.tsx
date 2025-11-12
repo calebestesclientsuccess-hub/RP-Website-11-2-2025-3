@@ -24,7 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const SimplifiedOrbitalPowers = lazy(() => import("@/components/SimplifiedOrbitalPowers").then(module => ({ default: module.SimplifiedOrbitalPowers })));
 
 // Video is served from public directory
-const podVideo = "/bdr-pod-video.mp4";
+const podVideo = "/sdr-pod-video.mp4";
 
 export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
