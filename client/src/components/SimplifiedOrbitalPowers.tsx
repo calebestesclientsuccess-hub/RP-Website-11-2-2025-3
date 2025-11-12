@@ -190,6 +190,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [animationComplete, setAnimationComplete] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
   const autoAdvanceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [hasAutoSwitchingStopped, setHasAutoSwitchingStopped] = useState(false);
+
 
   // Start rotation animation when section comes into view
   const startInitialRotation = () => {
@@ -224,7 +226,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       setAnimationComplete(true);
       return;
     }
-    
+
     const timeout = setTimeout(() => {
       startInitialRotation();
     }, 500);
@@ -287,7 +289,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         // Wait 6 seconds after video ends, then start auto-advancing every 5 seconds
         autoAdvanceTimerRef.current = setTimeout(() => {
           handleNavigate('next');
-          
+
           // Set up recurring auto-advance every 5 seconds
           const intervalId = setInterval(() => {
             if (!userInteracted) {
@@ -338,7 +340,16 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   }, [hasPlayed, videoError, videoRef, userInteracted]);
 
 
+  // Auto-rotate through powers - only if user hasn't interacted
+  useEffect(() => {
+    if (hasAutoSwitchingStopped) return;
 
+    const interval = setInterval(() => {
+      setActivePowerIndex((prev) => (prev + 1) % powers.length);
+    }, 10000); // Rotate every 10 seconds (250% of original 4 seconds)
+
+    return () => clearInterval(interval);
+  }, [hasAutoSwitchingStopped]);
 
 
   const selectedPower = powers[activePowerIndex] || powers[0];
@@ -437,7 +448,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             {/* Central Video - click to advance */}
             <div 
               className="relative z-20 cursor-pointer" 
-              onClick={() => handleNavigate('next')}
+              onClick={() => {
+                handleNavigate('next');
+                setHasAutoSwitchingStopped(true);
+              }}
               data-testid="clickable-video"
               title="Click to see next power"
             >
@@ -454,7 +468,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 const x = Math.cos(angleRad) * radius;
                 const yScale = isMobile ? 0.8 : 0.6;
                 const y = Math.sin(angleRad) * radius * yScale;
-                
+
                 // Calculate final horizontal row position
                 const iconWidth = isMobile ? 40 : 44;
                 const gap = isMobile ? 8 : 12;
@@ -462,21 +476,21 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 const startX = -totalWidth / 2;
                 const finalX = startX + (iconWidth + gap) * index + iconWidth / 2;
                 const finalY = isMobile ? 200 : 260;
-                
+
                 // Cinematic transition: starts at 480° (2/3 through), completes at 720°
                 // This gives more time for the transition and makes it smoother
                 const transitionStart = 480;
                 const transitionEnd = 720;
                 const transitionRange = transitionEnd - transitionStart;
                 const rawProgress = Math.max(0, Math.min(1, (orbitRotation - transitionStart) / transitionRange));
-                
+
                 // Apply easing to the progress for smoother transition
                 const progress = animationComplete ? 1 : rawProgress * rawProgress * (3 - 2 * rawProgress); // smoothstep easing
-                
+
                 const currentX = x + (finalX - x) * progress;
                 const currentY = y + (finalY - y) * progress;
                 const opacity = animationComplete ? 0 : 1 - (progress * 0.4);
-                
+
                 return (
                   <div
                     key={power.id}
@@ -502,7 +516,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             </div>
           </div>
 
-          
+
 
           {/* Horizontal Icon Row - fades in as orbital icons transition out */}
           <div 
@@ -522,12 +536,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                     <button
                       key={power.id}
                       onClick={() => {
-                        setUserInteracted(true);
-                        if (autoAdvanceTimerRef.current) {
-                          clearTimeout(autoAdvanceTimerRef.current);
-                          autoAdvanceTimerRef.current = null;
-                        }
                         setActivePowerIndex(index);
+                        setHasAutoSwitchingStopped(true);
                       }}
                       className="relative rounded-full p-2 md:p-2.5 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 cursor-pointer flex-shrink-0"
                       style={{
@@ -593,7 +603,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               </Card>
           )}
 
-          
+
         </div>
       </div>
     </div>
