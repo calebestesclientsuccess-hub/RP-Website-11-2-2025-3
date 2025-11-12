@@ -25,10 +25,10 @@ export function Navbar() {
         <div className="flex items-center justify-between h-20 md:h-22">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 hover-elevate rounded-md px-2 py-1 transition-all" data-testid="link-home">
-            <img 
-              src={theme === "dark" ? logoWhite : logoBlack} 
-              alt="Revenue Party Logo" 
-              className="h-16 md:h-18 w-auto transition-opacity duration-300" 
+            <img
+              src={theme === "dark" ? logoWhite : logoBlack}
+              alt="Revenue Party Logo"
+              className="h-16 md:h-18 w-auto transition-opacity duration-300"
               loading="eager"
               width="200"
               height="64"
@@ -37,7 +37,7 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
-            <Link 
+            <Link
               href="/problem"
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 isActivePath("/problem")
@@ -48,7 +48,7 @@ export function Navbar() {
             >
               The Problem
             </Link>
-            <Link 
+            <Link
               href="/gtm-engine"
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 isActivePath("/gtm-engine")
@@ -59,7 +59,7 @@ export function Navbar() {
             >
               The GTM Engine
             </Link>
-            <Link 
+            <Link
               href="/results"
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 isActivePath("/results")
@@ -70,7 +70,7 @@ export function Navbar() {
             >
               Results & Case Studies
             </Link>
-            <Link 
+            <Link
               href="/why-us"
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 isActivePath("/why-us")
@@ -81,7 +81,7 @@ export function Navbar() {
             >
               Why Party?
             </Link>
-            <Link 
+            <Link
               href="/pricing"
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 isActivePath("/pricing")
@@ -92,7 +92,7 @@ export function Navbar() {
             >
               Pricing
             </Link>
-            <Link 
+            <Link
               href="/blog"
               className={`px-4 py-2 text-sm font-medium transition-colors ${
                 isActivePath("/blog")
@@ -154,7 +154,7 @@ export function Navbar() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 space-y-2 border-t border-border">
-            <Link 
+            <Link
               href="/problem"
               className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
               onClick={() => setMobileMenuOpen(false)}
@@ -162,7 +162,7 @@ export function Navbar() {
             >
               The Problem
             </Link>
-            <Link 
+            <Link
               href="/gtm-engine"
               className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
               onClick={() => setMobileMenuOpen(false)}
@@ -170,7 +170,7 @@ export function Navbar() {
             >
               The GTM Engine
             </Link>
-            <Link 
+            <Link
               href="/results"
               className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
               onClick={() => setMobileMenuOpen(false)}
@@ -178,7 +178,7 @@ export function Navbar() {
             >
               Results & Case Studies
             </Link>
-            <Link 
+            <Link
               href="/why-us"
               className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
               onClick={() => setMobileMenuOpen(false)}
@@ -186,7 +186,7 @@ export function Navbar() {
             >
               Why Party?
             </Link>
-            <Link 
+            <Link
               href="/pricing"
               className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
               onClick={() => setMobileMenuOpen(false)}
@@ -194,7 +194,7 @@ export function Navbar() {
             >
               Pricing
             </Link>
-            <Link 
+            <Link
               href="/blog"
               className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
               onClick={() => setMobileMenuOpen(false)}
