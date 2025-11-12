@@ -13,6 +13,14 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isEnabled: themeToggleEnabled, isLoading: themeToggleLoading, isError: themeToggleError } = useFeatureFlag('theme-toggle');
 
+  // Debug: Log feature flag state
+  console.log('Theme Toggle State:', { 
+    isEnabled: themeToggleEnabled, 
+    isLoading: themeToggleLoading, 
+    isError: themeToggleError,
+    shouldShow: !themeToggleLoading && (themeToggleEnabled || themeToggleError)
+  });
+
   const isActivePath = (path: string) => {
     if (path === "/") return location === "/";
     return location.startsWith(path);
