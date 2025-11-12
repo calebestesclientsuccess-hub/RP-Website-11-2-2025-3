@@ -25,15 +25,15 @@ export default function ProblemPage() {
       <WidgetZone zone="zone-24" className="my-8" />
 
       <div className="min-h-screen">
+        {/* Unified animated gradient background - covers hero through calculator */}
+        <div className="absolute inset-x-0 top-0 pointer-events-none opacity-60" style={{ height: '200vh' }}>
+          <div className="gradient-mesh-layer gradient-mesh-slow" />
+          <div className="gradient-mesh-layer-secondary gradient-mesh-medium-secondary" />
+          <div className="light-grid-dots" />
+        </div>
+
         {/* Hero Module */}
         <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
-          {/* Animated gradient mesh background */}
-          <div className="absolute inset-0 pointer-events-none opacity-60">
-            <div className="gradient-mesh-layer gradient-mesh-slow" />
-            <div className="gradient-mesh-layer-secondary gradient-mesh-medium-secondary" />
-          </div>
-          {/* Light grid dots pattern (light mode only) */}
-          <div className="light-grid-dots" />
 
           <div className="max-w-5xl mx-auto text-center relative z-10">
             <motion.div
@@ -75,15 +75,7 @@ export default function ProblemPage() {
         </section>
 
         {/* Internal Hire Cost Calculator Module */}
-        <section className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden">
-          {/* Animated gradient mesh background - continued from hero */}
-          <div className="absolute inset-0 pointer-events-none opacity-60">
-            <div className="gradient-mesh-layer gradient-mesh-slow" />
-            <div className="gradient-mesh-layer-secondary gradient-mesh-medium-secondary" />
-          </div>
-          {/* Light grid dots pattern (light mode only) */}
-          <div className="light-grid-dots" />
-          
+        <section className="relative py-20 px-4 md:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -116,15 +108,7 @@ export default function ProblemPage() {
         <WidgetZone zone="zone-26" className="my-8" />
 
         {/* Introduction Module - "The False Dichotomy" */}
-        <section className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden">
-          {/* Animated gradient mesh background - continued for fluid transition */}
-          <div className="absolute inset-0 pointer-events-none opacity-60">
-            <div className="gradient-mesh-layer gradient-mesh-slow" />
-            <div className="gradient-mesh-layer-secondary gradient-mesh-medium-secondary" />
-          </div>
-          {/* Light grid dots pattern (light mode only) */}
-          <div className="light-grid-dots" />
-          
+        <section className="relative py-20 px-4 md:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
