@@ -1,9 +1,11 @@
+
 import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Brain, Target, Settings, Users, Wrench, Trophy, Play } from "lucide-react";
 import { gsap } from 'gsap';
 import { prefersReducedMotion } from "@/lib/animationConfig";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Simple fade-in for info box and pulse animation
 const simpleKeyframes = `
@@ -180,18 +182,23 @@ import VideoSchema from "@/components/VideoSchema";
 
 export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbitalPowersProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [showInfoBox, setShowInfoBox] = useState(true);
   const [hasPlayed, setHasPlayed] = useState(false);
   const orbitAnimationRef = useRef<gsap.core.Tween | null>(null);
-  const [orbitRotation, setOrbitRotation] = useState(270); // Start with Brain at bottom (270°)
+  const [orbitRotation, setOrbitRotation] = useState(270);
   const [showPlayButton, setShowPlayButton] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [activePowerIndex, setActivePowerIndex] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
+  
+  // ISSUE #1 FIX: Single source of truth for user interaction
   const [userInteracted, setUserInteracted] = useState(false);
+  
+  // ISSUE #2 & #3 FIX: Proper refs for interval management
   const autoAdvanceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const [hasAutoSwitchingStopped, setHasAutoSwitchingStopped] = useState(false);
-
+  const autoAdvanceIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // ISSUE #4 FIX: Use mobile hook instead of inline checks
+  const isMobile = useIsMobile();
 
   // Start rotation animation when section comes into view
   const startInitialRotation = () => {
@@ -206,11 +213,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     const rotationObj = { value: 0 };
 
-    // Two full rotations (720°), with smooth cinematic easing
     orbitAnimationRef.current = gsap.to(rotationObj, {
       value: 720,
       duration: 9,
-      ease: "power1.inOut", // Smoother, more cinematic easing
+      ease: "power1.inOut",
       onUpdate: () => {
         setOrbitRotation(rotationObj.value);
       },
@@ -220,7 +226,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     });
   };
 
-  // Start rotation on mount/scroll into view
+  // Start rotation on mount
   useEffect(() => {
     if (prefersReducedMotion()) {
       setAnimationComplete(true);
@@ -239,24 +245,27 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     };
   }, []);
 
-  // Navigate to next/previous power
+  // ISSUE #1 FIX: Simplified navigate function
   const handleNavigate = (direction: 'next' | 'prev') => {
     setUserInteracted(true);
+    
+    // Clear any running auto-advance timers
     if (autoAdvanceTimerRef.current) {
       clearTimeout(autoAdvanceTimerRef.current);
       autoAdvanceTimerRef.current = null;
     }
+    if (autoAdvanceIntervalRef.current) {
+      clearInterval(autoAdvanceIntervalRef.current);
+      autoAdvanceIntervalRef.current = null;
+    }
+    
     const newIndex = direction === 'next' 
       ? (activePowerIndex + 1) % powers.length
       : (activePowerIndex - 1 + powers.length) % powers.length;
     setActivePowerIndex(newIndex);
   };
 
-
-
-
-
-  // Manual play handler for when autoplay is blocked
+  // Manual play handler
   const handleManualPlay = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -265,14 +274,13 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       .then(() => {
         setHasPlayed(true);
         setShowPlayButton(false);
-        setTimeout(() => setShowInfoBox(true), 500);
       })
       .catch((error) => {
         console.error('Manual play failed:', error);
       });
   };
 
-  // Simple video play on scroll
+  // Video playback management
   useEffect(() => {
     if (!videoRef.current) return;
 
@@ -284,23 +292,18 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       setShowPlayButton(false);
     };
 
+    // ISSUE #2 & #3 FIX: Proper interval management with cleanup
     const handleVideoEnded = () => {
-      if (!userInteracted && !hasAutoSwitchingStopped) {
-        // Wait 6 seconds after video ends, then start auto-advancing every 10 seconds
+      if (!userInteracted) {
+        // Wait 6 seconds after video ends
         autoAdvanceTimerRef.current = setTimeout(() => {
+          // First advance
           setActivePowerIndex((prev) => (prev + 1) % powers.length);
 
-          // Set up recurring auto-advance every 10 seconds (250% of original 4 seconds)
-          const intervalId = setInterval(() => {
-            if (!userInteracted && !hasAutoSwitchingStopped) {
-              setActivePowerIndex((prev) => (prev + 1) % powers.length);
-            } else {
-              clearInterval(intervalId);
-            }
+          // Then set up recurring auto-advance every 10 seconds
+          autoAdvanceIntervalRef.current = setInterval(() => {
+            setActivePowerIndex((prev) => (prev + 1) % powers.length);
           }, 10000);
-
-          // Store interval ID so we can clear it if user interacts
-          return () => clearInterval(intervalId);
         }, 6000);
       }
     };
@@ -316,7 +319,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               .then(() => {
                 setHasPlayed(true);
                 setShowPlayButton(false);
-                setTimeout(() => setShowInfoBox(true), 500);
               })
               .catch((error) => {
                 console.log('Video autoplay prevented:', error);
@@ -332,31 +334,52 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       observer.observe(sectionRef.current);
     }
 
+    // ISSUE #3 FIX: Comprehensive cleanup
     return () => {
       video.removeEventListener('error', handleError);
       video.removeEventListener('ended', handleVideoEnded);
+      
       if (autoAdvanceTimerRef.current) {
         clearTimeout(autoAdvanceTimerRef.current);
+        autoAdvanceTimerRef.current = null;
       }
+      if (autoAdvanceIntervalRef.current) {
+        clearInterval(autoAdvanceIntervalRef.current);
+        autoAdvanceIntervalRef.current = null;
+      }
+      
       observer.disconnect();
     };
   }, [hasPlayed, videoError, videoRef, userInteracted]);
 
-
-  // Auto-rotate through powers is now handled in handleVideoEnded
-  // This useEffect has been removed to prevent premature auto-switching
-
+  // Clear intervals when user interacts
+  useEffect(() => {
+    if (userInteracted) {
+      if (autoAdvanceTimerRef.current) {
+        clearTimeout(autoAdvanceTimerRef.current);
+        autoAdvanceTimerRef.current = null;
+      }
+      if (autoAdvanceIntervalRef.current) {
+        clearInterval(autoAdvanceIntervalRef.current);
+        autoAdvanceIntervalRef.current = null;
+      }
+    }
+  }, [userInteracted]);
 
   const selectedPower = powers[activePowerIndex] || powers[0];
 
-  // Dummy variable for videoEl as it's not directly used in the provided original snippet's HTML structure
-  // In a real scenario, this would be the actual video element or its container.
+  // ISSUE #4 FIX: Calculate responsive values once using hook
+  const radius = isMobile ? 180 : 320;
+  const yScale = isMobile ? 0.8 : 0.6;
+  const videoWidth = isMobile ? 'min(90vw, 400px)' : 'min(85vw, 680px)';
+  const videoHeight = isMobile ? 'min(50vw, 225px)' : 'min(48vw, 382px)';
+
   const videoEl = (
     <div
       className="relative rounded-2xl overflow-hidden"
       style={{
-        width: window.innerWidth < 768 ? 'min(90vw, 400px)' : 'min(85vw, 680px)',
-        height: window.innerWidth < 768 ? 'min(50vw, 225px)' : 'min(48vw, 382px)',
+        width: videoWidth,
+        height: videoHeight,
         boxShadow: `
           0 0 0 2px rgba(192, 192, 192, 0.3),
           0 0 40px rgba(${selectedPower.bgColor}, 0.3),
@@ -379,7 +402,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         <source src={videoSrc} type="video/mp4" />
       </video>
 
-      {/* Play button overlay for when autoplay is blocked */}
       {showPlayButton && !videoError && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
           <Button
@@ -393,7 +415,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         </div>
       )}
 
-      {/* Error message when video can't load */}
       {videoError && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm p-8">
           <div className="text-center space-y-4">
@@ -420,111 +441,101 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         contentUrl={`https://revenueparty.com${videoSrc}`}
       />
       <div
-      ref={sectionRef}
-      className="transition-all duration-700"
-      data-testid="section-orbital-powers"
-    >
-      <div className="max-w-7xl mx-auto">
-        {/* Section Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-5xl md:text-6xl font-bold mb-2">
-            <span className="gradient-text gradient-hero">The Fullstack Sales Unit</span>
-          </h2>
-          <p className="text-xl md:text-2xl italic max-w-3xl mx-auto text-muted-foreground">
-            Elite Sales Talent, equipped and trained by RP Architects.
-          </p>
-        </div>
-
-        {/* Main Container - Unified Section */}
-        <div className="relative mx-auto" style={{ maxWidth: '900px' }} data-testid="orbital-container">
-          {/* Orbital Container - Compact height */}
-          <div className="relative mx-auto h-[360px] md:h-[460px] flex items-center justify-center">
-
-            {/* Central Video - click to advance */}
-            <div 
-              className="relative z-20 cursor-pointer" 
-              onClick={() => {
-                handleNavigate('next');
-                setHasAutoSwitchingStopped(true);
-              }}
-              data-testid="clickable-video"
-              title="Click to see next power"
-            >
-              {videoEl}
-            </div>
-
-            {/* Orbital Badges - Rotate during animation, then transition to horizontal row */}
-            <div className="orbital-badges-container absolute inset-0 pointer-events-none">
-              {powers.map((power, index) => {
-                const isMobile = window.innerWidth < 768;
-                const radius = isMobile ? 180 : 320;
-                const totalAngle = power.angle + orbitRotation;
-                const angleRad = (totalAngle * Math.PI) / 180;
-                const x = Math.cos(angleRad) * radius;
-                const yScale = isMobile ? 0.8 : 0.6;
-                const y = Math.sin(angleRad) * radius * yScale;
-
-                // Calculate final horizontal row position
-                const iconWidth = isMobile ? 40 : 44;
-                const gap = isMobile ? 8 : 12;
-                const totalWidth = (iconWidth + gap) * powers.length - gap;
-                const startX = -totalWidth / 2;
-                const finalX = startX + (iconWidth + gap) * index + iconWidth / 2;
-                const finalY = isMobile ? 200 : 260;
-
-                // Cinematic transition: starts at 480° (2/3 through), completes at 720°
-                // This gives more time for the transition and makes it smoother
-                const transitionStart = 480;
-                const transitionEnd = 720;
-                const transitionRange = transitionEnd - transitionStart;
-                const rawProgress = Math.max(0, Math.min(1, (orbitRotation - transitionStart) / transitionRange));
-
-                // Apply easing to the progress for smoother transition
-                const progress = animationComplete ? 1 : rawProgress * rawProgress * (3 - 2 * rawProgress); // smoothstep easing
-
-                const currentX = x + (finalX - x) * progress;
-                const currentY = y + (finalY - y) * progress;
-                const opacity = animationComplete ? 0 : 1 - (progress * 0.4);
-
-                return (
-                  <div
-                    key={power.id}
-                    className="absolute left-1/2 top-1/2 transition-all duration-700 ease-out"
-                    style={{
-                      transform: `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px))`,
-                      opacity,
-                      zIndex: 30
-                    }}
-                    data-testid={`power-badge-${power.id}`}
-                  >
-                    <div
-                      className="relative rounded-full p-3 bg-background/90 backdrop-blur-sm shadow-lg"
-                      style={{
-                        boxShadow: `0 0 20px ${power.glowColor}`
-                      }}
-                    >
-                      {power.icon}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+        ref={sectionRef}
+        className="transition-all duration-700"
+        data-testid="section-orbital-powers"
+      >
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-5xl md:text-6xl font-bold mb-2">
+              <span className="gradient-text gradient-hero">The Fullstack Sales Unit</span>
+            </h2>
+            <p className="text-xl md:text-2xl italic max-w-3xl mx-auto text-muted-foreground">
+              Elite Sales Talent, equipped and trained by RP Architects.
+            </p>
           </div>
 
+          <div className="relative mx-auto" style={{ maxWidth: '900px' }} data-testid="orbital-container">
+            <div className="relative mx-auto h-[360px] md:h-[460px] flex items-center justify-center">
+              
+              {/* ISSUE #7 FIX: Simplified click handler */}
+              <div 
+                className="relative z-20 cursor-pointer" 
+                onClick={() => handleNavigate('next')}
+                data-testid="clickable-video"
+                title="Click to see next power"
+              >
+                {videoEl}
+              </div>
 
+              {/* Orbital Badges */}
+              <div className="orbital-badges-container absolute inset-0 pointer-events-none">
+                {powers.map((power, index) => {
+                  const totalAngle = power.angle + orbitRotation;
+                  const angleRad = (totalAngle * Math.PI) / 180;
+                  const x = Math.cos(angleRad) * radius;
+                  const y = Math.sin(angleRad) * radius * yScale;
 
-          {/* Horizontal Icon Row - fades in as orbital icons transition out */}
-          <div 
-            className="flex flex-col items-center mb-8 transition-opacity duration-700 ease-in"
-            style={{ 
-              opacity: animationComplete ? 1 : 0,
-              pointerEvents: animationComplete ? 'auto' : 'none'
-            }}
-          >
-            <div className="flex justify-center items-center gap-2 md:gap-3 px-4" 
-                style={{ 
-                  maxWidth: window.innerWidth < 768 ? 'min(90vw, 400px)' : 'min(85vw, 680px)' 
-                }}>
+                  // ISSUE #8 FIX: Use actual Tailwind padding values
+                  const iconSize = 24; // w-6 h-6
+                  const padding = isMobile ? 8 : 10; // p-2 = 8px, p-2.5 = 10px
+                  const iconWidth = iconSize + (padding * 2);
+                  const gap = isMobile ? 8 : 12;
+                  const totalWidth = (iconWidth + gap) * powers.length - gap;
+                  const startX = -totalWidth / 2;
+                  const finalX = startX + (iconWidth + gap) * index + iconWidth / 2;
+                  const finalY = isMobile ? 200 : 260;
+
+                  const transitionStart = 480;
+                  const transitionEnd = 720;
+                  const transitionRange = transitionEnd - transitionStart;
+                  const rawProgress = Math.max(0, Math.min(1, (orbitRotation - transitionStart) / transitionRange));
+                  const progress = animationComplete ? 1 : rawProgress * rawProgress * (3 - 2 * rawProgress);
+
+                  const currentX = x + (finalX - x) * progress;
+                  const currentY = y + (finalY - y) * progress;
+                  const opacity = 1 - (progress * 0.4);
+
+                  // ISSUE #5 FIX: Hide completely when animation is done
+                  if (animationComplete) {
+                    return null;
+                  }
+
+                  return (
+                    <div
+                      key={power.id}
+                      className="absolute left-1/2 top-1/2 transition-all duration-700 ease-out"
+                      style={{
+                        transform: `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px))`,
+                        opacity,
+                        zIndex: 30
+                      }}
+                      data-testid={`power-badge-${power.id}`}
+                    >
+                      <div
+                        className="relative rounded-full p-3 bg-background/90 backdrop-blur-sm shadow-lg"
+                        style={{
+                          boxShadow: `0 0 20px ${power.glowColor}`
+                        }}
+                      >
+                        {power.icon}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Horizontal Icon Row */}
+            <div 
+              className="flex flex-col items-center mb-8 transition-opacity duration-700 ease-in"
+              style={{ 
+                opacity: animationComplete ? 1 : 0,
+                pointerEvents: animationComplete ? 'auto' : 'none'
+              }}
+            >
+              <div className="flex justify-center items-center gap-2 md:gap-3 px-4" 
+                style={{ maxWidth: videoWidth }}>
                 {powers.map((power, index) => {
                   const isActive = index === activePowerIndex;
                   return (
@@ -532,7 +543,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       key={power.id}
                       onClick={() => {
                         setActivePowerIndex(index);
-                        setHasAutoSwitchingStopped(true);
+                        setUserInteracted(true);
                       }}
                       className="relative rounded-full p-2 md:p-2.5 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 cursor-pointer flex-shrink-0"
                       style={{
@@ -551,9 +562,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               </div>
             </div>
 
-          {/* Info Box with Cycling Arrows */}
-          {showInfoBox && (
-            <Card className="mt-6 p-5 md:p-6 bg-background/95 backdrop-blur-sm border-2" data-testid="power-info-box"
+            {/* Info Box - ISSUE #6: Removed unused showInfoBox state */}
+            <Card 
+              className="mt-6 p-5 md:p-6 bg-background/95 backdrop-blur-sm border-2" 
+              data-testid="power-info-box"
               style={{
                 boxShadow: `0 0 0 1px ${powers[activePowerIndex].glowColor}40, 0 4px 20px rgba(0,0,0,0.1)`
               }}
@@ -594,14 +606,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                   </div>
                 </div>
               </div>
-
-              </Card>
-          )}
-
-
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
-  </>
+    </>
   );
 }
