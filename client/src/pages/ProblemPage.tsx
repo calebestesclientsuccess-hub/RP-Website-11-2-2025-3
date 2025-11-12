@@ -78,7 +78,7 @@ export default function ProblemPage() {
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-cost-calculator">
                 Calculate the Real Cost<br />
-                <span className="gradient-text gradient-hero">Of Your $198K Mistake</span>
+                <span className="gradient-text gradient-hero">Of the $198K Mistake</span>
               </h2>
               <p className="text-lg leading-relaxed max-w-3xl mx-auto" data-testid="text-calculator-intro">
                 Most founders think they're hiring a "$75K SDR." Here's what they're actually buying:
@@ -138,7 +138,7 @@ export default function ProblemPage() {
               className="mb-12"
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-trap-1">
-                Trap 1: The Internal Hire<br />
+                <span className="text-4xl md:text-5xl lg:text-6xl">Trap 1</span> The Internal Hire<br />
                 <span className="gradient-text gradient-hero">The $198,000 Mistake</span>
               </h2>
               <p className="text-lg leading-relaxed max-w-4xl" data-testid="text-trap-1-intro">
@@ -206,7 +206,7 @@ export default function ProblemPage() {
               className="mb-12"
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-trap-2">
-                Trap 2: The Outsourcing Agency<br />
+                <span className="text-4xl md:text-5xl lg:text-6xl">Trap 2</span> The Outsourcing Agency<br />
                 <span className="gradient-text gradient-hero">The Impossible Mission</span>
               </h2>
               <p className="text-lg leading-relaxed max-w-4xl" data-testid="text-trap-2-intro">
