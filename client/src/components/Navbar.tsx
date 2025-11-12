@@ -24,9 +24,9 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 hover-elevate rounded-md px-2 py-1 transition-all" data-testid="link-home">
             <img 
-              src={logoWhite} 
+              src={theme === "dark" ? logoWhite : logoBlack} 
               alt="Revenue Party Logo" 
-              className="h-16 md:h-18 w-auto" 
+              className="h-16 md:h-18 w-auto transition-opacity duration-300" 
               loading="eager"
               width="200"
               height="64"

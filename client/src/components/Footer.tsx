@@ -15,9 +15,9 @@ export function Footer() {
           <div className="md:col-span-2">
             <Link href="/" className="inline-block mb-4" data-testid="footer-link-home">
               <img 
-                src={logoWhite} 
+                src={theme === "dark" ? logoWhite : logoBlack} 
                 alt="Revenue Party Logo" 
-                className="h-16 md:h-18 w-auto" 
+                className="h-16 md:h-18 w-auto transition-opacity duration-300" 
                 loading="lazy"
                 width="200"
                 height="64"
