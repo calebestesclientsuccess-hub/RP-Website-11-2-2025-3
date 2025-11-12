@@ -44,6 +44,9 @@ export default function ProblemPage() {
             >
               <Badge
                 className="badge-texture bg-primary text-white border-primary text-sm px-4 py-1.5"
+                style={{
+                  backgroundImage: 'linear-gradient(180deg, hsl(0, 85%, 42%) 0%, hsl(0, 75%, 32%) 90%)'
+                }}
                 data-testid="badge-hero-trap"
               >
                 The Lone Wolf Trap
@@ -72,8 +75,16 @@ export default function ProblemPage() {
         </section>
 
         {/* Internal Hire Cost Calculator Module */}
-        <section className="py-20 px-4 md:px-6 lg:px-8 bg-muted/30">
-          <div className="max-w-6xl mx-auto">
+        <section className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden">
+          {/* Animated gradient mesh background - continued from hero */}
+          <div className="absolute inset-0 pointer-events-none opacity-60">
+            <div className="gradient-mesh-layer gradient-mesh-slow" />
+            <div className="gradient-mesh-layer-secondary gradient-mesh-medium-secondary" />
+          </div>
+          {/* Light grid dots pattern (light mode only) */}
+          <div className="light-grid-dots" />
+          
+          <div className="max-w-6xl mx-auto relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -105,8 +116,16 @@ export default function ProblemPage() {
         <WidgetZone zone="zone-26" className="my-8" />
 
         {/* Introduction Module - "The False Dichotomy" */}
-        <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
-          <div className="max-w-4xl mx-auto">
+        <section className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden">
+          {/* Animated gradient mesh background - continued for fluid transition */}
+          <div className="absolute inset-0 pointer-events-none opacity-60">
+            <div className="gradient-mesh-layer gradient-mesh-slow" />
+            <div className="gradient-mesh-layer-secondary gradient-mesh-medium-secondary" />
+          </div>
+          {/* Light grid dots pattern (light mode only) */}
+          <div className="light-grid-dots" />
+          
+          <div className="max-w-4xl mx-auto relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -142,11 +161,13 @@ export default function ProblemPage() {
               transition={{ duration: 0.6 }}
               className="mb-12"
             >
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-trap-1">
-                <span className="text-4xl md:text-5xl lg:text-6xl block mb-2">Trap 1</span>
-                <span className="text-2xl md:text-3xl lg:text-4xl block mb-2">The Internal Hire</span>
-                <span className="gradient-text gradient-hero">The $198,000 Mistake</span>
-              </h2>
+              <div className="mb-6">
+                <p className="text-lg md:text-xl font-bold text-primary mb-3" data-testid="heading-trap-number-1">Trap 1</p>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4" data-testid="heading-trap-1">
+                  The Internal Hire<br />
+                  <span className="gradient-text gradient-hero">The $198,000 Mistake</span>
+                </h2>
+              </div>
               <p className="text-lg leading-relaxed max-w-4xl" data-testid="text-trap-1-intro">
                 You write the 'perfect' job description. You screen 100+ candidates. You hire a rep with a great resume. Six months later, you have no pipeline, the rep is burned out, and you're back at square one—minus $198,000.
               </p>
@@ -211,11 +232,13 @@ export default function ProblemPage() {
               transition={{ duration: 0.6 }}
               className="mb-12"
             >
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-trap-2">
-                <span className="text-4xl md:text-5xl lg:text-6xl block mb-2">Trap 2</span>
-                <span className="text-2xl md:text-3xl lg:text-4xl block mb-2">The Outsourcing Agency</span>
-                <span className="gradient-text gradient-hero">The Impossible Mission</span>
-              </h2>
+              <div className="mb-6">
+                <p className="text-lg md:text-xl font-bold text-primary mb-3" data-testid="heading-trap-number-2">Trap 2</p>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4" data-testid="heading-trap-2">
+                  The Outsourcing Agency<br />
+                  <span className="gradient-text gradient-hero">The Impossible Mission</span>
+                </h2>
+              </div>
               <p className="text-lg leading-relaxed max-w-4xl" data-testid="text-trap-2-intro">
                 You're tired of the hiring drag, so you sign a 12-month contract with a 'leading' B2B appointment setting service. They promise you 10 meetings a month. What you get is a list of unqualified leads and a bill.
               </p>
