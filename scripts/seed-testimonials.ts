@@ -1,8 +1,12 @@
 import { db } from "../server/db";
 import { testimonials } from "../shared/schema";
 
+// Default tenant ID - you should update this to match your actual tenant ID
+const DEFAULT_TENANT_ID = "default";
+
 const sampleTestimonials = [
   {
+    tenantId: DEFAULT_TENANT_ID,
     name: "Clifton Steele",
     title: "CEO",
     company: "Techtronics",
@@ -15,6 +19,7 @@ const sampleTestimonials = [
     companySize: "50-100",
   },
   {
+    tenantId: DEFAULT_TENANT_ID,
     name: "Daniel Robinson",
     title: "CEO",
     company: "SEO My Clicks",
@@ -27,6 +32,7 @@ const sampleTestimonials = [
     companySize: "20-50",
   },
   {
+    tenantId: DEFAULT_TENANT_ID,
     name: "Samuel Jacobs",
     title: "CTO",
     company: "Transition Analytica",
@@ -39,6 +45,7 @@ const sampleTestimonials = [
     companySize: "100-200",
   },
   {
+    tenantId: DEFAULT_TENANT_ID,
     name: "Ellie Cohen",
     title: "CFO",
     company: "Get ADA Alert",
