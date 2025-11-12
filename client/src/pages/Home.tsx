@@ -536,49 +536,70 @@ export default function Home() {
             <h3 className="text-2xl font-bold text-center mb-8">The Value & Reliability</h3>
             <div className="grid md:grid-cols-3 gap-8" data-testid="grid-metrics-value">
               {/* Metric 4 */}
-              <Card className="p-8 text-center bg-background/50 backdrop-blur-sm" data-testid="card-metric-4">
-                <div className="mb-4">
-                  <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-4">
-                    20+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0 }}
+              >
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm h-full" data-testid="card-metric-4">
+                  <div className="mb-4">
+                    <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-4">
+                      20+
+                    </div>
+                    <div className="text-lg font-semibold mt-2" data-testid="metric-label-4">
+                      Meetings/Month
+                    </div>
                   </div>
-                  <div className="text-lg font-semibold mt-2" data-testid="metric-label-4">
-                    Meetings/Month
-                  </div>
-                </div>
-                <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-4">
-                  A predictable pipeline averaging 1+ qualified meeting per day.
-                </p>
-              </Card>
+                  <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-4">
+                    A predictable pipeline averaging 1+ qualified meeting per day.
+                  </p>
+                </Card>
+              </motion.div>
 
               {/* Metric 5 */}
-              <Card className="p-8 text-center bg-background/50 backdrop-blur-sm" data-testid="card-metric-5">
-                <div className="mb-4">
-                  <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-5">
-                    55%
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0.15 }}
+              >
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm h-full" data-testid="card-metric-5">
+                  <div className="mb-4">
+                    <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-5">
+                      55%
+                    </div>
+                    <div className="text-lg font-semibold mt-2" data-testid="metric-label-5">
+                      Cost Savings
+                    </div>
                   </div>
-                  <div className="text-lg font-semibold mt-2" data-testid="metric-label-5">
-                    Cost Savings
-                  </div>
-                </div>
-                <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-5">
-                  Get a high-performance engine for 55% less than one $198k+ internal hire.
-                </p>
-              </Card>
+                  <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-5">
+                    Get a high-performance engine for 55% less than one $198k+ internal hire.
+                  </p>
+                </Card>
+              </motion.div>
 
               {/* Metric 6 */}
-              <Card className="p-8 text-center bg-background/50 backdrop-blur-sm" data-testid="card-metric-6">
-                <div className="mb-4">
-                  <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-6">
-                    Zero
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm h-full" data-testid="card-metric-6">
+                  <div className="mb-4">
+                    <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-6">
+                      Zero
+                    </div>
+                    <div className="text-lg font-semibold mt-2" data-testid="metric-label-6">
+                      Pipeline Disruption
+                    </div>
                   </div>
-                  <div className="text-lg font-semibold mt-2" data-testid="metric-label-6">
-                    Pipeline Disruption
-                  </div>
-                </div>
-                <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-6">
-                  Our 'Engine' model means you never start over. We manage performance so your pipeline never stops.
-                </p>
-              </Card>
+                  <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-6">
+                    Our 'Engine' model means you never start over. We manage performance so your pipeline never stops.
+                  </p>
+                </Card>
+              </motion.div>
             </div>
           </div>
 
@@ -587,49 +608,70 @@ export default function Home() {
             <h3 className="text-2xl font-bold text-center mb-8">The Performance</h3>
             <div className="grid md:grid-cols-3 gap-8" data-testid="grid-metrics-performance">
               {/* Metric 1 */}
-              <Card className="p-8 text-center bg-background/50 backdrop-blur-sm" data-testid="card-metric-1">
-                <div className="mb-4">
-                  <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-1">
-                    91%
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0 }}
+              >
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm h-full" data-testid="card-metric-1">
+                  <div className="mb-4">
+                    <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-1">
+                      91%
+                    </div>
+                    <div className="text-lg font-semibold mt-2" data-testid="metric-label-1">
+                      Quota Attainment
+                    </div>
                   </div>
-                  <div className="text-lg font-semibold mt-2" data-testid="metric-label-1">
-                    Quota Attainment
-                  </div>
-                </div>
-                <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-1">
-                  A culture of performance where reps are managed to hit their numbers.
-                </p>
-              </Card>
+                  <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-1">
+                    A culture of performance where reps are managed to hit their numbers.
+                  </p>
+                </Card>
+              </motion.div>
 
               {/* Metric 2 */}
-              <Card className="p-8 text-center bg-background/50 backdrop-blur-sm" data-testid="card-metric-2">
-                <div className="mb-4">
-                  <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-2">
-                    63%
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0.15 }}
+              >
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm h-full" data-testid="card-metric-2">
+                  <div className="mb-4">
+                    <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-2">
+                      63%
+                    </div>
+                    <div className="text-lg font-semibold mt-2" data-testid="metric-label-2">
+                      Surpassed Quota
+                    </div>
                   </div>
-                  <div className="text-lg font-semibold mt-2" data-testid="metric-label-2">
-                    Surpassed Quota
-                  </div>
-                </div>
-                <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-2">
-                  We don't just meet goals; 63% of our team <em>surpassed</em> their quota last year.
-                </p>
-              </Card>
+                  <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-2">
+                    We don't just meet goals; 63% of our team <em>surpassed</em> their quota last year.
+                  </p>
+                </Card>
+              </motion.div>
 
               {/* Metric 3 */}
-              <Card className="p-8 text-center bg-background/50 backdrop-blur-sm" data-testid="card-metric-3">
-                <div className="mb-4">
-                  <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-3">
-                    99.9%
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+              >
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm h-full" data-testid="card-metric-3">
+                  <div className="mb-4">
+                    <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-3">
+                      99.9%
+                    </div>
+                    <div className="text-lg font-semibold mt-2" data-testid="metric-label-3">
+                      Performance Floor
+                    </div>
                   </div>
-                  <div className="text-lg font-semibold mt-2" data-testid="metric-label-3">
-                    Performance Floor
-                  </div>
-                </div>
-                <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-3">
-                  Nearly every rep achieved over 85% of quota, eliminating the risk of a "zero."
-                </p>
-              </Card>
+                  <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-3">
+                    Nearly every rep achieved over 85% of quota, eliminating the risk of a "zero."
+                  </p>
+                </Card>
+              </motion.div>
             </div>
           </div>
 
