@@ -13,8 +13,18 @@ import {
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Star, TrendingUp, Shield, Award, CheckCircle2, XCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import type { Testimonial } from "@shared/schema";
 
 export default function ResultsPage() {
+  // Fetch testimonials from API (same as Home page carousel)
+  const { data: testimonials = [] } = useQuery<Testimonial[]>({
+    queryKey: ['/api/testimonials'],
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const stats = [
     {
       icon: <TrendingUp className="w-8 h-8 text-primary" />,
@@ -49,23 +59,6 @@ export default function ResultsPage() {
         "$2M in qualified pipeline in the first 60 days.",
         "An effective CPL of <$750, dropping to <$300 as the system scaled.",
       ],
-    },
-  ];
-
-  const testimonials = [
-    {
-      quote: "The ROI is a no-brainer. We pay a flat fee and get 20+ guaranteed, qualified meetings a month. Our internal team could never get that, and they cost us more.",
-      name: "[Name]",
-      title: "CEO",
-      company: "[Company]",
-      rating: 5,
-    },
-    {
-      quote: "We were about to hire a 'top-tier' agency. The GTM Audit showed us how that would have been a fatal 'Zero-IP Trap'. Revenue Party didn't just sell us a service; they saved us from a multi-six-figure mistake.",
-      name: "[Name]",
-      title: "CRO",
-      company: "[Company]",
-      rating: 5,
     },
   ];
 
