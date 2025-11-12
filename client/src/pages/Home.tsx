@@ -521,58 +521,7 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Row 1: The Performance */}
-          <div className="mb-12">
-            <h3 className="text-2xl font-bold text-center mb-8">The Performance</h3>
-            <div className="grid md:grid-cols-3 gap-8" data-testid="grid-metrics-performance">
-              {/* Metric 1 */}
-              <Card className="p-8 text-center bg-background/50 backdrop-blur-sm" data-testid="card-metric-1">
-                <div className="mb-4">
-                  <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-1">
-                    91%
-                  </div>
-                  <div className="text-lg font-semibold mt-2" data-testid="metric-label-1">
-                    Quota Attainment
-                  </div>
-                </div>
-                <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-1">
-                  A culture of performance where reps are managed to hit their numbers.
-                </p>
-              </Card>
-
-              {/* Metric 2 */}
-              <Card className="p-8 text-center bg-background/50 backdrop-blur-sm" data-testid="card-metric-2">
-                <div className="mb-4">
-                  <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-2">
-                    63%
-                  </div>
-                  <div className="text-lg font-semibold mt-2" data-testid="metric-label-2">
-                    Surpassed Quota
-                  </div>
-                </div>
-                <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-2">
-                  We don't just meet goals; 63% of our team <em>surpassed</em> their quota last year.
-                </p>
-              </Card>
-
-              {/* Metric 3 */}
-              <Card className="p-8 text-center bg-background/50 backdrop-blur-sm" data-testid="card-metric-3">
-                <div className="mb-4">
-                  <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-3">
-                    99.9%
-                  </div>
-                  <div className="text-lg font-semibold mt-2" data-testid="metric-label-3">
-                    Performance Floor
-                  </div>
-                </div>
-                <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-3">
-                  Nearly every rep achieved over 85% of quota, eliminating the risk of a "zero."
-                </p>
-              </Card>
-            </div>
-          </div>
-
-          {/* Row 2: The Value & Reliability */}
+          {/* Row 1: The Value & Reliability */}
           <div className="mb-12">
             <h3 className="text-2xl font-bold text-center mb-8">The Value & Reliability</h3>
             <div className="grid md:grid-cols-3 gap-8" data-testid="grid-metrics-value">
@@ -618,6 +567,57 @@ export default function Home() {
                 </div>
                 <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-6">
                   Our 'Engine' model means you never start over. We manage performance so your pipeline never stops.
+                </p>
+              </Card>
+            </div>
+          </div>
+
+          {/* Row 2: The Performance */}
+          <div className="mb-12">
+            <h3 className="text-2xl font-bold text-center mb-8">The Performance</h3>
+            <div className="grid md:grid-cols-3 gap-8" data-testid="grid-metrics-performance">
+              {/* Metric 1 */}
+              <Card className="p-8 text-center bg-background/50 backdrop-blur-sm" data-testid="card-metric-1">
+                <div className="mb-4">
+                  <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-1">
+                    91%
+                  </div>
+                  <div className="text-lg font-semibold mt-2" data-testid="metric-label-1">
+                    Quota Attainment
+                  </div>
+                </div>
+                <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-1">
+                  A culture of performance where reps are managed to hit their numbers.
+                </p>
+              </Card>
+
+              {/* Metric 2 */}
+              <Card className="p-8 text-center bg-background/50 backdrop-blur-sm" data-testid="card-metric-2">
+                <div className="mb-4">
+                  <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-2">
+                    63%
+                  </div>
+                  <div className="text-lg font-semibold mt-2" data-testid="metric-label-2">
+                    Surpassed Quota
+                  </div>
+                </div>
+                <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-2">
+                  We don't just meet goals; 63% of our team <em>surpassed</em> their quota last year.
+                </p>
+              </Card>
+
+              {/* Metric 3 */}
+              <Card className="p-8 text-center bg-background/50 backdrop-blur-sm" data-testid="card-metric-3">
+                <div className="mb-4">
+                  <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-3">
+                    99.9%
+                  </div>
+                  <div className="text-lg font-semibold mt-2" data-testid="metric-label-3">
+                    Performance Floor
+                  </div>
+                </div>
+                <p className="text-muted-foreground leading-relaxed" data-testid="metric-description-3">
+                  Nearly every rep achieved over 85% of quota, eliminating the risk of a "zero."
                 </p>
               </Card>
             </div>
