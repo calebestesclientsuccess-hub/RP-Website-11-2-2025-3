@@ -545,20 +545,21 @@ export default function Home() {
             <div className="grid md:grid-cols-3 gap-8" data-testid="grid-metrics-value">
               {/* Metric 4 */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
+                whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 }}
+                transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+                whileHover={{ scale: 1.05, y: -8 }}
               >
-                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:bg-background/70" data-testid="card-metric-4">
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:bg-background/70" data-testid="card-metric-4">
                   <div className="mb-4">
                     <motion.div 
                       className="text-5xl font-bold gradient-text gradient-hero" 
                       data-testid="metric-value-4"
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+                      transition={{ duration: 0.6, delay: 0.3, type: "spring", bounce: 0.5 }}
                     >
                       20+
                     </motion.div>
@@ -574,20 +575,21 @@ export default function Home() {
 
               {/* Metric 5 */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
+                whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+                transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+                whileHover={{ scale: 1.05, y: -8 }}
               >
-                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:bg-background/70" data-testid="card-metric-5">
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:bg-background/70" data-testid="card-metric-5">
                   <div className="mb-4">
                     <motion.div 
                       className="text-5xl font-bold gradient-text gradient-hero" 
                       data-testid="metric-value-5"
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+                      transition={{ duration: 0.6, delay: 0.4, type: "spring", bounce: 0.5 }}
                     >
                       55%
                     </motion.div>
@@ -603,20 +605,21 @@ export default function Home() {
 
               {/* Metric 6 */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
+                whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
+                whileHover={{ scale: 1.05, y: -8 }}
               >
-                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:bg-background/70" data-testid="card-metric-6">
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:bg-background/70" data-testid="card-metric-6">
                   <div className="mb-4">
                     <motion.div 
                       className="text-5xl font-bold gradient-text gradient-hero" 
                       data-testid="metric-value-6"
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+                      transition={{ duration: 0.6, delay: 0.5, type: "spring", bounce: 0.5 }}
                     >
                       Zero
                     </motion.div>
@@ -646,20 +649,21 @@ export default function Home() {
             <div className="grid md:grid-cols-3 gap-8" data-testid="grid-metrics-performance">
               {/* Metric 1 */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
+                whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 }}
+                transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+                whileHover={{ scale: 1.05, y: -8 }}
               >
-                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:bg-background/70" data-testid="card-metric-1">
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:bg-background/70" data-testid="card-metric-1">
                   <div className="mb-4">
                     <motion.div 
                       className="text-5xl font-bold gradient-text gradient-hero" 
                       data-testid="metric-value-1"
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+                      transition={{ duration: 0.6, delay: 0.3, type: "spring", bounce: 0.5 }}
                     >
                       91%
                     </motion.div>
@@ -675,20 +679,21 @@ export default function Home() {
 
               {/* Metric 2 */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
+                whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+                transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+                whileHover={{ scale: 1.05, y: -8 }}
               >
-                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:bg-background/70" data-testid="card-metric-2">
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:bg-background/70" data-testid="card-metric-2">
                   <div className="mb-4">
                     <motion.div 
                       className="text-5xl font-bold gradient-text gradient-hero" 
                       data-testid="metric-value-2"
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+                      transition={{ duration: 0.6, delay: 0.4, type: "spring", bounce: 0.5 }}
                     >
                       63%
                     </motion.div>
@@ -704,20 +709,21 @@ export default function Home() {
 
               {/* Metric 3 */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
+                whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
+                whileHover={{ scale: 1.05, y: -8 }}
               >
-                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:bg-background/70" data-testid="card-metric-3">
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:bg-background/70" data-testid="card-metric-3">
                   <div className="mb-4">
                     <motion.div 
                       className="text-5xl font-bold gradient-text gradient-hero" 
                       data-testid="metric-value-3"
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+                      transition={{ duration: 0.6, delay: 0.5, type: "spring", bounce: 0.5 }}
                     >
                       99.9%
                     </motion.div>
