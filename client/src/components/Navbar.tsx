@@ -11,7 +11,7 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isEnabled: themeToggleEnabled } = useFeatureFlag('theme-toggle');
+  const { isEnabled: themeToggleEnabled, isLoading: themeToggleLoading } = useFeatureFlag('theme-toggle');
 
   const isActivePath = (path: string) => {
     if (path === "/") return location === "/";
@@ -117,7 +117,7 @@ export function Navbar() {
               </Button>
             </Link>
 
-            {themeToggleEnabled && (
+            {!themeToggleLoading && themeToggleEnabled && (
               <Button
                 size="icon"
                 variant="ghost"
