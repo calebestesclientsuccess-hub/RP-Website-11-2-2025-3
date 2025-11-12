@@ -11,15 +11,7 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isEnabled: themeToggleEnabled, isLoading: themeToggleLoading, isError: themeToggleError } = useFeatureFlag('theme-toggle');
-
-  // Debug: Log feature flag state
-  console.log('Theme Toggle State:', { 
-    isEnabled: themeToggleEnabled, 
-    isLoading: themeToggleLoading, 
-    isError: themeToggleError,
-    shouldShow: !themeToggleLoading && (themeToggleEnabled || themeToggleError)
-  });
+  const { isEnabled: themeToggleEnabled, isLoading: themeToggleLoading } = useFeatureFlag('theme-toggle');
 
   const isActivePath = (path: string) => {
     if (path === "/") return location === "/";
@@ -125,8 +117,8 @@ export function Navbar() {
               </Button>
             </Link>
 
-            {/* Theme toggle - show when loaded and enabled, or on error (graceful degradation) */}
-            {!themeToggleLoading && (themeToggleEnabled || themeToggleError) && (
+            {/* Theme toggle - show when feature flag is enabled */}
+            {!themeToggleLoading && themeToggleEnabled && (
               <Button
                 size="icon"
                 variant="ghost"
