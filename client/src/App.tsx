@@ -37,31 +37,76 @@ import GtmResultPath3 from "@/pages/GtmResultPath3";
 import GtmResultPath4 from "@/pages/GtmResultPath4";
 import PipelineAssessmentPage from "@/pages/PipelineAssessmentPage";
 import PipelineAssessmentThankYou from "@/pages/PipelineAssessmentThankYou";
-import AssessmentAdminDashboard from "@/pages/AssessmentAdminDashboard";
 import ManifestoPost from "@/pages/blog/ManifestoPost";
-import LoginPage from "@/pages/admin/LoginPage";
-import RegisterPage from "@/pages/admin/RegisterPage";
-import ForgotPasswordPage from "@/pages/admin/ForgotPasswordPage";
-import ResetPasswordPage from "@/pages/admin/ResetPasswordPage";
-import WelcomePage from "@/pages/admin/WelcomePage";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import FeatureFlagsPage from "@/pages/admin/FeatureFlagsPage";
-import BlogPostsList from "@/pages/admin/BlogPostsList";
-import BlogPostForm from "@/pages/admin/BlogPostForm";
-import VideoPostsList from "@/pages/admin/VideoPostsList";
-import VideoPostForm from "@/pages/admin/VideoPostForm";
-import WidgetConfigPage from "@/pages/admin/WidgetConfigPage";
-import AssessmentConfigsList from "@/pages/admin/AssessmentConfigsList";
-import AssessmentConfigForm from "@/pages/admin/AssessmentConfigForm";
-import CampaignsList from "@/pages/admin/CampaignsList";
-import CampaignForm from "@/pages/admin/CampaignForm";
 import AssessmentRuntime from "@/pages/AssessmentRuntime";
 import AssessmentResult from "@/pages/AssessmentResult";
 import NotFound from "@/pages/not-found";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { CampaignBootstrap } from "@/lib/campaignCache";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load admin pages (reduces initial bundle by ~300KB)
+const LoginPageLazy = lazy(() => import("@/pages/admin/LoginPage"));
+const RegisterPageLazy = lazy(() => import("@/pages/admin/RegisterPage"));
+const ForgotPasswordPageLazy = lazy(() => import("@/pages/admin/ForgotPasswordPage"));
+const ResetPasswordPageLazy = lazy(() => import("@/pages/admin/ResetPasswordPage"));
+const WelcomePageLazy = lazy(() => import("@/pages/admin/WelcomePage"));
+const AdminDashboardLazy = lazy(() => import("@/pages/admin/AdminDashboard"));
+const FeatureFlagsPageLazy = lazy(() => import("@/pages/admin/FeatureFlagsPage"));
+const BlogPostsListLazy = lazy(() => import("@/pages/admin/BlogPostsList"));
+const BlogPostFormLazy = lazy(() => import("@/pages/admin/BlogPostForm"));
+const VideoPostsListLazy = lazy(() => import("@/pages/admin/VideoPostsList"));
+const VideoPostFormLazy = lazy(() => import("@/pages/admin/VideoPostForm"));
+const WidgetConfigPageLazy = lazy(() => import("@/pages/admin/WidgetConfigPage"));
+const AssessmentConfigsListLazy = lazy(() => import("@/pages/admin/AssessmentConfigsList"));
+const AssessmentConfigFormLazy = lazy(() => import("@/pages/admin/AssessmentConfigForm"));
+const CampaignsListLazy = lazy(() => import("@/pages/admin/CampaignsList"));
+const CampaignFormLazy = lazy(() => import("@/pages/admin/CampaignForm"));
+const AssessmentAdminDashboardLazy = lazy(() => import("@/pages/AssessmentAdminDashboard"));
+
+// Loading fallback component
+function PageLoadingFallback() {
+  return (
+    <div className="flex flex-col min-h-screen p-8 gap-4" data-testid="loading-page">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-64 w-full" />
+      <Skeleton className="h-32 w-full" />
+    </div>
+  );
+}
+
+// HOC to wrap lazy-loaded components with Suspense while preserving route props
+function withLazyLoading(
+  LazyComponent: React.LazyExoticComponent<React.ComponentType<any>>
+): React.ComponentType<any> {
+  const WrappedComponent: React.ComponentType<any> = (props) => (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <LazyComponent {...props} />
+    </Suspense>
+  );
+  return WrappedComponent;
+}
+
+// Wrapped admin pages that preserve route props
+const LoginPage = withLazyLoading(LoginPageLazy);
+const RegisterPage = withLazyLoading(RegisterPageLazy);
+const ForgotPasswordPage = withLazyLoading(ForgotPasswordPageLazy);
+const ResetPasswordPage = withLazyLoading(ResetPasswordPageLazy);
+const WelcomePage = withLazyLoading(WelcomePageLazy);
+const AdminDashboard = withLazyLoading(AdminDashboardLazy);
+const FeatureFlagsPage = withLazyLoading(FeatureFlagsPageLazy);
+const BlogPostsList = withLazyLoading(BlogPostsListLazy);
+const BlogPostForm = withLazyLoading(BlogPostFormLazy);
+const VideoPostsList = withLazyLoading(VideoPostsListLazy);
+const VideoPostForm = withLazyLoading(VideoPostFormLazy);
+const WidgetConfigPage = withLazyLoading(WidgetConfigPageLazy);
+const AssessmentConfigsList = withLazyLoading(AssessmentConfigsListLazy);
+const AssessmentConfigForm = withLazyLoading(AssessmentConfigFormLazy);
+const CampaignsList = withLazyLoading(CampaignsListLazy);
+const CampaignForm = withLazyLoading(CampaignFormLazy);
+const AssessmentAdminDashboard = withLazyLoading(AssessmentAdminDashboardLazy);
 
 
 function ScrollToTop() {
@@ -102,7 +147,7 @@ function Router() {
       <Route path="/assessments/:slug" component={AssessmentRuntime} />
       <Route path="/assessments/results/:sessionId" component={AssessmentResult} />
 
-      {/* Admin Routes */}
+      {/* Admin Routes - Lazy loaded with Suspense for code splitting */}
       <Route path="/admin/login" component={LoginPage} />
       <Route path="/admin/register" component={RegisterPage} />
       <Route path="/admin/forgot-password" component={ForgotPasswordPage} />
