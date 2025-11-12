@@ -1,7 +1,10 @@
 import { Link } from "wouter";
+import { useTheme } from "./ThemeProvider";
 import logoWhite from "@assets/rev-white_1760952720792.png";
+import logoBlack from "@assets/Revenueparty-logo-black_1762982410867.png";
 
 export function Footer() {
+  const { theme } = useTheme();
   const currentYear = new Date().getFullYear();
 
   return (

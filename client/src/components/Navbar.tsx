@@ -4,6 +4,7 @@ import { Moon, Sun, Menu, X } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { Button } from "@/components/ui/button";
 import logoWhite from "@assets/rev-white_1760952720792.png";
+import logoBlack from "@assets/Revenueparty-logo-black_1762982410867.png";
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
