@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -192,11 +191,15 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [activePowerIndex, setActivePowerIndex] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
-  
+  const [showTitle, setShowTitle] = useState(false);
+  const [showSubtitle, setShowSubtitle] = useState(false);
+  const [showDescription, setShowDescription] = useState(false);
+  const hasAnimated = useRef(false);
+
   const autoAdvanceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const autoAdvanceIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMobile = useIsMobile();
-  
+
   // Memoize responsive values to prevent recalculation on every render
   const layoutConfig = useMemo(() => ({
     radius: isMobile ? 180 : 320,
@@ -251,7 +254,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     const initAnimation = () => {
       if (!mounted) return;
-      
+
       // Only start if not already running
       if (!orbitAnimationRef.current || !orbitAnimationRef.current.isActive()) {
         startInitialRotation();
@@ -289,9 +292,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const handleNavigate = useCallback((direction: 'next' | 'prev') => {
     setUserInteracted(true);
     clearAutoAdvance();
-    
-    setActivePowerIndex((prev) => 
-      direction === 'next' 
+
+    setActivePowerIndex((prev) =>
+      direction === 'next'
         ? (prev + 1) % powers.length
         : (prev - 1 + powers.length) % powers.length
     );
@@ -326,7 +329,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     const handleVideoEnded = () => {
       if (userInteracted) return;
-      
+
       autoAdvanceTimerRef.current = setTimeout(() => {
         setActivePowerIndex((prev) => (prev + 1) % powers.length);
 
@@ -375,26 +378,26 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   // Memoize badge position calculations
   const badgePositions = useMemo(() => {
     if (animationComplete) return [];
-    
+
     const { radius, yScale, iconSize, padding, gap, finalY } = layoutConfig;
     const iconWidth = iconSize + (padding * 2);
     const totalWidth = (iconWidth + gap) * powers.length - gap;
     const startX = -totalWidth / 2;
-    
+
     const transitionStart = 480;
     const transitionEnd = 720;
     const transitionRange = transitionEnd - transitionStart;
     const rawProgress = Math.max(0, Math.min(1, (orbitRotation - transitionStart) / transitionRange));
     const progress = rawProgress * rawProgress * (3 - 2 * rawProgress);
-    
+
     return powers.map((power, index) => {
       const totalAngle = power.angle + orbitRotation;
       const angleRad = (totalAngle * Math.PI) / 180;
       const x = Math.cos(angleRad) * radius;
       const y = Math.sin(angleRad) * radius * yScale;
-      
+
       const finalX = startX + (iconWidth + gap) * index + iconWidth / 2;
-      
+
       return {
         id: power.id,
         x: x + (finalX - x) * progress,
@@ -403,6 +406,53 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       };
     });
   }, [orbitRotation, animationComplete, layoutConfig]);
+
+  // Initial animation sequence
+  useEffect(() => {
+    if (!hasAnimated.current) {
+      const timers: NodeJS.Timeout[] = [];
+      const sequences = [
+        { delay: 0, action: () => setShowTitle(true) },
+        { delay: 400, action: () => setShowSubtitle(true) },
+        { delay: 800, action: () => setShowDescription(true) },
+        { delay: 1400, action: () => setAnimationComplete(true) }
+      ];
+
+      sequences.forEach(({ delay, action }) => {
+        timers.push(setTimeout(action, delay));
+      });
+
+      hasAnimated.current = true;
+
+      return () => {
+        timers.forEach(timer => clearTimeout(timer));
+      };
+    }
+  }, []);
+
+  // Auto-advance logic with proper cleanup
+  useEffect(() => {
+    if (!userInteracted && animationComplete) {
+      const timer = setInterval(() => {
+        setActivePowerIndex(prev => (prev + 1) % powers.length);
+      }, 5000);
+
+      autoAdvanceTimerRef.current = timer;
+      return () => {
+        if (autoAdvanceTimerRef.current) {
+          clearInterval(autoAdvanceTimerRef.current);
+          autoAdvanceTimerRef.current = null;
+        }
+      };
+    }
+    return () => {
+      if (autoAdvanceTimerRef.current) {
+        clearInterval(autoAdvanceTimerRef.current);
+        autoAdvanceTimerRef.current = null;
+      }
+    };
+  }, [userInteracted, animationComplete, powers.length]);
+
 
   const videoEl = (
     <div
@@ -487,10 +537,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           <div className="relative mx-auto" style={{ maxWidth: '900px' }} data-testid="orbital-container">
             <div className="relative mx-auto h-[360px] md:h-[460px] flex items-center justify-center">
-              
+
               {/* ISSUE #7 FIX: Simplified click handler */}
-              <div 
-                className="relative z-20 cursor-pointer" 
+              <div
+                className="relative z-20 cursor-pointer"
                 onClick={() => handleNavigate('next')}
                 data-testid="clickable-video"
                 title="Click to see next power"
@@ -503,7 +553,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 <div className="orbital-badges-container absolute inset-0 pointer-events-none">
                   {badgePositions.map((position) => {
                     const power = powers.find(p => p.id === position.id)!;
-                    
+
                     return (
                       <div
                         key={power.id}
@@ -531,14 +581,14 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             </div>
 
             {/* Horizontal Icon Row */}
-            <div 
+            <div
               className="flex flex-col items-center mb-8 transition-opacity duration-700 ease-in"
-              style={{ 
+              style={{
                 opacity: animationComplete ? 1 : 0,
                 pointerEvents: animationComplete ? 'auto' : 'none'
               }}
             >
-              <div className="flex justify-center items-center gap-2 md:gap-3 px-4" 
+              <div className="flex justify-center items-center gap-2 md:gap-3 px-4"
                 style={{ maxWidth: layoutConfig.videoWidth }}>
                 {powers.map((power, index) => {
                   const isActive = index === activePowerIndex;
@@ -552,8 +602,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       }}
                       className="relative rounded-full p-2 md:p-2.5 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 cursor-pointer flex-shrink-0"
                       style={{
-                        boxShadow: isActive 
-                          ? `0 0 25px ${power.glowColor}, 0 0 12px ${power.glowColor}` 
+                        boxShadow: isActive
+                          ? `0 0 25px ${power.glowColor}, 0 0 12px ${power.glowColor}`
                           : `0 0 15px ${power.glowColor}`,
                         animation: isActive ? 'pulse-subtle 2s ease-in-out infinite' : 'none',
                         opacity: isActive ? 1 : 0.4
@@ -569,8 +619,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             </div>
 
             {/* Info Box - ISSUE #6: Removed unused showInfoBox state */}
-            <Card 
-              className="mt-6 p-5 md:p-6 bg-background/95 backdrop-blur-sm border-2" 
+            <Card
+              className="mt-6 p-5 md:p-6 bg-background/95 backdrop-blur-sm border-2"
               data-testid="power-info-box"
               style={{
                 boxShadow: `0 0 0 1px ${powers[activePowerIndex].glowColor}40, 0 4px 20px rgba(0,0,0,0.1)`
