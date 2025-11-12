@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -15,6 +14,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { trackEvent } from "@/lib/trackEvent";
+import { useCampaigns } from "@/lib/campaignCache";
 import type { Campaign, CalculatorConfig, FormConfig } from "@shared/schema";
 
 // Map route paths to campaign page names (same as WidgetZone)
@@ -54,23 +54,10 @@ export function PopupEngine() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
   
-  // Fetch active popup campaigns for this page
-  const { data: campaigns, isLoading, error } = useQuery<Campaign[]>({
-    queryKey: ["/api/public/campaigns", { page: currentPage, displayAs: "popup" }],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        page: currentPage,
-        displayAs: "popup",
-        active: "true",
-      });
-      const response = await fetch(`/api/public/campaigns?${params}`, {
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch campaigns");
-      }
-      return response.json();
-    },
+  // Use the shared campaign cache with client-side filtering for popup campaigns
+  const { campaigns, isLoading, error } = useCampaigns({
+    pageNames: [currentPage],
+    displayAs: "popup",
   });
   
   // Get the first matching campaign

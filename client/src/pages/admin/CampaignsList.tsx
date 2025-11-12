@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { invalidateCampaignsCache } from "@/lib/campaignCache";
 import { Link } from "wouter";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -48,8 +49,10 @@ export default function CampaignsList() {
     mutationFn: async (id: string) => {
       await apiRequest("DELETE", `/api/campaigns/${id}`);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Invalidate both admin and public campaign caches with tenant awareness
       queryClient.invalidateQueries({ queryKey: ["/api/campaigns"] });
+      await invalidateCampaignsCache(queryClient);
       toast({
         title: "Success",
         description: "Campaign deleted successfully",

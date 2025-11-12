@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import DOMPurify from "dompurify";
 import { DynamicCalculator } from "@/components/widgets/DynamicCalculator";
@@ -13,6 +12,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { trackEvent } from "@/lib/trackEvent";
+import { useCampaigns } from "@/lib/campaignCache";
 import type { Campaign, CalculatorConfig, FormConfig, SeoMetadata } from "@shared/schema";
 import { cn } from "@/lib/utils";
 import { PopupEngine } from "./PopupEngine";
@@ -112,35 +112,15 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
   // Use first page name as primary (for tracking purposes)
   const currentPage = pageNames[0];
 
-  // Fetch all active campaigns for this zone
-  const { data: allCampaigns, isLoading, error } = useQuery<Campaign[]>({
-    queryKey: ["/api/public/campaigns", { zone, displayAs: "inline" }],
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        zone,
-        displayAs: "inline",
-      });
-      const response = await fetch(`/api/public/campaigns?${params}`, {
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch campaigns");
-      }
-      return response.json();
-    },
+  // Use the shared campaign cache with client-side filtering
+  const { campaigns: allCampaigns, isLoading, error } = useCampaigns({
+    zone,
+    pageNames,
+    displayAs: "inline",
   });
 
-  // Filter campaigns to match current page names
-  const campaigns = allCampaigns?.filter(campaign => 
-    campaign.targetPages?.some(targetPage => pageNames.includes(targetPage))
-  );
-
-  // Separate inline and popup campaigns
-  const inlineCampaigns = campaigns?.filter((c: Campaign) => c.displayAs === 'inline') || [];
-  const popupCampaigns = campaigns?.filter((c: Campaign) => c.displayAs === 'popup') || [];
-
   // Get the first matching campaign (or null if none)
-  const campaign = inlineCampaigns?.[0] || null;
+  const campaign = allCampaigns?.[0] || null;
 
 
   // Track campaign_viewed event when campaign is loaded
@@ -397,7 +377,7 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
           {widget}
         </div>
       </ErrorBoundary>
-      <PopupEngine campaigns={popupCampaigns} />
+      <PopupEngine />
     </>
   );
 }

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Helmet } from "react-helmet-async";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { invalidateCampaignsCache } from "@/lib/campaignCache";
 import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, Loader2, Plus, Trash2, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -478,9 +479,10 @@ export default function CampaignForm() {
     mutationFn: async (data: z.infer<typeof formSchema>) => {
       return apiRequest("POST", "/api/campaigns", buildPayload(data));
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Invalidate both admin and public campaign caches with tenant awareness
       queryClient.invalidateQueries({ queryKey: ["/api/campaigns"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/public/campaigns"] });
+      await invalidateCampaignsCache(queryClient);
       toast({
         title: "Success",
         description: "Campaign created successfully",
@@ -501,9 +503,10 @@ export default function CampaignForm() {
       if (!id) throw new Error("Campaign ID is required");
       return apiRequest("PUT", `/api/campaigns/${id}`, buildPayload(data));
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Invalidate both admin and public campaign caches with tenant awareness
       queryClient.invalidateQueries({ queryKey: ["/api/campaigns"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/public/campaigns"] });
+      await invalidateCampaignsCache(queryClient);
       toast({
         title: "Success",
         description: "Campaign updated successfully",
