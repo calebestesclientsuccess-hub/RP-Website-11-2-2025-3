@@ -11,7 +11,15 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isEnabled: themeToggleEnabled, isLoading: themeToggleLoading } = useFeatureFlag('theme-toggle');
+  const { isEnabled: themeToggleEnabled, isLoading: themeToggleLoading, isError: themeToggleError } = useFeatureFlag('theme-toggle');
+
+  // Debug logging
+  console.log('🎨 Theme Toggle Debug:', {
+    isEnabled: themeToggleEnabled,
+    isLoading: themeToggleLoading,
+    isError: themeToggleError,
+    shouldRender: !themeToggleLoading && themeToggleEnabled
+  });
 
   const isActivePath = (path: string) => {
     if (path === "/") return location === "/";
