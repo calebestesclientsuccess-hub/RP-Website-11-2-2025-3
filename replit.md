@@ -121,6 +121,41 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 
 **Phase 2 Complete:** Bundle optimization, lazy loading, and scroll-triggered animations achieved all performance targets
 
+### Phase 2.5: Loading State Resilience ✅
+- **Problem**: Flash-of-content issues with E-Book lead magnet, fragile testimonials loading, database connection churn from oversized pools
+- **Solution**: Created reusable feature flag hook with deterministic loading states, added retry logic to testimonials, optimized database connection pools
+- **Implementation**:
+  - **useFeatureFlag Hook** (`client/src/hooks/use-feature-flag.tsx`):
+    - Encapsulates feature flag fetching with retry (3 attempts, exponential backoff: 1s, 2s, 4s)
+    - Returns `{ isEnabled, isLoading, isError, error }` for standardized consumption
+    - Only sets `isEnabled=true` when feature explicitly enabled (prevents flash-of-content)
+    - 5-minute stale time for caching, reduces API calls
+  - **LeadMagnetHero Refactor** (`client/src/components/LeadMagnetHero.tsx`):
+    - Replaced direct `useQuery` with `useFeatureFlag('lead-magnet-ebook')`
+    - Fixed backwards logic: now renders `null` if `isLoading || !isEnabled`
+    - Eliminates flash of E-Book form on page load
+  - **Testimonials Resilience** (both carousel components):
+    - Added retry logic: 3 attempts with exponential backoff, 5-minute stale time
+    - Loading skeleton UI for main carousel (deterministic sizing)
+    - Error states with manual retry buttons (`data-testid="button-retry-testimonials"`)
+    - Updated both `client/src/components/TestimonialCarousel.tsx` and `client/src/components/widgets/TestimonialCarousel.tsx`
+  - **Database Pool Optimization** (`server/db.ts`):
+    - Reduced main pool: 20 → 10 connections
+    - Reduced session pool: 10 → 5 connections (increased timeout: 2s → 10s for session table init)
+    - Total: 30 → 15 concurrent connections (50% reduction)
+    - Added health monitoring: logs pool stats (total, idle, waiting) every 5 minutes in development
+    - Removed verbose per-connection logging, kept error handling
+- **Testing Results** (E2E playwright):
+  - ✅ No flash of E-Book form on page load (verified in fresh contexts)
+  - ✅ Feature flag toggle works and persists correctly (admin → public homepage)
+  - ✅ Testimonials load consistently (4 featured items rendered correctly)
+  - ✅ Database connections healthy (no timeout errors)
+  - ✅ All loading states deterministic and smooth
+- **Results**: Eliminated flash-of-content UX bugs, added resilient error handling to critical queries, reduced database connection churn by 50%
+- **Architect approved with Pass verdict**
+
+**Phase 2 Complete:** Bundle optimization, lazy loading, scroll-triggered animations, and loading state resilience achieved all performance targets
+
 **Upcoming Phases:**
 - Phase 3: Production testing (Lighthouse/WebPageTest to confirm LCP/FID improvements)
 - Phase 4: Multi-tenant SaaS architecture preparation
