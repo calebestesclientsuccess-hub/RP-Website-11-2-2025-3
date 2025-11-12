@@ -10,9 +10,6 @@ export function Navbar() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Use dark logo (with dark text) in light mode, white logo in dark mode
-  const logoSrc = theme === 'light' ? '/rev-dark-logo.png' : logoWhite;
-
   const isActivePath = (path: string) => {
     if (path === "/") return location === "/";
     return location.startsWith(path);
@@ -26,9 +23,9 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 hover-elevate rounded-md px-2 py-1 transition-all" data-testid="link-home">
             <img 
-              src={logoSrc} 
+              src={logoWhite} 
               alt="Revenue Party Logo" 
-              className="h-16 md:h-18 w-auto transition-opacity duration-300" 
+              className="h-16 md:h-18 w-auto" 
               loading="eager"
               width="200"
               height="64"
