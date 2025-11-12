@@ -8,15 +8,11 @@ export function LocalBusinessSchema() {
     "name": "Revenue Party",
     "description": "GTM Systems That Multiply Your Pipeline - Deploy elite BDR pods with proven strategy and AI technology",
     "url": "https://revenueparty.com",
-    "telephone": "+1-XXX-XXX-XXXX", // Add your phone number
+    "email": "hello@revenueparty.com",
     "address": {
       "@type": "PostalAddress",
-      "addressCountry": "US"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": "XX.XXXX", // Add if applicable
-      "longitude": "XX.XXXX"
+      "addressCountry": "US",
+      "addressRegion": "Remote"
     },
     "sameAs": [
       "https://twitter.com/revenueparty",

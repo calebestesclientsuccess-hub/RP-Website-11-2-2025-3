@@ -1,3 +1,6 @@
+
+import { FAQSchema } from '../components/schemas/FAQSchema';
+
 import { SEO } from "@/components/SEO";
 import { FAQSchema } from "@/components/FAQSchema";
 import { Button } from "@/components/ui/button";
