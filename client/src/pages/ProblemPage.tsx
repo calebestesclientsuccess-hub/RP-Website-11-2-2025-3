@@ -7,7 +7,7 @@ import { WidgetZone } from "@/components/WidgetZone";
 import { InternalHireCostCalculator } from "@/components/InternalHireCostCalculator";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle, DollarSign } from "lucide-react";
+import { ArrowRight, CheckCircle } from "lucide-react";
 
 export default function ProblemPage() {
 
@@ -55,7 +55,7 @@ export default function ProblemPage() {
               <span className="gradient-text gradient-hero">with Headcount Solutions.</span>
             </motion.h1>
             <motion.p
-              className="text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto"
+              className="text-xl leading-relaxed max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
@@ -65,6 +65,39 @@ export default function ProblemPage() {
             </motion.p>
           </div>
         </section>
+
+        {/* Internal Hire Cost Calculator Module */}
+        <section className="py-20 px-4 md:px-6 lg:px-8 bg-muted/30">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="mb-12 text-center"
+            >
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-cost-calculator">
+                Calculate the Real Cost<br />
+                <span className="gradient-text gradient-hero">Of Your $198K Mistake</span>
+              </h2>
+              <p className="text-lg leading-relaxed max-w-3xl mx-auto" data-testid="text-calculator-intro">
+                Most founders think they're hiring a "$75K SDR." Here's what they're actually buying:
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <InternalHireCostCalculator />
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Widget Zone 26 */}
+        <WidgetZone zone="zone-26" className="my-8" />
 
         {/* Introduction Module - "The False Dichotomy" */}
         <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
@@ -106,7 +139,7 @@ export default function ProblemPage() {
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-trap-1">
                 Trap 1: The Internal Hire<br />
-                <span className="gradient-text gradient-hero">(The '$198,000 Mistake')</span>
+                <span className="gradient-text gradient-hero">The $198,000 Mistake</span>
               </h2>
               <p className="text-lg leading-relaxed max-w-4xl" data-testid="text-trap-1-intro">
                 You write the 'perfect' job description. You screen 100+ candidates. You hire a rep with a great resume. Six months later, you have no pipeline, the rep is burned out, and you're back at square one—minus $198,000.
@@ -162,39 +195,6 @@ export default function ProblemPage() {
           </div>
         </section>
 
-        {/* Widget Zone 26 */}
-        <WidgetZone zone="zone-26" className="my-8" />
-
-        {/* Internal Hire Cost Calculator Module */}
-        <section className="py-20 px-4 md:px-6 lg:px-8 bg-muted/30">
-          <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="mb-12 text-center"
-            >
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-cost-calculator">
-                Calculate the Real Cost<br />
-                <span className="gradient-text gradient-hero">Of Your $198K Mistake</span>
-              </h2>
-              <p className="text-lg leading-relaxed max-w-3xl mx-auto" data-testid="text-calculator-intro">
-                Most founders think they're hiring a "$75K SDR." Here's what they're actually buying:
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <InternalHireCostCalculator />
-            </motion.div>
-          </div>
-        </section>
-
         {/* Trap 2 Module - "The Outsourcing Agency" */}
         <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
           <div className="max-w-6xl mx-auto">
@@ -207,7 +207,7 @@ export default function ProblemPage() {
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-trap-2">
                 Trap 2: The Outsourcing Agency<br />
-                <span className="gradient-text gradient-hero">(The 'Suicide Mission')</span>
+                <span className="gradient-text gradient-hero">The Impossible Mission</span>
               </h2>
               <p className="text-lg leading-relaxed max-w-4xl" data-testid="text-trap-2-intro">
                 You're tired of the hiring drag, so you sign a 12-month contract with a 'leading' B2B appointment setting service. They promise you 10 meetings a month. What you get is a list of unqualified leads and a bill.
@@ -300,43 +300,6 @@ export default function ProblemPage() {
         {/* Widget Zone 28 */}
         <WidgetZone zone="zone-28" className="my-8" />
 
-        {/* Social Proof Module */}
-        <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
-          <div className="max-w-4xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center" data-testid="heading-social-proof">
-                You Are Not Alone<br />
-                <span className="gradient-text gradient-hero">in This Trap</span>
-              </h2>
-
-              <Card className="p-8 light-depth hover-elevate transition-all" data-testid="card-testimonial">
-                <div className="relative">
-                  <div className="absolute -top-4 -left-4 text-6xl text-primary/20 font-serif">"</div>
-                  <blockquote className="relative z-10 mb-6">
-                    <p className="text-xl italic leading-relaxed mb-6" data-testid="text-testimonial-quote">
-                      We were stuck in the hiring trap for 6 months. We burned $100k on two SDRs who produced nothing. Revenue Party diagnosed our <em>system</em> problem—our 'Single Point of Failure'—in one audit.
-                    </p>
-                  </blockquote>
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <DollarSign className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-semibold" data-testid="text-testimonial-author">Sarah Chen</p>
-                      <p className="text-sm text-muted-foreground" data-testid="text-testimonial-title">CEO, TechVenture Inc</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          </div>
-        </section>
-
         {/* Widget Zone 29 */}
         <WidgetZone zone="zone-29" className="my-8" />
 
@@ -358,6 +321,7 @@ export default function ProblemPage() {
               </p>
               <Button
                 size="lg"
+                variant="secondary"
                 className="text-lg px-8 py-6 shadow-lg"
                 data-testid="button-cta-gtm-engine"
                 asChild
