@@ -27,6 +27,11 @@ export default function ProblemPage() {
       <div className="min-h-screen">
         {/* Hero Module */}
         <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
+          {/* Animated gradient mesh background */}
+          <div className="absolute inset-0 pointer-events-none opacity-60">
+            <div className="gradient-mesh-layer gradient-mesh-slow" />
+            <div className="gradient-mesh-layer-secondary gradient-mesh-medium-secondary" />
+          </div>
           {/* Light grid dots pattern (light mode only) */}
           <div className="light-grid-dots" />
 
