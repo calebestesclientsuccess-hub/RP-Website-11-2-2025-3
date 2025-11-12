@@ -177,8 +177,10 @@ interface SimplifiedOrbitalPowersProps {
 
 /**
  * SimplifiedOrbitalPowers: Interactive orbital badges with engagement features
+ * Optimized for performance with memoization and reduced calculations
  */
 import VideoSchema from "@/components/VideoSchema";
+import { useMemo, useCallback } from "react";
 
 export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbitalPowersProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -189,35 +191,39 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [videoError, setVideoError] = useState(false);
   const [activePowerIndex, setActivePowerIndex] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
-  
-  // ISSUE #1 FIX: Single source of truth for user interaction
   const [userInteracted, setUserInteracted] = useState(false);
   
-  // ISSUE #2 & #3 FIX: Proper refs for interval management
   const autoAdvanceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const autoAdvanceIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // ISSUE #4 FIX: Use mobile hook instead of inline checks
   const isMobile = useIsMobile();
+  
+  // Memoize responsive values to prevent recalculation on every render
+  const layoutConfig = useMemo(() => ({
+    radius: isMobile ? 180 : 320,
+    yScale: isMobile ? 0.8 : 0.6,
+    videoWidth: isMobile ? 'min(90vw, 400px)' : 'min(85vw, 680px)',
+    videoHeight: isMobile ? 'min(50vw, 225px)' : 'min(48vw, 382px)',
+    iconSize: 24,
+    padding: isMobile ? 8 : 10,
+    gap: isMobile ? 8 : 12,
+    finalY: isMobile ? 200 : 260
+  }), [isMobile]);
 
   // Start rotation animation when section comes into view
-  const startInitialRotation = () => {
+  const startInitialRotation = useCallback(() => {
     if (prefersReducedMotion()) {
       setAnimationComplete(true);
       return;
     }
 
-    // Prevent starting if already running
-    if (orbitAnimationRef.current?.isActive()) {
-      return;
+    // Single check: kill existing or skip if active
+    const current = orbitAnimationRef.current;
+    if (current) {
+      if (current.isActive()) return;
+      current.kill();
     }
 
-    // Kill any existing animation
-    if (orbitAnimationRef.current) {
-      orbitAnimationRef.current.kill();
-    }
-
-    const rotationObj = { value: orbitRotation }; // Start from current rotation
+    const rotationObj = { value: orbitRotation };
 
     orbitAnimationRef.current = gsap.to(rotationObj, {
       value: 720,
@@ -230,7 +236,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         setAnimationComplete(true);
       }
     });
-  };
+  }, [orbitRotation]);
 
   // Start rotation on mount - single initialization
   useEffect(() => {
@@ -267,11 +273,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     };
   }, []);
 
-  // ISSUE #1 FIX: Simplified navigate function
-  const handleNavigate = (direction: 'next' | 'prev') => {
-    setUserInteracted(true);
-    
-    // Clear any running auto-advance timers
+  // Utility to clear all auto-advance timers
+  const clearAutoAdvance = useCallback(() => {
     if (autoAdvanceTimerRef.current) {
       clearTimeout(autoAdvanceTimerRef.current);
       autoAdvanceTimerRef.current = null;
@@ -280,12 +283,19 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       clearInterval(autoAdvanceIntervalRef.current);
       autoAdvanceIntervalRef.current = null;
     }
+  }, []);
+
+  // Navigate between powers
+  const handleNavigate = useCallback((direction: 'next' | 'prev') => {
+    setUserInteracted(true);
+    clearAutoAdvance();
     
-    const newIndex = direction === 'next' 
-      ? (activePowerIndex + 1) % powers.length
-      : (activePowerIndex - 1 + powers.length) % powers.length;
-    setActivePowerIndex(newIndex);
-  };
+    setActivePowerIndex((prev) => 
+      direction === 'next' 
+        ? (prev + 1) % powers.length
+        : (prev - 1 + powers.length) % powers.length
+    );
+  }, [clearAutoAdvance]);
 
   // Manual play handler
   const handleManualPlay = () => {
@@ -314,20 +324,16 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       setShowPlayButton(false);
     };
 
-    // ISSUE #2 & #3 FIX: Proper interval management with cleanup
     const handleVideoEnded = () => {
-      if (!userInteracted) {
-        // Wait 6 seconds after video ends
-        autoAdvanceTimerRef.current = setTimeout(() => {
-          // First advance
-          setActivePowerIndex((prev) => (prev + 1) % powers.length);
+      if (userInteracted) return;
+      
+      autoAdvanceTimerRef.current = setTimeout(() => {
+        setActivePowerIndex((prev) => (prev + 1) % powers.length);
 
-          // Then set up recurring auto-advance every 10 seconds
-          autoAdvanceIntervalRef.current = setInterval(() => {
-            setActivePowerIndex((prev) => (prev + 1) % powers.length);
-          }, 10000);
-        }, 6000);
-      }
+        autoAdvanceIntervalRef.current = setInterval(() => {
+          setActivePowerIndex((prev) => (prev + 1) % powers.length);
+        }, 10000);
+      }, 6000);
     };
 
     video.addEventListener('error', handleError);
@@ -356,52 +362,54 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       observer.observe(sectionRef.current);
     }
 
-    // ISSUE #3 FIX: Comprehensive cleanup
     return () => {
       video.removeEventListener('error', handleError);
       video.removeEventListener('ended', handleVideoEnded);
-      
-      if (autoAdvanceTimerRef.current) {
-        clearTimeout(autoAdvanceTimerRef.current);
-        autoAdvanceTimerRef.current = null;
-      }
-      if (autoAdvanceIntervalRef.current) {
-        clearInterval(autoAdvanceIntervalRef.current);
-        autoAdvanceIntervalRef.current = null;
-      }
-      
+      clearAutoAdvance();
       observer.disconnect();
     };
-  }, [hasPlayed, videoError, videoRef, userInteracted]);
-
-  // Clear intervals when user interacts
-  useEffect(() => {
-    if (userInteracted) {
-      if (autoAdvanceTimerRef.current) {
-        clearTimeout(autoAdvanceTimerRef.current);
-        autoAdvanceTimerRef.current = null;
-      }
-      if (autoAdvanceIntervalRef.current) {
-        clearInterval(autoAdvanceIntervalRef.current);
-        autoAdvanceIntervalRef.current = null;
-      }
-    }
-  }, [userInteracted]);
+  }, [hasPlayed, videoError, videoRef, userInteracted, clearAutoAdvance]);
 
   const selectedPower = powers[activePowerIndex] || powers[0];
 
-  // ISSUE #4 FIX: Calculate responsive values once using hook
-  const radius = isMobile ? 180 : 320;
-  const yScale = isMobile ? 0.8 : 0.6;
-  const videoWidth = isMobile ? 'min(90vw, 400px)' : 'min(85vw, 680px)';
-  const videoHeight = isMobile ? 'min(50vw, 225px)' : 'min(48vw, 382px)';
+  // Memoize badge position calculations
+  const badgePositions = useMemo(() => {
+    if (animationComplete) return [];
+    
+    const { radius, yScale, iconSize, padding, gap, finalY } = layoutConfig;
+    const iconWidth = iconSize + (padding * 2);
+    const totalWidth = (iconWidth + gap) * powers.length - gap;
+    const startX = -totalWidth / 2;
+    
+    const transitionStart = 480;
+    const transitionEnd = 720;
+    const transitionRange = transitionEnd - transitionStart;
+    const rawProgress = Math.max(0, Math.min(1, (orbitRotation - transitionStart) / transitionRange));
+    const progress = rawProgress * rawProgress * (3 - 2 * rawProgress);
+    
+    return powers.map((power, index) => {
+      const totalAngle = power.angle + orbitRotation;
+      const angleRad = (totalAngle * Math.PI) / 180;
+      const x = Math.cos(angleRad) * radius;
+      const y = Math.sin(angleRad) * radius * yScale;
+      
+      const finalX = startX + (iconWidth + gap) * index + iconWidth / 2;
+      
+      return {
+        id: power.id,
+        x: x + (finalX - x) * progress,
+        y: y + (finalY - y) * progress,
+        opacity: 1 - (progress * 0.4)
+      };
+    });
+  }, [orbitRotation, animationComplete, layoutConfig]);
 
   const videoEl = (
     <div
       className="relative rounded-2xl overflow-hidden"
       style={{
-        width: videoWidth,
-        height: videoHeight,
+        width: layoutConfig.videoWidth,
+        height: layoutConfig.videoHeight,
         boxShadow: `
           0 0 0 2px rgba(192, 192, 192, 0.3),
           0 0 40px rgba(${selectedPower.bgColor}, 0.3),
@@ -490,62 +498,36 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 {videoEl}
               </div>
 
-              {/* Orbital Badges */}
-              <div className="orbital-badges-container absolute inset-0 pointer-events-none">
-                {powers.map((power, index) => {
-                  const totalAngle = power.angle + orbitRotation;
-                  const angleRad = (totalAngle * Math.PI) / 180;
-                  const x = Math.cos(angleRad) * radius;
-                  const y = Math.sin(angleRad) * radius * yScale;
-
-                  // ISSUE #8 FIX: Use actual Tailwind padding values
-                  const iconSize = 24; // w-6 h-6
-                  const padding = isMobile ? 8 : 10; // p-2 = 8px, p-2.5 = 10px
-                  const iconWidth = iconSize + (padding * 2);
-                  const gap = isMobile ? 8 : 12;
-                  const totalWidth = (iconWidth + gap) * powers.length - gap;
-                  const startX = -totalWidth / 2;
-                  const finalX = startX + (iconWidth + gap) * index + iconWidth / 2;
-                  const finalY = isMobile ? 200 : 260;
-
-                  const transitionStart = 480;
-                  const transitionEnd = 720;
-                  const transitionRange = transitionEnd - transitionStart;
-                  const rawProgress = Math.max(0, Math.min(1, (orbitRotation - transitionStart) / transitionRange));
-                  const progress = animationComplete ? 1 : rawProgress * rawProgress * (3 - 2 * rawProgress);
-
-                  const currentX = x + (finalX - x) * progress;
-                  const currentY = y + (finalY - y) * progress;
-                  const opacity = 1 - (progress * 0.4);
-
-                  // ISSUE #5 FIX: Hide completely when animation is done
-                  if (animationComplete) {
-                    return null;
-                  }
-
-                  return (
-                    <div
-                      key={power.id}
-                      className="absolute left-1/2 top-1/2 transition-all duration-700 ease-out"
-                      style={{
-                        transform: `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px))`,
-                        opacity,
-                        zIndex: 30
-                      }}
-                      data-testid={`power-badge-${power.id}`}
-                    >
+              {/* Orbital Badges - Only render during animation */}
+              {!animationComplete && (
+                <div className="orbital-badges-container absolute inset-0 pointer-events-none">
+                  {badgePositions.map((position) => {
+                    const power = powers.find(p => p.id === position.id)!;
+                    
+                    return (
                       <div
-                        className="relative rounded-full p-3 bg-background/90 backdrop-blur-sm shadow-lg"
+                        key={power.id}
+                        className="absolute left-1/2 top-1/2 transition-all duration-700 ease-out"
                         style={{
-                          boxShadow: `0 0 20px ${power.glowColor}`
+                          transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))`,
+                          opacity: position.opacity,
+                          zIndex: 30
                         }}
+                        data-testid={`power-badge-${power.id}`}
                       >
-                        {power.icon}
+                        <div
+                          className="relative rounded-full p-3 bg-background/90 backdrop-blur-sm shadow-lg"
+                          style={{
+                            boxShadow: `0 0 20px ${power.glowColor}`
+                          }}
+                        >
+                          {power.icon}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Horizontal Icon Row */}
@@ -557,7 +539,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
               }}
             >
               <div className="flex justify-center items-center gap-2 md:gap-3 px-4" 
-                style={{ maxWidth: videoWidth }}>
+                style={{ maxWidth: layoutConfig.videoWidth }}>
                 {powers.map((power, index) => {
                   const isActive = index === activePowerIndex;
                   return (
@@ -566,6 +548,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       onClick={() => {
                         setActivePowerIndex(index);
                         setUserInteracted(true);
+                        clearAutoAdvance();
                       }}
                       className="relative rounded-full p-2 md:p-2.5 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 cursor-pointer flex-shrink-0"
                       style={{
@@ -576,6 +559,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                         opacity: isActive ? 1 : 0.4
                       }}
                       data-testid={`power-icon-${power.id}`}
+                      aria-label={`Select ${power.title}`}
                     >
                       {power.icon}
                     </button>
