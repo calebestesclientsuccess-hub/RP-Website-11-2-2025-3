@@ -45,5 +45,5 @@ export const sessionPool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 5, // Fewer connections needed for sessions (reduced from 10)
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000, // 10s for session table initialization
 });
