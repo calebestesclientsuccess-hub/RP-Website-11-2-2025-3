@@ -56,6 +56,12 @@ async function seedTestimonials() {
   try {
     console.log("Seeding testimonials...");
     
+    // Delete existing testimonials first
+    console.log("Deleting existing testimonials...");
+    await db.delete(testimonials);
+    console.log("✓ Cleared existing testimonials");
+    
+    // Insert new testimonials
     for (const testimonial of sampleTestimonials) {
       await db.insert(testimonials).values(testimonial);
       console.log(`✓ Added testimonial from ${testimonial.name}`);
