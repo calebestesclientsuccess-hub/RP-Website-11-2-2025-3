@@ -17,8 +17,11 @@ interface TestimonialCarouselProps {
 }
 
 export default function TestimonialCarousel({ className, theme, size }: TestimonialCarouselProps) {
-  const { data: testimonials, isLoading, error } = useQuery<Testimonial[]>({
+  const { data: testimonials, isLoading, error, refetch } = useQuery<Testimonial[]>({
     queryKey: ['/api/testimonials'],
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
   });
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -82,8 +85,17 @@ export default function TestimonialCarousel({ className, theme, size }: Testimon
     return (
       <div className={className} data-testid="testimonial-carousel-error">
         <Card className={cn(widgetVariants({ theme, size }))}>
-          <CardContent className="p-8 text-center text-muted-foreground">
-            Failed to load testimonials
+          <CardContent className="p-8 text-center">
+            <p className="text-muted-foreground mb-3">
+              Failed to load testimonials
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="text-sm text-primary hover:underline"
+              data-testid="button-retry-testimonials"
+            >
+              Try again
+            </button>
           </CardContent>
         </Card>
       </div>

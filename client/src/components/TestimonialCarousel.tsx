@@ -14,8 +14,11 @@ export default function TestimonialCarousel() {
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   
-  const { data: testimonials = [], isLoading } = useQuery<Testimonial[]>({
+  const { data: testimonials = [], isLoading, isError, refetch } = useQuery<Testimonial[]>({
     queryKey: ['/api/testimonials?featured=true'],
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
   });
 
   useEffect(() => {
@@ -57,7 +60,48 @@ export default function TestimonialCarousel() {
     trackTestimonialInteraction('dot_click', index);
   };
 
-  if (isLoading || testimonials.length === 0) {
+  // Show loading skeleton while fetching testimonials
+  if (isLoading) {
+    return (
+      <div className="relative max-w-4xl mx-auto">
+        <Card className="p-8 md:p-12">
+          <div className="space-y-4">
+            <div className="w-12 h-12 bg-muted rounded-full animate-pulse" />
+            <div className="space-y-2">
+              <div className="h-6 bg-muted rounded animate-pulse" />
+              <div className="h-6 bg-muted rounded animate-pulse w-3/4" />
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-muted rounded-full animate-pulse" />
+              <div className="space-y-2 flex-1">
+                <div className="h-4 bg-muted rounded animate-pulse w-1/2" />
+                <div className="h-3 bg-muted rounded animate-pulse w-2/3" />
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show error state with retry option
+  if (isError) {
+    return (
+      <div className="relative max-w-4xl mx-auto">
+        <Card className="p-8 md:p-12 text-center">
+          <p className="text-muted-foreground mb-4">
+            Unable to load testimonials. Please try again.
+          </p>
+          <Button onClick={() => refetch()} variant="outline" size="sm">
+            Retry
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  // Don't render if no testimonials available
+  if (testimonials.length === 0) {
     return null;
   }
 

@@ -13,11 +13,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { insertLeadCaptureSchema } from '@shared/schema';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { trackLeadGeneration } from '@/lib/analytics';
 import { useToast } from '@/hooks/use-toast';
+import { useFeatureFlag } from '@/hooks/use-feature-flag';
 import { z } from 'zod';
 
 const formSchema = insertLeadCaptureSchema.pick({
@@ -32,10 +33,8 @@ export default function LeadMagnetHero() {
   const [showThankYou, setShowThankYou] = useState(false);
   const { toast } = useToast();
   
-  // Check if the playbook feature is enabled
-  const { data: featureFlag } = useQuery<{ enabled: boolean }>({
-    queryKey: ["/api/public/feature-flags/revenue-architecture-playbook"],
-  });
+  // Check if the playbook feature is enabled using the feature flag hook
+  const { isEnabled, isLoading } = useFeatureFlag('revenue-architecture-playbook');
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -82,8 +81,9 @@ export default function LeadMagnetHero() {
     },
   });
 
-  // Don't render if feature is disabled
-  if (featureFlag && !featureFlag.enabled) {
+  // Don't render while loading or if feature is disabled
+  // This prevents the "flash of content" issue where the form appears then disappears
+  if (isLoading || !isEnabled) {
     return null;
   }
 
