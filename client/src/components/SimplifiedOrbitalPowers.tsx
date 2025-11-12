@@ -285,19 +285,22 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     };
 
     const handleVideoEnded = () => {
-      if (!userInteracted) {
-        // Wait 6 seconds after video ends, then start auto-advancing every 5 seconds
+      if (!userInteracted && !hasAutoSwitchingStopped) {
+        // Wait 6 seconds after video ends, then start auto-advancing every 10 seconds
         autoAdvanceTimerRef.current = setTimeout(() => {
-          handleNavigate('next');
+          setActivePowerIndex((prev) => (prev + 1) % powers.length);
 
-          // Set up recurring auto-advance every 5 seconds
+          // Set up recurring auto-advance every 10 seconds (250% of original 4 seconds)
           const intervalId = setInterval(() => {
-            if (!userInteracted) {
+            if (!userInteracted && !hasAutoSwitchingStopped) {
               setActivePowerIndex((prev) => (prev + 1) % powers.length);
             } else {
               clearInterval(intervalId);
             }
-          }, 5000);
+          }, 10000);
+
+          // Store interval ID so we can clear it if user interacts
+          return () => clearInterval(intervalId);
         }, 6000);
       }
     };
@@ -340,16 +343,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   }, [hasPlayed, videoError, videoRef, userInteracted]);
 
 
-  // Auto-rotate through powers - only if user hasn't interacted
-  useEffect(() => {
-    if (hasAutoSwitchingStopped) return;
-
-    const interval = setInterval(() => {
-      setActivePowerIndex((prev) => (prev + 1) % powers.length);
-    }, 10000); // Rotate every 10 seconds (250% of original 4 seconds)
-
-    return () => clearInterval(interval);
-  }, [hasAutoSwitchingStopped]);
+  // Auto-rotate through powers is now handled in handleVideoEnded
+  // This useEffect has been removed to prevent premature auto-switching
 
 
   const selectedPower = powers[activePowerIndex] || powers[0];
