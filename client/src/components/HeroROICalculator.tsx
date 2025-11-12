@@ -61,7 +61,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
       
       <Card className="p-5 bg-card/95 backdrop-blur-md border-primary/40 shadow-2xl relative" data-testid="card-hero-roi">
         <div className="mb-4">
-          <h3 className="text-xl font-bold mb-1">The $15K Investment That Returns 40x</h3>
+          <h2 className="text-xl font-bold mb-1">The $15K Investment That Returns 40x</h2>
           <p className="text-xs text-muted-foreground">
             Adjust for your business to see the math
           </p>

@@ -660,10 +660,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           {/* Internal Hire Cost Calculator Section */}
           <div className="max-w-4xl mx-auto mb-12">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-12 text-center leading-tight">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-12 text-center leading-tight" data-testid="heading-internal-sdr-cost">
               <div className="mb-2">The True Cost of</div>
               <div className="gradient-text gradient-hero">1 Internal SDR</div>
-            </h1>
+            </h2>
             <InternalHireCostCalculator />
           </div>
 
