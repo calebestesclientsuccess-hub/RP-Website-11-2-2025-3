@@ -337,38 +337,50 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       return;
     }
 
-    // Single initialization - no polling, no race conditions
-    const ctx = gsap.context(() => {
-      // Set initial states
-      gsap.set(icons, {
-        opacity: 0,
-        scale: 0.8,
-      });
+    // Safari needs extra time for DOM painting after animation completes
+    // Use double requestAnimationFrame for cross-browser compatibility
+    let rafId1: number;
+    let rafId2: number;
+    let ctx: gsap.Context;
 
-      // Animate icons on scroll
-      icons.forEach((icon, index) => {
-        gsap.to(icon, {
-          scrollTrigger: {
-            trigger: '.orbital-container',
-            start: 'top 80%',
-            end: 'bottom 20%',
-            toggleActions: 'play none none reverse',
-          },
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          delay: index * 0.1,
-          ease: 'back.out(1.7)',
-        });
-      });
-    }, sectionRef);
+    rafId1 = requestAnimationFrame(() => {
+      rafId2 = requestAnimationFrame(() => {
+        // Now all browsers have painted the final positions
+        ctx = gsap.context(() => {
+          // Set initial states
+          gsap.set(icons, {
+            opacity: 0,
+            scale: 0.8,
+          });
 
-    // Refresh after a frame to ensure layout is complete
-    requestAnimationFrame(() => {
-      ScrollTrigger.refresh();
+          // Animate icons on scroll
+          icons.forEach((icon, index) => {
+            gsap.to(icon, {
+              scrollTrigger: {
+                trigger: '.orbital-container',
+                start: 'top 80%',
+                end: 'bottom 20%',
+                toggleActions: 'play none none reverse',
+              },
+              opacity: 1,
+              scale: 1,
+              duration: 0.6,
+              delay: index * 0.1,
+              ease: 'back.out(1.7)',
+            });
+          });
+
+          // Final refresh after all animations are set up
+          ScrollTrigger.refresh();
+        }, sectionRef);
+      });
     });
 
-    return () => ctx.revert();
+    return () => {
+      if (rafId1) cancelAnimationFrame(rafId1);
+      if (rafId2) cancelAnimationFrame(rafId2);
+      if (ctx) ctx.revert();
+    };
   }, [animationComplete]); // Only re-run if animation completion state changes
 
 
