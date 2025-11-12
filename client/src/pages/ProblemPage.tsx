@@ -138,7 +138,8 @@ export default function ProblemPage() {
               className="mb-12"
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-trap-1">
-                <span className="text-4xl md:text-5xl lg:text-6xl">Trap 1</span> The Internal Hire<br />
+                <span className="text-4xl md:text-5xl lg:text-6xl block mb-2">Trap 1</span>
+                <span className="text-2xl md:text-3xl lg:text-4xl block mb-2">The Internal Hire</span>
                 <span className="gradient-text gradient-hero">The $198,000 Mistake</span>
               </h2>
               <p className="text-lg leading-relaxed max-w-4xl" data-testid="text-trap-1-intro">
@@ -206,7 +207,8 @@ export default function ProblemPage() {
               className="mb-12"
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-trap-2">
-                <span className="text-4xl md:text-5xl lg:text-6xl">Trap 2</span> The Outsourcing Agency<br />
+                <span className="text-4xl md:text-5xl lg:text-6xl block mb-2">Trap 2</span>
+                <span className="text-2xl md:text-3xl lg:text-4xl block mb-2">The Outsourcing Agency</span>
                 <span className="gradient-text gradient-hero">The Impossible Mission</span>
               </h2>
               <p className="text-lg leading-relaxed max-w-4xl" data-testid="text-trap-2-intro">
@@ -276,19 +278,25 @@ export default function ProblemPage() {
               transition={{ duration: 0.6 }}
               className="text-center"
             >
-              <Card className="p-10 light-depth bg-primary/5 border-primary/20" data-testid="card-diagnosis">
-                <div className="max-w-3xl mx-auto">
-                  <CheckCircle className="w-16 h-16 text-primary mx-auto mb-6" />
-                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-diagnosis">
+              <Card className="p-10 md:p-12 lg:p-16 light-depth bg-primary/5 border-primary/20" data-testid="card-diagnosis">
+                <div className="max-w-4xl mx-auto">
+                  <CheckCircle className="w-16 h-16 md:w-20 md:h-20 text-primary mx-auto mb-8" />
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8" data-testid="heading-diagnosis">
                     The Diagnosis: You Don't Have a Person Problem.<br />
                     <span className="gradient-text gradient-hero">You Have an Architecture Problem.</span>
                   </h2>
-                  <div className="space-y-4 text-lg leading-relaxed" data-testid="text-diagnosis">
-                    <p>
-                      The 'Lone Wolf' hire and the 'Black Box' agency are just symptoms. The disease is a broken GTM architecture.
+                  <div className="space-y-6 text-lg md:text-xl leading-relaxed mb-8" data-testid="text-diagnosis">
+                    <p className="text-muted-foreground">
+                      The 'Lone Wolf' hire and the 'Black Box' agency are just symptoms. The real disease? A fundamentally broken GTM architecture that treats pipeline generation like a staffing problem instead of an engineering problem.
                     </p>
-                    <p className="text-xl font-semibold text-foreground">
-                      You cannot solve an architecture problem by hiring another person. You solve it by building a new system.
+                    <p className="text-muted-foreground">
+                      Both traps stem from the same fatal flaw: trying to solve a systems-level challenge with a headcount-level solution.
+                    </p>
+                  </div>
+                  <div className="pt-6 border-t border-primary/20">
+                    <p className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
+                      You cannot solve an architecture problem<br className="hidden md:block" /> by hiring another person.<br />
+                      <span className="gradient-text gradient-hero">You solve it by building a new system.</span>
                     </p>
                   </div>
                 </div>
