@@ -560,7 +560,7 @@ export default function ROICalculator() {
                                     Guaranteed SQOs: <span className="font-semibold text-foreground">
                                       {isTickerBased ? `${tickerSQOs}/month` : config.guaranteedSQOs > 0 ? `${config.guaranteedSQOs}/month` : '0'}
                                     </span>
-                                    {!isLoneWolf && (config.guaranteedSQOs > 0 || isTickerBased) && (
+                                    {key !== "lone-wolf" && (config.guaranteedSQOs > 0 || isTickerBased) && (
                                       <span className="text-xs ml-1">(from Month 5)</span>
                                     )}
                                   </span>
