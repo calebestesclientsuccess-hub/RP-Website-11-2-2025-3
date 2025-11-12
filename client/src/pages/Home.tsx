@@ -533,36 +533,20 @@ export default function Home() {
 
           {/* Row 1: The Value & Reliability */}
           <div className="mb-12">
-            <motion.h3 
-              className="text-2xl font-bold text-center mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              The Value & Reliability
-            </motion.h3>
+            <h3 className="text-2xl font-bold text-center mb-8">The Value & Reliability</h3>
             <div className="grid md:grid-cols-3 gap-8" data-testid="grid-metrics-value">
               {/* Metric 4 */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
-                whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-                whileHover={{ scale: 1.05, y: -8 }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0 }}
               >
-                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:bg-background/70" data-testid="card-metric-4">
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm h-full" data-testid="card-metric-4">
                   <div className="mb-4">
-                    <motion.div 
-                      className="text-5xl font-bold gradient-text gradient-hero" 
-                      data-testid="metric-value-4"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: 0.3, type: "spring", bounce: 0.5 }}
-                    >
+                    <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-4">
                       20+
-                    </motion.div>
+                    </div>
                     <div className="text-lg font-semibold mt-2" data-testid="metric-label-4">
                       Meetings/Month
                     </div>
@@ -575,24 +559,16 @@ export default function Home() {
 
               {/* Metric 5 */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
-                whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
-                whileHover={{ scale: 1.05, y: -8 }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0.15 }}
               >
-                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:bg-background/70" data-testid="card-metric-5">
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm h-full" data-testid="card-metric-5">
                   <div className="mb-4">
-                    <motion.div 
-                      className="text-5xl font-bold gradient-text gradient-hero" 
-                      data-testid="metric-value-5"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: 0.4, type: "spring", bounce: 0.5 }}
-                    >
+                    <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-5">
                       55%
-                    </motion.div>
+                    </div>
                     <div className="text-lg font-semibold mt-2" data-testid="metric-label-5">
                       Cost Savings
                     </div>
@@ -605,24 +581,16 @@ export default function Home() {
 
               {/* Metric 6 */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
-                whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
-                whileHover={{ scale: 1.05, y: -8 }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:bg-background/70" data-testid="card-metric-6">
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm h-full" data-testid="card-metric-6">
                   <div className="mb-4">
-                    <motion.div 
-                      className="text-5xl font-bold gradient-text gradient-hero" 
-                      data-testid="metric-value-6"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: 0.5, type: "spring", bounce: 0.5 }}
-                    >
+                    <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-6">
                       Zero
-                    </motion.div>
+                    </div>
                     <div className="text-lg font-semibold mt-2" data-testid="metric-label-6">
                       Pipeline Disruption
                     </div>
@@ -637,36 +605,20 @@ export default function Home() {
 
           {/* Row 2: The Performance */}
           <div className="mb-12">
-            <motion.h3 
-              className="text-2xl font-bold text-center mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              The Performance
-            </motion.h3>
+            <h3 className="text-2xl font-bold text-center mb-8">The Performance</h3>
             <div className="grid md:grid-cols-3 gap-8" data-testid="grid-metrics-performance">
               {/* Metric 1 */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
-                whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-                whileHover={{ scale: 1.05, y: -8 }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0 }}
               >
-                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:bg-background/70" data-testid="card-metric-1">
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm h-full" data-testid="card-metric-1">
                   <div className="mb-4">
-                    <motion.div 
-                      className="text-5xl font-bold gradient-text gradient-hero" 
-                      data-testid="metric-value-1"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: 0.3, type: "spring", bounce: 0.5 }}
-                    >
+                    <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-1">
                       91%
-                    </motion.div>
+                    </div>
                     <div className="text-lg font-semibold mt-2" data-testid="metric-label-1">
                       Quota Attainment
                     </div>
@@ -679,24 +631,16 @@ export default function Home() {
 
               {/* Metric 2 */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
-                whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
-                whileHover={{ scale: 1.05, y: -8 }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0.15 }}
               >
-                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:bg-background/70" data-testid="card-metric-2">
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm h-full" data-testid="card-metric-2">
                   <div className="mb-4">
-                    <motion.div 
-                      className="text-5xl font-bold gradient-text gradient-hero" 
-                      data-testid="metric-value-2"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: 0.4, type: "spring", bounce: 0.5 }}
-                    >
+                    <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-2">
                       63%
-                    </motion.div>
+                    </div>
                     <div className="text-lg font-semibold mt-2" data-testid="metric-label-2">
                       Surpassed Quota
                     </div>
@@ -709,24 +653,16 @@ export default function Home() {
 
               {/* Metric 3 */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
-                whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
-                whileHover={{ scale: 1.05, y: -8 }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:bg-background/70" data-testid="card-metric-3">
+                <Card className="p-8 text-center bg-background/50 backdrop-blur-sm h-full" data-testid="card-metric-3">
                   <div className="mb-4">
-                    <motion.div 
-                      className="text-5xl font-bold gradient-text gradient-hero" 
-                      data-testid="metric-value-3"
-                      initial={{ opacity: 0, scale: 0.5 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: 0.5, type: "spring", bounce: 0.5 }}
-                    >
+                    <div className="text-5xl font-bold gradient-text gradient-hero" data-testid="metric-value-3">
                       99.9%
-                    </motion.div>
+                    </div>
                     <div className="text-lg font-semibold mt-2" data-testid="metric-label-3">
                       Performance Floor
                     </div>
