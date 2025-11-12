@@ -1,8 +1,6 @@
 import { db } from "../server/db";
 import { testimonials } from "../shared/schema";
-
-// Default tenant ID - you should update this to match your actual tenant ID
-const DEFAULT_TENANT_ID = "default";
+import { DEFAULT_TENANT_ID } from "../server/middleware/tenant";
 
 const sampleTestimonials = [
   {
