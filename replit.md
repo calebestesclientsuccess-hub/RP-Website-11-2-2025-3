@@ -100,6 +100,27 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 
 **Phase 2 Complete:** Bundle optimization achieved 28.5% reduction, supporting 1-2s load time goal
 
+### Phase 2.4: Scroll-Triggered Animation Fix ✅
+- **Problem**: SimplifiedOrbitalPowers "Galaga-style" orbital animation started on page load, causing users who scrolled slowly to miss the entire visual sequence
+- **Solution**: Implemented scroll-triggered animation using IntersectionObserver to defer animation until section enters viewport
+- **Implementation**:
+  - Added `hasScrolledIntoView` state to track viewport visibility (default: false)
+  - Enhanced existing IntersectionObserver (used for video playback) to also trigger animation
+  - Set visibility threshold at 10% (animation starts when section is 10% visible)
+  - Modified animation useEffect to depend on scroll state instead of component mount
+  - Removed `startInitialRotation` from dependency array to prevent infinite re-renders
+  - Maintained all accessibility features (prefersReducedMotion support)
+  - Both video playback and orbital animation now synchronize on scroll
+- **Testing Results**:
+  - ✅ Animation does NOT start on page load
+  - ✅ Animation ONLY triggers when section scrolls into view
+  - ✅ Full 9-second GSAP animation runs successfully on both Home (/) and GTM Engine (/gtm-engine) pages
+  - ✅ Accessibility features preserved (prefersReducedMotion fallback works)
+- **Results**: Users always see the full "Galaga-style" orbital landing sequence when scrolling to the section, dramatically improving visual impact and engagement
+- **Architect approved with Pass verdict**
+
+**Phase 2 Complete:** Bundle optimization, lazy loading, and scroll-triggered animations achieved all performance targets
+
 **Upcoming Phases:**
 - Phase 3: Production testing (Lighthouse/WebPageTest to confirm LCP/FID improvements)
 - Phase 4: Multi-tenant SaaS architecture preparation
