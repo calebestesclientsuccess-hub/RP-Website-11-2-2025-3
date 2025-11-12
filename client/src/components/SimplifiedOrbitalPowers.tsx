@@ -207,11 +207,17 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       return;
     }
 
+    // Prevent starting if already running
+    if (orbitAnimationRef.current?.isActive()) {
+      return;
+    }
+
+    // Kill any existing animation
     if (orbitAnimationRef.current) {
       orbitAnimationRef.current.kill();
     }
 
-    const rotationObj = { value: 0 };
+    const rotationObj = { value: orbitRotation }; // Start from current rotation
 
     orbitAnimationRef.current = gsap.to(rotationObj, {
       value: 720,
@@ -226,21 +232,37 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     });
   };
 
-  // Start rotation on mount
+  // Start rotation on mount - single initialization
   useEffect(() => {
     if (prefersReducedMotion()) {
       setAnimationComplete(true);
       return;
     }
 
-    const timeout = setTimeout(() => {
-      startInitialRotation();
-    }, 500);
+    // Use a flag to prevent double initialization
+    let mounted = true;
+    let timeoutId: NodeJS.Timeout;
+
+    const initAnimation = () => {
+      if (!mounted) return;
+      
+      // Only start if not already running
+      if (!orbitAnimationRef.current || !orbitAnimationRef.current.isActive()) {
+        startInitialRotation();
+      }
+    };
+
+    // Small delay to ensure DOM is ready
+    timeoutId = setTimeout(initAnimation, 300);
 
     return () => {
-      clearTimeout(timeout);
+      mounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       if (orbitAnimationRef.current) {
         orbitAnimationRef.current.kill();
+        orbitAnimationRef.current = null;
       }
     };
   }, []);
