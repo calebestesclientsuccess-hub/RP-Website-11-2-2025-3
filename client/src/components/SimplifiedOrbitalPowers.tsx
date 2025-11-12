@@ -230,15 +230,23 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     // Always start from 270 degrees (fixed starting position)
     const rotationObj = { value: 270 };
+    let lastUpdateTime = 0;
+    const updateInterval = 1000 / 15; // 15fps throttle for Safari compatibility
 
     orbitAnimationRef.current = gsap.to(rotationObj, {
       value: 720,
       duration: 9,
       ease: "power1.inOut",
       onUpdate: () => {
-        setOrbitRotation(rotationObj.value);
+        // Throttle state updates to 15fps for Safari compatibility
+        const now = Date.now();
+        if (now - lastUpdateTime >= updateInterval) {
+          setOrbitRotation(rotationObj.value);
+          lastUpdateTime = now;
+        }
       },
       onComplete: () => {
+        setOrbitRotation(720); // Ensure final state is set
         setAnimationComplete(true);
       }
     });
@@ -612,18 +620,23 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                     return (
                       <div
                         key={power.id}
-                        className="absolute left-1/2 top-1/2 transition-all duration-700 ease-out"
+                        className="absolute left-1/2 top-1/2"
                         style={{
-                          transform: `translate(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px))`,
+                          transform: `translate3d(calc(-50% + ${position.x}px), calc(-50% + ${position.y}px), 0)`,
                           opacity: position.opacity,
-                          zIndex: 30
+                          zIndex: 30,
+                          willChange: 'transform, opacity',
+                          backfaceVisibility: 'hidden',
+                          WebkitBackfaceVisibility: 'hidden'
                         }}
                         data-testid={`power-badge-${power.id}`}
                       >
                         <div
                           className="relative rounded-full p-3 bg-background/90 backdrop-blur-sm shadow-lg"
                           style={{
-                            boxShadow: `0 0 20px ${power.glowColor}`
+                            boxShadow: `0 0 20px ${power.glowColor}`,
+                            transform: 'translateZ(0)',
+                            WebkitTransform: 'translateZ(0)'
                           }}
                         >
                           {power.icon}
@@ -661,7 +674,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                           ? `0 0 25px ${power.glowColor}, 0 0 12px ${power.glowColor}`
                           : `0 0 15px ${power.glowColor}`,
                         animation: isActive ? 'pulse-subtle 2s ease-in-out infinite' : 'none',
-                        opacity: isActive ? 1 : 0.4
+                        opacity: isActive ? 1 : 0.4,
+                        transform: 'translate3d(0, 0, 0)',
+                        willChange: 'transform, opacity',
+                        backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden'
                       }}
                       data-testid={`power-icon-${power.id}`}
                       aria-label={`Select ${power.title}`}
