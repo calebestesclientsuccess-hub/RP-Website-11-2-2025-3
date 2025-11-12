@@ -13,6 +13,9 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isEnabled: themeToggleEnabled } = useFeatureFlag('theme-toggle');
 
+  // Debug logging
+  console.log('Theme toggle enabled:', themeToggleEnabled);
+
   const isActivePath = (path: string) => {
     if (path === "/") return location === "/";
     return location.startsWith(path);
