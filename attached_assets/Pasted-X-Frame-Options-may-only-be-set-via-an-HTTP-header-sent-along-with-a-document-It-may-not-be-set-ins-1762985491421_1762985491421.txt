@@ -1,0 +1,32 @@
+X-Frame-Options may only be set via an HTTP header sent along with a document. It may not be set inside <meta>.Understand this error
+feature-flags:77 <link rel=preload> uses an unsupported `as` valueUnderstand this warning
+client:495 [vite] connecting...
+client:618 [vite] connected.
+chunk-RPCDYKBN.js?v=971fbfde:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+Navbar.tsx:17 === NAVBAR THEME TOGGLE DEBUG ===
+Navbar.tsx:18 isEnabled: false
+Navbar.tsx:19 isLoading: true
+Navbar.tsx:20 isError: false
+Navbar.tsx:21 typeof isEnabled: boolean
+Navbar.tsx:22 ================================
+Navbar.tsx:17 === NAVBAR THEME TOGGLE DEBUG ===
+Navbar.tsx:18 isEnabled: false
+Navbar.tsx:19 isLoading: true
+Navbar.tsx:20 isError: false
+Navbar.tsx:21 typeof isEnabled: boolean
+Navbar.tsx:22 ================================
+Navbar.tsx:17 === NAVBAR THEME TOGGLE DEBUG ===
+Navbar.tsx:18 isEnabled: true
+Navbar.tsx:19 isLoading: false
+Navbar.tsx:20 isError: false
+Navbar.tsx:21 typeof isEnabled: boolean
+Navbar.tsx:22 ================================
+Navbar.tsx:17 === NAVBAR THEME TOGGLE DEBUG ===
+Navbar.tsx:18 isEnabled: true
+Navbar.tsx:19 isLoading: false
+Navbar.tsx:20 isError: false
+Navbar.tsx:21 typeof isEnabled: boolean
+Navbar.tsx:22 ================================
+feature-flags:1 The resource https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
+feature-flags:1 The resource https://961b3c7c-8124-4671-b9d1-80dae7c4e2c9-00-1ucqg4f6uk7n6.kirk.replit.dev/src/index.css was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
+feature-flags:1 The resource https://961b3c7c-8124-4671-b9d1-80dae7c4e2c9-00-1ucqg4f6uk7n6.kirk.replit.dev/src/main.tsx was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
