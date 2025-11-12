@@ -1,11 +1,14 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Brain, Target, Settings, Users, Wrench, Trophy, Play } from "lucide-react";
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { prefersReducedMotion } from "@/lib/animationConfig";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger);
 
 // Simple fade-in for info box and pulse animation
 const simpleKeyframes = `
@@ -193,11 +196,12 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [activePowerIndex, setActivePowerIndex] = useState(0);
   const [animationComplete, setAnimationComplete] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
-  
+  const [videoLoaded, setVideoLoaded] = useState(false); // State to track video loading
+
   const autoAdvanceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const autoAdvanceIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMobile = useIsMobile();
-  
+
   // Memoize responsive values to prevent recalculation on every render
   const layoutConfig = useMemo(() => ({
     radius: isMobile ? 180 : 320,
@@ -256,7 +260,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     const initAnimation = () => {
       if (!mounted) return;
-      
+
       // Only start if not already running
       if (!orbitAnimationRef.current || !orbitAnimationRef.current.isActive()) {
         startInitialRotation();
@@ -294,9 +298,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const handleNavigate = useCallback((direction: 'next' | 'prev') => {
     setUserInteracted(true);
     clearAutoAdvance();
-    
-    setActivePowerIndex((prev) => 
-      direction === 'next' 
+
+    setActivePowerIndex((prev) =>
+      direction === 'next'
         ? (prev + 1) % powers.length
         : (prev - 1 + powers.length) % powers.length
     );
@@ -317,6 +321,75 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       });
   };
 
+  // Effect for ScrollTrigger animation on icons
+  useEffect(() => {
+    const icons = sectionRef.current?.querySelectorAll('.orbital-badges-container > div');
+    if (!icons || icons.length === 0) {
+      // If icons are not yet available, try again after a short delay
+      // or when the animationComplete state changes (e.g., after video load)
+      // This helps ensure the animation runs once the elements are in the DOM.
+      if (!animationComplete) {
+        const timer = setTimeout(() => {
+          // Trigger re-run of this effect if needed
+        }, 50);
+        return () => clearTimeout(timer);
+      }
+      return;
+    }
+
+    if (prefersReducedMotion()) {
+      return;
+    }
+
+    // Wait for images and fonts to load before initializing animations
+    const initAnimation = () => {
+      const ctx = gsap.context(() => {
+        // Set initial states
+        gsap.set(icons, {
+          opacity: 0,
+          scale: 0.8,
+        });
+
+        // Animate icons on scroll
+        icons.forEach((icon, index) => {
+          gsap.to(icon, {
+            scrollTrigger: {
+              trigger: '.orbital-container',
+              start: 'top 80%',
+              end: 'bottom 20%',
+              toggleActions: 'play none none reverse',
+            },
+            opacity: 1,
+            scale: 1,
+            duration: 0.6,
+            delay: index * 0.1,
+            ease: 'back.out(1.7)',
+          });
+        });
+
+        // Force ScrollTrigger to recalculate after everything loads
+        ScrollTrigger.refresh();
+      });
+
+      return ctx;
+    };
+
+    // Ensure DOM is fully ready and video is loaded before attempting to initialize
+    const interval = setInterval(() => {
+      if (document.readyState === 'complete' && videoLoaded) {
+        clearInterval(interval);
+        const ctx = initAnimation();
+        return () => ctx.revert();
+      }
+    }, 100); // Check every 100ms
+
+    return () => {
+      clearInterval(interval);
+      // GSAP context cleanup is handled by the return of initAnimation
+    };
+  }, [animationComplete, videoLoaded, prefersReducedMotion]); // Rerun if animation state or video load state changes
+
+
   // Video playback management
   useEffect(() => {
     if (!videoRef.current) return;
@@ -331,7 +404,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
     const handleVideoEnded = () => {
       if (userInteracted) return;
-      
+
       autoAdvanceTimerRef.current = setTimeout(() => {
         setActivePowerIndex((prev) => (prev + 1) % powers.length);
 
@@ -350,7 +423,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           if (entry.isIntersecting) {
             // Trigger scroll state for animation (only once)
             setHasScrolledIntoView(true);
-            
+
             // Handle video playback
             if (!hasPlayed && !videoError) {
               video.play()
@@ -381,31 +454,59 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     };
   }, [hasPlayed, videoError, videoRef, userInteracted, clearAutoAdvance]);
 
+  // Effect to handle video loading and ScrollTrigger refresh
+  useEffect(() => {
+    if (!videoRef?.current) return;
+
+    const video = videoRef.current;
+    const handleLoadedData = () => {
+      setVideoLoaded(true);
+      // Refresh ScrollTrigger after video loads to recalculate positions
+      if (typeof ScrollTrigger !== 'undefined') {
+        setTimeout(() => ScrollTrigger.refresh(), 100);
+      }
+    };
+
+    video.addEventListener('loadeddata', handleLoadedData);
+
+    // Check if already loaded
+    if (video.readyState >= 2) {
+      setVideoLoaded(true);
+      if (typeof ScrollTrigger !== 'undefined') {
+        setTimeout(() => ScrollTrigger.refresh(), 100);
+      }
+    }
+
+    return () => {
+      video.removeEventListener('loadeddata', handleLoadedData);
+    };
+  }, [videoRef]);
+
   const selectedPower = powers[activePowerIndex] || powers[0];
 
   // Memoize badge position calculations
   const badgePositions = useMemo(() => {
     if (animationComplete) return [];
-    
+
     const { radius, yScale, iconSize, padding, gap, finalY } = layoutConfig;
     const iconWidth = iconSize + (padding * 2);
     const totalWidth = (iconWidth + gap) * powers.length - gap;
     const startX = -totalWidth / 2;
-    
+
     const transitionStart = 480;
     const transitionEnd = 720;
     const transitionRange = transitionEnd - transitionStart;
     const rawProgress = Math.max(0, Math.min(1, (orbitRotation - transitionStart) / transitionRange));
     const progress = rawProgress * rawProgress * (3 - 2 * rawProgress);
-    
+
     return powers.map((power, index) => {
       const totalAngle = power.angle + orbitRotation;
       const angleRad = (totalAngle * Math.PI) / 180;
       const x = Math.cos(angleRad) * radius;
       const y = Math.sin(angleRad) * radius * yScale;
-      
+
       const finalX = startX + (iconWidth + gap) * index + iconWidth / 2;
-      
+
       return {
         id: power.id,
         x: x + (finalX - x) * progress,
@@ -498,10 +599,10 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
           <div className="relative mx-auto" style={{ maxWidth: '900px' }} data-testid="orbital-container">
             <div className="relative mx-auto h-[360px] md:h-[460px] flex items-center justify-center">
-              
+
               {/* ISSUE #7 FIX: Simplified click handler */}
-              <div 
-                className="relative z-20 cursor-pointer" 
+              <div
+                className="relative z-20 cursor-pointer"
                 onClick={() => handleNavigate('next')}
                 data-testid="clickable-video"
                 title="Click to see next power"
@@ -514,7 +615,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                 <div className="orbital-badges-container absolute inset-0 pointer-events-none">
                   {badgePositions.map((position) => {
                     const power = powers.find(p => p.id === position.id)!;
-                    
+
                     return (
                       <div
                         key={power.id}
@@ -542,14 +643,14 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             </div>
 
             {/* Horizontal Icon Row */}
-            <div 
+            <div
               className="flex flex-col items-center mb-8 transition-opacity duration-700 ease-in"
-              style={{ 
+              style={{
                 opacity: animationComplete ? 1 : 0,
                 pointerEvents: animationComplete ? 'auto' : 'none'
               }}
             >
-              <div className="flex justify-center items-center gap-2 md:gap-3 px-4" 
+              <div className="flex justify-center items-center gap-2 md:gap-3 px-4"
                 style={{ maxWidth: layoutConfig.videoWidth }}>
                 {powers.map((power, index) => {
                   const isActive = index === activePowerIndex;
@@ -563,8 +664,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
                       }}
                       className="relative rounded-full p-2 md:p-2.5 bg-background/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 cursor-pointer flex-shrink-0"
                       style={{
-                        boxShadow: isActive 
-                          ? `0 0 25px ${power.glowColor}, 0 0 12px ${power.glowColor}` 
+                        boxShadow: isActive
+                          ? `0 0 25px ${power.glowColor}, 0 0 12px ${power.glowColor}`
                           : `0 0 15px ${power.glowColor}`,
                         animation: isActive ? 'pulse-subtle 2s ease-in-out infinite' : 'none',
                         opacity: isActive ? 1 : 0.4
@@ -580,8 +681,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
             </div>
 
             {/* Info Box - ISSUE #6: Removed unused showInfoBox state */}
-            <Card 
-              className="mt-6 p-5 md:p-6 bg-background/95 backdrop-blur-sm border-2" 
+            <Card
+              className="mt-6 p-5 md:p-6 bg-background/95 backdrop-blur-sm border-2"
               data-testid="power-info-box"
               style={{
                 boxShadow: `0 0 0 1px ${powers[activePowerIndex].glowColor}40, 0 4px 20px rgba(0,0,0,0.1)`
