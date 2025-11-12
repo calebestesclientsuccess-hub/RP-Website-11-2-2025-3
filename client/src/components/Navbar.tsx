@@ -11,10 +11,15 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isEnabled: themeToggleEnabled } = useFeatureFlag('theme-toggle');
+  const { isEnabled: themeToggleEnabled, isLoading: themeToggleLoading, isError: themeToggleError } = useFeatureFlag('theme-toggle');
 
-  // Debug logging
-  console.log('Theme toggle enabled:', themeToggleEnabled);
+  // Comprehensive debug logging
+  console.log('=== NAVBAR THEME TOGGLE DEBUG ===');
+  console.log('isEnabled:', themeToggleEnabled);
+  console.log('isLoading:', themeToggleLoading);
+  console.log('isError:', themeToggleError);
+  console.log('typeof isEnabled:', typeof themeToggleEnabled);
+  console.log('================================');
 
   const isActivePath = (path: string) => {
     if (path === "/") return location === "/";
@@ -120,7 +125,13 @@ export function Navbar() {
               </Button>
             </Link>
 
-            {themeToggleEnabled && (
+            {/* Debug: Show loading state */}
+            {themeToggleLoading && (
+              <div className="text-xs text-muted-foreground">Loading...</div>
+            )}
+            
+            {/* Show button if enabled OR if there's an error (fallback to visible) */}
+            {(themeToggleEnabled || themeToggleError) && !themeToggleLoading && (
               <Button
                 size="icon"
                 variant="ghost"
