@@ -224,7 +224,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       current.kill();
     }
 
-    const rotationObj = { value: orbitRotation };
+    // Always start from 270 degrees (fixed starting position)
+    const rotationObj = { value: 270 };
 
     orbitAnimationRef.current = gsap.to(rotationObj, {
       value: 720,
@@ -237,7 +238,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         setAnimationComplete(true);
       }
     });
-  }, [orbitRotation]);
+  }, []); // No dependencies - callback should never recreate during animation
 
   // Start rotation when scrolled into view - single initialization
   useEffect(() => {
