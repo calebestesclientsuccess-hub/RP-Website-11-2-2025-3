@@ -183,6 +183,7 @@ import { useMemo, useCallback } from "react";
 
 export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbitalPowersProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const [hasPlayed, setHasPlayed] = useState(false);
   const orbitAnimationRef = useRef<gsap.core.Tween | null>(null);
   const [orbitRotation, setOrbitRotation] = useState(270);
@@ -241,40 +242,44 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     });
   }, [orbitRotation]);
 
-  // Start rotation on mount - single initialization
+  // Start rotation when title scrolls into view
   useEffect(() => {
     if (prefersReducedMotion()) {
       setAnimationComplete(true);
       return;
     }
 
-    // Use a flag to prevent double initialization
-    let mounted = true;
-    let timeoutId: NodeJS.Timeout;
+    if (!titleRef.current) return;
 
-    const initAnimation = () => {
-      if (!mounted) return;
-
-      // Only start if not already running
-      if (!orbitAnimationRef.current || !orbitAnimationRef.current.isActive()) {
-        startInitialRotation();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasAnimated.current) {
+            hasAnimated.current = true;
+            
+            // Only start if not already running
+            if (!orbitAnimationRef.current || !orbitAnimationRef.current.isActive()) {
+              startInitialRotation();
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.5, // Trigger when 50% of title is visible
+        rootMargin: '0px'
       }
-    };
+    );
 
-    // Small delay to ensure DOM is ready
-    timeoutId = setTimeout(initAnimation, 300);
+    observer.observe(titleRef.current);
 
     return () => {
-      mounted = false;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      observer.disconnect();
       if (orbitAnimationRef.current) {
         orbitAnimationRef.current.kill();
         orbitAnimationRef.current = null;
       }
     };
-  }, []);
+  }, [startInitialRotation]);
 
   // Utility to clear all auto-advance timers
   const clearAutoAdvance = useCallback(() => {
@@ -407,28 +412,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     });
   }, [orbitRotation, animationComplete, layoutConfig]);
 
-  // Initial animation sequence
-  useEffect(() => {
-    if (!hasAnimated.current) {
-      const timers: NodeJS.Timeout[] = [];
-      const sequences = [
-        { delay: 0, action: () => setShowTitle(true) },
-        { delay: 400, action: () => setShowSubtitle(true) },
-        { delay: 800, action: () => setShowDescription(true) },
-        { delay: 1400, action: () => setAnimationComplete(true) }
-      ];
-
-      sequences.forEach(({ delay, action }) => {
-        timers.push(setTimeout(action, delay));
-      });
-
-      hasAnimated.current = true;
-
-      return () => {
-        timers.forEach(timer => clearTimeout(timer));
-      };
-    }
-  }, []);
+  
 
   // Auto-advance logic with proper cleanup
   useEffect(() => {
@@ -527,7 +511,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-5xl md:text-6xl font-bold mb-2">
+            <h2 ref={titleRef} className="text-5xl md:text-6xl font-bold mb-2">
               <span className="gradient-text gradient-hero">The Fullstack Sales Unit</span>
             </h2>
             <p className="text-xl md:text-2xl italic max-w-3xl mx-auto text-muted-foreground">
