@@ -334,13 +334,13 @@ export default function ProblemPage() {
               </p>
               <Button
                 size="lg"
-                variant="secondary"
+                variant="default"
                 className="text-lg px-8 py-6 shadow-lg"
                 data-testid="button-cta-gtm-engine"
                 asChild
               >
                 <Link href="/gtm-engine">
-                  See The GTM Engine <ArrowRight className="w-5 h-5 ml-2" />
+                  See the GTM Engine <ArrowRight className="w-5 h-5 ml-2" />
                 </Link>
               </Button>
 
