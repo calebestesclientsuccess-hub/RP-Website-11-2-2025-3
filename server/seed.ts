@@ -12,7 +12,7 @@ async function seed() {
       excerpt: "Most B2B companies approach GTM like they're assembling IKEA furniture without the instructions. Here's how to build a revenue generation system that compounds over time.",
       content: `# The Complete Guide to Building a GTM Engine That Actually Works
 
-Most B2B companies approach go-to-market like they're assembling IKEA furniture without the instructions. They hire a BDR, buy some software, and hope the pipeline materializes.
+Most B2B companies approach go-to-market like they're assembling IKEA furniture without the instructions. They hire a SDR, buy some software, and hope the pipeline materializes.
 
 It doesn't.
 
@@ -24,7 +24,7 @@ The problem isn't effort—it's architecture. Most teams are optimizing individu
 
 A working GTM engine has three interlocking systems:
 
-1. **Elite Talent**: Not just "a BDR" but someone trained in a repeatable methodology
+1. **Elite Talent**: Not just "an SDR" but someone trained in a repeatable methodology
 2. **Tech Stack**: Integrated tools for data, outreach, and analytics
 3. **Strategic Framework**: Weekly optimization loops that compound results
 
@@ -41,18 +41,18 @@ The difference between companies that win and companies that struggle isn't tale
       published: true,
     },
     {
-      title: "Why Your BDR Isn't Hitting Quota (And It's Not Their Fault)",
+      title: "Why Your SDR Isn't Hitting Quota (And It's Not Their Fault)",
       slug: "why-bdrs-miss-quota",
-      excerpt: "If your BDR is struggling, the problem probably isn't the BDR. It's the invisible infrastructure they need to succeed.",
-      content: `# Why Your BDR Isn't Hitting Quota (And It's Not Their Fault)
+      excerpt: "If your SDR is struggling, the problem probably isn't the SDR. It's the invisible infrastructure they need to succeed.",
+      content: `# Why Your SDR Isn't Hitting Quota (And It's Not Their Fault)
 
-You hired a great BDR. Smart, hungry, coachable. Three months in, they're at 40% of quota and you're wondering what went wrong.
+You hired a great SDR. Smart, hungry, coachable. Three months in, they're at 40% of quota and you're wondering what went wrong.
 
 Here's what actually happened: You asked them to build a house without tools.
 
 ## The Missing Infrastructure
 
-Most companies give their BDRs:
+Most companies give their SDRs:
 - A list (maybe)
 - A CRM login
 - A "just figure it out" mandate
@@ -65,11 +65,11 @@ What they actually need:
 
 ## The Math Problem
 
-A BDR making 50 calls a day with 2% connect rate and 10% conversion gets:
+An SDR making 50 calls a day with 2% connect rate and 10% conversion gets:
 - 1 qualified appointment per day
 - ~20 per month
 
-The same BDR with proper infrastructure:
+The same SDR with proper infrastructure:
 - Better targeting → 5% connect rate  
 - Better messaging → 15% conversion
 - Result: 3.75 appointments per day, 75+ per month
@@ -78,9 +78,9 @@ Same person. Different system.
 
 ## What Actually Works
 
-The companies hitting BDR quotas consistently aren't hiring better. They're architecting better.
+The companies hitting SDR quotas consistently aren't hiring better. They're architecting better.
 
-They deploy BDRs as part of a complete system—talent plus tech plus strategy—not as solo operators hoping to figure it out.`,
+They deploy SDRs as part of a complete system—talent plus tech plus strategy—not as solo operators hoping to figure it out.`,
       author: "Revenue Party Team",
       published: true,
     },
@@ -192,13 +192,13 @@ You'll be responsible for designing systems that generate millions in pipeline f
       active: true,
     },
     {
-      title: "Elite BDR (Client Deployment)",
+      title: "Elite SDR (Client Deployment)",
       department: "Client Success",
       location: "Remote (US)",
       type: "Full-time",
-      description: `We deploy you as part of a Fully Loaded BDR Pod into high-growth B2B companies.
+      description: `We deploy you as part of a Fully Loaded SDR Pod into high-growth B2B companies.
 
-This isn't a typical BDR role. You'll operate as a strategic extension of the client's revenue team, with full infrastructure support from our team.
+This isn't a typical SDR role. You'll operate as a strategic extension of the client's revenue team, with full infrastructure support from our team.
 
 **What makes this different:**
 - You're deployed with complete tech stack (we cover licenses)
@@ -212,7 +212,7 @@ This isn't a typical BDR role. You'll operate as a strategic extension of the cl
 - Collaborate with client sales teams
 - Contribute to playbook development`,
       requirements: `**Required:**
-- 2+ years of B2B sales/BDR experience
+- 2+ years of B2B sales/SDR experience
 - Proven track record of hitting quota
 - Excellent written and verbal communication
 - Self-directed and highly organized
@@ -240,7 +240,7 @@ You'll work on data pipelines, analytics systems, and the tools that help our st
 - Integration systems connecting client tech stacks
 
 **Impact:**
-Your work directly improves the quality of signals we deliver and the performance of deployed BDR Pods.`,
+Your work directly improves the quality of signals we deliver and the performance of deployed SDR Pods.`,
       requirements: `**Required:**
 - 3+ years in revenue operations or data analytics
 - Strong SQL and data manipulation skills

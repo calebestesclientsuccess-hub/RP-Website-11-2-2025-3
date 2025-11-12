@@ -20,7 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const BuildAndRampTimeline = lazy(() => import("@/components/BuildAndRampTimeline"));
 const SimplifiedOrbitalPowers = lazy(() => import("@/components/SimplifiedOrbitalPowers").then(module => ({ default: module.SimplifiedOrbitalPowers })));
 
-const podVideo = "/bdr-pod-video.mp4";
+const podVideo = "/sdr-pod-video.mp4";
 
 import { Helmet } from 'react-helmet-async';
 
@@ -31,7 +31,7 @@ export default function GTMEnginePage() {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": "GTM Engine - Complete Revenue Generation System",
-    "description": "Deploy elite BDR pods with AI-powered systems. Guaranteed 20+ qualified appointments monthly. Own the GTM Engine, not rent headcount.",
+    "description": "Deploy elite SDR pods with AI-powered systems. Guaranteed 20+ qualified appointments monthly. Own the GTM Engine, not rent headcount.",
     "brand": {
       "@type": "Brand",
       "name": "Revenue Party"
@@ -66,7 +66,7 @@ export default function GTMEnginePage() {
       id: 'hierarchy',
       title: 'The Hierarchy of Intention',
       description: '',
-      details: 'Our BDRs are strategic, not tactical. Every email, call, and message has a clear, strategic purpose tied to the "GTM Audit" diagnosis. No "random acts of selling".',
+      details: 'Our SDRs are strategic, not tactical. Every email, call, and message has a clear, strategic purpose tied to the "GTM Audit" diagnosis. No "random acts of selling".',
     },
   ];
 
@@ -74,8 +74,8 @@ export default function GTMEnginePage() {
     <>
       <SEO 
         title="The Fullstack Sales Unit - Your Complete GTM Engine | Revenue Party"
-        description="Deploy elite BDR pods with AI-powered systems. Guaranteed 20+ qualified appointments monthly. Own the GTM Engine, not rent headcount."
-        keywords="GTM Engine, Fullstack Sales Unit, revenue generation system, allbound, sales as a service, Impact Selling OS, Signal Factory, BDR pod, guaranteed sales appointments"
+        description="Deploy elite SDR pods with AI-powered systems. Guaranteed 20+ qualified appointments monthly. Own the GTM Engine, not rent headcount."
+        keywords="GTM Engine, Fullstack Sales Unit, revenue generation system, allbound, sales as a service, Impact Selling OS, Signal Factory, SDR pod, guaranteed sales appointments"
         canonical="/gtm-engine"
       />
 
@@ -178,7 +178,7 @@ export default function GTMEnginePage() {
                   <Badge variant="secondary" className="mb-4">Hardware: Component 1</Badge>
                   <h3 className="text-3xl font-bold mb-3">
                     Elite Talent{" "}
-                    <span className="text-muted-foreground text-2xl">(The "Fully Loaded BDR Pod")</span>
+                    <span className="text-muted-foreground text-2xl">(The "Fully Loaded SDR Pod")</span>
                   </h3>
                   <div className="space-y-4 leading-relaxed mb-6">
                     <p>
