@@ -11,7 +11,7 @@ import { LocalBusinessSchema } from "@/components/schemas/LocalBusinessSchema";
 import VideoSchema from "@/components/VideoSchema";
 import SoftwareApplicationSchema from "@/components/SoftwareApplicationSchema";
 import LeadMagnetHero from "@/components/LeadMagnetHero";
-import TestimonialCarousel from "@/components/TestimonialCarousel";
+import TestimonialCarousel from "@/components/widgets/TestimonialCarousel";
 import { WidgetZone } from "@/components/WidgetZone";
 import { ArrowRight, Users, Target, Zap, ChevronDown } from "lucide-react";
 import { Link } from "wouter";

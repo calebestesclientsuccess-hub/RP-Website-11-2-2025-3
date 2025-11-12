@@ -18,7 +18,7 @@ interface TestimonialCarouselProps {
 
 export default function TestimonialCarousel({ className, theme, size }: TestimonialCarouselProps) {
   const { data: testimonials, isLoading, error } = useQuery<Testimonial[]>({
-    queryKey: ['/api/collections/testimonials'],
+    queryKey: ['/api/testimonials'],
   });
 
   const [emblaRef, emblaApi] = useEmblaCarousel(
