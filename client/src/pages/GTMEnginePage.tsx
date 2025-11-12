@@ -92,6 +92,39 @@ export default function GTMEnginePage() {
 
       {/* Hero Module */}
       <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
+        {/* Animated gradient mesh background - blue-purple theme */}
+        <div className="absolute inset-0 pointer-events-none opacity-60">
+          <div className="gradient-mesh-layer gradient-mesh-slow" style={{
+            background: `
+              radial-gradient(
+                ellipse 800px 400px at 20% 30%,
+                rgba(66, 52, 156, 0.35),
+                transparent 50%
+              ),
+              radial-gradient(
+                ellipse 600px 300px at 80% 70%,
+                rgba(65, 105, 225, 0.35),
+                transparent 50%
+              ),
+              radial-gradient(
+                ellipse 700px 500px at 50% 50%,
+                rgba(138, 43, 226, 0.25),
+                transparent 60%
+              )
+            `,
+            backgroundSize: '200% 200%'
+          }} />
+          <div className="gradient-mesh-layer-secondary gradient-mesh-medium-secondary" style={{
+            background: `linear-gradient(
+              135deg,
+              rgba(66, 52, 156, 0.25) 0%,
+              transparent 30%,
+              transparent 70%,
+              rgba(65, 105, 225, 0.25) 100%
+            )`,
+            backgroundSize: '300% 300%'
+          }} />
+        </div>
         {/* Light grid dots pattern (light mode only) */}
         <div className="light-grid-dots" />
 
@@ -147,8 +180,19 @@ export default function GTMEnginePage() {
       <WidgetZone zone="zone-16" className="my-8" />
 
       {/* Module 1: The "Hardware" & "Software" of Your Asset */}
-      <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-asset-components">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30 overflow-hidden" data-testid="section-asset-components">
+        {/* Subtle gradient mesh for depth */}
+        <div className="absolute inset-0 pointer-events-none opacity-40">
+          <div className="gradient-mesh-layer gradient-mesh-slow" style={{
+            background: `radial-gradient(
+              ellipse 600px 400px at 80% 20%,
+              rgba(65, 105, 225, 0.25),
+              transparent 60%
+            )`,
+            backgroundSize: '200% 200%'
+          }} />
+        </div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-asset-components">
               What You Get: The 3 Core Components of<br />
@@ -161,7 +205,7 @@ export default function GTMEnginePage() {
 
           {/* Component 1: Elite Talent */}
           <div className="mb-16">
-            <Card className="p-8 md:p-12 light-depth hover-elevate transition-all" data-testid="card-elite-talent">
+            <Card className="p-8 md:p-12 light-depth light-trickle-diagonal hover-elevate transition-all" data-testid="card-elite-talent">
               <div className="flex flex-col md:flex-row gap-8 items-start">
                 <div className="flex-shrink-0">
                   <div 
@@ -200,7 +244,7 @@ export default function GTMEnginePage() {
 
           {/* Component 2: The Signal Factory */}
           <div className="mb-16">
-            <Card className="p-8 md:p-12 hover-elevate transition-all" data-testid="card-signal-factory">
+            <Card className="p-8 md:p-12 light-trickle-corner hover-elevate transition-all" data-testid="card-signal-factory">
               <div className="flex flex-col md:flex-row gap-8 items-start">
                 <div className="flex-shrink-0">
                   <div 
@@ -239,7 +283,7 @@ export default function GTMEnginePage() {
 
           {/* Component 3: Strategic Framework (Impact Selling OS) */}
           <div className="mb-16">
-            <Card className="p-8 md:p-12 hover-elevate transition-all" data-testid="card-impact-selling-os">
+            <Card className="p-8 md:p-12 light-trickle-top hover-elevate transition-all" data-testid="card-impact-selling-os">
               <div className="flex flex-col md:flex-row gap-8 items-start">
                 <div className="flex-shrink-0">
                   <div 
@@ -304,8 +348,19 @@ export default function GTMEnginePage() {
       <WidgetZone zone="zone-17" className="my-8" />
 
       {/* Module 2: The 4-Month "Build & Ramp" Process */}
-      <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-build-ramp">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden" data-testid="section-build-ramp">
+        {/* Gradient mesh background */}
+        <div className="absolute inset-0 pointer-events-none opacity-50">
+          <div className="gradient-mesh-layer gradient-mesh-medium" style={{
+            background: `radial-gradient(
+              ellipse 700px 500px at 30% 50%,
+              rgba(138, 43, 226, 0.3),
+              transparent 60%
+            )`,
+            backgroundSize: '200% 200%'
+          }} />
+        </div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-build-ramp">
               The 4-Month<br />
@@ -342,8 +397,19 @@ export default function GTMEnginePage() {
       <WidgetZone zone="zone-18" className="my-8" />
 
       {/* Module 3: The "Anti-Risk" Safety Net */}
-      <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-anti-risk">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30 overflow-hidden" data-testid="section-anti-risk">
+        {/* Gradient mesh background */}
+        <div className="absolute inset-0 pointer-events-none opacity-45">
+          <div className="gradient-mesh-layer gradient-mesh-slow" style={{
+            background: `radial-gradient(
+              ellipse 600px 400px at 70% 40%,
+              rgba(66, 52, 156, 0.28),
+              transparent 60%
+            )`,
+            backgroundSize: '200% 200%'
+          }} />
+        </div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-anti-risk">
               The System is the Asset,<br />
@@ -435,8 +501,26 @@ export default function GTMEnginePage() {
       <WidgetZone zone="zone-19" className="my-8" />
 
       {/* Primary CTA Module */}
-      <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-cta">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden" data-testid="section-cta">
+        {/* Final gradient mesh climax */}
+        <div className="absolute inset-0 pointer-events-none opacity-55">
+          <div className="gradient-mesh-layer gradient-mesh-medium" style={{
+            background: `
+              radial-gradient(
+                ellipse 800px 600px at 50% 50%,
+                rgba(65, 105, 225, 0.32),
+                transparent 70%
+              ),
+              radial-gradient(
+                ellipse 600px 400px at 80% 80%,
+                rgba(138, 43, 226, 0.25),
+                transparent 60%
+              )
+            `,
+            backgroundSize: '200% 200%'
+          }} />
+        </div>
+        <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-cta">
             See the Results<br />
             <span className="gradient-text gradient-hero">This Engine Produces</span>
