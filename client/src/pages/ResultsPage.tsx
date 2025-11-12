@@ -4,15 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { Star, TrendingUp, Shield, Award, CheckCircle2, XCircle } from "lucide-react";
+import { Star, TrendingUp, Shield, Award } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
 
@@ -46,21 +40,7 @@ export default function ResultsPage() {
     },
   ];
 
-  const caseStudies = [
-    {
-      id: "case-1",
-      title: "CASE STUDY: How [Client X] Escaped the '$198,000 Mistake' and Built a $2M Pipeline Asset.",
-      industry: "B2B SaaS",
-      model: "Series A",
-      problem: "[Client X] was stuck in the 'Hiring Drag.' They had hired and fired two internal SDRs in 9 months, burning over $150k with nothing to show for it.",
-      solution: "Our GTM Audit revealed a system problem. We deployed a GTM Engine. For roughly the same annual cost as one of their failed hires, we deployed a full BDR Pod, the Signal Factory, and their 'Impact Selling OS'—all in 14 days.",
-      results: [
-        "20-25 BANT-qualified appointments every month.",
-        "$2M in qualified pipeline in the first 60 days.",
-        "An effective CPL of <$750, dropping to <$300 as the system scaled.",
-      ],
-    },
-  ];
+  
 
   return (
     <>
@@ -233,132 +213,85 @@ export default function ResultsPage() {
           </div>
         </section>
 
-        {/* Featured Case Studies Module */}
-        <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-case-studies">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-case-studies">
-                The Antidotes:<br />
-                <span className="gradient-text gradient-hero">How We Fix the Traps</span>
-              </h2>
-              <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-case-studies-description">
-                Our clients come to us from one of two failed models. Here's how we build their solution.
-              </p>
-            </div>
-
-            <div className="space-y-8 max-w-5xl mx-auto">
-              <Accordion type="single" collapsible className="space-y-6">
-                {caseStudies.map((study, index) => (
-                  <AccordionItem
-                    key={study.id}
-                    value={study.id}
-                    className="border-none"
-                  >
-                    <Card className="overflow-hidden" data-testid={`card-case-study-${index + 1}`}>
-                      <AccordionTrigger className="px-8 py-6 hover:no-underline hover-elevate [&[data-state=open]]:pb-4">
-                        <div className="flex flex-col items-start text-left space-y-4 flex-1 pr-4">
-                          <div className="flex flex-wrap gap-2">
-                            <Badge variant="secondary" data-testid={`badge-industry-${index + 1}`}>
-                              {study.industry}
-                            </Badge>
-                            <Badge variant="secondary" data-testid={`badge-model-${index + 1}`}>
-                              {study.model}
-                            </Badge>
-                          </div>
-                          <h3 className="text-2xl font-bold" data-testid={`heading-case-study-${index + 1}`}>
-                            {study.title}
-                          </h3>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-8 pb-8">
-                        <div className="space-y-6 pt-4">
-                          {/* The Problem */}
-                          <div className="space-y-3">
-                            <div className="flex items-start gap-3">
-                              <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-1" />
-                              <div>
-                                <h4 className="font-bold text-lg mb-2">The Problem (The "Hiring Drag")</h4>
-                                <p className="text-muted-foreground leading-relaxed" data-testid={`text-problem-${index + 1}`}>
-                                  {study.problem}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* The Solution */}
-                          <div className="space-y-3">
-                            <div className="flex items-start gap-3">
-                              <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                              <div>
-                                <h4 className="font-bold text-lg mb-2">The Solution (The "GTM Engine" Antidote)</h4>
-                                <p className="text-muted-foreground leading-relaxed" data-testid={`text-solution-${index + 1}`}>
-                                  {study.solution}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* The Results */}
-                          <div className="space-y-3">
-                            <div className="flex items-start gap-3">
-                              <Award className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                              <div>
-                                <h4 className="font-bold text-lg mb-2">The Results (The Asset)</h4>
-                                <ul className="space-y-2 text-muted-foreground leading-relaxed" data-testid={`list-results-${index + 1}`}>
-                                  {study.results.map((result, resultIndex) => (
-                                    <li key={resultIndex} className="flex items-start gap-2">
-                                      <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-1" />
-                                      <span>{result}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </AccordionContent>
-                    </Card>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
-          </div>
-        </section>
+        
 
         {/* Testimonial Wall Module */}
         <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-testimonials">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-16">
+            <motion.div 
+              className="text-center mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-testimonials">
                 Don't Just Take<br />
                 <span className="gradient-text gradient-hero">Our Word For It</span>
               </h2>
-            </div>
+            </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
+            <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+              {testimonials.slice(0, 4).map((testimonial, index) => (
                 <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  key={testimonial.id}
+                  initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ 
+                    duration: 0.7, 
+                    delay: index * 0.15,
+                    ease: [0.21, 0.45, 0.27, 0.9]
+                  }}
                 >
-                  <Card className="p-8 hover-elevate transition-all h-full flex flex-col" data-testid={`card-testimonial-${index + 1}`}>
+                  <Card className="p-10 hover-elevate transition-all h-full flex flex-col backdrop-blur-sm bg-background/80" data-testid={`card-testimonial-${index + 1}`}>
                     {/* Star Rating */}
-                    <div className="flex gap-1 mb-6" data-testid={`stars-testimonial-${index + 1}`}>
+                    <motion.div 
+                      className="flex gap-1 mb-8" 
+                      data-testid={`stars-testimonial-${index + 1}`}
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: index * 0.15 + 0.2 }}
+                    >
                       {Array.from({ length: testimonial.rating }).map((_, i) => (
                         <Star
                           key={i}
                           className="w-5 h-5 fill-primary text-primary"
                         />
                       ))}
-                    </div>
+                    </motion.div>
 
                     {/* Quote */}
-                    <blockquote className="text-muted-foreground leading-relaxed flex-1" data-testid={`quote-testimonial-${index + 1}`}>
+                    <motion.blockquote 
+                      className="text-lg text-muted-foreground leading-relaxed flex-1 mb-8" 
+                      data-testid={`quote-testimonial-${index + 1}`}
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: index * 0.15 + 0.3 }}
+                    >
                       "{testimonial.quote}"
-                    </blockquote>
+                    </motion.blockquote>
+
+                    {/* Author Info */}
+                    <motion.div 
+                      className="border-t border-border/50 pt-6"
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: index * 0.15 + 0.4 }}
+                    >
+                      <p className="font-bold text-xl mb-1" data-testid={`name-testimonial-${index + 1}`}>
+                        {testimonial.name}
+                      </p>
+                      <p className="text-base text-muted-foreground mb-1" data-testid={`title-testimonial-${index + 1}`}>
+                        {testimonial.title}
+                      </p>
+                      <p className="text-base font-semibold gradient-text gradient-hero" data-testid={`company-testimonial-${index + 1}`}>
+                        {testimonial.company}
+                      </p>
+                    </motion.div>
                   </Card>
                 </motion.div>
               ))}
