@@ -1841,6 +1841,16 @@ nav,
   }
 }
 
+/* Subtle pulse for icons - mobile-friendly */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* Light scanning effect for progress bars */
 @keyframes light-scan {
   0% {

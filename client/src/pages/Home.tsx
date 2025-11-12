@@ -274,9 +274,9 @@ export default function Home() {
                 {/* Icon with coordinated glow */}
                 <div className="mb-6 flex justify-center">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-rose-600/20 rounded-full blur-xl group-hover:bg-rose-600/30 transition-all duration-300" />
+                    <div className="absolute inset-0 bg-rose-600/20 rounded-full blur-xl group-hover:bg-rose-600/30 transition-all duration-300 animate-pulse-subtle" />
                     <div className="relative bg-rose-600/10 p-4 rounded-full border border-rose-600/30 group-hover:border-rose-600/50 transition-all duration-300">
-                      <Users className="w-8 h-8 text-rose-600" />
+                      <Users className="w-8 h-8 text-rose-600 transition-transform duration-300 group-hover:scale-110" />
                     </div>
                   </div>
                 </div>
@@ -355,9 +355,9 @@ export default function Home() {
                 {/* Icon with coordinated glow */}
                 <div className="mb-6 flex justify-center">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-xl group-hover:bg-indigo-500/30 transition-all duration-300" />
+                    <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-xl group-hover:bg-indigo-500/30 transition-all duration-300 animate-pulse-subtle" style={{ animationDelay: '0.2s' }} />
                     <div className="relative bg-indigo-500/10 p-4 rounded-full border border-indigo-500/30 group-hover:border-indigo-500/50 transition-all duration-300">
-                      <Target className="w-8 h-8 text-indigo-500" />
+                      <Target className="w-8 h-8 text-indigo-500 transition-transform duration-300 group-hover:scale-110" />
                     </div>
                   </div>
                 </div>
@@ -436,9 +436,9 @@ export default function Home() {
                 {/* Icon with coordinated glow */}
                 <div className="mb-6 flex justify-center">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl group-hover:bg-emerald-500/30 transition-all duration-300" />
+                    <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl group-hover:bg-emerald-500/30 transition-all duration-300 animate-pulse-subtle" style={{ animationDelay: '0.4s' }} />
                     <div className="relative bg-emerald-500/10 p-4 rounded-full border border-emerald-500/30 group-hover:border-emerald-500/50 transition-all duration-300">
-                      <Zap className="w-8 h-8 text-emerald-500" />
+                      <Zap className="w-8 h-8 text-emerald-500 transition-transform duration-300 group-hover:scale-110" />
                     </div>
                   </div>
                 </div>
