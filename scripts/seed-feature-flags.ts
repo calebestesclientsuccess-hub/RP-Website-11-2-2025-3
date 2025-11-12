@@ -15,6 +15,13 @@ async function seedFeatureFlags() {
         description: "Show/hide the playbook lead magnet on the home page",
         enabled: true,
       },
+      {
+        tenantId: DEFAULT_TENANT_ID,
+        flagKey: "theme-toggle",
+        flagName: "Theme Toggle Button",
+        description: "Show/hide the light/dark mode theme toggle button",
+        enabled: true,
+      },
     ]).onConflictDoNothing();
 
     console.log("Feature flags seeded successfully!");

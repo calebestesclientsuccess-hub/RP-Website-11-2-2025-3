@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Moon, Sun, Menu, X } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { Button } from "@/components/ui/button";
+import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import logoWhite from "@assets/rev-white_1760952720792.png";
 import logoBlack from "@assets/Revenueparty-logo-black_1762982410867.png";
 
@@ -10,6 +11,7 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isEnabled: themeToggleEnabled } = useFeatureFlag('theme-toggle');
 
   const isActivePath = (path: string) => {
     if (path === "/") return location === "/";
@@ -115,19 +117,21 @@ export function Navbar() {
               </Button>
             </Link>
 
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              data-testid="button-theme-toggle"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
+            {themeToggleEnabled && (
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                data-testid="button-theme-toggle"
+                aria-label="Toggle theme"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </Button>
+            )}
 
             {/* Mobile Menu Toggle */}
             <Button
