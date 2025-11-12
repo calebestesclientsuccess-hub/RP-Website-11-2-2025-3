@@ -343,37 +343,6 @@ export default function ProblemPage() {
                   See the GTM Engine <ArrowRight className="w-5 h-5 ml-2" />
                 </Link>
               </Button>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center"
-              >
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="text-base px-6 py-5"
-                  data-testid="button-read-manifesto"
-                  asChild
-                >
-                  <Link href="/blog/manifesto-the-lone-wolf-trap">
-                    Read the Manifesto: The Lone Wolf Trap
-                  </Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="text-base px-6 py-5"
-                  data-testid="button-view-sdr-guide"
-                  asChild
-                >
-                  <Link href="/resources/how-to-build-sdr-team-guide">
-                    Guide: How to Build an SDR Team
-                  </Link>
-                </Button>
-              </motion.div>
             </motion.div>
           </div>
         </section>
