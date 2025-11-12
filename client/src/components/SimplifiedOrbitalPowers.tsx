@@ -242,6 +242,34 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     });
   }, [orbitRotation]);
 
+  // Initial animation sequence - trigger on mount
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      setAnimationComplete(true);
+      return;
+    }
+
+    if (!hasAnimated.current) {
+      const timers: NodeJS.Timeout[] = [];
+      const sequences = [
+        { delay: 0, action: () => setShowTitle(true) },
+        { delay: 400, action: () => setShowSubtitle(true) },
+        { delay: 800, action: () => setShowDescription(true) },
+        { delay: 1400, action: () => setAnimationComplete(true) }
+      ];
+
+      sequences.forEach(({ delay, action }) => {
+        timers.push(setTimeout(action, delay));
+      });
+
+      hasAnimated.current = true;
+
+      return () => {
+        timers.forEach(timer => clearTimeout(timer));
+      };
+    }
+  }, []);
+
   // Start rotation when title scrolls into view
   useEffect(() => {
     if (prefersReducedMotion()) {
@@ -254,9 +282,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasAnimated.current) {
-            hasAnimated.current = true;
-            
+          if (entry.isIntersecting) {
             // Only start if not already running
             if (!orbitAnimationRef.current || !orbitAnimationRef.current.isActive()) {
               startInitialRotation();
@@ -265,7 +291,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         });
       },
       {
-        threshold: 0.5, // Trigger when 50% of title is visible
+        threshold: 0.3, // Trigger when 30% of title is visible
         rootMargin: '0px'
       }
     );
