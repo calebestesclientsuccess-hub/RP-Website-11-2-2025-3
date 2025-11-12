@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { StaticGradientBg } from "@/components/StaticGradientBg";
 import { HeroROICalculator } from "@/components/HeroROICalculator";
 import SimpleBridgeSection from "@/components/SimpleBridgeSection";
-import { SimplifiedOrbitalPowers } from "@/components/SimplifiedOrbitalPowers";
 import { SEO } from "@/components/SEO";
 import { ServiceSchema } from "@/components/ServiceSchema";
 import { LocalBusinessSchema } from "@/components/schemas/LocalBusinessSchema";
@@ -15,10 +14,14 @@ import TestimonialCarousel from "@/components/widgets/TestimonialCarousel";
 import { WidgetZone } from "@/components/WidgetZone";
 import { ArrowRight, Users, Target, Zap, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils"; // Assuming cn utility is available
 import { InternalHireCostCalculator } from "@/components/InternalHireCostCalculator";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load GSAP-heavy animation component
+const SimplifiedOrbitalPowers = lazy(() => import("@/components/SimplifiedOrbitalPowers").then(module => ({ default: module.SimplifiedOrbitalPowers })));
 
 // Video is served from public directory
 const podVideo = "/bdr-pod-video.mp4";
@@ -488,7 +491,14 @@ export default function Home() {
 
           {/* Video Showcase - Seamlessly Integrated */}
           <div className="mt-24">
-            <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
+            <Suspense fallback={
+              <div className="flex flex-col items-center justify-center min-h-[600px] gap-4" data-testid="loading-orbital-powers">
+                <Skeleton className="h-96 w-full max-w-4xl rounded-lg" />
+                <Skeleton className="h-8 w-64" />
+              </div>
+            }>
+              <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
+            </Suspense>
           </div>
 
           {/* CTA */}

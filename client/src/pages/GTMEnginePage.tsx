@@ -9,13 +9,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import BuildAndRampTimeline from "@/components/BuildAndRampTimeline";
-import { SimplifiedOrbitalPowers } from "@/components/SimplifiedOrbitalPowers";
 import { WidgetZone } from "@/components/WidgetZone";
 import { Users, Brain, BookOpen, Shield, Zap, CheckCircle2, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { useRef } from "react";
+import { useRef, lazy, Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load GSAP-heavy components
+const BuildAndRampTimeline = lazy(() => import("@/components/BuildAndRampTimeline"));
+const SimplifiedOrbitalPowers = lazy(() => import("@/components/SimplifiedOrbitalPowers").then(module => ({ default: module.SimplifiedOrbitalPowers })));
 
 const podVideo = "/bdr-pod-video.mp4";
 
@@ -131,7 +134,14 @@ export default function GTMEnginePage() {
       </section>
 
       {/* Your Fullstack Sales Unit - The Product Reveal */}
-      <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
+      <Suspense fallback={
+        <div className="flex flex-col items-center justify-center min-h-[600px] gap-4">
+          <Skeleton className="h-96 w-full max-w-4xl rounded-lg" />
+          <Skeleton className="h-8 w-64" />
+        </div>
+      }>
+        <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
+      </Suspense>
 
       {/* Widget Zone 16 */}
       <WidgetZone zone="zone-16" className="my-8" />
@@ -306,7 +316,13 @@ export default function GTMEnginePage() {
             </p>
           </div>
 
-          <BuildAndRampTimeline />
+          <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[400px]">
+              <Skeleton className="h-80 w-full max-w-6xl rounded-lg" />
+            </div>
+          }>
+            <BuildAndRampTimeline />
+          </Suspense>
 
           <div className="text-center mt-12">
             <Card className="p-8 bg-primary/5 border-2 border-primary max-w-2xl mx-auto">
