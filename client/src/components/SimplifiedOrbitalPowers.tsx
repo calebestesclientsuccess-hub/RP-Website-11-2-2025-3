@@ -337,9 +337,9 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
       return;
     }
 
-    // Use GSAP's delayedCall for consistent cross-browser timing
-    // Safari needs ~0.3s after animation completes to paint the DOM
-    const delayedInit = gsap.delayedCall(0.3, () => {
+    // Safari needs significantly more time than Chrome/Comet to paint the DOM
+    // Use a longer delay and multiple refresh passes for Safari's rendering pipeline
+    const delayedInit = gsap.delayedCall(0.6, () => {
       const ctx = gsap.context(() => {
         // Set initial states
         gsap.set(icons, {
@@ -364,8 +364,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
           });
         });
 
-        // Final refresh after all animations are set up
+        // Safari-specific: Double refresh with RAF to ensure paint completion
         ScrollTrigger.refresh();
+        requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+        });
       }, sectionRef);
 
       return ctx;
