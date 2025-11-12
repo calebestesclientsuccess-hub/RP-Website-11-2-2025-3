@@ -12,10 +12,12 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { trackEvent } from "@/lib/trackEvent";
-import { useCampaigns } from "@/lib/campaignCache";
+import { useCampaigns, getCampaignsCacheKey, getTenantId } from "@/lib/campaignCache";
+import { filterCampaigns, getZoneFallback } from "@/lib/filterCampaigns";
 import type { Campaign, CalculatorConfig, FormConfig, SeoMetadata } from "@shared/schema";
 import { cn } from "@/lib/utils";
 import { PopupEngine } from "./PopupEngine";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface WidgetZoneProps {
   zone: string;
@@ -102,6 +104,33 @@ const getDisplaySizeClasses = (displaySize?: string | null): string => {
   }
 };
 
+// Widget skeleton component - matches display size and minHeight to prevent layout shift
+function WidgetSkeleton({ 
+  displaySize, 
+  minHeight,
+  className 
+}: { 
+  displaySize?: string | null; 
+  minHeight?: string;
+  className?: string;
+}) {
+  const displaySizeClasses = getDisplaySizeClasses(displaySize);
+  
+  // Render a generic skeleton that doesn't assume widget type
+  // This prevents layout shift while being minimal and fast
+  return (
+    <div 
+      className={`${displaySizeClasses} ${className || ''}`}
+      style={{ minHeight }}
+      data-testid="widget-skeleton"
+    >
+      <Skeleton className="h-8 w-3/4 mb-4" />
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-10 w-1/2 mt-4" />
+    </div>
+  );
+}
+
 export function WidgetZone({ zone, className }: WidgetZoneProps) {
   const [location] = useLocation();
   const { toast } = useToast();
@@ -122,6 +151,37 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
   // Get the first matching campaign (or null if none)
   const campaign = allCampaigns?.[0] || null;
 
+  // Derive display size and minHeight from multiple sources (priority order):
+  // 1. Live campaign data (if available)
+  // 2. Cached campaign data (read synchronously)
+  // 3. Zone fallback metadata (deterministic defaults)
+  let displaySize: string | null = campaign?.displaySize ?? null;
+  let minHeight: string | undefined = undefined;
+  
+  // If no campaign loaded yet, try to read from cache synchronously
+  if (!displaySize && isLoading) {
+    const tenantId = getTenantId();
+    const cacheKey = getCampaignsCacheKey(tenantId);
+    const cachedCampaigns = queryClient.getQueryData<Campaign[]>(cacheKey);
+    
+    // Find matching campaign from cache using shared filtering logic
+    if (cachedCampaigns) {
+      const filtered = filterCampaigns(cachedCampaigns, {
+        zone,
+        pageNames,
+        displayAs: "inline",
+      });
+      const cached = filtered[0];
+      displaySize = cached?.displaySize ?? null;
+    }
+  }
+  
+  // Final fallback to zone metadata if no campaign found
+  if (!displaySize) {
+    const fallback = getZoneFallback(zone);
+    displaySize = fallback.displaySize;
+    minHeight = fallback.minHeight;
+  }
 
   // Track campaign_viewed event when campaign is loaded
   // IMPORTANT: This must be called before any conditional returns (Rules of Hooks)
@@ -135,9 +195,9 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
     }
   }, [campaign?.id, zone, currentPage, campaign?.contentType]);
 
-  // Handle loading state - return null (invisible)
+  // Handle loading state - show skeleton with deterministic dimensions to prevent layout shift
   if (isLoading) {
-    return null;
+    return <WidgetSkeleton displaySize={displaySize} minHeight={minHeight} className={className} />;
   }
 
   // Handle error state - log and return null (fail silently)
@@ -344,8 +404,8 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
   }
 
   // Get display size CSS classes based on campaign.displaySize
-  console.log(`[WidgetZone] Campaign displaySize:`, campaign.displaySize, `for campaign:`, campaign.campaignName);
-  const displaySizeClasses = getDisplaySizeClasses(campaign.displaySize);
+  console.log(`[WidgetZone] Campaign displaySize:`, displaySize, `for campaign:`, campaign.campaignName);
+  const displaySizeClasses = getDisplaySizeClasses(displaySize);
 
   return (
     <>

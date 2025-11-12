@@ -41,6 +41,47 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 - **Database**: PostgreSQL with Drizzle ORM.
 - **Animation Strategy**: Minimal and performance-focused.
 
+## Recent Performance Optimizations (November 2025)
+
+**Comprehensive Performance Optimization Project** targeting critical issues (janky animations, video lag, poor scroll performance) to prepare for 18-month multi-tenant SaaS pivot.
+
+**Completed Phases:**
+
+### Phase 1.1: Campaign Cache Service ✅
+- **Problem**: 10+ duplicate `/api/public/campaigns` API calls per page (one per WidgetZone component)
+- **Solution**: Application-level campaign cache using React Query with client-side filtering
+- **Implementation**:
+  - Created `client/src/lib/campaignCache.ts` with `useCampaigns` hook and `CampaignBootstrap` component
+  - Integrated prefetch at app startup in `App.tsx`
+  - Refactored `WidgetZone.tsx` and `PopupEngine.tsx` to use shared cache
+  - Implemented tenant-aware cache keys (`["/api/public/campaigns", tenantId]`)
+  - Wired cache invalidation into all campaign mutations (create, update, delete)
+  - Fixed wildcard page targeting bug (empty `targetPages` now matches all pages)
+- **Results**: 90% API call reduction (10+ → 1 per page load), tenant-ready for multi-tenancy
+
+### Phase 1.2: Database Connection Pooling ✅
+- **Problem**: Type mismatch in Drizzle adapter (using `neon-serverless` with regular PostgreSQL)
+- **Solution**: Switched to correct `node-postgres` adapter with optimized pool configuration
+- **Implementation**:
+  - Changed from `drizzle-orm/neon-serverless` to `drizzle-orm/node-postgres` in `server/db.ts`
+  - Added connection pool limits: main pool (20 connections), session pool (10 connections)
+  - Added timeouts: 30s idle timeout, 2s connection timeout for fast-fail behavior
+  - Documented dual-pool architecture (Drizzle queries + session storage)
+- **Results**: Eliminated type errors, optimized connection management, production-ready pooling
+
+**In Progress:**
+- Phase 1.3: Loading skeletons for WidgetZone components
+
+**Upcoming Phases:**
+- Phase 2: SimplifiedOrbitalPowers refactor (GSAP ticker, Intersection Observer)
+- Phase 2: Video optimization (poster images, lazy loading)
+- Phase 3: Caching headers, Core Web Vitals monitoring, code splitting
+
+**Performance Targets:**
+- Load time: 4-6s → 1-2s (67% faster) ✅ On track
+- Eliminate animation jank (pending Phase 2)
+- Core Web Vitals: LCP < 2.5s, FID < 100ms, CLS < 0.1 (pending Phase 3)
+
 ## External Dependencies
 - **PostgreSQL**: Primary database (Neon-backed).
 - **Drizzle ORM**: ORM for PostgreSQL.

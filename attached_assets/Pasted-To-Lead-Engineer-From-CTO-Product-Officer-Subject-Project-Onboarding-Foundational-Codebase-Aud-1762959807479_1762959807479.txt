@@ -1,0 +1,67 @@
+To: Lead Engineer From: CTO & Product Officer Subject: Project Onboarding: Foundational Codebase Audit & Engineering Charter
+
+Welcome to the team.
+
+Your first and most critical task is to conduct a comprehensive, read-only audit of our entire application.
+
+Your analysis will form the foundation for all subsequent development, refactoring, and feature work. The goal is to eliminate the "shallow answers" and establish a deep, shared understanding of the codebase's current state and strategic goals.
+
+This isn't just a bug hunt. You are to produce our 'Engineering Charter'—a foundational document that will govern all future engineering and product decisions in this thread.
+
+Part 1: The Business & Product Context
+Before any analysis, internalize our mission. All your recommendations must align with these two directives.
+
+Product Purpose: [e.g., "This is a B2B SaaS platform for managing sales pipelines and automating GTM motions."]
+
+Strategic Business Plan: [e.g., "Our 18-month roadmap includes a pivot to a multi-tenant architecture. We are not building it now, but all current and future engineering work must actively prepare for this pivot. We cannot afford to refactor our entire-app logic when the time comes."]
+
+Part 2: Current-State Technical Audit
+We have immediate concerns that are impacting user experience and our GTM (Go-to-Market) strategy. We need a full baseline report.
+
+Performance & UX Audit: The whole thing looks beautiful, but it's not running well. We're experiencing janky movement and inconsistent animation.
+
+Action: Conduct a full audit of all animations, paying special attention to the "fullstack sales unit 'flying icon'" animation.
+
+Deliverable: A report identifying the root causes of all jank, layout shifts, and performance bottlenecks.
+
+GTM / SEO Audit: Our product's discoverability is key. We need to know where we stand.
+
+Action: Conduct a comprehensive audit of the current state of our technical SEO implementation.
+
+Deliverable: A "State of SEO" report.
+
+Part 3: Future-State & Architectural Analysis
+This is the CTO's primary concern. We must build for the future, not just for today.
+
+Multi-Tenancy Readiness (Research Question):
+
+Action: Based on our strategic plan (Part 1, Point 2), answer this research question: How much of the work to support multi-tenancy have we already completed?
+
+Deliverable: A report answering (a) What, if anything, will have to be redone? and (b) What new architectural rules must we follow starting today to continue preparing for this?
+
+Latent Feature Audit (CMS/CRM):
+
+Action: The codebase contains significant CMS and CRM features that are not yet exposed to the UI (e.g., the global styling logic).
+
+Deliverable: An audit of these "hidden" features, assessing their readiness to be exposed and any dependencies we need to be aware of.
+
+Final Deliverable: The 'Engineering Charter'
+Once your 7-part analysis is complete, you will synthesize all findings into a single, comprehensive markdown file: ENGINEERING_CHARTER.md.
+
+This document will be our single source of truth and must include:
+
+A high-level summary of the app's condition (Code Health, Performance, Architectural Readiness).
+
+A list of all identified technical debt and immediate performance risks.
+
+The "Developer's Rulebook": A complete, consolidated list of all rules—synthesized from your findings—that we (you and I) must follow for all future work. This must include:
+
+The "SEO Rulebook" (Your original Point 4)
+
+The "Performance & Animation Rulebook"
+
+The "Multi-Tenancy Rulebook"
+
+This foundational work is critical. We are trusting you to go deep and set the architectural standard for this entire project.
+
+We look forward to your analysis.

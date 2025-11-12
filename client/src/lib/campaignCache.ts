@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, type ReactNode } from "react";
 import type { Campaign } from "@shared/schema";
+import { filterCampaigns } from "./filterCampaigns";
 
 /**
  * Default tenant ID - will be replaced with actual tenant resolution in multi-tenant implementation
@@ -79,51 +80,13 @@ export function useCampaigns({
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
-  // Filter campaigns client-side based on criteria
-  const filteredCampaigns = allCampaigns?.filter((campaign) => {
-    // Filter by displayAs if specified
-    if (displayAs && campaign.displayAs !== displayAs) {
-      return false;
-    }
-
-    // Filter by zone if specified (for inline campaigns)
-    if (zone && campaign.targetZone !== zone) {
-      return false;
-    }
-
-    // Filter by page names if specified
-    // IMPORTANT: If targetPages is empty or null, campaign targets ALL pages (wildcard)
-    if (pageNames && pageNames.length > 0) {
-      // If targetPages is empty or null, campaign targets all pages
-      if (!campaign.targetPages || campaign.targetPages.length === 0) {
-        // Match all pages (wildcard behavior - same as server)
-      } else {
-        // Check if any of the current page names match the campaign's target pages
-        const hasMatchingPage = campaign.targetPages.some((targetPage) =>
-          pageNames.includes(targetPage)
-        );
-        if (!hasMatchingPage) {
-          return false;
-        }
-      }
-    }
-
-    // Only include active campaigns
-    if (!campaign.isActive) {
-      return false;
-    }
-
-    // Check date range if specified
-    const now = new Date();
-    if (campaign.startDate && new Date(campaign.startDate) > now) {
-      return false;
-    }
-    if (campaign.endDate && new Date(campaign.endDate) < now) {
-      return false;
-    }
-
-    return true;
-  });
+  // Filter campaigns client-side using shared filtering logic
+  // This ensures WidgetZone skeleton and useCampaigns use identical filtering
+  const filteredCampaigns = allCampaigns ? filterCampaigns(allCampaigns, {
+    zone,
+    pageNames,
+    displayAs,
+  }) : [];
 
   return {
     campaigns: filteredCampaigns || [],
