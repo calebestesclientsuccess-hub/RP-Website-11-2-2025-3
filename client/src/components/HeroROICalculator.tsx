@@ -12,21 +12,19 @@ interface HeroROICalculatorProps {
 export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps) {
   const [ltv, setLtv] = useState([120000]);
   const [closeRate, setCloseRate] = useState([25]);
-  const [monthlyInvestment, setMonthlyInvestment] = useState([15000]);
   const [, setLocation] = useLocation();
 
-  // Calculate guaranteed meetings based on investment
-  // Base: $15K = 20 meetings, each additional $7.5K = +10 meetings
-  const investmentIncrement = (monthlyInvestment[0] - 15000) / 7500;
-  const guaranteedSQOs = 20 + (investmentIncrement * 10);
+  // Locked to 2-SDR defaults
+  const monthlyInvestment = 15000;
+  const guaranteedSQOs = 20;
   
   // Annual calculations (11 months, excluding December for training)
-  const annualInvestment = monthlyInvestment[0] * 12;
-  const annualSQOs = guaranteedSQOs * 11; // Dynamic: monthly meetings × 11 months
+  const annualInvestment = monthlyInvestment * 12;
+  const annualSQOs = guaranteedSQOs * 11; // 20 meetings × 11 months = 220
 
   const closedDealsPerMonth = guaranteedSQOs * (closeRate[0] / 100);
   const projectedLTVPerMonth = closedDealsPerMonth * ltv[0];
-  const roi = projectedLTVPerMonth / monthlyInvestment[0];
+  const roi = projectedLTVPerMonth / monthlyInvestment;
   
   const closedDealsPerYear = annualSQOs * (closeRate[0] / 100);
   const projectedLTVPerYear = closedDealsPerYear * ltv[0];
@@ -68,24 +66,6 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
         </div>
 
         <div className="space-y-3">
-          {/* Investment Slider */}
-          <div>
-            <div className="flex justify-between mb-1.5">
-              <label className="text-xs font-medium">Monthly Investment</label>
-              <span className="text-xs font-mono font-bold text-muted-foreground" data-testid="text-investment-value">
-                {formatCurrency(monthlyInvestment[0])}
-              </span>
-            </div>
-            <Slider
-              value={monthlyInvestment}
-              onValueChange={setMonthlyInvestment}
-              min={15000}
-              max={45000}
-              step={7500}
-              data-testid="slider-investment"
-            />
-          </div>
-
           {/* LTV Slider */}
           <div>
             <div className="flex justify-between mb-1.5">
@@ -166,8 +146,8 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
                 {formatCurrency(projectedLTVPerYear)}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Estimation based on 220 meetings*<br />
-                <span className="italic">*December excluded for training</span>
+                Based on 220 meetings/year*<br />
+                <span className="italic">*11 months (20/mo), December excluded</span>
               </p>
             </div>
           </div>

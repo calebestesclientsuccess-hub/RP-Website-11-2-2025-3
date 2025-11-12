@@ -35,7 +35,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-type EngineOption = "lone-wolf" | "1-sdr" | "2-sdr" | "3-sdr";
+type EngineOption = "lone-wolf" | "1-sdr" | "2-sdr" | "3-sdr-plus" | "enterprise";
 
 interface EngineConfig {
   name: string;
@@ -44,6 +44,7 @@ interface EngineConfig {
   reliability: string;
   isRecommended: boolean;
   description: string;
+  isTickerBased?: boolean;
 }
 
 const engineConfigs: Record<EngineOption, EngineConfig> = {
@@ -58,26 +59,35 @@ const engineConfigs: Record<EngineOption, EngineConfig> = {
   "1-sdr": {
     name: "1-SDR GTM Engine",
     monthlyCost: 12500,
-    guaranteedSQOs: 20,
+    guaranteedSQOs: 10,
     reliability: "Fully Resilient System",
     isRecommended: false,
-    description: "20+ SQOs/month (from Month 5)"
+    description: "10 SQOs/month guaranteed"
   },
   "2-sdr": {
     name: "2-SDR GTM Pod",
     monthlyCost: 15000,
-    guaranteedSQOs: 40,
+    guaranteedSQOs: 20,
     reliability: "Fully Resilient System",
     isRecommended: true,
-    description: "40+ SQOs/month (from Month 5)"
+    description: "20 SQOs/month guaranteed"
   },
-  "3-sdr": {
-    name: "3-SDR GTM Pod",
-    monthlyCost: 22500,
-    guaranteedSQOs: 60,
+  "3-sdr-plus": {
+    name: "3-SDR+ GTM Pod",
+    monthlyCost: 22500, // Base for 3 SDRs
+    guaranteedSQOs: 30, // Base for 3 SDRs
     reliability: "Fully Resilient System",
     isRecommended: false,
-    description: "60+ SQOs/month (from Month 5)"
+    description: "Scale from 3-10 SDRs",
+    isTickerBased: true
+  },
+  "enterprise": {
+    name: "Enterprise GTM System",
+    monthlyCost: 0,
+    guaranteedSQOs: 0,
+    reliability: "Custom Configuration",
+    isRecommended: false,
+    description: "11+ SDRs - Contact Your GTM Strategist"
   }
 };
 
@@ -85,6 +95,7 @@ export default function ROICalculator() {
   const [ltv, setLtv] = useState([120000]);
   const [closeRate, setCloseRate] = useState([25]);
   const [selectedEngine, setSelectedEngine] = useState<EngineOption>("2-sdr");
+  const [sdrCount, setSdrCount] = useState(3); // For 3-SDR+ ticker
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [recipientEmails, setRecipientEmails] = useState("");
   const { toast } = useToast();
@@ -127,8 +138,18 @@ export default function ROICalculator() {
 
   // Calculate results based on selected engine
   const config = engineConfigs[selectedEngine];
-  const monthlyInvestment = config.monthlyCost;
-  const monthlySQOs = config.guaranteedSQOs;
+  
+  // Dynamic calculation for 3-SDR+ ticker
+  let monthlyInvestment = config.monthlyCost;
+  let monthlySQOs = config.guaranteedSQOs;
+  
+  if (selectedEngine === "3-sdr-plus") {
+    // Formula: Each SDR costs $7,500 (after first SDR at $12.5K base)
+    // 1 SDR = $12.5K, 2 SDRs = $15K, 3 SDRs = $22.5K, etc.
+    monthlyInvestment = 12500 + ((sdrCount - 1) * 7500);
+    monthlySQOs = sdrCount * 10; // 10 meetings per SDR
+  }
+  
   const costPerMeeting = monthlySQOs > 0 ? monthlyInvestment / monthlySQOs : 0;
   const projectedDealsPerMonth = monthlySQOs * (closeRate[0] / 100);
   const projectedLTVPerMonth = projectedDealsPerMonth * ltv[0];
@@ -136,7 +157,7 @@ export default function ROICalculator() {
 
   // Annual calculations (11 months, excluding December for training)
   const annualInvestment = monthlyInvestment * 12;
-  const annualSQOs = monthlySQOs * 11; // 11 months post-ramp
+  const annualSQOs = monthlySQOs * 11; // 11 months (10 meetings/SDR/month)
   const closedDealsPerYear = annualSQOs * (closeRate[0] / 100);
   const projectedLTVPerYear = closedDealsPerYear * ltv[0];
   const annualROI = projectedLTVPerYear > 0 ? projectedLTVPerYear / annualInvestment : 0;
@@ -421,6 +442,12 @@ export default function ROICalculator() {
                   {(Object.keys(engineConfigs) as EngineOption[]).map((key) => {
                     const config = engineConfigs[key];
                     const isLoneWolf = key === "lone-wolf";
+                    const isTickerBased = key === "3-sdr-plus";
+                    const isEnterprise = key === "enterprise";
+                    
+                    // Calculate dynamic values for ticker
+                    const tickerCost = isTickerBased ? 12500 + ((sdrCount - 1) * 7500) : config.monthlyCost;
+                    const tickerSQOs = isTickerBased ? sdrCount * 10 : config.guaranteedSQOs;
 
                     return (
                       <div
@@ -429,7 +456,7 @@ export default function ROICalculator() {
                           selectedEngine === key
                             ? 'border-primary bg-primary/5'
                             : 'border-border'
-                        } ${isLoneWolf ? 'border-destructive/30 bg-destructive/5' : ''}`}
+                        } ${isLoneWolf ? 'border-destructive/30 bg-destructive/5' : ''} ${isEnterprise ? 'border-primary/30 bg-primary/5' : ''}`}
                         data-testid={`radio-option-${key}`}
                       >
                         <div className="flex items-start gap-3">
@@ -456,42 +483,105 @@ export default function ROICalculator() {
                                 </Badge>
                               )}
                             </div>
-                            <div className="space-y-1 text-sm">
-                              <div className="flex items-center gap-2">
-                                <DollarSign className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-muted-foreground">
-                                  Cost: <span className="font-semibold text-foreground">{formatCurrency(config.monthlyCost)}/mo</span>
-                                  {isLoneWolf && <span className="text-xs ml-1">({config.description})</span>}
-                                </span>
+                            
+                            {isEnterprise ? (
+                              <div className="space-y-2 text-sm">
+                                <p className="text-muted-foreground">{config.description}</p>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  asChild
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Link href="/audit">
+                                    Schedule GTM Audit
+                                    <ArrowRight className="w-4 h-4 ml-2" />
+                                  </Link>
+                                </Button>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <TrendingUp className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-muted-foreground">
-                                  Guaranteed SQOs: <span className="font-semibold text-foreground">
-                                    {config.guaranteedSQOs > 0 ? `${config.guaranteedSQOs}/month` : '0'}
-                                  </span>
-                                  {!isLoneWolf && config.guaranteedSQOs > 0 && (
-                                    <span className="text-xs ml-1">(from Month 5)</span>
-                                  )}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {isLoneWolf ? (
-                                  <AlertTriangle className="w-4 h-4 text-destructive" />
-                                ) : (
-                                  <Shield className="w-4 h-4 text-green-600 dark:text-green-400" />
+                            ) : (
+                              <>
+                                <div className="space-y-1 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                                    <span className="text-muted-foreground">
+                                      Cost: <span className="font-semibold text-foreground">
+                                        {formatCurrency(isTickerBased ? tickerCost : config.monthlyCost)}/mo
+                                      </span>
+                                      {isLoneWolf && <span className="text-xs ml-1">({config.description})</span>}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                                    <span className="text-muted-foreground">
+                                      Guaranteed SQOs: <span className="font-semibold text-foreground">
+                                        {isTickerBased ? `${tickerSQOs}/month` : config.guaranteedSQOs > 0 ? `${config.guaranteedSQOs}/month` : '0'}
+                                      </span>
+                                      {!isLoneWolf && (config.guaranteedSQOs > 0 || isTickerBased) && (
+                                        <span className="text-xs ml-1">(from Month 5)</span>
+                                      )}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {isLoneWolf ? (
+                                      <AlertTriangle className="w-4 h-4 text-destructive" />
+                                    ) : (
+                                      <Shield className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                    )}
+                                    <span className="text-muted-foreground">
+                                      Reliability: <span className={`font-semibold ${
+                                        isLoneWolf
+                                          ? 'text-destructive'
+                                          : 'text-green-600 dark:text-green-400'
+                                      }`}>
+                                        {config.reliability}
+                                      </span>
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                {/* Ticker for 3-SDR+ */}
+                                {isTickerBased && selectedEngine === key && (
+                                  <div className="mt-3 pt-3 border-t border-border">
+                                    <div className="flex items-center justify-between gap-4">
+                                      <span className="text-sm font-medium">Number of SDRs:</span>
+                                      <div className="flex items-center gap-3">
+                                        <Button
+                                          variant="outline"
+                                          size="icon"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSdrCount(Math.max(3, sdrCount - 1));
+                                          }}
+                                          disabled={sdrCount <= 3}
+                                          data-testid="button-decrease-sdr"
+                                        >
+                                          -
+                                        </Button>
+                                        <span className="text-xl font-bold font-mono w-12 text-center" data-testid="text-sdr-count">
+                                          {sdrCount}
+                                        </span>
+                                        <Button
+                                          variant="outline"
+                                          size="icon"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSdrCount(Math.min(10, sdrCount + 1));
+                                          }}
+                                          disabled={sdrCount >= 10}
+                                          data-testid="button-increase-sdr"
+                                        >
+                                          +
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                      {sdrCount} SDRs × 10 meetings = {tickerSQOs} meetings/month
+                                    </p>
+                                  </div>
                                 )}
-                                <span className="text-muted-foreground">
-                                  Reliability: <span className={`font-semibold ${
-                                    isLoneWolf
-                                      ? 'text-destructive'
-                                      : 'text-green-600 dark:text-green-400'
-                                  }`}>
-                                    {config.reliability}
-                                  </span>
-                                </span>
-                              </div>
-                            </div>
+                              </>
+                            )}
                           </Label>
                         </div>
                       </div>
@@ -580,7 +670,7 @@ export default function ROICalculator() {
                     {monthlySQOs > 0 && (
                       <p className="text-xs text-muted-foreground mt-1">
                         Based on {annualSQOs} meetings/year*<br />
-                        <span className="italic">*December excluded for training</span>
+                        <span className="italic">*11 months ({monthlySQOs}/mo), December excluded</span>
                       </p>
                     )}
                   </div>
