@@ -171,7 +171,7 @@ export default function AuditPage() {
                     <div>
                       <h3 className="font-semibold mb-1">NOT with a "sales rep"</h3>
                       <p className="text-muted-foreground">
-                        You speak directly with a GTM Architect: Caleb, Muneeb, or Danyal
+                        You speak directly with a GTM Architect from our founding team
                       </p>
                     </div>
                   </div>

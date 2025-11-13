@@ -458,28 +458,28 @@ export default function GTMEnginePage() {
 
                 <div className="grid md:grid-cols-2 gap-6">
                   <Card className="p-6" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(91, 142, 245, 0.4)', borderWidth: '2px' }}>
-                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#5B8EF5' }}>The "Visionary Architect" (Caleb)</h4>
+                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#5B8EF5' }}>The GTM Strategist (Caleb)</h4>
                     <p className="text-sm leading-relaxed">
                       Orchestrated the new motion. He fixed the value equation, flipping the script from a weak "value" offer to a powerful "problem-led" one using Loss Aversion. He also raised the price from $300 to $750 to make the value believable against the $7,500 federal fine.
                     </p>
                   </Card>
 
                   <Card className="p-6" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(65, 105, 225, 0.5)', borderWidth: '2px' }}>
-                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#4169E1' }}>The "Brand Guardian" (Mariya)</h4>
+                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#4169E1' }}>The Brand Strategist (Mariya)</h4>
                     <p className="text-sm leading-relaxed">
                       Solved the trust problem by producing an "authority" asset—an educational video starring an actress ("Ms. Samantha") positioned as the company's leading compliance expert. This created "Textbook Authority Bias".
                     </p>
                   </Card>
 
                   <Card className="p-6" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(91, 142, 245, 0.4)', borderWidth: '2px' }}>
-                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#5B8EF5' }}>The "Talent" & "AI" Architects (Muneeb & Danyal)</h4>
+                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#5B8EF5' }}>The AI Architect (Unnamed Co-Founder, Announcing Jan 2026)</h4>
                     <p className="text-sm leading-relaxed">
                       Wrote the new cold call scripts for the playbook. Reps were trained not to sell, but to reference "Ms. Samantha's video". This instantly transferred the video's authority to the SDR, "warming the call".
                     </p>
                   </Card>
 
                   <Card className="p-6" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(65, 105, 225, 0.5)', borderWidth: '2px' }}>
-                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#4169E1' }}>The "Talent" Insight (Muneeb & Caleb)</h4>
+                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#4169E1' }}>The Elite Coach (Unnamed Co-Founder, Announcing Jan 2026)</h4>
                     <p className="text-sm leading-relaxed">
                       We realized the client didn't need "hunters"; they needed "trust builders." We helped them staff the team with former CSMs and Account Managers, who excelled at building instant rapport for a fast, obvious sale.
                     </p>
