@@ -1,23 +1,19 @@
+
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { WidgetZone } from "@/components/WidgetZone";
-import { Users, Brain, BookOpen, Shield, Zap, CheckCircle2, ArrowRight } from "lucide-react";
+import { CostEquationCard } from "@/components/CostEquationCard";
+import { ComparisonTable } from "@/components/ComparisonTable";
+import { HeroJourneyGrid } from "@/components/HeroJourneyGrid";
+import { ArrowRight, Users, Brain, BookOpen, Target, Settings, Wrench } from "lucide-react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { useRef, lazy, Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Lazy load GSAP-heavy components
-const BuildAndRampTimeline = lazy(() => import("@/components/BuildAndRampTimeline"));
 const SimplifiedOrbitalPowers = lazy(() => import("@/components/SimplifiedOrbitalPowers").then(module => ({ default: module.SimplifiedOrbitalPowers })));
 
 const podVideo = "/sdr-pod-video.mp4";
@@ -49,33 +45,62 @@ export default function GTMEnginePage() {
       "reviewCount": "47"
     }
   };
-  const impactSellingTenets = [
+
+  const costItems = [
+    { amount: 50000, label: "The 3.1-Month \"Ramp Burn\"" },
+    { amount: 27000, label: "The Crushing \"Management Tax\"" },
+    { amount: 20000, label: "The Recruiting & Hiring Gamble" },
+    { amount: 101000, label: "The \"Opportunity Cost\" of a failed territory" }
+  ];
+
+  const comparisonItems = [
     {
-      id: 'scene-partner',
-      title: 'From Audience to Scene Partner',
-      description: '',
-      details: 'We kill "sales pressure" by reframing the "pitch" as a collaborative "workshop." Our operators aren\'t selling at a prospect; they are solving a problem with a scene partner.',
+      oldWay: "Hire a single \"Lone Wolf\" SDR who operates in isolation",
+      newWay: "Deploy a full \"Fullstack Sales Unit\" with multiple roles and systems"
     },
     {
-      id: 'nouns-to-verbs',
-      title: 'From Nouns to Verbs',
-      description: '',
-      details: 'Amateurs "pitch nouns" (our features, our product, our company). Our operators "execute verbs" (Diagnose, Reframe, Validate, Prescribe). This shifts the entire dynamic.',
+      oldWay: "Hope they figure it out on their own with minimal support",
+      newWay: "Benefit from proven playbooks, AI tools, and expert coaching"
     },
     {
-      id: 'hierarchy',
-      title: 'The Hierarchy of Intention',
-      description: '',
-      details: 'Our SDRs are strategic, not tactical. Every email, call, and message has a clear, strategic purpose tied to the "GTM Audit" diagnosis. No "random acts of selling".',
+      oldWay: "Wait 3-6 months for ramp, risking 34% turnover",
+      newWay: "Get pipeline-productive operators in Week 2, with guaranteed continuity"
     },
+    {
+      oldWay: "Own zero IP when they leave - start from scratch",
+      newWay: "Own 100% of the GTM playbook and Signal Factory forever"
+    }
+  ];
+
+  const architectContributions = [
+    {
+      title: "GTM Architect Contribution",
+      description: "Redesigned the entire ICP, messaging framework, and multi-channel strategy to align with the new market position.",
+      icon: <Target className="w-6 h-6 text-primary" />
+    },
+    {
+      title: "AI Architect Contribution",
+      description: "Built a custom Signal Factory that identified high-intent prospects 3 weeks before they entered active buying cycles.",
+      icon: <Brain className="w-6 h-6 text-signal-green" />
+    },
+    {
+      title: "Elite Coach Contribution",
+      description: "Trained the BDR pod on consultative selling techniques, increasing meeting-to-opp conversion by 2.8x.",
+      icon: <Users className="w-6 h-6 text-purple-500" />
+    },
+    {
+      title: "RevOps Contribution",
+      description: "Optimized the entire tech stack and CRM workflows, reducing manual tasks by 15 hours/week per rep.",
+      icon: <Settings className="w-6 h-6 text-red-500" />
+    }
   ];
 
   return (
     <>
       <SEO
         title="The Fullstack Sales Unit - Your Complete GTM Engine | Revenue Party"
-        description="Deploy elite SDR pods with AI-powered systems. Guaranteed 20+ qualified appointments monthly. Own the GTM Engine, not rent headcount."
-        keywords="GTM Engine, Fullstack Sales Unit, revenue generation system, allbound, sales as a service, Impact Selling OS, Signal Factory, SDR pod, guaranteed sales appointments"
+        description="It's more than a sales team. It's a complete revenue generation system. Build a permanent GTM asset, not rent headcount."
+        keywords="GTM Engine, Fullstack Sales Unit, revenue generation system, sales asset, Impact Selling OS, Signal Factory, SDR pod"
         canonical="/gtm-engine"
       />
 
@@ -90,7 +115,7 @@ export default function GTMEnginePage() {
       {/* Widget Zone 15 */}
       <WidgetZone zone="zone-15" className="my-8" />
 
-      {/* Hero Module - Extended background for visual breathing room */}
+      {/* Hero Section */}
       <section className="relative pt-32 pb-32 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center mb-12">
@@ -118,7 +143,7 @@ export default function GTMEnginePage() {
               transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
               data-testid="heading-hero"
             >
-              This Isn't a Sales Team.{" "}
+              It's More than a Sales Team.{" "}
               <span className="gradient-text gradient-hero">It's a Complete Revenue Generation System.</span>
             </motion.h1>
             <motion.p
@@ -128,15 +153,14 @@ export default function GTMEnginePage() {
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
               data-testid="text-hero-subheading"
             >
-              You don't have a headcount problem; you have an architecture problem. This is the blueprint for a Sales Architecture that scales. It starts with the Fullstack Sales Unit.
+              You don't have a headcount problem; you have an architecture problem. This is the blueprint for the GTM asset that scales.
             </motion.p>
           </div>
         </div>
       </section>
 
-      {/* Extended background wrapper for visual breathing room */}
+      {/* Video Section with Background */}
       <div className="relative">
-        {/* Blue animated gradient mesh background - extends beyond content */}
         <div className="absolute inset-0 pointer-events-none opacity-60" style={{ height: '140%' }}>
           <div className="gradient-mesh-layer gradient-mesh-slow" style={{
             background: `
@@ -169,175 +193,82 @@ export default function GTMEnginePage() {
             backgroundSize: '300% 300%'
           }} />
         </div>
-        {/* Light grid dots pattern (light mode only) */}
         <div className="light-grid-dots" style={{ height: '140%' }} />
 
-      {/* Your Fullstack Sales Unit - The Product Reveal */}
-      <div className="relative z-10">
-      <Suspense fallback={
-        <div className="flex flex-col items-center justify-center min-h-[600px] gap-4">
-          <Skeleton className="h-96 w-full max-w-4xl rounded-lg" />
-          <Skeleton className="h-8 w-64" />
+        <div className="relative z-10">
+          <Suspense fallback={
+            <div className="flex flex-col items-center justify-center min-h-[600px] gap-4">
+              <Skeleton className="h-96 w-full max-w-4xl rounded-lg" />
+              <Skeleton className="h-8 w-64" />
+            </div>
+          }>
+            <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
+          </Suspense>
         </div>
-      }>
-        <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
-      </Suspense>
-      </div>
       </div>
 
       {/* Widget Zone 16 */}
       <WidgetZone zone="zone-16" className="my-8" />
 
-      {/* Module 1: The "Hardware" & "Software" of Your Asset */}
-      <section className="relative pt-20 pb-20 px-4 md:px-6 lg:px-8 bg-card/30 overflow-hidden" data-testid="section-asset-components">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-asset-components">
-              What You Get: The 3 Core Components of<br />
-              <span className="gradient-text gradient-hero">Your GTM Engine</span>
+      {/* Section 1: The Core Thesis */}
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-core-thesis">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-bold mb-8 text-center" data-testid="heading-core-thesis">
+            You Are Building an Asset,<br />
+            <span className="gradient-text gradient-hero">Not Renting a Service</span>
+          </h2>
+          <div className="space-y-6 text-lg leading-relaxed">
+            <p className="text-xl font-semibold text-center mb-8">
+              This is the fundamental difference.
+            </p>
+            <p>
+              Commodity agencies sell temporary "appointments"—a service that builds no lasting value. They sell activity. When the contract ends, you are left with nothing.
+            </p>
+            <p>
+              We do not sell appointments. We partner with you to build a permanent GTM capability. You are investing in a department—a compounding asset so powerful and so well-documented that you can one day operate it internally, if you wish.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 2: The Financial Reframe */}
+      <section className="relative py-20 px-4 md:px-6 lg:px-8" data-testid="section-financial-reframe">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-financial-reframe">
+              A Better System.{" "}
+              <span className="gradient-text gradient-hero">A Superior Financial Investment.</span>
             </h2>
-            <p className="text-xl leading-relaxed" data-testid="text-asset-description">
-              A GTM Engine is not a person; it's a complete, managed system of talent, strategy, and technology designed to build a permanent pipeline asset.
+            <p className="text-xl leading-relaxed mb-4">
+              Let's do the math. This is an investment, not a cost.
             </p>
           </div>
 
-          {/* Component 1: Elite Talent */}
-          <div className="mb-16">
-            <Card className="p-8 md:p-12 light-depth light-trickle-diagonal hover-elevate transition-all" data-testid="card-elite-talent">
-              <div className="flex flex-col md:flex-row gap-8 items-start">
-                <div className="flex-shrink-0">
-                  <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center"
-                    style={{
-                      backgroundColor: '#9F8FFF20',
-                      border: '2px solid #9F8FFF',
-                    }}
-                  >
-                    <Users className="w-10 h-10 text-community" />
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <Badge variant="secondary" className="mb-4">Hardware: Component 1</Badge>
-                  <h3 className="text-3xl font-bold mb-3">
-                    Elite Talent{" "}
-                    <span className="text-muted-foreground text-2xl">(The "Fully Loaded SDR Pod")</span>
-                  </h3>
-                  <div className="space-y-4 leading-relaxed mb-6">
-                    <p>
-                      This is the antidote to the 'Lone Wolf Fallacy.' You don't get a single, isolated rep; you get a pod of trained operators.
-                    </p>
-                    <p>
-                      This pod is built, trained, and forged by our Talent Architect.
-                    </p>
-                  </div>
-                  <div className="space-y-2 mb-6">
-                    <p><strong>• Dedicated & Managed:</strong> Your pod works for you, managed by us. We handle the 1:1s, performance, and 'Management Tax'.</p>
-                    <p><strong>• Community-Powered:</strong> Pods operate in a culture of "Community + Competition," solving problems faster than any single rep.</p>
-                    <p><strong>• Ramped in Days, Not Months:</strong> Our pods are system-ready and pipeline-productive in Week 2.</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
+          <div className="mb-12">
+            <h3 className="text-3xl font-bold mb-6 text-center">
+              Meet "The $198,000 Mistake".
+            </h3>
+            <p className="text-xl text-center mb-8 max-w-3xl mx-auto">
+              That's the real first-year gamble on a single "Lone Wolf" hire. It's not just their salary. It's the sum of the architectural failures:
+            </p>
+            
+            <CostEquationCard 
+              items={costItems}
+              total={198000}
+              totalLabel='"Base Case" Cost of One Failed Hire'
+            />
           </div>
 
-          {/* Component 2: The Signal Factory */}
-          <div className="mb-16">
-            <Card className="p-8 md:p-12 light-trickle-corner hover-elevate transition-all" data-testid="card-signal-factory">
-              <div className="flex flex-col md:flex-row gap-8 items-start">
-                <div className="flex-shrink-0">
-                  <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center"
-                    style={{
-                      backgroundColor: '#42349c20',
-                      border: '2px solid #42349c',
-                    }}
-                  >
-                    <Brain className="w-10 h-10 text-purple-dark" />
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <Badge variant="secondary" className="mb-4">Infrastructure: Component 2</Badge>
-                  <h3 className="text-3xl font-bold mb-3">
-                    The Signal Factory{" "}
-                    <span className="text-muted-foreground text-2xl">(The "AI-Powered Engine")</span>
-                  </h3>
-                  <div className="space-y-4 leading-relaxed mb-6">
-                    <p>
-                      This is the antidote to the 'Black Box Problem.' We replace vanity 'activity' metrics with a transparent, AI-powered data engine that finds buyers before they're in-market.
-                    </p>
-                    <p>
-                      This engine is engineered and maintained by our AI Architect.
-                    </p>
-                  </div>
-                  <div className="space-y-2 mb-6">
-                    <p><strong>• Find "Allbound" Signals:</strong> We combine inbound intent data with outbound ICP triggers.</p>
-                    <p><strong>• AI-Powered, Human-Verified:</strong> Our AI finds the signals; our human operators validate the intent.</p>
-                    <p><strong>• Full Tech Stack Included:</strong> The engine includes the full stack of sequencing, data, and analytics tools.</p>
-                  </div>
-                </div>
-              </div>
-            </Card>
+          <div className="bg-primary/5 border-2 border-primary rounded-lg p-8 mb-8">
+            <p className="text-lg leading-relaxed">
+              Our Fullstack Sales Unit—which includes two Elite Operators plus the entire GTM architecture, leadership, and tech stack—costs less. It's not just a better, more predictable system; it's a superior financial investment.
+            </p>
           </div>
 
-          {/* Component 3: Strategic Framework (Impact Selling OS) */}
-          <div className="mb-16">
-            <Card className="p-8 md:p-12 light-trickle-top hover-elevate transition-all" data-testid="card-impact-selling-os">
-              <div className="flex flex-col md:flex-row gap-8 items-start">
-                <div className="flex-shrink-0">
-                  <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center"
-                    style={{
-                      backgroundColor: '#ef233c20',
-                      border: '2px solid #ef233c',
-                    }}
-                  >
-                    <BookOpen className="w-10 h-10 text-primary" />
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <Badge variant="secondary" className="mb-4">Software: Component 3</Badge>
-                  <h3 className="text-3xl font-bold mb-3">
-                    Strategic Framework{" "}
-                    <span className="text-muted-foreground text-2xl">(The "Impact Selling OS")</span>
-                  </h3>
-                  <div className="space-y-4 leading-relaxed mb-6">
-                    <p>
-                      This is the antidote to the 'Zero-IP Trap.' The GTM Engine is built on a strategic playbook that you 100% own.
-                    </p>
-                    <p>
-                      This framework is designed by our Visionary Architect, and protected by our Brand Guardian.
-                    </p>
-                  </div>
-                  <div className="space-y-2 mb-6">
-                    <p><strong>• Your Playbook, Your IP:</strong> We build your GTM playbook with you, and it stays with you forever.</p>
-                    <p><strong>• Documented & Scalable:</strong> A living system for messaging, objection handling, and tactics.</p>
-                    <p><strong>• Based on "Impact Selling":</strong> Our methodology (detailed below) that kills 'sales pressure' and builds trust.</p>
-                  </div>
-
-                  {/* Core Tenets - Expandable Accordion */}
-                  <div className="mt-6">
-                    <h4 className="text-xl font-bold mb-4">Core Tenets of the "Impact Selling OS":</h4>
-                    <Accordion type="single" collapsible className="w-full" data-testid="accordion-impact-tenets">
-                      {impactSellingTenets.map((tenet) => (
-                        <AccordionItem key={tenet.id} value={tenet.id} data-testid={`accordion-item-${tenet.id}`}>
-                          <AccordionTrigger className="text-left" data-testid={`accordion-trigger-${tenet.id}`}>
-                            <div>
-                              <div className="font-bold text-lg">{tenet.title}</div>
-                              <div className="text-sm text-muted-foreground mt-1">{tenet.description}</div>
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent data-testid={`accordion-content-${tenet.id}`}>
-                            <p className="leading-relaxed pl-4 border-l-2 border-primary">
-                              {tenet.details}
-                            </p>
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  </div>
-                </div>
-              </div>
-            </Card>
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground italic">
+              <strong>A Note on Our Numbers:</strong> We Show Our Work.
+            </p>
           </div>
         </div>
       </section>
@@ -345,46 +276,186 @@ export default function GTMEnginePage() {
       {/* Widget Zone 17 */}
       <WidgetZone zone="zone-17" className="my-8" />
 
-      {/* Module 2: The 4-Month "Build & Ramp" Process */}
-      <section className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden" data-testid="section-build-ramp">
-        {/* Gradient mesh background */}
-        <div className="absolute inset-0 pointer-events-none opacity-50">
-          <div className="gradient-mesh-layer gradient-mesh-medium" style={{
-            background: `radial-gradient(
-              ellipse 700px 500px at 30% 50%,
-              rgba(138, 43, 226, 0.3),
-              transparent 60%
-            )`,
-            backgroundSize: '200% 200%'
-          }} />
-        </div>
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-build-ramp">
-              The 4-Month<br />
-              <span className="gradient-text gradient-hero">"Build & Ramp"</span>
+      {/* Section 3: The "Old Way" Deconstruction */}
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-old-way">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-old-way">
+              The "Old Way" Is{" "}
+              <span className="gradient-text gradient-hero">Architecturally Flawed</span>
             </h2>
-            <p className="text-xl leading-relaxed" data-testid="text-build-ramp-description">
-              Our Transparent Path to Your Guaranteed Asset
+          </div>
+
+          <ComparisonTable 
+            title="The Core Reframe"
+            items={comparisonItems}
+          />
+
+          <div className="mt-12 text-center">
+            <Card className="p-8 bg-destructive/5 border-2 border-destructive/30 max-w-2xl mx-auto">
+              <h3 className="text-2xl font-bold mb-4">The Zero-IP Trap</h3>
+              <p className="text-lg leading-relaxed">
+                When you hire traditional reps or use commodity agencies, you own nothing. The playbook, the data, the learnings—it all walks out the door when they leave. You're stuck in an endless loop of rebuilding from scratch.
+              </p>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 4: The Solution - Fullstack Sales Unit */}
+      <section className="relative py-20 px-4 md:px-6 lg:px-8" data-testid="section-solution">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-solution">
+              The Solution:{" "}
+              <span className="gradient-text gradient-hero">The "Fullstack Sales Unit"</span>
+            </h2>
+            <p className="text-xl leading-relaxed max-w-3xl mx-auto">
+              This is not a team. This is a complete, self-contained revenue generation system.
             </p>
           </div>
 
-          <Suspense fallback={
-            <div className="flex items-center justify-center min-h-[400px]">
-              <Skeleton className="h-80 w-full max-w-6xl rounded-lg" />
-            </div>
-          }>
-            <BuildAndRampTimeline />
-          </Suspense>
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Column 1: Your Sales Team */}
+            <Card className="p-8 light-depth hover-elevate transition-all">
+              <div className="mb-6">
+                <Users className="w-12 h-12 text-community mb-4" />
+                <h3 className="text-2xl font-bold mb-2">Your Sales Team</h3>
+                <p className="text-sm text-muted-foreground">(The Engine)</p>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>2 Elite BDR Operators</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>GTM Architect (Strategy)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>AI Architect (Systems)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Elite Coach (Training)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>RevOps Manager</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Brand Guardian (QA)</span>
+                </li>
+              </ul>
+            </Card>
 
-          <div className="text-center mt-12">
-            <Card className="p-8 bg-primary/5 border-2 border-primary max-w-2xl mx-auto">
-              <Zap className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-2xl font-bold mb-3">The Guarantee</h3>
-              <p className="text-lg">
-                Starting <strong>Month 5</strong>, your GTM Engine delivers{" "}
-                <span className="text-primary font-bold">20+ SQOs per SDR per month</span>, guaranteed.
-                Every month except December. Reliability you can bank on.
+            {/* Column 2: Your GTM Playbook */}
+            <Card className="p-8 light-depth hover-elevate transition-all">
+              <div className="mb-6">
+                <BookOpen className="w-12 h-12 text-primary mb-4" />
+                <h3 className="text-2xl font-bold mb-2">Your GTM Playbook</h3>
+                <p className="text-sm text-muted-foreground">(Asset #1)</p>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>ICP & Persona Framework</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Messaging Architecture</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Multi-Channel Campaigns</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Objection Handling Scripts</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Impact Selling Methodology</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>100% IP Ownership (Forever)</span>
+                </li>
+              </ul>
+            </Card>
+
+            {/* Column 3: Your Signal Factory */}
+            <Card className="p-8 light-depth hover-elevate transition-all">
+              <div className="mb-6">
+                <Brain className="w-12 h-12 text-signal-green mb-4" />
+                <h3 className="text-2xl font-bold mb-2">Your Signal Factory</h3>
+                <p className="text-sm text-muted-foreground">(Asset #2)</p>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>AI-Powered Prospect Research</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Intent Data Signals</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Automated Personalization</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Full Tech Stack (15+ Tools)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Performance Analytics</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  <span>Continuous Optimization</span>
+                </li>
+              </ul>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 5: The Process */}
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-process">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-process">
+              Our Process:{" "}
+              <span className="gradient-text gradient-hero">How We Build Your Asset</span>
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="p-8 text-center light-depth hover-elevate transition-all">
+              <div className="text-6xl font-bold text-primary mb-4">1</div>
+              <h3 className="text-2xl font-bold mb-4">Architect</h3>
+              <p className="leading-relaxed">
+                We design your complete GTM strategy: ICP, messaging, multi-channel campaigns, and your proprietary playbook.
+              </p>
+            </Card>
+
+            <Card className="p-8 text-center light-depth hover-elevate transition-all">
+              <div className="text-6xl font-bold text-primary mb-4">2</div>
+              <h3 className="text-2xl font-bold mb-4">Activate</h3>
+              <p className="leading-relaxed">
+                We deploy your elite BDR pod, configure the Signal Factory, and train your team on the Impact Selling methodology.
+              </p>
+            </Card>
+
+            <Card className="p-8 text-center light-depth hover-elevate transition-all">
+              <div className="text-6xl font-bold text-primary mb-4">3</div>
+              <h3 className="text-2xl font-bold mb-4">Run & Iterate</h3>
+              <p className="leading-relaxed">
+                We execute campaigns, optimize based on data, and continuously refine your system for maximum performance.
               </p>
             </Card>
           </div>
@@ -394,113 +465,73 @@ export default function GTMEnginePage() {
       {/* Widget Zone 18 */}
       <WidgetZone zone="zone-18" className="my-8" />
 
-      {/* Module 3: The "Anti-Risk" Safety Net */}
-      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30 overflow-hidden" data-testid="section-anti-risk">
-        {/* Gradient mesh background */}
-        <div className="absolute inset-0 pointer-events-none opacity-45">
-          <div className="gradient-mesh-layer gradient-mesh-slow" style={{
-            background: `radial-gradient(
-              ellipse 600px 400px at 70% 40%,
-              rgba(66, 52, 156, 0.28),
-              transparent 60%
-            )`,
-            backgroundSize: '200% 200%'
-          }} />
-        </div>
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-anti-risk">
-              The System is the Asset,<br />
-              <span className="gradient-text gradient-hero">Not the Person.</span> This is Your Safety Net.
+      {/* Section 6: The Proof (Case Study) */}
+      <section className="relative py-20 px-4 md:px-6 lg:px-8" data-testid="section-proof">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-proof">
+              The Proof:{" "}
+              <span className="gradient-text gradient-hero">A Real-World "Hero's Journey"</span>
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <Card className="p-8 bg-destructive/5 border-2 border-destructive/30">
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0">
-                    <Users className="w-6 h-6 text-destructive" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2">The Lone Wolf Risk</h3>
-                    <Badge variant="destructive">34% Failure Rate</Badge>
-                  </div>
-                </div>
-                <p className="leading-relaxed mb-4">
-                  With a traditional "Lone Wolf" hire, if they quit (34% probability), your pipeline crashes to <strong>zero</strong> for 6-9 months while you recruit, hire, and ramp a replacement.
+          <Card className="p-8 md:p-12 bg-primary/5 border-2 border-primary">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold mb-3">The Pain:</h3>
+                <p className="leading-relaxed">
+                  A Series B SaaS company burning $40K/month on a BDR who delivered 3 meetings in 6 months. Pipeline was dead. Board was furious.
                 </p>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-destructive mt-1">✕</span>
-                    <span>Single point of failure</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-destructive mt-1">✕</span>
-                    <span>6-9 month recovery time</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-destructive mt-1">✕</span>
-                    <span>Pipeline crashes to zero</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-destructive mt-1">✕</span>
-                    <span>No documented playbook</span>
-                  </li>
-                </ul>
-              </Card>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-bold mb-3">The Diagnosis:</h3>
+                <p className="leading-relaxed">
+                  Classic "Lone Wolf Trap." No playbook, no coaching, no systems. Just hope and a generic tech stack.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-bold mb-3">The Reframe:</h3>
+                <p className="leading-relaxed">
+                  We built a complete Fullstack Sales Unit. New ICP, new messaging, AI-powered Signal Factory, and an elite 2-person pod trained on Impact Selling.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-bold mb-3">The Result:</h3>
+                <p className="leading-relaxed font-semibold">
+                  42 qualified opportunities in the first 90 days. $2.1M pipeline generated in 6 months. The system now runs internally with 100% IP ownership.
+                </p>
+              </div>
             </div>
 
-            <div>
-              <Card className="p-8 bg-primary/5 border-2 border-primary">
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2">The GTM Engine Asset</h3>
-                    <Badge variant="default">100% Protected</Badge>
-                  </div>
-                </div>
-                <p className="leading-relaxed mb-4">
-                  Our GTM Engine is an <strong>asset</strong>. The Impact Selling OS and Signal Factory are documented and owned by you. If an operator leaves, the system remains. We slot in a new Impact-certified SDR, and your pipeline is protected.
-                </p>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-                    <span>System-based reliability</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-                    <span>Instant operator replacement</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-                    <span>Pipeline continuity guaranteed</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-                    <span>100% IP ownership forever</span>
-                  </li>
-                </ul>
-              </Card>
+            <div className="mt-8">
+              <h4 className="text-lg font-bold mb-4 text-center">How the 4 Architects Contributed:</h4>
+              <HeroJourneyGrid contributions={architectContributions} />
             </div>
-          </div>
+          </Card>
+        </div>
+      </section>
 
-          <div className="text-center mt-12">
-            <p className="text-xl leading-relaxed max-w-2xl mx-auto">
-              This is the reliability you're investing in. Not just performance—<strong>guaranteed</strong> performance with zero single points of failure.
-            </p>
-          </div>
+      {/* Section 7: The Final Reframe */}
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-final-reframe">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-8" data-testid="heading-final-reframe">
+            You Stop Renting.{" "}
+            <span className="gradient-text gradient-hero">You Start Owning.</span>
+          </h2>
+          <p className="text-xl leading-relaxed">
+            This is not a service. This is an investment in a permanent, compounding GTM asset. One that you control, that you own, and that scales with your business.
+          </p>
         </div>
       </section>
 
       {/* Widget Zone 19 */}
       <WidgetZone zone="zone-19" className="my-8" />
 
-      {/* Primary CTA Module */}
+      {/* Section 8: The CTA */}
       <section className="relative py-20 px-4 md:px-6 lg:px-8 overflow-hidden" data-testid="section-cta">
-        {/* Final gradient mesh climax */}
         <div className="absolute inset-0 pointer-events-none opacity-55">
           <div className="gradient-mesh-layer gradient-mesh-medium" style={{
             background: `
@@ -520,11 +551,11 @@ export default function GTMEnginePage() {
         </div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-cta">
-            See the Results<br />
-            <span className="gradient-text gradient-hero">This Engine Produces</span>
+            Ready to Build{" "}
+            <span className="gradient-text gradient-hero">Your GTM Asset?</span>
           </h2>
           <p className="text-xl leading-relaxed mb-8" data-testid="text-cta-description">
-            The architecture is the "how." The results are the "why." See the proof of what a guaranteed GTM Engine can build.
+            See the proof of what a guaranteed GTM Engine can deliver. Real results, real companies, real pipeline.
           </p>
           <Button size="lg" className="text-lg px-8 py-6 shadow-lg" data-testid="button-see-proof" asChild>
             <Link href="/results">
