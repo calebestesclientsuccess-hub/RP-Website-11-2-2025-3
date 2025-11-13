@@ -111,6 +111,17 @@ export function Navbar() {
             >
               Articles
             </Link>
+            <Link
+              href="/branding"
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                isActivePath("/branding")
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              data-testid="link-branding"
+            >
+              Branding
+            </Link>
           </div>
 
           {/* Right Side - CTA & Theme Toggle */}
@@ -210,6 +221,14 @@ export function Navbar() {
               data-testid="mobile-link-blog"
             >
               Articles
+            </Link>
+            <Link
+              href="/branding"
+              className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
+              onClick={() => setMobileMenuOpen(false)}
+              data-testid="mobile-link-branding"
+            >
+              Branding
             </Link>
 
             <Link href="/audit" onClick={() => setMobileMenuOpen(false)}>
