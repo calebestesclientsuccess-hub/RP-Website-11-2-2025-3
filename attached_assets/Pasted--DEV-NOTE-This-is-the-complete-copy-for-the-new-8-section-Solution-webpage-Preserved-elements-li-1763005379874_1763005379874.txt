@@ -1,0 +1,216 @@
+[DEV NOTE: This is the complete copy for the new 8-section "Solution" webpage. Preserved elements like the H1, blue "GTM Engine" badge, and video/animation placeholders are noted.]
+
+[HERO SECTION]
+
+[PRESERVED: Blue "GTM Engine" Badge]
+
+[PRESERVED: H1]
+
+It's More than a Sales Team. It's a Complete Revenue Generation System.
+
+[PRESERVED: Video/Animation Placeholder]
+
+You don't have a headcount problem; you have an architecture problem. This is the blueprint for the GTM asset that scales.
+
+[SECTION 1: The Core Thesis]
+
+You Are Building an Asset, Not Renting a Service
+
+This is the fundamental difference.
+
+Commodity agencies sell temporary "appointments"—a service that builds no lasting value. They sell activity. When the contract ends, you are left with nothing.
+
+We do not sell appointments. We partner with you to build a permanent GTM capability. You are investing in a department—a compounding asset so powerful and so well-documented that you can one day operate it internally, if you wish.
+
+[SECTION 2: The Financial Reframe]
+
+A Better System. A Superior Financial Investment.
+
+Let's do the math. This is an investment, not a cost.
+
+Meet "The $198,000 Mistake".
+
+That's the real first-year gamble on a single "Lone Wolf" hire. It's not just their salary. It's the sum of the architectural failures:
+
+[DEV NOTE: Insert SPECIAL COMPONENT 1: The "$198k Mistake" Equation here. This should be a styled component that displays the following data as a visual equation. Please use a + sign before the 2nd, 3rd, and 4th items, and an = sign before the final total.]
+
+$50,000 (The 3.1-Month "Ramp Burn")
+
+$27,000 (The Crushing "Management Tax")
+
+$20,000 (The Recruiting & Hiring Gamble)
+
+$101,000 (The "Opportunity Cost" of a failed territory)
+
+$198,000 "Base Case" Cost of One Failed Hire
+
+Our Fullstack Sales Unit—which includes two Elite Operators plus the entire GTM architecture, leadership, and tech stack—costs less. It's not just a better, more predictable system; it's a superior financial investment.
+
+A Note on Our Numbers: We Show Our Work.
+
+Our claims aren't guesses. They are "architecture-first" calculations. Our "$198k Base Case" model is built on an "Evidence Spine" of institutional data from The Bridge Group, BLS, and HBR, combined with data from our own "GTM Lab".
+
+[SECTION 3: The "Old Way" Deconstruction]
+
+The "Old Way" Is Architecturally Flawed
+
+You're stuck choosing between two broken models.
+
+[DEV NOTE: The following two "traps" should be in a 2-column grid.]
+
+The Internal Trap: The "$198k Mistake"
+You hire a person, but you have no system. You force a single rep to be a strategist, copywriter, engineer, and operator all at once. You send a "good soldier on a suicide mission" and are shocked when they fail (at an industry-average 34% rate).
+
+The Outsourcing Trap: The "Activity Mirage"
+You "rent-a-rep" from a commodity agency. They sell you "activity"—thousands of dials and emails—not qualified pipeline. Their incentives are misaligned. They are paid to be busy, not to be effective.
+
+The Core Failure of Both: The "Zero-IP Trap"
+
+This is the most dangerous part. In both models, your market intelligence is trapped in a "black box"—either in the rep's head or the agency's private Slack. When the rep quits or the contract ends, your IP, your learnings, and your data walk out the door.
+
+You are left with zero assets. You are no smarter. You must stop renting activity and start owning your intelligence.
+
+This Is the Core Reframe
+
+[DEV NOTE: Insert SPECIAL COMPONENT 2: The "Core Reframe" Comparison Table here. This should be a styled 2-column table comparing "The 'Lone Wolf' Gamble" vs. "The 'Revenue Engine' Asset".]
+
+The "Lone Wolf" Gamble (Old Way)
+
+The "Revenue Engine" Asset (New Way)
+
+Model: Renting Activity / Headcount
+
+Model: Building a Permanent Asset
+
+IP: Zero. It's perishable & walks out the door.
+
+IP: Systemic. It's captured, owned, & compounded.
+
+Learning: Slow, isolated, & perishable.
+
+Learning: Fast, exponential, & permanent.
+
+Risk: High (Fragile, single point of failure).
+
+Risk: De-risked (Resilient by design).
+
+Result: Temporary activity.
+
+Result: Permanent, scalable capability.
+
+Stop gambling on headcount. Start investing in an architecture.
+
+[SECTION 4: The Solution]
+
+The Solution: The "Fullstack Sales Unit"
+
+This is the GTM asset you will own.
+
+Our model is different. You get the entire system, not just a person. This is the "Revenue Engine".
+
+[DEV NOTE: The following three sections should be in a 3-column grid.]
+
+Your Sales Team (The Engine)
+
+A "Fullstack Unit" of specialists, not a "Lone Wolf" generalist.
+
+The GTM Strategist (The "Visionary Architect"): Designs your "how-to-win" blueprint.
+
+The Elite Coach (The "Talent Architect"): "Forges" your elite operators, not just "finds" them.
+
+The AI Architect (The "Engineer"): Your "secret weapon" who builds your 'Signal Factory' and kills "Admin Drag".
+
+The Brand Guardian (The "Conscience"): Ensures every outreach is 100% authentic to your brand.
+
+Two (2) Elite Operators (The "Athletes"): The 100% dedicated human voices executing the plays.
+
+Your GTM Playbook (Asset #1: Your IP)
+
+The first asset you own. Your documented, proprietary "how-to-win" manual.
+
+Brand-Harmonized Messaging: Scripts and emails that are 100% authentic to your brand, guaranteed.
+
+A Methodology of "Implicit Selling": We replace high-pressure "pitching" with a collaborative "workshop" model. This proves your expertise implicitly, building trust and collapsing the sales cycle.
+
+A Living "GTM Lab": The complete, documented set of all winning and losing plays. Your asset gets smarter every day.
+
+Your Signal Factory (Asset #2: Your Tech)
+
+The second asset you own. The AI-powered infrastructure that fuels your engine.
+
+The "Enterprise" Stack: We build and manage the 15+ tools. You pay zero extra license fees.
+
+Timing, Not Titles: Proprietary automation that finds timing signals (a new hire, a funding round) not just static 'title' signals.
+
+You Own the Architecture: You 100% own the data, the workflows, and the system design forever.
+
+[SECTION 5: The Process]
+
+Our Process (How We Build Your Asset)
+
+This is our engineered method. We build, then we run.
+
+Step 1: Architect (The Blueprint)
+
+Before a single call is made, we build the entire asset. The Strategist deconstructs the market. The Brand Guardian builds the "Brand-Harmonized" messaging. The AI Architect builds the initial "Signal Factory" and tech stack.
+
+Step 2: Activate (The Unfair Advantage)
+
+This is our secret. This is how we kill the $50,000, 3.1-month "Ramp Burn". We don't "hire and hope." We deploy our "Forged" Operators, who are handed the entire A+ Playbook, tech stack, and recordings of winning calls from Day 1. They don't learn on your dime. They execute.
+
+This is the difference: We replace the 3.1-month, $50,000 "Ramp Burn" with a 4-6 week strategic activation.
+
+Step 3: Run & Iterate (The GTM Lab)
+
+This is not a "set it and forget it" product. It is a living GTM asset. The Coach provides daily, data-driven coaching. The Architect constantly upgrades the "Signal Factory" with new intent signals. The entire Pod shares learnings, making your asset smarter every single week.
+
+[SECTION 6: The Proof (Case Study)]
+
+The Proof: A Real-World "Hero's Journey"
+
+From 0-3 Sales to 15/Day: How We Fixed a "Too Good to Be True" Offer
+
+[DEV NOTE: This whole case study should be a single, styled callout box (like a blockquote).]
+
+The Pain: A B2B compliance client had a 10-SDR team making 300+ calls per day and failing, booking only 0-3 sales. They were burning cash and their high-cost "Lone Wolf" team was on the verge of collapse.
+
+The Diagnosis: Our GTM Architects listened to the calls. The #1 killer wasn't the reps; it was the architecture. Their core offer—"For $300 I'll save you $7500 in fines"—sounded "too good to be true". It was a massive price-value disconnect that triggered skepticism and caused prospects to disengage.
+
+The Reframe (The "Fullstack" Solution): We didn't just "train" the reps. We re-engineered the entire GTM asset. This was the "Platonic Ideal," where every Architect contributed:
+
+[DEV NOTE: Insert SPECIAL COMPONENT 3: The "Hero's Journey" 2x2 Grid here. This should be a styled 2x2 grid component. The content for the four cards is below.]
+
+(Card 1) The "Visionary Architect" (Caleb): Orchestrated the new motion. He fixed the value equation, flipping the script from a weak "value" offer to a powerful "problem-led" one using Loss Aversion. He also raised the price from $300 to $750 to make the value believable against the $7,500 federal fine.
+
+(Card 2) The "Brand Guardian" (Mariya): Solved the trust problem by producing an "authority" asset—an educational video starring an actress ("Ms. Samantha") positioned as the company's leading compliance expert. This created "Textbook Authority Bias".
+
+(Card 3) The "Talent" & "AI" Architects (Muneeb & Danyal): Wrote the new cold call scripts for the playbook. Reps were trained not to sell, but to reference "Ms. Samantha's video". This instantly transferred the video's authority to the SDR, "warming the call".
+
+(Card 4) The "Talent" Insight (Muneeb & Caleb): We realized the client didn't need "hunters"; they needed "trust builders." We helped them staff the team with former CSMs and Account Managers, who excelled at building instant rapport for a fast, obvious sale.
+
+The Result: Within 3 weeks of launching the new, integrated playbook, the 10-SDR team's daily sales jumped from 0-3 to 5-15 sales per day. We transformed a failing, high-cost "Lone Wolf" team into a predictable, engineered profit center.
+
+[SECTION 7: The Final Reframe]
+
+You Stop Renting. You Start Owning.
+
+Stop solving systems problems with headcount solutions.
+
+This is the reframe. The old model forces you to be a manager of people. The new model empowers you to be an architect of a system.
+
+The result is a predictable pipeline and two permanent, documented assets you 100% own forever: Your GTM Playbook and Your Signal Factory Architecture.
+
+This is not a service. It's the department you've always wanted to build.
+
+[SECTION 8: The CTA]
+
+Your Logical Next Step
+
+The GTM Diagnostic Session
+
+This is not a sales call. It is a complimentary, strategic working session with our GTM architects.
+
+We will apply our "architecture-first" framework to your business. We will diagnose the true source of your pipeline bottlenecks and provide the initial blueprint for your Revenue Engine. You will leave with a clear, actionable diagnosis, whether you work with us or not.
+
+[DEV NOTE: Insert CTA Button here.]
+[Schedule Your GTM Diagnostic Session]
