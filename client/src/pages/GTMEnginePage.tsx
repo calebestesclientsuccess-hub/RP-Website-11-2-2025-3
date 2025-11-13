@@ -421,7 +421,7 @@ export default function GTMEnginePage() {
             </p>
           </div>
 
-          <Card className="p-8 md:p-12 bg-primary/5 border-2 border-primary">
+          <Card className="p-8 md:p-12 bg-violet-blue/5 border-2 border-violet-blue/30">
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-bold mb-3">The Pain:</h3>
@@ -444,29 +444,29 @@ export default function GTMEnginePage() {
                 </p>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="p-6 bg-background/50">
-                    <h4 className="font-bold mb-2 text-lg">The "Visionary Architect" (Caleb)</h4>
+                  <Card className="p-6 bg-violet-blue/5 border-2 border-violet-blue/30">
+                    <h4 className="font-bold mb-2 text-lg text-violet-blue">The "Visionary Architect" (Caleb)</h4>
                     <p className="text-sm leading-relaxed">
                       Orchestrated the new motion. He fixed the value equation, flipping the script from a weak "value" offer to a powerful "problem-led" one using Loss Aversion. He also raised the price from $300 to $750 to make the value believable against the $7,500 federal fine.
                     </p>
                   </Card>
 
-                  <Card className="p-6 bg-background/50">
-                    <h4 className="font-bold mb-2 text-lg">The "Brand Guardian" (Mariya)</h4>
+                  <Card className="p-6 bg-violet-blue/5 border-2 border-violet-blue/30">
+                    <h4 className="font-bold mb-2 text-lg text-violet-blue">The "Brand Guardian" (Mariya)</h4>
                     <p className="text-sm leading-relaxed">
                       Solved the trust problem by producing an "authority" asset—an educational video starring an actress ("Ms. Samantha") positioned as the company's leading compliance expert. This created "Textbook Authority Bias".
                     </p>
                   </Card>
 
-                  <Card className="p-6 bg-background/50">
-                    <h4 className="font-bold mb-2 text-lg">The "Talent" & "AI" Architects (Muneeb & Danyal)</h4>
+                  <Card className="p-6 bg-community/5 border-2 border-community/30">
+                    <h4 className="font-bold mb-2 text-lg text-community">The "Talent" & "AI" Architects (Muneeb & Danyal)</h4>
                     <p className="text-sm leading-relaxed">
                       Wrote the new cold call scripts for the playbook. Reps were trained not to sell, but to reference "Ms. Samantha's video". This instantly transferred the video's authority to the SDR, "warming the call".
                     </p>
                   </Card>
 
-                  <Card className="p-6 bg-background/50">
-                    <h4 className="font-bold mb-2 text-lg">The "Talent" Insight (Muneeb & Caleb)</h4>
+                  <Card className="p-6 bg-community/5 border-2 border-community/30">
+                    <h4 className="font-bold mb-2 text-lg text-community">The "Talent" Insight (Muneeb & Caleb)</h4>
                     <p className="text-sm leading-relaxed">
                       We realized the client didn't need "hunters"; they needed "trust builders." We helped them staff the team with former CSMs and Account Managers, who excelled at building instant rapport for a fast, obvious sale.
                     </p>
