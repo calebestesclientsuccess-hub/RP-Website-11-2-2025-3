@@ -40,7 +40,7 @@ export default function ResultsPage() {
     },
   ];
 
-  
+
 
   return (
     <>
@@ -60,20 +60,8 @@ export default function ResultsPage() {
 
           <div className="max-w-7xl mx-auto relative z-10">
             <div className="text-center max-w-4xl mx-auto space-y-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="mb-6 flex justify-center"
-              >
-                <Badge
-                  className="badge-texture bg-primary text-white border-primary text-sm px-4 py-1.5"
-                  data-testid="badge-hero-results"
-                >
-                  Proven Results
-                </Badge>
-              </motion.div>
-              <motion.h1
+              <div className="max-w-4xl mx-auto text-center mb-12">
+            <motion.h1
                 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -213,7 +201,7 @@ export default function ResultsPage() {
           </div>
         </section>
 
-        
+
 
         {/* Testimonial Wall Module */}
         <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-testimonials">
@@ -272,7 +260,7 @@ export default function ResultsPage() {
                       transition={{ duration: 0.6, delay: index * 0.15 + 0.3 }}
                     >
                       "{testimonial.quote}"
-                    </motion.blockquote>
+                    </blockquote >
 
                     {/* Author Info */}
                     <motion.div 

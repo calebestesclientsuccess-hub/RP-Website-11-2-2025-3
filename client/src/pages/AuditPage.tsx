@@ -88,10 +88,6 @@ export default function AuditPage() {
               className="space-y-8"
             >
               <div>
-                <Badge className="mb-4" variant="outline" data-testid="badge-free-audit">
-                  <Calendar className="w-3 h-3 mr-1" />
-                  Free 30-Minute Workshop
-                </Badge>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-audit">
                   Schedule Your Free GTM Leverage Audit
                 </h1>
