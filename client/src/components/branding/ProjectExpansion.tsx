@@ -1,119 +1,226 @@
-import { motion } from "framer-motion";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Quote } from "lucide-react";
-import { Link } from "wouter";
+import { Badge } from "@/components/ui/badge";
 
 interface ProjectExpansionProps {
   project: {
     id: number;
     clientName: string;
+    projectTitle: string;
+    thumbnailImage: string;
+    categories: string[];
     challenge: string;
     solution: string;
     outcome: string;
     galleryImages: string[];
-    testimonial: {
+    testimonial?: {
       text: string;
       author: string;
     };
   };
+  onClose: () => void;
 }
 
-export function ProjectExpansion({ project }: ProjectExpansionProps) {
+export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+  const isVideo = (url: string) => {
+    return url.includes('.mp4') || url.includes('.webm') || url.includes('video') || (url.includes('cloudinary') && url.includes('/video/'));
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className="col-span-full overflow-hidden"
+    <div
+      className="bg-card rounded-2xl shadow-2xl overflow-hidden"
       data-testid={`expansion-project-${project.id}`}
     >
-      <div className="bg-card rounded-2xl shadow-2xl p-8 md:p-12 my-8">
-        <div className="grid md:grid-cols-2 gap-12">
-          {/* Column 1: The Story */}
-          <div className="space-y-8">
+      <div className="relative">
+        <Button
+          size="icon"
+          variant="ghost"
+          className="absolute top-4 right-4 z-10 bg-background/80 hover:bg-background"
+          onClick={onClose}
+          data-testid="button-close-expansion"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+
+        {/* Hero Carousel Section */}
+        <div className="relative aspect-[21/9] overflow-hidden bg-muted">
+          {project.galleryImages && project.galleryImages.length > 0 && (
+            <>
+              {isVideo(project.galleryImages[currentMediaIndex]) ? (
+                <video
+                  key={project.galleryImages[currentMediaIndex]}
+                  src={project.galleryImages[currentMediaIndex]}
+                  className="w-full h-full object-cover"
+                  controls
+                  data-testid={`video-media-${currentMediaIndex}`}
+                />
+              ) : (
+                <img
+                  src={project.galleryImages[currentMediaIndex]}
+                  alt={`${project.clientName} - Media ${currentMediaIndex + 1}`}
+                  className="w-full h-full object-cover"
+                  data-testid={`img-media-${currentMediaIndex}`}
+                />
+              )}
+
+              {project.galleryImages.length > 1 && (
+                <>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
+                    onClick={() => setCurrentMediaIndex((prev) => (prev - 1 + project.galleryImages.length) % project.galleryImages.length)}
+                    disabled={project.galleryImages.length <= 1}
+                    aria-label="Previous media"
+                    data-testid="button-prev-media"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
+                    onClick={() => setCurrentMediaIndex((prev) => (prev + 1) % project.galleryImages.length)}
+                    disabled={project.galleryImages.length <= 1}
+                    aria-label="Next media"
+                    data-testid="button-next-media"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
+
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    {project.galleryImages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentMediaIndex(index)}
+                        aria-label={`View media ${index + 1} of ${project.galleryImages.length}`}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          index === currentMediaIndex
+                            ? "bg-white w-8"
+                            : "bg-white/50 hover:bg-white/75"
+                        }`}
+                        data-testid={`button-media-indicator-${index}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Content Section */}
+        <div className="p-8 md:p-12">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
             <div>
-              <h3 className="text-2xl font-bold mb-4 text-primary" data-testid={`heading-challenge-${project.id}`}>
+              <span className="sr-only" data-testid={`text-client-${project.id}`}>{project.clientName}</span>
+              <h2 className="text-4xl font-bold mb-2" data-testid="text-expansion-client">
+                {project.clientName}
+              </h2>
+              <p className="text-xl text-muted-foreground" data-testid="text-expansion-title">
+                {project.projectTitle}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 justify-end">
+              {project.categories.map((category) => (
+                <Badge key={category} variant="secondary">
+                  {category}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          {/* Story Sections - Three Column Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div>
+              <h3 className="text-2xl font-semibold mb-4 text-gradient">
                 The Challenge
               </h3>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-foreground/90 leading-relaxed" data-testid="text-challenge">
                 {project.challenge}
               </p>
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold mb-4 text-primary" data-testid={`heading-solution-${project.id}`}>
-                The Solution
+              <h3 className="text-2xl font-semibold mb-4 text-gradient">
+                Our Solution
               </h3>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-foreground/90 leading-relaxed" data-testid="text-solution">
                 {project.solution}
               </p>
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold mb-4 text-primary" data-testid={`heading-outcome-${project.id}`}>
+              <h3 className="text-2xl font-semibold mb-4 text-gradient">
                 The Outcome
               </h3>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-foreground/90 leading-relaxed" data-testid="text-outcome">
                 {project.outcome}
               </p>
             </div>
-
-            {/* Testimonial */}
-            <div className="bg-muted/50 rounded-xl p-6 border border-border">
-              <Quote className="w-8 h-8 text-primary mb-4" />
-              <blockquote className="text-lg italic mb-4" data-testid={`quote-${project.id}`}>
-                "{project.testimonial.text}"
-              </blockquote>
-              <cite className="text-sm text-muted-foreground not-italic font-medium" data-testid={`author-${project.id}`}>
-                — {project.testimonial.author}
-              </cite>
-            </div>
           </div>
 
-          {/* Column 2: Gallery */}
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold" data-testid={`heading-gallery-${project.id}`}>
-              Project Gallery
-            </h3>
-            
-            {/* Horizontal scrolling gallery */}
-            <div className="overflow-x-auto pb-4">
-              <div className="flex gap-4 min-w-max">
-                {project.galleryImages.map((image, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="flex-shrink-0 w-80 h-60 rounded-xl overflow-hidden shadow-lg"
-                  >
-                    <img
-                      src={image}
-                      alt={`${project.clientName} project image ${index + 1}`}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
+          {/* Feature Media Section - Additional videos/photos */}
+          {(project.galleryImages[1] || project.galleryImages[2]) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+              {project.galleryImages[1] && (
+                <div className="aspect-video rounded-xl overflow-hidden bg-muted/50 border border-border">
+                  {isVideo(project.galleryImages[1]) ? (
+                    <video
+                      src={project.galleryImages[1]}
+                      className="w-full h-full object-cover"
+                      controls
+                      data-testid="video-feature-1"
                     />
-                  </motion.div>
-                ))}
-              </div>
+                  ) : (
+                    <img
+                      src={project.galleryImages[1]}
+                      alt={`${project.clientName} - Feature 1`}
+                      className="w-full h-full object-cover"
+                      data-testid="img-feature-1"
+                    />
+                  )}
+                </div>
+              )}
+              {project.galleryImages[2] && (
+                <div className="aspect-video rounded-xl overflow-hidden bg-muted/50 border border-border">
+                  {isVideo(project.galleryImages[2]) ? (
+                    <video
+                      src={project.galleryImages[2]}
+                      className="w-full h-full object-cover"
+                      controls
+                      data-testid="video-feature-2"
+                    />
+                  ) : (
+                    <img
+                      src={project.galleryImages[2]}
+                      alt={`${project.clientName} - Feature 2`}
+                      className="w-full h-full object-cover"
+                      data-testid="img-feature-2"
+                    />
+                  )}
+                </div>
+              )}
             </div>
+          )}
 
-            {/* CTA */}
-            <div className="pt-6">
-              <Link href="/audit">
-                <Button
-                  size="lg"
-                  className="w-full md:w-auto"
-                  data-testid={`button-schedule-session-${project.id}`}
-                >
-                  Schedule a Brand Diagnostic & Strategy Session
-                </Button>
-              </Link>
+          {/* Testimonial Section */}
+          {project.testimonial && (
+            <div className="p-8 bg-muted/50 rounded-xl border border-border">
+              <p className="text-xl italic mb-4 text-foreground/90" data-testid="text-testimonial">
+                "{project.testimonial.text}"
+              </p>
+              <p className="text-base font-semibold text-muted-foreground" data-testid="text-testimonial-author">
+                — {project.testimonial.author}
+              </p>
             </div>
-          </div>
+          )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

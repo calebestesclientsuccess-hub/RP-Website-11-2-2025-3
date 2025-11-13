@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 
 interface ProjectCardProps {
@@ -14,11 +13,7 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, onClick }: ProjectCardProps) {
   return (
-    <motion.div
-      layoutId={`project-${project.id}`}
-      layout
-      whileHover={{ scale: 1.03, rotateZ: 1 }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    <div
       onClick={onClick}
       className="cursor-pointer rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-shadow duration-300 group"
       data-testid={`card-project-${project.id}`}
@@ -53,6 +48,6 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
