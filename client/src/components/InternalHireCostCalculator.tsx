@@ -36,13 +36,10 @@ export function InternalHireCostCalculator() {
     <div className="w-full max-w-4xl mx-auto">
       <Card className="p-6 md:p-8 bg-card/95 backdrop-blur-sm border-destructive/30" data-testid="card-internal-hire-calculator">
         <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2">
             <AlertTriangle className="w-6 h-6 text-destructive" />
-            <h3 className="text-2xl md:text-3xl font-bold">The True Cost of 1 Internal SDR</h3>
+            <h3 className="text-2xl md:text-3xl font-bold">Calculator Breakdown</h3>
           </div>
-          <p className="text-sm text-muted-foreground">
-            This is what you're actually paying for <span className="font-semibold">just one SDR</span> hire.
-          </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">

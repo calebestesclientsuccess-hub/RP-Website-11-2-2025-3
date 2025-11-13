@@ -516,7 +516,7 @@ export default function Home() {
               <Link href="/gtm-engine">
                 Build Your GTM Engine <ArrowRight className="w-4 h-4" />
               </Link>
-            </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -733,43 +733,56 @@ export default function Home() {
       {/* Widget Zone 6 */}
       <WidgetZone zone="zone-6" className="my-8" />
 
-      {/* Final CTA Module */}
-      <section className="py-20 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-primary/12 via-primary/6 via-30% to-muted/30">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold" data-testid="heading-final-cta">
-            The Blueprint is Clear.<br />
-            <span className="gradient-text gradient-hero">Schedule Your GTM Audit.</span>
-          </h2>
-          <p className="text-xl leading-relaxed" data-testid="text-final-cta-description">
-            Stop the hiring/firing cycle. Let's audit your GTM architecture and design a system that scales.
-          </p>
-          <Button
-            size="lg"
-            className="text-lg px-10 py-7 shadow-lg btn-gradient-text"
-            data-testid="button-final-schedule"
-            asChild
-          >
-            <Link href="/gtm-audit">Schedule My GTM Audit</Link>
-          </Button>
+      {/* The GTM Engine Solution - New Section with Own Background */}
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-background">
+        {/* Distinct gradient background for this section */}
+        <div className="absolute inset-0 pointer-events-none opacity-40">
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'radial-gradient(ellipse 80% 50% at 50% 20%, rgba(220, 38, 38, 0.08) 0%, transparent 100%)',
+            }}
+          />
+        </div>
 
-          {/* Secondary CTA / Lead Magnet Module */}
-          <div className="pt-12 border-t border-border/50">
-            <h3 className="text-2xl font-bold mb-4" data-testid="heading-secondary-cta">
-              Not ready for an audit?
-            </h3>
-            <p className="text-lg mb-6" data-testid="text-secondary-cta-description">
-              Take our 3-minute GTM Readiness Assessment to diagnose your current system's bottlenecks.
+        <div className="max-w-6xl mx-auto relative z-10">
+          {/* Final CTA Module */}
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold" data-testid="heading-final-cta">
+              The Blueprint is Clear.<br />
+              <span className="gradient-text gradient-hero">Schedule Your GTM Audit.</span>
+            </h2>
+            <p className="text-xl leading-relaxed" data-testid="text-final-cta-description">
+              Stop the hiring/firing cycle. Let's audit your GTM architecture and design a system that scales.
             </p>
-            <Link href="/assessment">
-              <Button
-                variant="outline"
-                size="lg"
-                className="text-lg px-8 py-6"
-                data-testid="button-assessment"
-              >
-                Assess My GTM Readiness <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+            <Button
+              size="lg"
+              className="text-lg px-10 py-7 shadow-lg btn-gradient-text"
+              data-testid="button-final-schedule"
+              asChild
+            >
+              <Link href="/gtm-audit">Schedule My GTM Audit</Link>
+            </Button>
+
+            {/* Secondary CTA / Lead Magnet Module */}
+            <div className="pt-12 border-t border-border/50">
+              <h3 className="text-2xl font-bold mb-4" data-testid="heading-secondary-cta">
+                Not ready for an audit?
+              </h3>
+              <p className="text-lg mb-6" data-testid="text-secondary-cta-description">
+                Take our 3-minute GTM Readiness Assessment to diagnose your current system's bottlenecks.
+              </p>
+              <Link href="/assessment">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="text-lg px-8 py-6"
+                  data-testid="button-assessment"
+                >
+                  Assess My GTM Readiness <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
