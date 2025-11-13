@@ -103,9 +103,9 @@ export default function GTMEnginePage() {
               <Badge
                 className="badge-texture text-white text-sm px-4 py-1.5"
                 style={{
-                  backgroundImage: 'linear-gradient(180deg, #0123B4 0%, #011A8F 90%)',
-                  borderColor: '#0123B4',
-                  boxShadow: '0 0 20px rgba(1, 35, 180, 0.3)'
+                  backgroundImage: 'linear-gradient(180deg, #4169E1 0%, #2E5FD9 90%)',
+                  borderColor: '#5B8EF5',
+                  boxShadow: '0 0 20px rgba(65, 105, 225, 0.5)'
                 }}
                 data-testid="badge-hero-engine"
               >
@@ -222,9 +222,9 @@ export default function GTMEnginePage() {
             </Card>
 
             {/* Build & Own an Asset (Blue/Good) */}
-            <Card className="p-8 bg-blue-600/5 border-2 border-blue-600/30" style={{ borderColor: 'rgba(1, 35, 180, 0.3)', backgroundColor: 'rgba(1, 35, 180, 0.05)' }}>
+            <Card className="p-8 bg-blue-600/5 border-2 border-blue-600/30" style={{ borderColor: 'rgba(65, 105, 225, 0.5)', backgroundColor: 'rgba(65, 105, 225, 0.08)' }}>
               <div className="mb-6">
-                <h3 className="text-3xl font-bold mb-4" style={{ color: '#0123B4' }}>Build & Own an Asset</h3>
+                <h3 className="text-3xl font-bold mb-4" style={{ color: '#4169E1' }}>Build & Own an Asset</h3>
                 <p className="text-lg leading-relaxed mb-6">
                   We partner with you to build a permanent GTM capability. One day, when you're ready, you can run it internally.
                 </p>
@@ -232,21 +232,21 @@ export default function GTMEnginePage() {
 
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                  <span className="mt-1 text-xl" style={{ color: '#0123B4' }}>✓</span>
+                  <span className="mt-1 text-xl" style={{ color: '#5B8EF5' }}>✓</span>
                   <div>
                     <p className="font-semibold mb-1">Full "Fullstack Sales Unit"</p>
                     <p className="text-sm leading-relaxed">Multiple roles and systems working together. Elite operators productive in Week 2. Guaranteed continuity—no turnover risk.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-1 text-xl" style={{ color: '#0123B4' }}>✓</span>
+                  <span className="mt-1 text-xl" style={{ color: '#5B8EF5' }}>✓</span>
                   <div>
                     <p className="font-semibold mb-1">100% IP Ownership Forever</p>
                     <p className="text-sm leading-relaxed">You own the GTM playbook, the Signal Factory, the messaging, the data. We build it for you, but it's yours to keep.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="mt-1 text-xl" style={{ color: '#0123B4' }}>✓</span>
+                  <span className="mt-1 text-xl" style={{ color: '#5B8EF5' }}>✓</span>
                   <div>
                     <p className="font-semibold mb-1">Proven Playbooks & Expert Coaching</p>
                     <p className="text-sm leading-relaxed">AI tools, proven methodology, ongoing optimization. This is a compounding asset that gets stronger over time.</p>
@@ -392,7 +392,7 @@ export default function GTMEnginePage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="p-8 text-center light-depth hover-elevate transition-all">
-              <div className="text-6xl font-bold mb-4" style={{ color: '#0123B4' }}>1</div>
+              <div className="text-6xl font-bold mb-4" style={{ color: '#4169E1' }}>1</div>
               <h3 className="text-2xl font-bold mb-4">Architect</h3>
               <p className="leading-relaxed">
                 We design your complete GTM strategy: ICP, messaging, multi-channel campaigns, and your proprietary playbook.
@@ -400,7 +400,7 @@ export default function GTMEnginePage() {
             </Card>
 
             <Card className="p-8 text-center light-depth hover-elevate transition-all">
-              <div className="text-6xl font-bold mb-4" style={{ color: '#0123B4' }}>2</div>
+              <div className="text-6xl font-bold mb-4" style={{ color: '#3B7FE8' }}>2</div>
               <h3 className="text-2xl font-bold mb-4">Activate</h3>
               <p className="leading-relaxed">
                 We deploy your elite BDR pod, configure the Signal Factory, and train your team on the Impact Selling methodology.
@@ -408,7 +408,7 @@ export default function GTMEnginePage() {
             </Card>
 
             <Card className="p-8 text-center light-depth hover-elevate transition-all">
-              <div className="text-6xl font-bold mb-4" style={{ color: '#0123B4' }}>3</div>
+              <div className="text-6xl font-bold mb-4" style={{ color: '#5B8EF5' }}>3</div>
               <h3 className="text-2xl font-bold mb-4">Run & Iterate</h3>
               <p className="leading-relaxed">
                 We execute campaigns, optimize based on data, and continuously refine your system for maximum performance.
@@ -434,7 +434,7 @@ export default function GTMEnginePage() {
             </p>
           </div>
 
-          <Card className="p-8 md:p-12" style={{ backgroundColor: 'rgba(1, 35, 180, 0.05)', borderColor: 'rgba(1, 35, 180, 0.3)', borderWidth: '2px' }}>
+          <Card className="p-8 md:p-12" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(91, 142, 245, 0.4)', borderWidth: '2px' }}>
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-bold mb-3">The Pain:</h3>
@@ -457,29 +457,29 @@ export default function GTMEnginePage() {
                 </p>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="p-6" style={{ backgroundColor: 'rgba(1, 35, 180, 0.05)', borderColor: 'rgba(1, 35, 180, 0.3)', borderWidth: '2px' }}>
-                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#0123B4' }}>The "Visionary Architect" (Caleb)</h4>
+                  <Card className="p-6" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(91, 142, 245, 0.4)', borderWidth: '2px' }}>
+                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#5B8EF5' }}>The "Visionary Architect" (Caleb)</h4>
                     <p className="text-sm leading-relaxed">
                       Orchestrated the new motion. He fixed the value equation, flipping the script from a weak "value" offer to a powerful "problem-led" one using Loss Aversion. He also raised the price from $300 to $750 to make the value believable against the $7,500 federal fine.
                     </p>
                   </Card>
 
-                  <Card className="p-6" style={{ backgroundColor: 'rgba(1, 35, 180, 0.05)', borderColor: 'rgba(1, 35, 180, 0.3)', borderWidth: '2px' }}>
-                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#0123B4' }}>The "Brand Guardian" (Mariya)</h4>
+                  <Card className="p-6" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(65, 105, 225, 0.5)', borderWidth: '2px' }}>
+                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#4169E1' }}>The "Brand Guardian" (Mariya)</h4>
                     <p className="text-sm leading-relaxed">
                       Solved the trust problem by producing an "authority" asset—an educational video starring an actress ("Ms. Samantha") positioned as the company's leading compliance expert. This created "Textbook Authority Bias".
                     </p>
                   </Card>
 
-                  <Card className="p-6" style={{ backgroundColor: 'rgba(1, 35, 180, 0.05)', borderColor: 'rgba(1, 35, 180, 0.3)', borderWidth: '2px' }}>
-                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#0123B4' }}>The "Talent" & "AI" Architects (Muneeb & Danyal)</h4>
+                  <Card className="p-6" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(91, 142, 245, 0.4)', borderWidth: '2px' }}>
+                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#5B8EF5' }}>The "Talent" & "AI" Architects (Muneeb & Danyal)</h4>
                     <p className="text-sm leading-relaxed">
                       Wrote the new cold call scripts for the playbook. Reps were trained not to sell, but to reference "Ms. Samantha's video". This instantly transferred the video's authority to the SDR, "warming the call".
                     </p>
                   </Card>
 
-                  <Card className="p-6" style={{ backgroundColor: 'rgba(1, 35, 180, 0.05)', borderColor: 'rgba(1, 35, 180, 0.3)', borderWidth: '2px' }}>
-                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#0123B4' }}>The "Talent" Insight (Muneeb & Caleb)</h4>
+                  <Card className="p-6" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(65, 105, 225, 0.5)', borderWidth: '2px' }}>
+                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#4169E1' }}>The "Talent" Insight (Muneeb & Caleb)</h4>
                     <p className="text-sm leading-relaxed">
                       We realized the client didn't need "hunters"; they needed "trust builders." We helped them staff the team with former CSMs and Account Managers, who excelled at building instant rapport for a fast, obvious sale.
                     </p>
