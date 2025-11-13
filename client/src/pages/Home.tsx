@@ -207,7 +207,7 @@ export default function Home() {
             </h2>
             <div className="space-y-4">
               <p className="text-xl leading-relaxed" data-testid="text-trap-description">
-                Founders face two bad options: the '$198,000 Mistake' of a slow, failed hire, or the 'High-Risk Outsourcing Trap' that costs all IP and control. Both stem from the same root cause: solving a system problem with a headcount solution.
+                Most founders think they have two options: hire internally or outsource. Both are traps. The internal hire costs $198,000+ and fails 67% of the time. The agency takes your money and owns your IP. There's a third way.
               </p>
             </div>
           </div>
