@@ -65,7 +65,7 @@ export function Navbar() {
               }`}
               data-testid="link-gtm-engine"
             >
-              The GTM Engine
+              The Solution
             </Link>
             <Link
               href="/results"
@@ -177,7 +177,7 @@ export function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-link-gtm-engine"
             >
-              The GTM Engine
+              The Solution
             </Link>
             <Link
               href="/results"

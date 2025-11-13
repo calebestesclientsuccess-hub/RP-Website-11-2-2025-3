@@ -91,43 +91,7 @@ export default function GTMEnginePage() {
       <WidgetZone zone="zone-15" className="my-8" />
 
       {/* Hero Module */}
-      <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8 overflow-hidden">
-        {/* Animated gradient mesh background - blue-purple theme */}
-        <div className="absolute inset-0 pointer-events-none opacity-60">
-          <div className="gradient-mesh-layer gradient-mesh-slow" style={{
-            background: `
-              radial-gradient(
-                ellipse 800px 400px at 20% 30%,
-                rgba(66, 52, 156, 0.35),
-                transparent 50%
-              ),
-              radial-gradient(
-                ellipse 600px 300px at 80% 70%,
-                rgba(65, 105, 225, 0.35),
-                transparent 50%
-              ),
-              radial-gradient(
-                ellipse 700px 500px at 50% 50%,
-                rgba(138, 43, 226, 0.25),
-                transparent 60%
-              )
-            `,
-            backgroundSize: '200% 200%'
-          }} />
-          <div className="gradient-mesh-layer-secondary gradient-mesh-medium-secondary" style={{
-            background: `linear-gradient(
-              135deg,
-              rgba(66, 52, 156, 0.25) 0%,
-              transparent 30%,
-              transparent 70%,
-              rgba(65, 105, 225, 0.25) 100%
-            )`,
-            backgroundSize: '300% 300%'
-          }} />
-        </div>
-        {/* Light grid dots pattern (light mode only) */}
-        <div className="light-grid-dots" />
-
+      <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <motion.div
@@ -137,7 +101,7 @@ export default function GTMEnginePage() {
               className="mb-6 flex justify-center"
             >
               <Badge 
-                className="badge-texture bg-community text-white border-community text-sm px-4 py-1.5"
+                className="badge-texture bg-[#4169E1] text-white border-[#4169E1] text-sm px-4 py-1.5"
                 data-testid="badge-hero-engine"
               >
                 The GTM Engine
@@ -160,7 +124,7 @@ export default function GTMEnginePage() {
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
               data-testid="text-hero-subheading"
             >
-              You don't have a headcount problem; you have an architecture problem. This is the blueprint for the architecture that scales.
+              You don't have a headcount problem; you have an architecture problem. This is the blueprint for a Sales Architecture that scales. It starts with the Fullstack Sales Unit.
             </motion.p>
           </div>
         </div>
@@ -181,17 +145,41 @@ export default function GTMEnginePage() {
 
       {/* Module 1: The "Hardware" & "Software" of Your Asset */}
       <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30 overflow-hidden" data-testid="section-asset-components">
-        {/* Subtle gradient mesh for depth */}
-        <div className="absolute inset-0 pointer-events-none opacity-40">
+        {/* Blue animated gradient mesh background */}
+        <div className="absolute inset-0 pointer-events-none opacity-60">
           <div className="gradient-mesh-layer gradient-mesh-slow" style={{
-            background: `radial-gradient(
-              ellipse 600px 400px at 80% 20%,
-              rgba(65, 105, 225, 0.25),
-              transparent 60%
-            )`,
+            background: `
+              radial-gradient(
+                ellipse 800px 400px at 20% 30%,
+                rgba(65, 105, 225, 0.35),
+                transparent 50%
+              ),
+              radial-gradient(
+                ellipse 600px 300px at 80% 70%,
+                rgba(30, 144, 255, 0.35),
+                transparent 50%
+              ),
+              radial-gradient(
+                ellipse 700px 500px at 50% 50%,
+                rgba(65, 105, 225, 0.25),
+                transparent 60%
+              )
+            `,
             backgroundSize: '200% 200%'
           }} />
+          <div className="gradient-mesh-layer-secondary gradient-mesh-medium-secondary" style={{
+            background: `linear-gradient(
+              135deg,
+              rgba(65, 105, 225, 0.25) 0%,
+              transparent 30%,
+              transparent 70%,
+              rgba(30, 144, 255, 0.25) 100%
+            )`,
+            backgroundSize: '300% 300%'
+          }} />
         </div>
+        {/* Light grid dots pattern (light mode only) */}
+        <div className="light-grid-dots" />
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-asset-components">
