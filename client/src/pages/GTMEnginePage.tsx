@@ -144,7 +144,7 @@ export default function GTMEnginePage() {
       <WidgetZone zone="zone-16" className="my-8" />
 
       {/* Module 1: The "Hardware" & "Software" of Your Asset */}
-      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30 overflow-hidden" data-testid="section-asset-components">
+      <section className="relative pt-[600px] pb-20 px-4 md:px-6 lg:px-8 bg-card/30 overflow-hidden" data-testid="section-asset-components">
         {/* Blue animated gradient mesh background */}
         <div className="absolute inset-0 pointer-events-none opacity-60">
           <div className="gradient-mesh-layer gradient-mesh-slow" style={{
