@@ -136,7 +136,10 @@ export default function Home() {
                   className="-mb-2"
                 >
                   <Badge
-                    className="badge-texture bg-community text-white border-community text-sm px-4 py-1.5"
+                    className="badge-texture text-white border-community text-sm px-4 py-1.5"
+                    style={{
+                      backgroundImage: 'linear-gradient(180deg, hsl(258, 56%, 44%) 0%, hsl(251, 49%, 32%) 90%)'
+                    }}
                     data-testid="badge-hero-culture"
                   >
                     Community + Competition = Culture
@@ -243,42 +246,7 @@ export default function Home() {
             </h2>
           </div>
 
-          {/* Breathing Room Section - Spacious transition with animated blue gradient */}
-          <div className="relative py-32 md:py-40 lg:py-48 mb-12 overflow-hidden">
-            {/* Animated blue gradient background */}
-            <div className="absolute inset-0 opacity-40">
-              <div 
-                className="absolute inset-0"
-                style={{
-                  background: 'radial-gradient(ellipse 80% 50% at 50% 50%, rgba(66, 153, 225, 0.15) 0%, transparent 100%)',
-                }}
-              />
-              <div 
-                className="absolute inset-0 gradient-mesh-slow"
-                style={{
-                  background: `
-                    radial-gradient(
-                      ellipse 600px 400px at 30% 50%,
-                      rgba(59, 130, 246, 0.12),
-                      transparent 60%
-                    ),
-                    radial-gradient(
-                      ellipse 500px 350px at 70% 50%,
-                      rgba(96, 165, 250, 0.1),
-                      transparent 60%
-                    )
-                  `,
-                }}
-              />
-            </div>
-            
-            {/* Subtle light particles effect */}
-            <div className="absolute inset-0 opacity-20">
-              <div className="light-grid-dots" style={{ backgroundSize: '40px 40px' }} />
-            </div>
-          </div>
-
-          {/* 3 Core Components */}
+          {/* The 3 Core Components */}
           <div className="grid md:grid-cols-3 gap-8 mb-20 max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}

@@ -101,7 +101,11 @@ export default function GTMEnginePage() {
               className="mb-6 flex justify-center"
             >
               <Badge 
-                className="badge-texture bg-[#4169E1] text-white border-[#4169E1] text-sm px-4 py-1.5"
+                className="badge-texture text-white text-sm px-4 py-1.5"
+                style={{
+                  backgroundImage: 'linear-gradient(180deg, #0123B4 0%, #011A8F 90%)',
+                  borderColor: '#0123B4'
+                }}
                 data-testid="badge-hero-engine"
               >
                 The GTM Engine
