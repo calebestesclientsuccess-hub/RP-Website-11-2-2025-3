@@ -28,7 +28,7 @@ interface ProjectGridProps {
 }
 
 export function ProjectGrid({ onProjectClick, selectedProjectId, onCloseExpansion }: ProjectGridProps) {
-  const { data: projects, isLoading, isError } = useQuery<Project[]>({
+  const { data: projects, isLoading, isError} = useQuery<Project[]>({
     queryKey: ['/api/branding/projects'],
   });
 
