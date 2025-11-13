@@ -90,8 +90,8 @@ export default function GTMEnginePage() {
       {/* Widget Zone 15 */}
       <WidgetZone zone="zone-15" className="my-8" />
 
-      {/* Hero Module */}
-      <section className="relative pt-32 pb-11 px-4 md:px-6 lg:px-8">
+      {/* Hero Module - Extended background for visual breathing room */}
+      <section className="relative pt-32 pb-32 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <motion.div
@@ -134,23 +134,10 @@ export default function GTMEnginePage() {
         </div>
       </section>
 
-      {/* Your Fullstack Sales Unit - The Product Reveal */}
-      <Suspense fallback={
-        <div className="flex flex-col items-center justify-center min-h-[600px] gap-4">
-          <Skeleton className="h-96 w-full max-w-4xl rounded-lg" />
-          <Skeleton className="h-8 w-64" />
-        </div>
-      }>
-        <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
-      </Suspense>
-
-      {/* Widget Zone 16 */}
-      <WidgetZone zone="zone-16" className="my-8" />
-
-      {/* Module 1: The "Hardware" & "Software" of Your Asset */}
-      <section className="relative pt-[600px] pb-20 px-4 md:px-6 lg:px-8 bg-card/30 overflow-hidden" data-testid="section-asset-components">
-        {/* Blue animated gradient mesh background */}
-        <div className="absolute inset-0 pointer-events-none opacity-60">
+      {/* Extended background wrapper for visual breathing room */}
+      <div className="relative">
+        {/* Blue animated gradient mesh background - extends beyond content */}
+        <div className="absolute inset-0 pointer-events-none opacity-60" style={{ height: '140%' }}>
           <div className="gradient-mesh-layer gradient-mesh-slow" style={{
             background: `
               radial-gradient(
@@ -183,7 +170,26 @@ export default function GTMEnginePage() {
           }} />
         </div>
         {/* Light grid dots pattern (light mode only) */}
-        <div className="light-grid-dots" />
+        <div className="light-grid-dots" style={{ height: '140%' }} />
+
+      {/* Your Fullstack Sales Unit - The Product Reveal */}
+      <div className="relative z-10">
+      <Suspense fallback={
+        <div className="flex flex-col items-center justify-center min-h-[600px] gap-4">
+          <Skeleton className="h-96 w-full max-w-4xl rounded-lg" />
+          <Skeleton className="h-8 w-64" />
+        </div>
+      }>
+        <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
+      </Suspense>
+      </div>
+      </div>
+
+      {/* Widget Zone 16 */}
+      <WidgetZone zone="zone-16" className="my-8" />
+
+      {/* Module 1: The "Hardware" & "Software" of Your Asset */}
+      <section className="relative pt-20 pb-20 px-4 md:px-6 lg:px-8 bg-card/30 overflow-hidden" data-testid="section-asset-components">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-asset-components">
