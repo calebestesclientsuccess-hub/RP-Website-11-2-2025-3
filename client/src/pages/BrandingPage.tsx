@@ -3,12 +3,11 @@ import { useState } from "react";
 import { LayoutGroup } from "framer-motion";
 import { BrandingHero } from "@/components/branding/BrandingHero";
 import { ProjectGrid } from "@/components/branding/ProjectGrid";
-import { projects } from "@/data/projects";
 
 export default function BrandingPage() {
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
 
-  const handleProjectClick = (projectId: number) => {
+  const handleProjectClick = (projectId: string) => {
     setSelectedProjectId(projectId === selectedProjectId ? null : projectId);
   };
 

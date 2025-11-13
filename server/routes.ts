@@ -1388,7 +1388,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/branding/projects", async (req, res) => {
     try {
       const projects = await storage.getAllProjects(req.tenantId);
-      return res.json(projects);
+      
+      // Map database format to frontend-expected format
+      const mapped = projects.map(p => ({
+        id: p.id,
+        slug: p.slug,
+        clientName: p.clientName || p.title, // Fallback to title if clientName not set
+        projectTitle: p.title,
+        thumbnailImage: p.thumbnailUrl,
+        categories: p.categories || [],
+        challenge: p.challengeText,
+        solution: p.solutionText,
+        outcome: p.outcomeText,
+        galleryImages: p.modalMediaUrls || [],
+        testimonial: (p.testimonialText && p.testimonialAuthor) ? {
+          text: p.testimonialText,
+          author: p.testimonialAuthor
+        } : undefined
+      }));
+      
+      return res.json(mapped);
     } catch (error) {
       console.error("Error fetching all projects:", error);
       return res.status(500).json({ error: "Internal server error" });

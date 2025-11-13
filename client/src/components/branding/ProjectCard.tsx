@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 
 interface ProjectCardProps {
   project: {
-    id: number;
+    id: string;
     clientName: string;
     projectTitle: string;
     thumbnailImage: string;

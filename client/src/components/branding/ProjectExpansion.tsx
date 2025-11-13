@@ -6,7 +6,7 @@ import { ParticleDissolve } from "./ParticleDissolve";
 
 interface ProjectExpansionProps {
   project: {
-    id: number;
+    id: string;
     slug: string;
     clientName: string;
     projectTitle: string;

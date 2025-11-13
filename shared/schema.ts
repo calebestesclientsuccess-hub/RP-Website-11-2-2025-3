@@ -592,12 +592,16 @@ export const projects = pgTable("projects", {
   tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
   slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
+  clientName: text("client_name"),
   thumbnailUrl: text("thumbnail_url"),
+  categories: text("categories").array().default(sql`'{}'::text[]`), // Array of category tags
   challengeText: text("challenge_text"),
   solutionText: text("solution_text"),
   outcomeText: text("outcome_text"),
   modalMediaType: text("modal_media_type").default("video").notNull(), // 'video' or 'carousel'
   modalMediaUrls: text("modal_media_urls").array(), // Array of Cloudinary URLs
+  testimonialText: text("testimonial_text"),
+  testimonialAuthor: text("testimonial_author"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
