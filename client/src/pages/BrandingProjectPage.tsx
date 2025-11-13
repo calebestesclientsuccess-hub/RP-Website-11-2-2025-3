@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -36,6 +36,8 @@ export default function BrandingProjectPage() {
   const { slug } = useParams<{ slug: string }>();
   const [, setLocation] = useLocation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [activeSceneIndex, setActiveSceneIndex] = useState<number>(0);
+  const [scrollProgress, setScrollProgress] = useState<number>(0);
 
   // Fetch project data
   const { data: project, isLoading: isLoadingProject } = useQuery<Project>({
@@ -75,6 +77,20 @@ export default function BrandingProjectPage() {
       });
     }
 
+    // Track scroll progress on window
+    const updateScrollProgress = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
+      const progress = (scrollTop / (scrollHeight - clientHeight)) * 100;
+      setScrollProgress(Math.min(100, Math.max(0, progress)));
+    };
+
+    // Initial progress update
+    updateScrollProgress();
+
+    window.addEventListener('scroll', updateScrollProgress);
+
     // Setup scroll-driven animations for each scene
     const sceneElements = scrollContainerRef.current.querySelectorAll('[data-scene]');
     
@@ -94,6 +110,15 @@ export default function BrandingProjectPage() {
             scrub: 1.5,
           }
         });
+      });
+
+      // Track active scene
+      ScrollTrigger.create({
+        trigger: element,
+        start: "top center",
+        end: "bottom center",
+        onEnter: () => setActiveSceneIndex(index),
+        onEnterBack: () => setActiveSceneIndex(index),
       });
 
       // Main scene animation based on config
@@ -140,8 +165,20 @@ export default function BrandingProjectPage() {
 
     return () => {
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      window.removeEventListener('scroll', updateScrollProgress);
     };
   }, [scenes]);
+
+  // Navigate to a specific scene
+  const scrollToScene = (index: number) => {
+    if (!scrollContainerRef.current) return;
+    const sceneElements = scrollContainerRef.current.querySelectorAll('[data-scene]');
+    const targetScene = sceneElements[index] as HTMLElement;
+    
+    if (targetScene) {
+      targetScene.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
 
   const isLoading = isLoadingProject || isLoadingScenes;
 
@@ -200,13 +237,37 @@ export default function BrandingProjectPage() {
             </Button>
 
             <div className="flex items-center gap-2">
-              {scenes?.map((_, index) => (
-                <Circle
-                  key={index}
-                  className="w-2 h-2 fill-muted-foreground text-muted-foreground"
-                  data-testid={`indicator-scene-${index}`}
-                />
-              ))}
+              {/* Progress bar */}
+              <div className="hidden md:flex items-center gap-2 mr-4">
+                <div className="w-32 h-1 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-red-500 to-purple-500 transition-all duration-300"
+                    style={{ width: `${scrollProgress}%` }}
+                  />
+                </div>
+                <span className="text-xs text-muted-foreground">{Math.round(scrollProgress)}%</span>
+              </div>
+
+              {/* Scene indicators */}
+              <div className="flex items-center gap-2">
+                {scenes?.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => scrollToScene(index)}
+                    className="group hover-elevate active-elevate-2 p-1 rounded-full transition-all"
+                    data-testid={`button-scene-${index}`}
+                    aria-label={`Go to scene ${index + 1}`}
+                  >
+                    <Circle
+                      className={`transition-all ${
+                        activeSceneIndex === index
+                          ? "w-3 h-3 fill-red-500 text-red-500"
+                          : "w-2 h-2 fill-muted-foreground text-muted-foreground group-hover:fill-red-400 group-hover:text-red-400"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </nav>
