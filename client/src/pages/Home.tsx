@@ -704,11 +704,16 @@ export default function Home() {
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
         <div className="max-w-7xl mx-auto">
           {/* Internal Hire Cost Calculator Section */}
-          <div className="max-w-4xl mx-auto mb-12">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-12 text-center leading-tight" data-testid="heading-internal-sdr-cost">
-              <div className="mb-2">The True Cost of</div>
-              <div className="gradient-text gradient-hero">1 Internal SDR</div>
-            </h2>
+          <div className="max-w-4xl mx-auto mb-20">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight" data-testid="heading-internal-sdr-cost">
+                <div className="mb-2">The True Cost of</div>
+                <div className="gradient-text gradient-hero">1 Internal SDR</div>
+              </h2>
+              <p className="text-xl text-muted-foreground mt-6 max-w-2xl mx-auto">
+                This is what you're actually paying for just one SDR hire.
+              </p>
+            </div>
             <InternalHireCostCalculator />
           </div>
 
@@ -734,7 +739,7 @@ export default function Home() {
       <WidgetZone zone="zone-6" className="my-8" />
 
       {/* The GTM Engine Solution - New Section with Own Background */}
-      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-background">
+      <section className="relative py-32 px-4 md:px-6 lg:px-8 bg-background">
         {/* Distinct gradient background for this section */}
         <div className="absolute inset-0 pointer-events-none opacity-40">
           <div
