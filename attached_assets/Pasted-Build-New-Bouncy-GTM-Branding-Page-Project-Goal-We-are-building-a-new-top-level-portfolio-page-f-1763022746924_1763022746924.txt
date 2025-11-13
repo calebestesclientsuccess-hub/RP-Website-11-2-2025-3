@@ -1,0 +1,196 @@
+Build New "Bouncy GTM Branding Page"
+Project Goal: We are building a new, top-level portfolio page for our branding services. This page will be at the /branding route.
+
+The primary user experience will be an interactive, "in-grid expansion" portfolio. The user will see a grid of project cards. When a card is clicked, the grid itself will "open up" to reveal a detailed case study, pushing the other cards down.
+
+The animations must be "bouncy, 3D, and alive," using Framer Motion's spring physics.
+
+1. Page Architecture & Hero
+New Route: Create a new page component at the /branding route.
+
+Navigation: Add a new link named "Branding" to the main website navigation bar that points to /branding.
+
+Page Layout: This page will have a simple two-part layout:
+
+Hero Section: A text-based hero at the top.
+
+Portfolio Grid: The interactive project grid directly below it.
+
+Hero Component (<BrandingHero />):
+
+The hero is simple and text-focused.
+
+The <h1> headline must be this exact copy: "Your Brand Is Driving Sales, Or Killing Them."
+
+2. Component: <ProjectGrid /> (The Controller)
+This component will fetch the project data and manage the core logic.
+
+Data: Import the projects array from /data/projects.js (see section 5 for the data structure).
+
+State: Use useState to manage the currently open project:
+
+const [expandedId, setExpandedId] = useState(null);
+
+Toggle Logic: The onClick handler passed to each card should toggle the state:
+
+const handleToggle = (projectId) => { setExpandedId(expandedId === projectId ? null : projectId); };
+
+Grid Layout:
+
+Use Tailwind CSS grid (e.g., grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8).
+
+Map over the projects array.
+
+Crucially: You must render both the card and the expansion component inside the map and wrap them in a React.Fragment. This is to ensure the expansion panel appears in the correct place in the grid.
+
+JavaScript
+
+// <ProjectGrid />
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+  {projects.map(project => (
+    <React.Fragment key={project.id}>
+      <ProjectCard
+        project={project}
+        onClick={() => handleToggle(project.id)}
+      />
+      <AnimatePresence>
+        {expandedId === project.id && (
+          <ProjectExpansion project={project} />
+        )}
+      </AnimatePresence>
+    </React.Fragment>
+  ))}
+</div>
+3. Component: <ProjectCard /> (The Trigger)
+This is the clickable card in the grid.
+
+Component: Must be a motion.div.
+
+Content: Display project.thumbnailImage, project.clientName, and project.projectTitle.
+
+Aesthetics:
+
+Shape: "Soft and rounded." Use rounded-2xl or rounded-3xl.
+
+Shadow: "Deep and heavy." Use shadow-xl and increase it on hover, e.g., transition-shadow duration-300 hover:shadow-2xl.
+
+Animation (Bouncy & 3D):
+
+layout Prop: This is mandatory. Add the layout prop to the motion.div. This is what makes the other cards "shuffle" smoothly.
+
+whileHover Prop: Use this to create the 3D "pop" effect.
+
+whileHover={{ scale: 1.03, rotateZ: '1deg' }}
+
+transition Prop: All animations must use type: "spring" to be "bouncy."
+
+transition={{ type: "spring", stiffness: 300, damping: 20 }}
+
+JavaScript
+
+// <ProjectCard />
+<motion.div
+  layout
+  whileHover={{ scale: 1.03, rotateZ: '1deg' }}
+  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+  onClick={onClick}
+  className="cursor-pointer rounded-2xl shadow-xl overflow-hidden"
+>
+  {/* ...card content (image, title) */}
+</motion.div>
+4. Component: <ProjectExpansion /> (The Payload)
+This is the component that opens up to show the case study. It must be styled to span the full width of the grid.
+
+Spanning Logic: This component will render in the grid flow after its corresponding card. You must use Tailwind's grid-column: span / full (or equivalent) to make it break out of its single-column constraint and span the entire width of the grid (e.g., md:col-span-2 lg:col-span-3).
+
+Component: Must be a motion.div.
+
+Animation (The "Roll-Open"):
+
+It must have initial, animate, and exit props to animate its height and opacity.
+
+initial={{ opacity: 0, height: 0 }}
+
+animate={{ opacity: 1, height: 'auto' }}
+
+exit={{ opacity: 0, height: 0 }}
+
+transition={{ type: "spring", stiffness: 400, damping: 30 }}
+
+Content (The "Story"):
+
+This component receives the full project object.
+
+Layout: Use a clean, two-column layout within this component.
+
+Column 1 (The Story):
+
+<h3>The Challenge</h3> -> project.challenge
+
+<h3>The Solution</h3> -> project.solution
+
+<h3>The Outcome</h3> -> project.outcome
+
+<blockquote> -> project.testimonial.text
+
+Column 2 (The Assets):
+
+A horizontally scrolling gallery for project.galleryImages.
+
+Primary CTA:
+
+Place a single, prominent button at the bottom of the content.
+
+Exact Text: "Schedule a Brand Diagnostic & Strategy Session"
+
+5. Data Structure (/data/projects.js)
+Create this file. This structure is the single source of truth for the page and must contain all fields needed for the <ProjectExpansion /> component.
+
+JavaScript
+
+export const projects = [
+  {
+    id: 1,
+    clientName: "Client A",
+    projectTitle: "Full GTM Rebrand",
+    thumbnailImage: "/images/portfolio/client-a-thumb.jpg",
+    categories: ["Branding", "Strategy", "Web Design"],
+    
+    // For the <ProjectExpansion />
+    challenge: "Client A was a new B2B SaaS player struggling to differentiate itself in a saturated market. Their messaging was unclear and failed to attract their target ICP.",
+    solution: "We conducted a 3-week brand sprint, defining their core identity, voice, and visual system. This culminated in a new website, sales deck, and GTM messaging framework.",
+    outcome: "Achieved 40% increase in qualified leads in the first quarter post-launch. Brand recall in customer surveys improved by 65%.",
+    
+    galleryImages: [
+      "/images/portfolio/client-a-img1.jpg", // e.g., Logo concepts
+      "/images/portfolio/client-a-img2.jpg", // e.g., Website before/after
+      "/images/portfolio/client-a-img3.jpg"  // e.g., Brand guidelines
+    ],
+    
+    testimonial: {
+      text: "The new brand strategy gave us the clarity and confidence we desperately needed. We're finally speaking to the right people, and they're listening.",
+      author: "CEO, Client A"
+    }
+  },
+  {
+    id: 2,
+    clientName: "Client B",
+    projectTitle: "Sales Enablement & Messaging",
+    thumbnailImage: "/images/portfolio/client-b-thumb.jpg",
+    categories: ["Strategy", "Sales"],
+    
+    challenge: "Client B's sales team was using outdated and inconsistent decks, leading to a 90-day sales cycle and low close rates.",
+    solution: "We developed a new core messaging framework and built a modular sales deck in Figma, allowing the team to build custom, high-impact decks in minutes.",
+    outcome: "Sales cycle reduced by 30% in the first 6 months. Team-wide adoption of the new materials led to a 15% increase in ACV.",
+    
+    galleryImages: [
+      "/images/portfolio/client-b-img1.jpg", // e.g., Old vs. New deck
+      "/images/portfolio/client-b-img2.jpg"  // e.g., Messaging framework
+    ],
+    
+    testimonial: {
+      text: "This isn't just a sales deck, it's a new way of selling. Our team finally feels like they have the right tools to win.",
+      author: "VP of Sales, Client B"
+    }
+  }
+];
