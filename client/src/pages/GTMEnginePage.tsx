@@ -498,19 +498,6 @@ export default function GTMEnginePage() {
         </div>
       </section>
 
-      {/* Section 7: The Final Reframe */}
-      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-final-reframe">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-8" data-testid="heading-final-reframe">
-            You Stop Renting.<br />
-            <span className="gradient-text gradient-hero">You Start Owning.</span>
-          </h2>
-          <p className="text-xl leading-relaxed">
-            This is not a service. This is an investment in a permanent, compounding GTM asset. One that you control, that you own, and that scales with your business.
-          </p>
-        </div>
-      </section>
-
       {/* Widget Zone 19 */}
       <WidgetZone zone="zone-19" className="my-8" />
 
