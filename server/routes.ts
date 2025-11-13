@@ -1385,6 +1385,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Public Branding Project endpoints (for scrollytelling pages)
+  app.get("/api/branding/projects", async (req, res) => {
+    try {
+      const projects = await storage.getAllProjects(req.tenantId);
+      return res.json(projects);
+    } catch (error) {
+      console.error("Error fetching all projects:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/branding/projects/slug/:slug", async (req, res) => {
     try {
       const project = await storage.getProjectBySlug(req.tenantId, req.params.slug);
