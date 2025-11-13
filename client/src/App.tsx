@@ -68,6 +68,7 @@ const CampaignsListLazy = lazy(() => import("@/pages/admin/CampaignsList"));
 const CampaignFormLazy = lazy(() => import("@/pages/admin/CampaignForm"));
 const AssessmentAdminDashboardLazy = lazy(() => import("@/pages/AssessmentAdminDashboard"));
 const ContentLibraryLazy = lazy(() => import("@/pages/admin/ContentLibrary"));
+const TestimonialFormLazy = lazy(() => import("@/pages/admin/TestimonialForm"));
 
 // Loading fallback component
 function PageLoadingFallback() {
@@ -111,6 +112,7 @@ const AssessmentConfigForm = withLazyLoading(AssessmentConfigFormLazy);
 const CampaignsList = withLazyLoading(CampaignsListLazy);
 const CampaignForm = withLazyLoading(CampaignFormLazy);
 const AssessmentAdminDashboard = withLazyLoading(AssessmentAdminDashboardLazy);
+const TestimonialForm = withLazyLoading(TestimonialFormLazy);
 
 
 function ScrollToTop() {
@@ -175,6 +177,8 @@ function Router() {
       <Route path="/admin/video-posts/new" component={VideoPostForm} />
       <Route path="/admin/video-posts/:id/edit" component={VideoPostForm} />
       <Route path="/admin/video-posts" component={VideoPostsList} />
+      <Route path="/admin/testimonials/new" component={TestimonialForm} />
+      <Route path="/admin/testimonials/:id/edit" component={TestimonialForm} />
       <Route path="/admin/widget-config" component={WidgetConfigPage} />
 
       {/* Resource Pillar Pages */}

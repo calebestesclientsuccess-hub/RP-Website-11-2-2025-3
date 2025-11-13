@@ -1277,7 +1277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/testimonials", async (req, res) => {
+  app.post("/api/testimonials", requireAuth, async (req, res) => {
     try {
       const result = insertTestimonialSchema.safeParse(req.body);
       if (!result.success) {
@@ -1291,6 +1291,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(201).json(testimonial);
     } catch (error) {
       console.error("Error creating testimonial:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/testimonials/:id", async (req, res) => {
+    try {
+      const testimonial = await storage.getTestimonialById(req.tenantId, req.params.id);
+      if (!testimonial) {
+        return res.status(404).json({ error: "Testimonial not found" });
+      }
+      return res.json(testimonial);
+    } catch (error) {
+      console.error("Error fetching testimonial:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/testimonials/:id", requireAuth, async (req, res) => {
+    try {
+      const existing = await storage.getTestimonialById(req.tenantId, req.params.id);
+      if (!existing) {
+        return res.status(404).json({ error: "Testimonial not found" });
+      }
+      
+      const result = insertTestimonialSchema.partial().safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      
+      // Strip undefined keys while preserving null (allows clearing optional fields)
+      const updateData = Object.fromEntries(
+        Object.entries(result.data).filter(([_, value]) => value !== undefined)
+      );
+      
+      const testimonial = await storage.updateTestimonial(req.tenantId, req.params.id, updateData);
+      return res.json(testimonial);
+    } catch (error) {
+      console.error("Error updating testimonial:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/testimonials/:id", requireAuth, async (req, res) => {
+    try {
+      const existing = await storage.getTestimonialById(req.tenantId, req.params.id);
+      if (!existing) {
+        return res.status(404).json({ error: "Testimonial not found" });
+      }
+      
+      await storage.deleteTestimonial(req.tenantId, req.params.id);
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting testimonial:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/testimonials/:id/featured", requireAuth, async (req, res) => {
+    try {
+      const existing = await storage.getTestimonialById(req.tenantId, req.params.id);
+      if (!existing) {
+        return res.status(404).json({ error: "Testimonial not found" });
+      }
+      
+      const { featured } = req.body;
+      if (typeof featured !== 'boolean') {
+        return res.status(400).json({ error: "featured must be a boolean" });
+      }
+      const testimonial = await storage.updateTestimonialFeaturedStatus(req.tenantId, req.params.id, featured);
+      return res.json(testimonial);
+    } catch (error) {
+      console.error("Error updating testimonial featured status:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

@@ -61,7 +61,11 @@ export interface IStorage {
   createOrUpdateWidgetConfig(tenantId: string, config: InsertWidgetConfig): Promise<WidgetConfig>;
 
   getAllTestimonials(tenantId: string, featuredOnly?: boolean): Promise<Testimonial[]>;
+  getTestimonialById(tenantId: string, id: string): Promise<Testimonial | undefined>;
   createTestimonial(tenantId: string, testimonial: InsertTestimonial): Promise<Testimonial>;
+  updateTestimonial(tenantId: string, id: string, testimonial: Partial<InsertTestimonial>): Promise<Testimonial>;
+  deleteTestimonial(tenantId: string, id: string): Promise<void>;
+  updateTestimonialFeaturedStatus(tenantId: string, id: string, featured: boolean): Promise<Testimonial>;
 
   getAllJobPostings(tenantId: string, activeOnly?: boolean): Promise<JobPosting[]>;
   getJobPosting(tenantId: string, id: string): Promise<JobPosting | undefined>;
@@ -333,6 +337,33 @@ export class DbStorage implements IStorage {
   async createTestimonial(tenantId: string, insertTestimonial: InsertTestimonial): Promise<Testimonial> {
     const [testimonial] = await db.insert(testimonials)
       .values({ tenantId, ...insertTestimonial })
+      .returning();
+    return testimonial;
+  }
+
+  async getTestimonialById(tenantId: string, id: string): Promise<Testimonial | undefined> {
+    const [testimonial] = await db.select().from(testimonials)
+      .where(and(eq(testimonials.tenantId, tenantId), eq(testimonials.id, id)));
+    return testimonial;
+  }
+
+  async updateTestimonial(tenantId: string, id: string, updateData: Partial<InsertTestimonial>): Promise<Testimonial> {
+    const [testimonial] = await db.update(testimonials)
+      .set(updateData)
+      .where(and(eq(testimonials.tenantId, tenantId), eq(testimonials.id, id)))
+      .returning();
+    return testimonial;
+  }
+
+  async deleteTestimonial(tenantId: string, id: string): Promise<void> {
+    await db.delete(testimonials)
+      .where(and(eq(testimonials.tenantId, tenantId), eq(testimonials.id, id)));
+  }
+
+  async updateTestimonialFeaturedStatus(tenantId: string, id: string, featured: boolean): Promise<Testimonial> {
+    const [testimonial] = await db.update(testimonials)
+      .set({ featured })
+      .where(and(eq(testimonials.tenantId, tenantId), eq(testimonials.id, id)))
       .returning();
     return testimonial;
   }

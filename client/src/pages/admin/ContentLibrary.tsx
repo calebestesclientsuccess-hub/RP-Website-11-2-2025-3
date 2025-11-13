@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Helmet } from "react-helmet-async";
 import { Plus, Search, MoreVertical, Edit, Trash2, Star, StarOff } from "lucide-react";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -90,9 +90,14 @@ export default function ContentLibrary() {
       });
       
       if (!res.ok) throw new Error('Failed to delete content');
+      return { type, id };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/content'] });
+      if (data.type === 'testimonial') {
+        queryClient.invalidateQueries({ queryKey: ['/api/testimonials'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/testimonials', data.id] });
+      }
       toast({ title: "Content deleted successfully" });
     },
     onError: () => {
@@ -106,17 +111,13 @@ export default function ContentLibrary() {
         throw new Error('Only testimonials support featured toggle');
       }
       
-      const res = await fetch(`/api/testimonials/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ featured: !featured }),
-      });
-      
-      if (!res.ok) throw new Error('Failed to toggle featured');
+      const response = await apiRequest("PATCH", `/api/testimonials/${id}/featured`, { featured: !featured });
+      return { id };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/content'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/testimonials'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/testimonials', data.id] });
       toast({ title: "Featured status updated" });
     },
   });
@@ -125,6 +126,7 @@ export default function ContentLibrary() {
     const routes: Record<string, string> = {
       blog: `/admin/blog-posts/${item.id}/edit`,
       video: `/admin/video-posts/${item.id}/edit`,
+      testimonial: `/admin/testimonials/${item.id}/edit`,
     };
     
     const route = routes[item.type];
@@ -140,7 +142,7 @@ export default function ContentLibrary() {
   };
   
   const canEdit = (type: string) => {
-    return type === 'blog' || type === 'video';
+    return type === 'blog' || type === 'video' || type === 'testimonial';
   };
 
   const handleDelete = (item: ContentSummary) => {
@@ -235,8 +237,8 @@ export default function ContentLibrary() {
                       <DropdownMenuItem onClick={() => setLocation('/admin/video-posts/new')}>
                         Video Post
                       </DropdownMenuItem>
-                      <DropdownMenuItem disabled>
-                        Testimonial (Coming Soon)
+                      <DropdownMenuItem onClick={() => setLocation('/admin/testimonials/new')}>
+                        Testimonial
                       </DropdownMenuItem>
                       <DropdownMenuItem disabled>
                         Portfolio Project (Coming Soon)

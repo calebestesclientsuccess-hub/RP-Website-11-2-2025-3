@@ -375,6 +375,28 @@ export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
   id: true,
   tenantId: true,
   createdAt: true,
+}).extend({
+  // Preprocess optional fields: convert blank strings to null
+  companyLogo: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().url().nullable().optional()
+  ),
+  avatarUrl: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().url().nullable().optional()
+  ),
+  metrics: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
+  industry: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
+  companySize: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
 });
 
 export const insertJobPostingSchema = createInsertSchema(jobPostings).omit({
