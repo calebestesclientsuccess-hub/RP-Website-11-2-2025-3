@@ -33,7 +33,19 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
     - **Pipeline Assessment Tool**: Multi-screen assessment with database persistence, lead segmentation, and an admin dashboard.
     - **GTM Assessment Tool**: Decision-tree based assessment with dynamic results pages and a blueprint capture system.
 - **Campaign Placement System**: Enables admins to create and deploy forms, calculators, and assessments across 30 strategic zones with granular page and display size targeting. Supports HTML form mode with DOMPurify security.
-- **Branding Portfolio**: Interactive /branding page featuring Mariya Tamkeen's brand strategy work with bouncy 3D animations (Framer Motion), in-grid expansion system, and project case studies with challenge/solution/outcome structure.
+- **Branding Portfolio (Modular Brand Portfolio System)**: 
+    - **Phase 1 Complete**: Production-ready foundation with secure multi-tenant database architecture
+        - Database: `projects` table (id, tenantId, slug, title, thumbnailUrl, challengeText, solutionText, outcomeText, modalMediaType, modalMediaUrls array, createdAt)
+        - Database: `project_scenes` table (id, projectId FK with cascade delete, sceneConfig JSONB, createdAt)
+        - Storage Layer: Comprehensive CRUD methods with tenant isolation enforcement, returning null/boolean for unauthorized access
+        - API Routes: Secure endpoints (GET/POST/PATCH/DELETE) with Zod validation preventing server-controlled field injection
+        - Security: Complete tenant isolation across all endpoints, no cross-tenant data leakage or injection vulnerabilities
+        - Mixed Media Support: modalMediaUrls array supports both videos AND images for storytelling flexibility
+        - Insert/Update Schemas: Properly omit server-controlled fields (tenantId, projectId, id, createdAt) preventing injection attacks
+    - **Phase 2 Planned**: Modal Magic with Framer Motion layoutId animation for seamless project expansion
+    - **Phase 3 Planned**: Scrollytelling encyclopedia pages at /branding/[slug] with unlimited content scenes
+    - **Content Strategy**: Raw JSON editor approach (build engine now, dashboard UI later) for maximum creative control
+    - **Frontend**: Interactive /branding page with bouncy 3D animations (Framer Motion) and project grid
 
 **System Design Choices:**
 - **Frontend**: React 18 (Vite), Tailwind CSS, Wouter (routing), React Query (data fetching), Shadcn UI.
