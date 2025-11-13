@@ -81,22 +81,6 @@ export default function ProblemPage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="mb-12 text-center"
-            >
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="heading-cost-calculator">
-                Calculate the Real Cost<br />
-                <span className="gradient-text gradient-hero">Of the $198K Mistake</span>
-              </h2>
-              <p className="text-lg leading-relaxed max-w-3xl mx-auto" data-testid="text-calculator-intro">
-                Most founders think they're hiring a "$75K SDR." Here's what they're actually buying:
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <InternalHireCostCalculator />
