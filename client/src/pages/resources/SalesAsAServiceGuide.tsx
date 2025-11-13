@@ -111,7 +111,7 @@ export default function SalesAsAServiceGuide() {
           This is the core structure. It replaces the "Lone Wolf" with a "Fully Loaded Pod" of specialists. You don't get one generalist; you get a team:
         </p>
         <ul>
-          <li>A GTM Strategist</li>
+          <li>A GTM Architect</li>
           <li>An AI/Data Architect</li>
           <li>A Dedicated Coach</li>
           <li>An "Impact" Operator</li>

@@ -52,14 +52,14 @@ interface Power {
 
 const powers: Power[] = [
   {
-    id: "gtm-strategist",
-    title: "GTM Strategist",
-    icon: <Target className="w-6 h-6" strokeWidth={2} style={{ stroke: "#ef233c" }} />,
-    color: "text-primary",
-    glowColor: "rgba(239, 35, 60, 0.4)",
-    bgColor: "239, 35, 60",
+    id: "gtm-architect",
+    title: "GTM Architect",
+    icon: <Target className="w-6 h-6" strokeWidth={2} style={{ stroke: "#3B82F6" }} />,
+    color: "text-blue-500",
+    glowColor: "rgba(59, 130, 246, 0.4)",
+    bgColor: "59, 130, 246",
     angle: 0,
-    description: "Expert strategists who design and refine your entire revenue playbook.",
+    description: "Expert architects who design and refine your entire revenue playbook.",
     details: [
       "ICP & persona development",
       "Messaging & positioning strategy",
@@ -94,10 +94,10 @@ const powers: Power[] = [
   {
     id: "coach",
     title: "Elite Coach",
-    icon: <Users className="w-6 h-6" strokeWidth={2} style={{ stroke: "#9F8FFF" }} />,
-    color: "text-community",
-    glowColor: "rgba(159, 143, 255, 0.4)",
-    bgColor: "159, 143, 255",
+    icon: <Users className="w-6 h-6" strokeWidth={2} style={{ stroke: "#8B5CF6" }} />,
+    color: "text-purple-500",
+    glowColor: "rgba(139, 92, 246, 0.4)",
+    bgColor: "139, 92, 246",
     angle: 120,
     description: "World-class coaching that elevates your BDRs to top 1% performance.",
     details: [
@@ -114,10 +114,10 @@ const powers: Power[] = [
   {
     id: "revops",
     title: "RevOps",
-    icon: <Settings className="w-6 h-6" strokeWidth={2} style={{ stroke: "#D25A28" }} />,
-    color: "text-burnt-orange",
-    glowColor: "rgba(210, 90, 40, 0.4)",
-    bgColor: "210, 90, 40",
+    icon: <Settings className="w-6 h-6" strokeWidth={2} style={{ stroke: "#EF4444" }} />,
+    color: "text-red-500",
+    glowColor: "rgba(239, 68, 68, 0.4)",
+    bgColor: "239, 68, 68",
     angle: 180,
     description: "Full revenue operations management ensuring seamless system performance.",
     details: [
@@ -134,10 +134,10 @@ const powers: Power[] = [
   {
     id: "tools",
     title: "Tech Stack",
-    icon: <Wrench className="w-6 h-6" strokeWidth={2} style={{ stroke: "hsl(125 57% 49%)" }} />,
-    color: "text-signal-green",
-    glowColor: "rgba(76, 175, 80, 0.4)",
-    bgColor: "76, 175, 80",
+    icon: <Wrench className="w-6 h-6" strokeWidth={2} style={{ stroke: "#F97316" }} />,
+    color: "text-orange-500",
+    glowColor: "rgba(249, 115, 22, 0.4)",
+    bgColor: "249, 115, 22",
     angle: 240,
     description: "Best-in-class tools integrated and optimized for maximum efficiency.",
     details: [
