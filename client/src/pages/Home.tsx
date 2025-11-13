@@ -516,7 +516,7 @@ export default function Home() {
               <Link href="/gtm-engine">
                 Build Your GTM Engine <ArrowRight className="w-4 h-4" />
               </Link>
-            </Link>
+            </Button>
           </div>
         </div>
       </section>
