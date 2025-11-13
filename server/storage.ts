@@ -21,8 +21,11 @@ import {
   type Event, type InsertEvent,
   type Lead, type InsertLead,
   type FeatureFlag, type InsertFeatureFlag,
+  type Project, type InsertProject,
+  type ProjectScene, type InsertProjectScene,
   users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens,
-  assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants, leads, featureFlags, insertLeadSchema
+  assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants, leads, featureFlags, insertLeadSchema,
+  projects, projectScenes
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, ilike, sql } from "drizzle-orm";
@@ -125,6 +128,18 @@ export interface IStorage {
   getFeatureFlag(tenantId: string, flagKey: string): Promise<FeatureFlag | undefined>;
   updateFeatureFlag(tenantId: string, flagKey: string, updates: Partial<InsertFeatureFlag>): Promise<FeatureFlag>;
   createFeatureFlag(tenantId: string, flag: InsertFeatureFlag): Promise<FeatureFlag>;
+
+  getAllProjects(tenantId: string): Promise<Project[]>;
+  getProjectById(tenantId: string, id: string): Promise<Project | undefined>;
+  getProjectBySlug(tenantId: string, slug: string): Promise<Project | undefined>;
+  createProject(tenantId: string, project: InsertProject): Promise<Project>;
+  updateProject(tenantId: string, id: string, project: Partial<InsertProject>): Promise<Project | null>;
+  deleteProject(tenantId: string, id: string): Promise<boolean>;
+
+  getScenesByProjectId(tenantId: string, projectId: string): Promise<ProjectScene[] | null>;
+  createProjectScene(tenantId: string, projectId: string, scene: InsertProjectScene): Promise<ProjectScene>;
+  updateProjectScene(tenantId: string, projectId: string, id: string, scene: Partial<InsertProjectScene>): Promise<ProjectScene | null>;
+  deleteProjectScene(tenantId: string, projectId: string, id: string): Promise<boolean>;
 }
 
 export class DbStorage implements IStorage {
@@ -714,6 +729,96 @@ export class DbStorage implements IStorage {
   async createFeatureFlag(tenantId: string, flag: InsertFeatureFlag): Promise<FeatureFlag> {
     const [newFlag] = await db.insert(featureFlags).values({ ...flag, tenantId }).returning();
     return newFlag;
+  }
+
+  // Project methods
+  async getAllProjects(tenantId: string): Promise<Project[]> {
+    return db.select().from(projects)
+      .where(eq(projects.tenantId, tenantId))
+      .orderBy(desc(projects.createdAt));
+  }
+
+  async getProjectById(tenantId: string, id: string): Promise<Project | undefined> {
+    const [project] = await db.select().from(projects)
+      .where(and(eq(projects.tenantId, tenantId), eq(projects.id, id)));
+    return project;
+  }
+
+  async getProjectBySlug(tenantId: string, slug: string): Promise<Project | undefined> {
+    const [project] = await db.select().from(projects)
+      .where(and(eq(projects.tenantId, tenantId), eq(projects.slug, slug)));
+    return project;
+  }
+
+  async createProject(tenantId: string, project: InsertProject): Promise<Project> {
+    const [newProject] = await db.insert(projects).values({ ...project, tenantId }).returning();
+    return newProject;
+  }
+
+  async updateProject(tenantId: string, id: string, project: Partial<InsertProject>): Promise<Project | null> {
+    const [updatedProject] = await db.update(projects)
+      .set(project)
+      .where(and(eq(projects.tenantId, tenantId), eq(projects.id, id)))
+      .returning();
+    return updatedProject || null;
+  }
+
+  async deleteProject(tenantId: string, id: string): Promise<boolean> {
+    const result = await db.delete(projects)
+      .where(and(eq(projects.tenantId, tenantId), eq(projects.id, id)))
+      .returning();
+    return result.length > 0;
+  }
+
+  // Project Scene methods
+  async getScenesByProjectId(tenantId: string, projectId: string): Promise<ProjectScene[] | null> {
+    const project = await this.getProjectById(tenantId, projectId);
+    if (!project) {
+      return null;
+    }
+    
+    const scenes = await db.select()
+      .from(projectScenes)
+      .where(eq(projectScenes.projectId, projectId))
+      .orderBy(desc(projectScenes.createdAt));
+    
+    return scenes;
+  }
+
+  async createProjectScene(tenantId: string, projectId: string, scene: InsertProjectScene): Promise<ProjectScene> {
+    const project = await this.getProjectById(tenantId, projectId);
+    if (!project) {
+      throw new Error('Project not found or access denied');
+    }
+    
+    const [newScene] = await db.insert(projectScenes).values({ ...scene, projectId }).returning();
+    return newScene;
+  }
+
+  async updateProjectScene(tenantId: string, projectId: string, id: string, scene: Partial<InsertProjectScene>): Promise<ProjectScene | null> {
+    const project = await this.getProjectById(tenantId, projectId);
+    if (!project) {
+      return null;
+    }
+    
+    const [updatedScene] = await db.update(projectScenes)
+      .set(scene)
+      .where(and(eq(projectScenes.id, id), eq(projectScenes.projectId, projectId)))
+      .returning();
+    
+    return updatedScene || null;
+  }
+
+  async deleteProjectScene(tenantId: string, projectId: string, id: string): Promise<boolean> {
+    const project = await this.getProjectById(tenantId, projectId);
+    if (!project) {
+      return false;
+    }
+    
+    const result = await db.delete(projectScenes)
+      .where(and(eq(projectScenes.id, id), eq(projectScenes.projectId, projectId)))
+      .returning();
+    return result.length > 0;
   }
 }
 

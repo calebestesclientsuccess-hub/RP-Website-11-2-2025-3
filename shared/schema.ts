@@ -586,8 +586,52 @@ export const seoMetadataSchema = z.object({
   ogImage: z.string().optional(),
 });
 
+// Branding Portfolio Tables
+export const projects = pgTable("projects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  thumbnailUrl: text("thumbnail_url"),
+  challengeText: text("challenge_text"),
+  solutionText: text("solution_text"),
+  outcomeText: text("outcome_text"),
+  modalMediaType: text("modal_media_type").default("video").notNull(), // 'video' or 'carousel'
+  modalMediaUrls: text("modal_media_urls").array(), // Array of Cloudinary URLs
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const projectScenes = pgTable("project_scenes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  sceneConfig: text("scene_config").notNull(), // JSONB stored as text for Drizzle compatibility
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Insert schemas for projects
+export const insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+});
+
+export const updateProjectSchema = insertProjectSchema.partial();
+
+export const insertProjectSceneSchema = createInsertSchema(projectScenes).omit({
+  id: true,
+  projectId: true,
+  createdAt: true,
+});
+
+export const updateProjectSceneSchema = insertProjectSceneSchema.partial();
+
+// Types
 export type FormField = z.infer<typeof formFieldSchema>;
 export type FormConfig = z.infer<typeof formConfigSchema>;
 export type CalculatorInput = z.infer<typeof calculatorInputSchema>;
 export type CalculatorConfig = z.infer<typeof calculatorConfigSchema>;
 export type SeoMetadata = z.infer<typeof seoMetadataSchema>;
+export type Project = typeof projects.$inferSelect;
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type ProjectScene = typeof projectScenes.$inferSelect;
+export type InsertProjectScene = z.infer<typeof insertProjectSceneSchema>;

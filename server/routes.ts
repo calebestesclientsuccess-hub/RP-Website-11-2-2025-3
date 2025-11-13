@@ -29,6 +29,10 @@ import {
   insertCampaignSchema,
   insertEventSchema,
   insertLeadSchema,
+  insertProjectSchema,
+  updateProjectSchema,
+  insertProjectSceneSchema,
+  updateProjectSceneSchema,
   assessmentResultBuckets,
   type InsertAssessmentResponse
 } from "@shared/schema";
@@ -1231,6 +1235,151 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(201).json(job);
     } catch (error) {
       console.error("Error creating job posting:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Branding Projects endpoints
+  app.get("/api/projects", requireAuth, async (req, res) => {
+    try {
+      const projectsList = await storage.getAllProjects(req.tenantId);
+      return res.json(projectsList);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/projects/:id", requireAuth, async (req, res) => {
+    try {
+      const project = await storage.getProjectById(req.tenantId, req.params.id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      return res.json(project);
+    } catch (error) {
+      console.error("Error fetching project:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/projects", requireAuth, async (req, res) => {
+    try {
+      const result = insertProjectSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      const project = await storage.createProject(req.tenantId, result.data);
+      return res.status(201).json(project);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/projects/:id", requireAuth, async (req, res) => {
+    try {
+      const result = updateProjectSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      const project = await storage.updateProject(req.tenantId, req.params.id, result.data);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found or access denied" });
+      }
+      return res.json(project);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/projects/:id", requireAuth, async (req, res) => {
+    try {
+      const deleted = await storage.deleteProject(req.tenantId, req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Project not found or access denied" });
+      }
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Project Scenes endpoints
+  app.get("/api/projects/:projectId/scenes", requireAuth, async (req, res) => {
+    try {
+      const scenes = await storage.getScenesByProjectId(req.tenantId, req.params.projectId);
+      if (scenes === null) {
+        return res.status(404).json({ error: "Project not found or access denied" });
+      }
+      return res.json(scenes);
+    } catch (error) {
+      console.error("Error fetching project scenes:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/scenes", requireAuth, async (req, res) => {
+    try {
+      const result = insertProjectSceneSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      const scene = await storage.createProjectScene(req.tenantId, req.params.projectId, result.data);
+      return res.status(201).json(scene);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Project not found or access denied') {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      console.error("Error creating project scene:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/projects/:projectId/scenes/:id", requireAuth, async (req, res) => {
+    try {
+      const result = updateProjectSceneSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      const scene = await storage.updateProjectScene(req.tenantId, req.params.projectId, req.params.id, result.data);
+      if (!scene) {
+        return res.status(404).json({ error: "Scene not found or access denied" });
+      }
+      return res.json(scene);
+    } catch (error) {
+      console.error("Error updating project scene:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/projects/:projectId/scenes/:id", requireAuth, async (req, res) => {
+    try {
+      const deleted = await storage.deleteProjectScene(req.tenantId, req.params.projectId, req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Scene not found or access denied" });
+      }
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting project scene:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });
