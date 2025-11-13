@@ -1106,6 +1106,19 @@
   color: #C41E58;
 }
 
+/* Magenta Rose badge texture gradient */
+html:not(.dark) .badge-texture[class*="bg-magenta-rose"] {
+  background: linear-gradient(
+    135deg,
+    #C41E58 0%,
+    #9F2B68 30%,
+    #C41E58 60%,
+    #B8265F 100%
+  ) !important;
+  background-size: 200% 200%;
+  animation: watercolor-drift 15s ease-in-out infinite;
+}
+
 
 /* Dark mode - deep shadows for dimension */
 .dark .badge-texture {
