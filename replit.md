@@ -42,19 +42,17 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
         - Security: Complete tenant isolation across all endpoints, no cross-tenant data leakage or injection vulnerabilities
         - Mixed Media Support: modalMediaUrls array supports both videos AND images for storytelling flexibility
         - Insert/Update Schemas: Properly omit server-controlled fields (tenantId, projectId, id, createdAt) preventing injection attacks
-    - **Phase 2 Complete**: Modal Magic with Framer Motion layoutId animation
-        - ProjectModal component with seamless card-to-modal expansion animation
-        - LayoutGroup wrapper enabling smooth Framer Motion layoutId transitions
-        - Mixed media carousel supporting both images and videos with navigation controls
-        - Carousel accessibility features (aria-labels, disabled states, keyboard navigation)
-        - Challenge/Solution/Outcome storytelling structure with gradient text headings
-        - Testimonial display with brand design system styling
-        - Three dismissal methods (Escape key, backdrop click, close button)
-        - Safe body scroll locking preserving previous overflow state
-        - Comprehensive E2E testing verified all functionality
-    - **Phase 3 Planned**: Scrollytelling encyclopedia pages at /branding/[slug] with unlimited content scenes
+    - **Phase 2 Complete**: In-Grid Expansion with layoutId morphing animation (architect-approved production-ready)
+        - **Architecture**: Persistent motion.div wrappers with shared layoutId stay in DOM, content swaps between ProjectCard and ProjectExpansion
+        - **Animation**: Smooth spring-based morphing (stiffness 200, damping 25) with hover micro-interactions (scale + rotate) on collapsed cards
+        - **Layout**: Tight spacing (gap-2 md:gap-3) for organic/messy aesthetic, col-span-full class triggers natural grid reflow (ripple effect)
+        - **Robust Content**: Hero carousel (aspect-[21/9], mixed media), Challenge/Solution/Outcome storytelling with gradient text, feature media section (2 additional video/photo slots), testimonial display, close button
+        - **Philosophy**: In-grid expansion (not modal overlay) - "things make room" is metaphorically more powerful than floating overlays
+        - **Testing**: E2E verified smooth transitions, persistent grid cells, carousel navigation, no layout gaps or missing cards
+        - **Technical**: Conditional rendering guards prevent empty media sections, screen-reader-only testid maintains test consistency
+    - **Phase 3 Planned**: Scrollytelling encyclopedia pages at /branding/[slug] with unlimited content scenes accessed via dramatic particle dissolve transition
     - **Content Strategy**: Raw JSON editor approach (build engine now, dashboard UI later) for maximum creative control
-    - **Frontend**: Interactive /branding page with bouncy 3D animations (Framer Motion) and project grid
+    - **Frontend**: Interactive /branding page at https://revenueparty.com/branding with bouncy 3D hover animations and tight grid spacing
 
 **System Design Choices:**
 - **Frontend**: React 18 (Vite), Tailwind CSS, Wouter (routing), React Query (data fetching), Shadcn UI.
