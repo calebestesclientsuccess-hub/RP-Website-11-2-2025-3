@@ -159,41 +159,8 @@ export default function GTMEnginePage() {
         </div>
       </section>
 
-      {/* Video Section with Background */}
+      {/* Video Section - Clean background */}
       <div className="relative">
-        <div className="absolute inset-0 pointer-events-none opacity-60" style={{ height: '140%' }}>
-          <div className="gradient-mesh-layer gradient-mesh-slow" style={{
-            background: `
-              radial-gradient(
-                ellipse 800px 400px at 20% 30%,
-                rgba(65, 105, 225, 0.35),
-                transparent 50%
-              ),
-              radial-gradient(
-                ellipse 600px 300px at 80% 70%,
-                rgba(30, 144, 255, 0.35),
-                transparent 50%
-              ),
-              radial-gradient(
-                ellipse 700px 500px at 50% 50%,
-                rgba(65, 105, 225, 0.25),
-                transparent 60%
-              )
-            `,
-            backgroundSize: '200% 200%'
-          }} />
-          <div className="gradient-mesh-layer-secondary gradient-mesh-medium-secondary" style={{
-            background: `linear-gradient(
-              135deg,
-              rgba(65, 105, 225, 0.25) 0%,
-              transparent 30%,
-              transparent 70%,
-              rgba(30, 144, 255, 0.25) 100%
-            )`,
-            backgroundSize: '300% 300%'
-          }} />
-        </div>
-        <div className="light-grid-dots" style={{ height: '140%' }} />
 
         <div className="relative z-10">
           <Suspense fallback={
