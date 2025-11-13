@@ -72,7 +72,7 @@ export default function GTMEnginePage() {
 
   return (
     <>
-      <SEO 
+      <SEO
         title="The Fullstack Sales Unit - Your Complete GTM Engine | Revenue Party"
         description="Deploy elite SDR pods with AI-powered systems. Guaranteed 20+ qualified appointments monthly. Own the GTM Engine, not rent headcount."
         keywords="GTM Engine, Fullstack Sales Unit, revenue generation system, allbound, sales as a service, Impact Selling OS, Signal Factory, SDR pod, guaranteed sales appointments"
@@ -100,7 +100,7 @@ export default function GTMEnginePage() {
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="mb-6 flex justify-center"
             >
-              <Badge 
+              <Badge
                 className="badge-texture text-white text-sm px-4 py-1.5"
                 style={{
                   backgroundImage: 'linear-gradient(180deg, #0123B4 0%, #011A8F 90%)',
@@ -111,7 +111,7 @@ export default function GTMEnginePage() {
                 The GTM Engine
               </Badge>
             </motion.div>
-            <motion.h1 
+            <motion.h1
               className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -121,7 +121,7 @@ export default function GTMEnginePage() {
               This Isn't a Sales Team.{" "}
               <span className="gradient-text gradient-hero">It's a Complete Revenue Generation System.</span>
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-xl md:text-2xl leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -206,7 +206,7 @@ export default function GTMEnginePage() {
             <Card className="p-8 md:p-12 light-depth light-trickle-diagonal hover-elevate transition-all" data-testid="card-elite-talent">
               <div className="flex flex-col md:flex-row gap-8 items-start">
                 <div className="flex-shrink-0">
-                  <div 
+                  <div
                     className="w-20 h-20 rounded-full flex items-center justify-center"
                     style={{
                       backgroundColor: '#9F8FFF20',
@@ -245,7 +245,7 @@ export default function GTMEnginePage() {
             <Card className="p-8 md:p-12 light-trickle-corner hover-elevate transition-all" data-testid="card-signal-factory">
               <div className="flex flex-col md:flex-row gap-8 items-start">
                 <div className="flex-shrink-0">
-                  <div 
+                  <div
                     className="w-20 h-20 rounded-full flex items-center justify-center"
                     style={{
                       backgroundColor: '#42349c20',
@@ -284,7 +284,7 @@ export default function GTMEnginePage() {
             <Card className="p-8 md:p-12 light-trickle-top hover-elevate transition-all" data-testid="card-impact-selling-os">
               <div className="flex flex-col md:flex-row gap-8 items-start">
                 <div className="flex-shrink-0">
-                  <div 
+                  <div
                     className="w-20 h-20 rounded-full flex items-center justify-center"
                     style={{
                       backgroundColor: '#ef233c20',
@@ -383,7 +383,7 @@ export default function GTMEnginePage() {
               <h3 className="text-2xl font-bold mb-3">The Guarantee</h3>
               <p className="text-lg">
                 Starting <strong>Month 5</strong>, your GTM Engine delivers{" "}
-                <span className="text-primary font-bold">20+ SQOs per SDR per month</span>, guaranteed. 
+                <span className="text-primary font-bold">20+ SQOs per SDR per month</span>, guaranteed.
                 Every month except December. Reliability you can bank on.
               </p>
             </Card>
