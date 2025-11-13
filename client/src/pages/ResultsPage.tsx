@@ -261,7 +261,7 @@ export default function ResultsPage() {
                       transition={{ duration: 0.6, delay: index * 0.15 + 0.3 }}
                     >
                       "{testimonial.quote}"
-                    </blockquote >
+                    </motion.blockquote>
 
                     {/* Author Info */}
                     <motion.div 
