@@ -716,7 +716,8 @@ export default function Home() {
           <div className="text-center">
             <Button
               size="lg"
-              className="text-lg px-8 py-6"
+              variant="secondary"
+              className="secondary-cta text-lg px-8 py-6"
               data-testid="button-calculate-savings"
               asChild
             >

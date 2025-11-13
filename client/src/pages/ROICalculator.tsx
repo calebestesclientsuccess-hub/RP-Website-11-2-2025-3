@@ -810,7 +810,8 @@ export default function ROICalculator() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button
                 size="lg"
-                className="gap-2 min-w-[280px]"
+                variant="secondary"
+                className="secondary-cta gap-2 min-w-[280px]"
                 data-testid="button-schedule-audit"
                 asChild
               >
