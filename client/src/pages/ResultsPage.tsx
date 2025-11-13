@@ -81,6 +81,7 @@ export default function ResultsPage() {
                 We don't just solve your pipeline problem. We provide the antidote to the "Traps" that cause it.
               </motion.p>
             </div>
+            </div>
           </div>
         </section>
 
