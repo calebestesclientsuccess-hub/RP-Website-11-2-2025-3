@@ -1,0 +1,257 @@
+Project Brief: The "Revenue Party" Modular Brand Portfolio
+1. Executive Summary
+The Mission: We are evolving Revenue Party from a "Sales as a Service" company into a full-funnel "Go-to-Market" solution. To do this, we must build a world-class, dynamic, and media-rich portfolio to prove the value of our new branding arm.
+
+The Problem: Standard portfolios are shallow "asset dumps." Our brand strategies are deep, complex, and drive real revenue. We need a system that tells a compelling story for each project, not just show a grid of images.
+
+The Solution: We will build a three-level "Hook, Story, Encyclopedia" architecture.
+
+The Hook: A "bouncy, 3D" animated project grid that wows the user and invites a click.
+
+The Story: A fast, elegant "pop-up" modal that gives the user the project summary (Challenge, Solution, Outcome) in under 30 seconds.
+
+The Encyclopedia: A dedicated, "Apple-style" scrollytelling page for each project, allowing us to build an immersive, cinematic "deep dive" with unlimited videos, assets, and strategic explanations.
+
+The "Genius Hack": To build this world-class frontend fast, we will use a "Raw JSON" editor in the admin. This is a "good enough for now" backend that gives us 100% of the creative control of a "drag-and-drop" builder (by letting us re-assemble "LEGO" components) at 10% of the development cost.
+
+We aren't just building a new page. We are building a modular, scalable storytelling system that will serve as the primary conversion tool for our new business unit.
+
+2. The Technical Blueprint (The "What")
+This is the tactical, multi-part plan.
+
+Part 1: Foundational Backend (Storage & Database)
+This is the first priority. The system cannot work without this.
+
+1. Cloudinary Integration (Required):
+
+Action: Integrate the Cloudinary Node.js SDK. This will be our exclusive solution for all media uploads.
+
+API: Create a new, secure server endpoint to handle all image/video/PDF uploads from the admin dashboard and return a Cloudinary URL.
+
+2. PostgreSQL Database Schema:
+
+Action: Create two new tables in our existing PostgreSQL database.
+
+Table 1: projects (This table powers the Grid "Hook" and the Modal "Story".)
+
+SQL
+
+CREATE TABLE projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenantId UUID REFERENCES tenants(id),
+  slug TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  thumbnail_url TEXT, -- Cloudinary URL
+  challenge_text TEXT,
+  solution_text TEXT,
+  outcome_text TEXT,
+  modal_media_type TEXT DEFAULT 'video', -- 'video' or 'carousel'
+  modal_media_urls TEXT[], -- Array of Cloudinary URLs
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+Table 2: project_scenes (This table powers the "Encyclopedia" scrollytelling page.)
+
+SQL
+
+CREATE TABLE project_scenes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+  scene_config JSONB, -- This is the "Raw" JSON for the page builder
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+Part 2: Admin Dashboard ("The CMS")
+This is the new "control panel" for our brand strategist.
+
+1. New Admin Section:
+
+Action: Add a "Branding Projects" item to the main admin navigation.
+
+UI: This page will list all projects from the projects table and have a "Create New Project" button.
+
+2. New CTA Target (Conversion):
+
+Action: Using our existing ConfigurableAssessment.tsx engine, create a new assessment.
+
+Title: "Brand Diagnostic & Strategy Session".
+
+3. "Project Editor" UI:
+
+Action: Build the admin page for creating/editing a project. It must have 3 tabs:
+
+Tab 1: "Grid & Modal Content" (Writes to projects table)
+
+Fields: Title, Slug, Thumbnail (Cloudinary Uploader), Challenge (Rich Text), Solution (Rich Text), Outcome (Rich Text), Modal Media Type (Radio: 'Video'/'Carousel'), Modal Media (Cloudinary Uploader for 1 or many files).
+
+Tab 2: "Scrollytelling Page Builder (Raw)" (Writes to project_scenes table)
+
+UI: One single, large <textarea> field.
+
+Function: The text content of this field is saved as JSON into the scene_config (JSONB) column.
+
+Tab 3: "Help / Documentation"
+
+Purpose: To teach our team how to use the "Raw" builder.
+
+Content: Display the following text and code examples in a read-only format:
+
+How to Use the Scrollytelling Page Builder
+This is a "Raw" editor. To build your page, copy and paste the component "blocks" below and edit their content. You can re-order, combine, or delete any block to build your perfect page.
+
+Available "Scene" Components
+1. Hero Scene (Full-screen Video/Image)
+
+JSON
+
+{
+  "scene": "HeroScene",
+  "media_url": "https://cloudinary-url-to-video-or-image.mp4"
+}
+2. Text Scene (Simple Text Block)
+
+JSON
+
+{
+  "scene": "TextScene",
+  "headline": "This was the core challenge.",
+  "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
+}
+3. Pinned Scrollytelling Scene (The "Apple" Effect)
+
+JSON
+
+{
+  "scene": "PinnedScrollScene",
+  "media_url": "https://cloudinary-url-to-pinned-image.jpg",
+  "steps": [
+    { "title": "Step 1: ICP Definition", "text": "First, we defined the..." },
+    { "title": "Step 2: Messaging", "text": "Second, we built the..." },
+    { "title": "Step 3: GTM", "text": "Third, we launched the..." }
+  ]
+}
+4. Video Grid Scene
+
+JSON
+
+{
+  "scene": "VideoGridScene",
+  "videos": [
+    { "title": "Founder Interview", "url": "https://cloudinary-url..."},
+    { "title": "Social Ad 1", "url": "https://cloudinary-url..."},
+    { "title": "Social Ad 2", "url": "https://cloudinary-url..."}
+  ]
+}
+5. Ebook/PDF Scene (Download CTA)
+
+JSON
+
+{
+  "scene": "EbookScene",
+  "title": "Download the Full GTM Strategy E-book",
+  "pdf_url": "https://cloudinary-url-to-pdf.pdf"
+}
+Part 3: Frontend - Level 1 & 2 ("The Hook & Story")
+This is the main /branding page.
+
+1. Page (/branding):
+
+Hero: Add the <h1> "Your Brand Is Driving Sales, Or Killing Them."
+
+Grid (<ProjectGrid />):
+
+Fetch all data from the projects table.
+
+Render a <ProjectCard /> for each project.
+
+<ProjectCard /> Animation:
+
+Must be a motion.div.
+
+layout prop (Mandatory): For the grid "shuffle" animation.
+
+whileHover={{ scale: 1.03, rotateZ: '1deg' }}: For the "3D pop" effect.
+
+transition={{ type: "spring", stiffness: 300, damping: 20 }}: For the "bouncy" feel.
+
+2. The Pop-Up Modal (Level 2):
+
+Trigger: On <ProjectCard /> click, open a modal.
+
+Animation: Use the layoutId prop on both the card and the modal. This creates the "magic motion" (Apple-style) effect where the card grows into the modal.
+
+Content:
+
+Display the challenge_text, solution_text, and outcome_text from the projects table (using the two-column layout from the user's screenshot).
+
+Render the media from modal_media_urls as either a video or an auto-rotating carousel, based on modal_media_type.
+
+CTAs (Two Buttons):
+
+"Schedule a Brand Diagnostic & Strategy Session" (Links to the new assessment).
+
+"See the Full Case Study" (Links to /branding/[project.slug]).
+
+Part 4: Frontend - Level 3 ("The Encyclopedia")
+This is the dynamic, scrollytelling "LEGO" page.
+
+1. Page (/branding/[projectSlug]):
+
+A dynamic route that uses the slug from the URL.
+
+2. "LEGO Kit" Components:
+
+Action: Build a new library of modular, reusable React components (e.g., HeroScene.tsx, PinnedScrollScene.tsx, VideoGridScene.tsx).
+
+Purpose: These are the visual "LEGOs" that our admin will be building with.
+
+3. "Renderer" Logic:
+
+Action: On page load, fetch the scene_config JSON blob from the project_scenes table for the matching slug.
+
+Logic: Parse the JSON into an array. Map over this array.
+
+Engine: Use a component map (or a switch statement) to render the correct "LEGO" component for each scene in the array, passing the JSON data as props. This is what builds the page.
+
+JavaScript
+
+// /pages/branding/[projectSlug].tsx
+
+// This map connects the JSON 'scene' name to the actual React component.
+const componentsMap = {
+  HeroScene: HeroScene,
+  TextScene: TextScene,
+  PinnedScrollScene: PinnedScrollScene,
+  VideoGridScene: VideoGridScene,
+  EbookScene: EbookScene
+};
+
+// ...inside your component...
+const scenes = JSON.parse(project.scene_config);
+
+return scenes.map((scene, index) => {
+  const Component = componentsMap[scene.scene];
+  if (!Component) return null;
+  // This dynamically renders the right component with the right data.
+  return <Component key={index} {...scene} />;
+});
+3. Intention & Business Value (The "Why")
+This is the "learn and grow" section. This is why we are making these specific technical decisions.
+
+Why the 3-Level Architecture?
+
+Business Value: It respects the user's time and intent. Level 1 (Grid) is for "scanners." Level 2 (Modal) is for "evaluators." Level 3 (Page) is for "deep divers." This is a sophisticated conversion funnel, not just a "page." It lets us "wow" a busy CEO in 3 seconds (Level 1) and also convince a skeptical Director in 3 minutes (Level 3).
+
+Why Framer Motion layout & layoutId?
+
+layout: This isn't just a "bouncy" effect. It provides visual continuity. When the grid morphs, the user's eye tracks the animation. This prevents the "jarring" feeling of a normal website and makes our platform feel stable and premium.
+
+layoutId: This is the "magic" that connects the card to the modal. It creates a seamless transition that proves our technical and design-oriented credentials before the user has even read a word of the case study. It builds trust.
+
+Why the "Raw JSON" Admin? (The Most Important Lesson)
+
+Business Value: This architecture separates content from presentation. This is the core principle of a world-class CMS. The JSON is our content. The React "LEGOs" are our presentation.
+
+Growth Path: This is not "throw-away" work. When you hire a dev in a few months, they won't have to rebuild this system. Their first project will be to build a fancy "drag-and-drop" UI. But that UI will just be a new way to edit the same JSON. We are building the engine and the chassis; the future dev can just build a prettier dashboard. This is the fastest, smartest, most scalable path forward.
+
+Why the "Scrollytelling LEGO Kit"?
+
+Business Value: This empowers our brand strategist (the co-founder), not just a developer. We are giving her a "story kit." She can now be a filmmaker for her own case studies, "editing" the scenes to create the perfect narrative flow. This allows us to re-tool, re-assemble, and A/B test our stories without ever needing a developer. This is the ultimate business agility.
