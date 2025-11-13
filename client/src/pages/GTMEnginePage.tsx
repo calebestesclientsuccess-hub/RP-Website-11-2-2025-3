@@ -174,72 +174,86 @@ export default function GTMEnginePage() {
         </div>
       </section>
 
-      {/* Section 2: The Financial Reframe */}
-      <section className="relative py-20 px-4 md:px-6 lg:px-8" data-testid="section-financial-reframe">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-financial-reframe">
-              A Better System.<br />
-              <span className="gradient-text gradient-hero">A Superior Financial Investment.</span>
-            </h2>
-            <p className="text-xl leading-relaxed mb-4">
-              Let's do the math. This is an investment, not a cost.
-            </p>
-          </div>
-
-          <div className="mb-12">
-            <h3 className="text-3xl font-bold mb-6 text-center">
-              Meet "The $198,000 Mistake".
-            </h3>
-            <p className="text-xl text-center mb-8 max-w-3xl mx-auto">
-              That's the real first-year gamble on a single "Lone Wolf" hire. It's not just their salary. It's the sum of the architectural failures:
-            </p>
-            
-            <CostEquationCard 
-              items={costItems}
-              total={198000}
-              totalLabel='"Base Case" Cost of One Failed Hire'
-            />
-          </div>
-
-          <div className="bg-primary/5 border-2 border-primary rounded-lg p-8 mb-8">
-            <p className="text-lg leading-relaxed">
-              Our Fullstack Sales Unit—which includes two Elite Operators plus the entire GTM architecture, leadership, and tech stack—costs less. It's not just a better, more predictable system; it's a superior financial investment.
-            </p>
-          </div>
-
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground italic">
-              <strong>A Note on Our Numbers:</strong> We Show Our Work.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* Widget Zone 17 */}
       <WidgetZone zone="zone-17" className="my-8" />
 
-      {/* Section 3: The "Old Way" Deconstruction */}
-      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-old-way">
+      {/* Section 2: The Two-Way Comparison */}
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-comparison">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-old-way">
-              The "Old Way" Is<br />
-              <span className="gradient-text gradient-hero">Architecturally Flawed</span>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-comparison">
+              Two Paths.<br />
+              <span className="gradient-text gradient-hero">One Builds Value. One Doesn't.</span>
             </h2>
           </div>
 
-          <ComparisonTable 
-            title="The Core Reframe"
-            items={comparisonItems}
-          />
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Rent a Service (Red/Bad) */}
+            <Card className="p-8 bg-destructive/5 border-2 border-destructive/30">
+              <div className="mb-6">
+                <h3 className="text-3xl font-bold text-destructive mb-4">Rent a Service</h3>
+                <p className="text-lg leading-relaxed mb-6">
+                  The traditional approach—whether hiring "Lone Wolf" reps or using commodity agencies. Both leave you with nothing.
+                </p>
+              </div>
+              
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                  <span className="text-destructive mt-1 text-xl">×</span>
+                  <div>
+                    <p className="font-semibold mb-1">High-Risk Internal Hires</p>
+                    <p className="text-sm leading-relaxed">Single "Lone Wolf" SDRs operating in isolation. 3-6 month ramp time. 34% turnover risk. When they leave, you start from scratch.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-destructive mt-1 text-xl">×</span>
+                  <div>
+                    <p className="font-semibold mb-1">The Zero-IP Trap</p>
+                    <p className="text-sm leading-relaxed">Commodity agencies that "rent" you appointments. No playbook ownership. No data. No learnings. When the contract ends, you own nothing.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-destructive mt-1 text-xl">×</span>
+                  <div>
+                    <p className="font-semibold mb-1">Endless Loop of Rebuilding</p>
+                    <p className="text-sm leading-relaxed">Hope they figure it out. Wait months for results. Watch them leave. Repeat. You're stuck renting capability, never building it.</p>
+                  </div>
+                </li>
+              </ul>
+            </Card>
 
-          <div className="mt-12 text-center">
-            <Card className="p-8 bg-destructive/5 border-2 border-destructive/30 max-w-2xl mx-auto">
-              <h3 className="text-2xl font-bold mb-4">The Zero-IP Trap</h3>
-              <p className="text-lg leading-relaxed">
-                When you hire traditional reps or use commodity agencies, you own nothing. The playbook, the data, the learnings—it all walks out the door when they leave. You're stuck in an endless loop of rebuilding from scratch.
-              </p>
+            {/* Build & Own an Asset (Blue/Good) */}
+            <Card className="p-8 bg-violet-blue/5 border-2 border-violet-blue/30">
+              <div className="mb-6">
+                <h3 className="text-3xl font-bold text-violet-blue mb-4">Build & Own an Asset</h3>
+                <p className="text-lg leading-relaxed mb-6">
+                  We partner with you to build a permanent GTM capability. One day, when you're ready, you can run it internally.
+                </p>
+              </div>
+              
+              <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                  <span className="text-violet-blue mt-1 text-xl">✓</span>
+                  <div>
+                    <p className="font-semibold mb-1">Full "Fullstack Sales Unit"</p>
+                    <p className="text-sm leading-relaxed">Multiple roles and systems working together. Elite operators productive in Week 2. Guaranteed continuity—no turnover risk.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-violet-blue mt-1 text-xl">✓</span>
+                  <div>
+                    <p className="font-semibold mb-1">100% IP Ownership Forever</p>
+                    <p className="text-sm leading-relaxed">You own the GTM playbook, the Signal Factory, the messaging, the data. We build it for you, but it's yours to keep.</p>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-violet-blue mt-1 text-xl">✓</span>
+                  <div>
+                    <p className="font-semibold mb-1">Proven Playbooks & Expert Coaching</p>
+                    <p className="text-sm leading-relaxed">AI tools, proven methodology, ongoing optimization. This is a compounding asset that gets stronger over time.</p>
+                  </div>
+                </li>
+              </ul>
             </Card>
           </div>
         </div>
