@@ -167,7 +167,7 @@ export default function PipelineAssessmentThankYou() {
                   className="w-full" 
                   size="lg"
                   onClick={() => {
-                    window.open('https://calendly.com/revenue-party', '_blank');
+                    window.open('https://cal.com/revenue-party', '_blank');
                   }}
                   data-testid="button-book-consult"
                 >
