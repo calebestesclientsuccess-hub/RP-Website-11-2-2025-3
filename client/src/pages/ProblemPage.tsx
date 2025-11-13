@@ -59,7 +59,7 @@ export default function ProblemPage() {
               transition={{ duration: 0.8, delay: 0.1 }}
               data-testid="heading-hero"
             >
-              Stop Solving Systems Problems{" "}
+              Stop Solving Systems Problems<br />
               <span className="gradient-text gradient-hero">with Headcount Solutions.</span>
             </motion.h1>
             <motion.p

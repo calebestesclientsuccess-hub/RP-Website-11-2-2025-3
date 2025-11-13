@@ -119,7 +119,7 @@ export default function GTMEnginePage() {
               transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
               data-testid="heading-hero"
             >
-              It's More than a Sales Team.{" "}
+              It's More than a Sales Team.<br />
               <span className="gradient-text gradient-hero">It's a Complete Revenue Generation System.</span>
             </motion.h1>
             <motion.p
@@ -179,7 +179,7 @@ export default function GTMEnginePage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-financial-reframe">
-              A Better System.{" "}
+              A Better System.<br />
               <span className="gradient-text gradient-hero">A Superior Financial Investment.</span>
             </h2>
             <p className="text-xl leading-relaxed mb-4">
@@ -224,7 +224,7 @@ export default function GTMEnginePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-old-way">
-              The "Old Way" Is{" "}
+              The "Old Way" Is<br />
               <span className="gradient-text gradient-hero">Architecturally Flawed</span>
             </h2>
           </div>
@@ -250,7 +250,7 @@ export default function GTMEnginePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-solution">
-              The Solution:{" "}
+              The Solution:<br />
               <span className="gradient-text gradient-hero">The "Fullstack Sales Unit"</span>
             </h2>
             <p className="text-xl leading-relaxed max-w-3xl mx-auto">
@@ -372,7 +372,7 @@ export default function GTMEnginePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-process">
-              Our Process:{" "}
+              Our Process:<br />
               <span className="gradient-text gradient-hero">How We Build Your Asset</span>
             </h2>
           </div>
@@ -413,7 +413,7 @@ export default function GTMEnginePage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-proof">
-              The Proof:{" "}
+              The Proof:<br />
               <span className="gradient-text gradient-hero">A Real-World "Hero's Journey"</span>
             </h2>
             <p className="text-2xl font-semibold mb-4">
@@ -489,7 +489,7 @@ export default function GTMEnginePage() {
       <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-final-reframe">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-8" data-testid="heading-final-reframe">
-            You Stop Renting.{" "}
+            You Stop Renting.<br />
             <span className="gradient-text gradient-hero">You Start Owning.</span>
           </h2>
           <p className="text-xl leading-relaxed">
@@ -522,7 +522,7 @@ export default function GTMEnginePage() {
         </div>
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-cta">
-            Ready to Build{" "}
+            Ready to Build<br />
             <span className="gradient-text gradient-hero">Your GTM Asset?</span>
           </h2>
           <p className="text-xl leading-relaxed mb-8" data-testid="text-cta-description">
