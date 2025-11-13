@@ -55,26 +55,83 @@ export default function BrandingProjectPage() {
     // Clean up previous ScrollTrigger instances
     ScrollTrigger.getAll().forEach(trigger => trigger.kill());
 
+    // Enable smooth scrolling
+    gsap.to(scrollContainerRef.current, {
+      scrollBehavior: "smooth"
+    });
+
+    // Hero parallax effect
+    const heroParallax = scrollContainerRef.current.querySelector('[data-hero-parallax]');
+    if (heroParallax) {
+      gsap.to(heroParallax, {
+        yPercent: 50,
+        ease: "none",
+        scrollTrigger: {
+          trigger: heroParallax,
+          start: "top top",
+          end: "bottom top",
+          scrub: 1,
+        }
+      });
+    }
+
     // Setup scroll-driven animations for each scene
     const sceneElements = scrollContainerRef.current.querySelectorAll('[data-scene]');
     
     sceneElements.forEach((element, index) => {
       const scene = scenes[index];
-      if (!scene?.sceneConfig?.animation) return;
+      
+      // Parallax effect on images within the scene
+      const images = element.querySelectorAll('img, video');
+      images.forEach((img) => {
+        gsap.to(img, {
+          yPercent: 20,
+          ease: "none",
+          scrollTrigger: {
+            trigger: element,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.5,
+          }
+        });
+      });
 
-      // Apply animation based on scene config
+      // Main scene animation based on config
+      const animationType = scene?.sceneConfig?.animation || "fade";
+      
+      let animationConfig;
+      switch (animationType) {
+        case "slide":
+          animationConfig = {
+            from: { opacity: 0, x: -100 },
+            to: { opacity: 1, x: 0 }
+          };
+          break;
+        case "zoom":
+          animationConfig = {
+            from: { opacity: 0, scale: 0.8 },
+            to: { opacity: 1, scale: 1 }
+          };
+          break;
+        case "fade":
+        default:
+          animationConfig = {
+            from: { opacity: 0, y: 80 },
+            to: { opacity: 1, y: 0 }
+          };
+      }
+
       gsap.fromTo(
         element,
-        { opacity: 0, y: 100 },
+        animationConfig.from,
         {
-          opacity: 1,
-          y: 0,
-          duration: 1,
+          ...animationConfig.to,
+          duration: 1.2,
           ease: "power3.out",
           scrollTrigger: {
             trigger: element,
-            start: "top 80%",
-            end: "top 20%",
+            start: "top 75%",
+            end: "top 25%",
             toggleActions: "play none none reverse",
           }
         }
@@ -155,12 +212,12 @@ export default function BrandingProjectPage() {
         </nav>
 
         {/* Hero Scene */}
-        <section className="min-h-screen flex items-center justify-center relative pt-24 pb-12 px-4">
-          <div className="absolute inset-0 z-0">
+        <section className="min-h-screen flex items-center justify-center relative pt-24 pb-12 px-4 overflow-hidden">
+          <div className="absolute inset-0 z-0" data-hero-parallax>
             <img
               src={project.thumbnailUrl}
               alt={project.title}
-              className="w-full h-full object-cover opacity-20"
+              className="w-full h-full object-cover opacity-20 scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/70 to-background" />
           </div>
@@ -172,6 +229,9 @@ export default function BrandingProjectPage() {
             <p className="text-2xl md:text-3xl text-muted-foreground mb-8" data-testid="text-project-subtitle">
               Branding Portfolio
             </p>
+            <div className="inline-block animate-bounce mt-12">
+              <Circle className="w-3 h-3 fill-muted-foreground text-muted-foreground opacity-50" />
+            </div>
           </div>
         </section>
 
