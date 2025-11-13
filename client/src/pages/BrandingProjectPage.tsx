@@ -234,16 +234,16 @@ export default function BrandingProjectPage() {
 
 // Scene renderer component that interprets sceneConfig
 function SceneRenderer({ scene }: { scene: ProjectScene }) {
-  const { type, content } = scene.sceneConfig;
+  const { type, content, layout = "default" } = scene.sceneConfig;
 
   switch (type) {
     case "text":
       return (
         <div className="prose prose-invert max-w-none">
-          <h2 className="text-5xl font-bold mb-8 bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
+          <h2 className="text-5xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
             {content.heading}
           </h2>
-          <p className="text-xl text-muted-foreground leading-relaxed">
+          <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
             {content.body}
           </p>
         </div>
@@ -253,19 +253,20 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
       return (
         <div className="space-y-8">
           {content.heading && (
-            <h2 className="text-5xl font-bold bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
+            <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
               {content.heading}
             </h2>
           )}
-          <div className="aspect-video rounded-2xl overflow-hidden border border-border">
+          <div className="aspect-video rounded-2xl overflow-hidden border border-border bg-muted/50">
             <img
               src={content.url}
               alt={content.alt || "Scene image"}
               className="w-full h-full object-cover"
+              loading="lazy"
             />
           </div>
           {content.caption && (
-            <p className="text-muted-foreground text-center">{content.caption}</p>
+            <p className="text-lg text-muted-foreground text-center italic">{content.caption}</p>
           )}
         </div>
       );
@@ -274,11 +275,11 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
       return (
         <div className="space-y-8">
           {content.heading && (
-            <h2 className="text-5xl font-bold bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
+            <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
               {content.heading}
             </h2>
           )}
-          <div className="aspect-video rounded-2xl overflow-hidden border border-border">
+          <div className="aspect-video rounded-2xl overflow-hidden border border-border bg-muted/50">
             <video
               src={content.url}
               controls
@@ -286,15 +287,130 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
             />
           </div>
           {content.caption && (
-            <p className="text-muted-foreground text-center">{content.caption}</p>
+            <p className="text-lg text-muted-foreground text-center italic">{content.caption}</p>
           )}
+        </div>
+      );
+
+    case "split":
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+          <div className={`space-y-6 ${layout === "reverse" ? "md:order-2" : "md:order-1"}`}>
+            {content.heading && (
+              <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
+                {content.heading}
+              </h2>
+            )}
+            {content.body && (
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                {content.body}
+              </p>
+            )}
+          </div>
+          <div className={`aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-muted/50 ${layout === "reverse" ? "md:order-1" : "md:order-2"}`}>
+            {content.mediaType === "video" ? (
+              <video
+                src={content.mediaUrl}
+                controls
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <img
+                src={content.mediaUrl}
+                alt={content.alt || "Scene media"}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            )}
+          </div>
+        </div>
+      );
+
+    case "gallery":
+      return (
+        <div className="space-y-8">
+          {content.heading && (
+            <h2 className="text-5xl md:text-6xl font-bold text-center bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
+              {content.heading}
+            </h2>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {content.images?.map((img: {url: string; alt?: string; caption?: string}, idx: number) => (
+              <div key={idx} className="space-y-3">
+                <div className="aspect-square rounded-xl overflow-hidden border border-border bg-muted/50">
+                  <img
+                    src={img.url}
+                    alt={img.alt || `Gallery image ${idx + 1}`}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                </div>
+                {img.caption && (
+                  <p className="text-sm text-muted-foreground text-center">{img.caption}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case "quote":
+      return (
+        <div className="max-w-3xl mx-auto text-center space-y-8">
+          <div className="text-6xl md:text-8xl text-primary/20">"</div>
+          <blockquote className="text-3xl md:text-4xl font-medium leading-relaxed text-foreground">
+            {content.quote}
+          </blockquote>
+          {content.author && (
+            <cite className="block text-xl text-muted-foreground not-italic">
+              — {content.author}
+              {content.role && <span className="block text-base mt-2">{content.role}</span>}
+            </cite>
+          )}
+        </div>
+      );
+
+    case "fullscreen":
+      return (
+        <div className="relative -mx-4 md:-mx-8 lg:-mx-12">
+          <div className="aspect-[21/9] rounded-xl overflow-hidden">
+            {content.mediaType === "video" ? (
+              <video
+                src={content.url}
+                controls
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <img
+                src={content.url}
+                alt={content.alt || "Full screen media"}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            )}
+            {content.overlay && (
+              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/50 to-transparent flex items-end p-12">
+                <div className="max-w-2xl">
+                  {content.heading && (
+                    <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+                      {content.heading}
+                    </h2>
+                  )}
+                  {content.body && (
+                    <p className="text-xl text-white/90">{content.body}</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       );
 
     default:
       return (
-        <div className="text-center text-muted-foreground">
-          <p>Unknown scene type: {type}</p>
+        <div className="text-center text-muted-foreground p-12 border border-dashed border-border rounded-xl">
+          <p className="text-lg">Unknown scene type: {type}</p>
+          <p className="text-sm mt-2">Available types: text, image, video, split, gallery, quote, fullscreen</p>
         </div>
       );
   }
