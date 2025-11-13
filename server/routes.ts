@@ -6,6 +6,7 @@ import multer from "multer";
 import path from "path";
 import { storage } from "./storage";
 import { DEFAULT_TENANT_ID } from "./middleware/tenant";
+import cloudinary from "./cloudinary";
 import { 
   insertEmailCaptureSchema, 
   insertBlogPostSchema,
@@ -40,19 +41,9 @@ import { sendLeadNotificationEmail } from "./utils/lead-notifications";
 import { db } from "./db";
 import { eq, asc } from "drizzle-orm";
 
-// Configure multer for PDF uploads
-const pdfStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads/pdfs');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
-    cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
-});
-
+// Configure multer for memory storage (files will be uploaded to Cloudinary)
 const pdfUpload = multer({
-  storage: pdfStorage,
+  storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/pdf') {
       cb(null, true);
@@ -63,19 +54,8 @@ const pdfUpload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
-// Configure multer for image uploads
-const imageStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads/images');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}`;
-    cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
-});
-
 const imageUpload = multer({
-  storage: imageStorage,
+  storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (allowedMimes.includes(file.mimetype)) {
@@ -514,32 +494,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PDF Upload endpoint
+  // PDF Upload endpoint (Cloudinary)
   app.post("/api/upload/pdf", requireAuth, pdfUpload.single('pdf'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No PDF file uploaded" });
       }
 
-      const pdfUrl = `/uploads/pdfs/${req.file.filename}`;
+      // Upload to Cloudinary using buffer
+      const uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            resource_type: 'raw',
+            folder: 'revenue-party/pdfs',
+            public_id: `pdf-${Date.now()}-${crypto.randomBytes(6).toString('hex')}`,
+            format: 'pdf'
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        uploadStream.end(req.file!.buffer);
+      });
+
+      const pdfUrl = (uploadResult as any).secure_url;
       return res.json({ url: pdfUrl });
     } catch (error) {
-      console.error("Error uploading PDF:", error);
+      console.error("Error uploading PDF to Cloudinary:", error);
       return res.status(500).json({ error: "Failed to upload PDF" });
     }
   });
 
-  // Image Upload endpoint
+  // Image Upload endpoint (Cloudinary)
   app.post("/api/upload/image", requireAuth, imageUpload.single('image'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No image file uploaded" });
       }
 
-      const imageUrl = `/uploads/images/${req.file.filename}`;
+      // Upload to Cloudinary using buffer with automatic optimization
+      const uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            resource_type: 'image',
+            folder: 'revenue-party/images',
+            public_id: `image-${Date.now()}-${crypto.randomBytes(6).toString('hex')}`,
+            transformation: [
+              { quality: 'auto', fetch_format: 'auto' }
+            ]
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        uploadStream.end(req.file!.buffer);
+      });
+
+      const imageUrl = (uploadResult as any).secure_url;
       return res.json({ url: imageUrl });
     } catch (error) {
-      console.error("Error uploading image:", error);
+      console.error("Error uploading image to Cloudinary:", error);
       return res.status(500).json({ error: "Failed to upload image" });
     }
   });
