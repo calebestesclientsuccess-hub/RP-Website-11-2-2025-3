@@ -193,11 +193,10 @@ export default function PricingPage() {
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-pricing-cards">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-pricing-cards">
-              Choose Your<br />
-              <span className="gradient-text gradient-hero">Guaranteed GTM Engine</span>
+            <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-6" data-testid="heading-pricing-cards">
+              Choose Your <span className="gradient-text gradient-hero">Guaranteed GTM Engine</span>
             </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed" data-testid="text-pricing-description">
+            <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-pricing-description">
               All plans include the full "Fullstack Sales Unit": Elite Talent, the "Impact Selling OS" (100% IP Ownership), and the "Signal Factory" Tech Stack. All plans include the 20+ SQOs / SDR guarantee.
             </p>
           </div>
@@ -298,11 +297,10 @@ export default function PricingPage() {
       <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-anti-trap-terms">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-anti-trap-terms">
-              Our Terms:<br />
-              <span className="gradient-text gradient-hero">100% Transparency</span>, 0% "Black Box"
+            <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-6" data-testid="heading-anti-trap-terms">
+              Our Terms: <span className="gradient-text gradient-hero">100% Transparency</span>, 0% "Black Box"
             </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed" data-testid="text-anti-trap-description">
+            <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-anti-trap-description">
               Our terms are designed to build trust and mitigate your risk.
             </p>
           </div>
@@ -351,9 +349,8 @@ export default function PricingPage() {
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-proud-of-price">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-proud-of-price">
-              We Are a<br />
-              <span className="gradient-text gradient-hero">Premium Investment</span> in Relevance
+            <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-6" data-testid="heading-proud-of-price">
+              We Are a <span className="gradient-text gradient-hero">Premium Investment</span> in Relevance
             </h2>
           </div>
 
@@ -401,9 +398,8 @@ export default function PricingPage() {
       <section className="py-20 px-4 md:px-6 lg:px-8" data-testid="section-qualifier">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-qualifier">
-              The<br />
-              <span className="gradient-text gradient-hero">$750 Question</span>
+            <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-6" data-testid="heading-qualifier">
+              The <span className="gradient-text gradient-hero">$750 Question</span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-qualifier-intro">
               Our model is not for everyone. Here's how to know if it's right for you.
@@ -475,9 +471,8 @@ export default function PricingPage() {
       {/* Final CTA */}
       <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-final-cta">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-final-cta">
-            Let's Build Your<br />
-            <span className="gradient-text gradient-hero">Blueprint</span>
+          <h2 className="text-4xl md:text-5xl font-bold leading-tight mb-6" data-testid="heading-final-cta">
+            Let's Build Your <span className="gradient-text gradient-hero">Blueprint</span>
           </h2>
           <p className="text-xl text-muted-foreground mb-8 leading-relaxed" data-testid="text-final-cta-description">
             Stop choosing between bad options. Schedule a free GTM Audit with our Architects and let's design a system that wins.
