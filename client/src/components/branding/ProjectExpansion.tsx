@@ -1,11 +1,13 @@
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ParticleDissolve } from "./ParticleDissolve";
 
 interface ProjectExpansionProps {
   project: {
     id: number;
+    slug: string;
     clientName: string;
     projectTitle: string;
     thumbnailImage: string;
@@ -24,6 +26,7 @@ interface ProjectExpansionProps {
 
 export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const isVideo = (url: string) => {
     return url.includes('.mp4') || url.includes('.webm') || url.includes('video') || (url.includes('cloudinary') && url.includes('/video/'));
@@ -219,8 +222,35 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
               </p>
             </div>
           )}
+
+          {/* View Full Story CTA */}
+          <div className="mt-12 flex justify-center">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-700 hover:to-purple-700 text-white px-8 py-6 text-lg font-semibold"
+              onClick={() => {
+                if (!project.slug) {
+                  console.warn("Project missing slug:", project);
+                  return;
+                }
+                setIsTransitioning(true);
+              }}
+              disabled={!project.slug}
+              data-testid="button-view-full-story"
+            >
+              <Sparkles className="mr-2 h-5 w-5" />
+              Experience the Full Story
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Particle Dissolve Transition */}
+      <ParticleDissolve
+        isActive={isTransitioning}
+        targetUrl={`/branding/${project.slug}`}
+        onComplete={() => setIsTransitioning(false)}
+      />
     </div>
   );
 }

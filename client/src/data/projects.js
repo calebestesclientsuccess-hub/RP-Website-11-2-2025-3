@@ -1,6 +1,7 @@
 export const projects = [
   {
     id: 1,
+    slug: "techflow-ai",
     clientName: "TechFlow AI",
     projectTitle: "Full GTM Rebrand & Market Repositioning",
     thumbnailImage: "https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?w=800&h=600&fit=crop",
@@ -26,6 +27,7 @@ export const projects = [
   },
   {
     id: 2,
+    slug: "momentum-labs",
     clientName: "Momentum Labs",
     projectTitle: "Sales Enablement & Messaging Framework",
     thumbnailImage: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&h=600&fit=crop",
@@ -50,6 +52,7 @@ export const projects = [
   },
   {
     id: 3,
+    slug: "cascade-financial",
     clientName: "Cascade Financial",
     projectTitle: "Website Redesign & Conversion Optimization",
     thumbnailImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop",
@@ -75,6 +78,7 @@ export const projects = [
   },
   {
     id: 4,
+    slug: "vertex-security",
     clientName: "Vertex Security",
     projectTitle: "Product Launch & Go-to-Market Campaign",
     thumbnailImage: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&h=600&fit=crop",
@@ -99,6 +103,7 @@ export const projects = [
   },
   {
     id: 5,
+    slug: "summit-hr",
     clientName: "Summit HR",
     projectTitle: "Brand Identity & Visual System Design",
     thumbnailImage: "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=800&h=600&fit=crop",
@@ -124,6 +129,7 @@ export const projects = [
   },
   {
     id: 6,
+    slug: "elevate-analytics",
     clientName: "Elevate Analytics",
     projectTitle: "Investor Pitch Deck & Narrative",
     thumbnailImage: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop",
