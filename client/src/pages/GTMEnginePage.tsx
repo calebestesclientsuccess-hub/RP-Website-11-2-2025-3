@@ -1,4 +1,3 @@
-
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
@@ -135,21 +134,6 @@ export default function GTMEnginePage() {
         </div>
       </section>
 
-      {/* Video Section - Clean background */}
-      <div className="relative">
-
-        <div className="relative z-10">
-          <Suspense fallback={
-            <div className="flex flex-col items-center justify-center min-h-[600px] gap-4">
-              <Skeleton className="h-96 w-full max-w-4xl rounded-lg" />
-              <Skeleton className="h-8 w-64" />
-            </div>
-          }>
-            <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
-          </Suspense>
-        </div>
-      </div>
-
       {/* Widget Zone 16 */}
       <WidgetZone zone="zone-16" className="my-8" />
 
@@ -196,7 +180,7 @@ export default function GTMEnginePage() {
                   The traditional approach—whether hiring "Lone Wolf" reps or using commodity agencies. Both leave you with nothing.
                 </p>
               </div>
-              
+
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
                   <span className="text-destructive mt-1 text-xl">×</span>
@@ -230,7 +214,7 @@ export default function GTMEnginePage() {
                   We partner with you to build a permanent GTM capability. One day, when you're ready, you can run it internally.
                 </p>
               </div>
-              
+
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
                   <span className="text-violet-blue mt-1 text-xl">✓</span>
