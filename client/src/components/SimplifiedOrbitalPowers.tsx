@@ -589,15 +589,6 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         data-testid="section-orbital-powers"
       >
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-5xl md:text-6xl font-bold mb-2">
-              <span className="gradient-text gradient-hero">The Fullstack Sales Unit</span>
-            </h2>
-            <p className="text-xl md:text-2xl italic max-w-3xl mx-auto text-muted-foreground">
-              Elite Sales Talent, equipped and trained by RP Architects.
-            </p>
-          </div>
-
           <div className="relative mx-auto" style={{ maxWidth: '900px' }} data-testid="orbital-container">
             <div className="relative mx-auto h-[360px] md:h-[460px] flex items-center justify-center">
 
