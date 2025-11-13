@@ -91,7 +91,7 @@ export default function GTMEnginePage() {
       <WidgetZone zone="zone-15" className="my-8" />
 
       {/* Hero Module */}
-      <section className="relative pt-32 pb-20 px-4 md:px-6 lg:px-8">
+      <section className="relative pt-32 pb-11 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <motion.div
