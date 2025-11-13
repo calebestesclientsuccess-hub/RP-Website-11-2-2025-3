@@ -297,7 +297,7 @@ export default function Home() {
                 <div className="flex-grow flex flex-col justify-end min-h-[120px]">
                   <div
                     className={cn(
-                      "leading-relaxed transition-all duration-500 ease-out opacity-70",
+                      "leading-relaxed transition-all duration-500 ease-out opacity-70 text-center",
                       allCardsExpanded ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
                     )}
                   >
@@ -378,7 +378,7 @@ export default function Home() {
                 <div className="flex-grow flex flex-col justify-end min-h-[120px]">
                   <div
                     className={cn(
-                      "leading-relaxed transition-all duration-500 ease-out opacity-70",
+                      "leading-relaxed transition-all duration-500 ease-out opacity-70 text-center",
                       allCardsExpanded ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
                     )}
                   >
@@ -459,7 +459,7 @@ export default function Home() {
                 <div className="flex-grow flex flex-col justify-end min-h-[120px]">
                   <div
                     className={cn(
-                      "leading-relaxed transition-all duration-500 ease-out opacity-70",
+                      "leading-relaxed transition-all duration-500 ease-out opacity-70 text-center",
                       allCardsExpanded ? 'max-h-[500px] mb-4' : 'max-h-[72px] overflow-hidden mb-0'
                     )}
                   >
@@ -715,7 +715,7 @@ export default function Home() {
               </p>
             </div>
             <InternalHireCostCalculator />
-            
+
             {/* CTA for Full Calculator - Moved inside section */}
             <div className="text-center mt-16">
               <Button
