@@ -202,8 +202,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-trap">
-              The Two-Option Trap<br />
-              <span className="gradient-text gradient-hero">That Guarantees Failure</span>
+              The $198,000 Mistake<br />
+              <span className="gradient-text gradient-hero">You Don't Have to Make</span>
             </h2>
             <div className="space-y-4">
               <p className="text-xl leading-relaxed" data-testid="text-trap-description">
