@@ -1,8 +1,25 @@
 import { Helmet } from "react-helmet-async";
+import { useState } from "react";
+import { LayoutGroup } from "framer-motion";
 import { BrandingHero } from "@/components/branding/BrandingHero";
 import { ProjectGrid } from "@/components/branding/ProjectGrid";
+import { ProjectModal } from "@/components/branding/ProjectModal";
+import { projects } from "@/data/projects";
 
 export default function BrandingPage() {
+  const [selectedProject, setSelectedProject] = useState<typeof projects[0] | null>(null);
+
+  const handleProjectClick = (projectId: number) => {
+    const project = projects.find((p) => p.id === projectId);
+    if (project) {
+      setSelectedProject(project);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedProject(null);
+  };
+
   return (
     <>
       <Helmet>
@@ -22,7 +39,10 @@ export default function BrandingPage() {
 
       <div className="min-h-screen">
         <BrandingHero />
-        <ProjectGrid />
+        <LayoutGroup>
+          <ProjectGrid onProjectClick={handleProjectClick} />
+          <ProjectModal project={selectedProject} onClose={handleCloseModal} />
+        </LayoutGroup>
       </div>
     </>
   );

@@ -15,6 +15,7 @@ interface ProjectCardProps {
 export function ProjectCard({ project, onClick }: ProjectCardProps) {
   return (
     <motion.div
+      layoutId={`project-${project.id}`}
       layout
       whileHover={{ scale: 1.03, rotateZ: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
