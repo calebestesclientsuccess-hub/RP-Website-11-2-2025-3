@@ -1384,6 +1384,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public Branding Project endpoints (for scrollytelling pages)
+  app.get("/api/branding/projects/slug/:slug", async (req, res) => {
+    try {
+      const project = await storage.getProjectBySlug(req.tenantId, req.params.slug);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      return res.json(project);
+    } catch (error) {
+      console.error("Error fetching project by slug:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/branding/projects/:id/scenes", async (req, res) => {
+    try {
+      const scenes = await storage.getScenesByProjectId(req.tenantId, req.params.id);
+      if (scenes === null) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      // Normalize to empty array instead of null for simpler frontend handling
+      return res.json(scenes || []);
+    } catch (error) {
+      console.error("Error fetching project scenes:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Job applications endpoint
   app.post("/api/job-applications", async (req, res) => {
     try {

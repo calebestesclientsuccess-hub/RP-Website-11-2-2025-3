@@ -20,6 +20,7 @@ import About from "@/pages/About";
 import BlogPage from "@/pages/BlogPage";
 import BlogPostPage from "@/pages/blog/BlogPostPage";
 import BrandingPage from "@/pages/BrandingPage";
+import BrandingProjectPage from "@/pages/BrandingProjectPage";
 import AuditPage from "@/pages/AuditPage";
 import ROICalculator from "@/pages/ROICalculator";
 import AssessmentPage from "@/pages/AssessmentPage";
@@ -137,6 +138,7 @@ function Router() {
       <Route path="/blog" component={BlogPage} />
           <Route path="/blog/:slug" component={BlogPostPage} />
       <Route path="/branding" component={BrandingPage} />
+      <Route path="/branding/:slug" component={BrandingProjectPage} />
       <Route path="/audit" component={AuditPage} />
 
       {/* Tools & Resources */}
