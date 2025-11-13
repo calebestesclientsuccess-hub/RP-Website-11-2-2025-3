@@ -33,17 +33,20 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
     - **Pipeline Assessment Tool**: Multi-screen assessment with database persistence, lead segmentation, and an admin dashboard.
     - **GTM Assessment Tool**: Decision-tree based assessment with dynamic results pages and a blueprint capture system.
 - **Campaign Placement System**: Enables admins to create and deploy forms, calculators, and assessments across 30 strategic zones with granular page and display size targeting. Supports HTML form mode with DOMPurify security.
+- **Branding Portfolio**: Interactive /branding page featuring Mariya Tamkeen's brand strategy work with bouncy 3D animations (Framer Motion), in-grid expansion system, and project case studies with challenge/solution/outcome structure.
 
 **System Design Choices:**
 - **Frontend**: React 18 (Vite), Tailwind CSS, Wouter (routing), React Query (data fetching), Shadcn UI.
 - **Backend**: Express.js for RESTful API endpoints.
 - **Database**: PostgreSQL with Drizzle ORM.
+- **File Storage**: Cloudinary for images, PDFs, and videos with automatic optimization and CDN delivery.
 - **Animation Strategy**: Minimal and performance-focused.
 - **Performance Optimizations**: Implemented campaign caching, database connection pooling, loading skeletons, code splitting for bundle optimization, scroll-triggered animations, and resilient loading states to significantly reduce load times and improve user experience.
 
 ## External Dependencies
 - **PostgreSQL**: Primary database.
 - **Drizzle ORM**: ORM for PostgreSQL.
+- **Cloudinary**: Cloud-based file storage and CDN for images, PDFs, and videos with automatic optimization.
 - **GSAP**: Animation library.
 - **TanStack Query (React Query)**: Data fetching and state management.
 - **Shadcn UI**: UI component library.
