@@ -197,13 +197,13 @@ export default function Home() {
       {/* Top Widget Zone */}
       <WidgetZone zone="zone-1" className="my-8" />
 
-      {/* Problem Module - "The Trap" */}
-      <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
+      {/* Problem Module - "The Trap" - Distinct background for visual separation */}
+      <section className="py-32 px-4 md:px-6 lg:px-8 bg-background">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-trap">
-              The $198,000 Mistake<br />
-              <span className="gradient-text gradient-hero">You Don't Have to Make</span>
+              The Two-Option Trap<br />
+              <span className="gradient-text gradient-hero">That Guarantees Failure</span>
             </h2>
             <div className="space-y-4">
               <p className="text-xl leading-relaxed" data-testid="text-trap-description">
@@ -701,33 +701,33 @@ export default function Home() {
       <WidgetZone zone="zone-5" className="my-8" />
 
       {/* Tool Module - "Interactive ROI Calculator" */}
-      <section className="py-20 px-4 md:px-6 lg:px-8 bg-card/30">
+      <section className="py-32 px-4 md:px-6 lg:px-8 bg-card/30">
         <div className="max-w-7xl mx-auto">
           {/* Internal Hire Cost Calculator Section */}
-          <div className="max-w-4xl mx-auto mb-20">
+          <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight" data-testid="heading-internal-sdr-cost">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-center" data-testid="heading-internal-sdr-cost">
                 <div className="mb-2">The True Cost of</div>
                 <div className="gradient-text gradient-hero">1 Internal SDR</div>
               </h2>
-              <p className="text-xl text-muted-foreground mt-6 max-w-2xl mx-auto">
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto text-center">
                 This is what you're actually paying for just one SDR hire.
               </p>
             </div>
             <InternalHireCostCalculator />
-          </div>
-
-          {/* CTA for Full Calculator */}
-          <div className="text-center">
-            <Button
-              size="lg"
-              variant="secondary"
-              className="secondary-cta text-lg px-8 py-6"
-              data-testid="button-calculate-savings"
-              asChild
-            >
-              <Link href="/roi-calculator">Calculate My Savings</Link>
-            </Button>
+            
+            {/* CTA for Full Calculator - Moved inside section */}
+            <div className="text-center mt-16">
+              <Button
+                size="lg"
+                variant="secondary"
+                className="secondary-cta text-lg px-8 py-6"
+                data-testid="button-calculate-savings"
+                asChild
+              >
+                <Link href="/roi-calculator">Calculate My Savings</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
