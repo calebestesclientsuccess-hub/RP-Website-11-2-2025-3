@@ -38,7 +38,7 @@ export function InternalHireCostCalculator() {
         <div className="mb-6">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-6 h-6 text-destructive" />
-            <h3 className="text-2xl md:text-3xl font-bold">Calculator Breakdown</h3>
+            <h3 className="text-2xl md:text-3xl font-bold">The True Cost of Your 1st Salesperson</h3>
           </div>
         </div>
 
