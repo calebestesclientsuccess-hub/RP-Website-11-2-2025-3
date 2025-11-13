@@ -1021,7 +1021,7 @@
 .badge-texture {
   position: relative;
   overflow: hidden;
-  background-image: linear-gradient(180deg, #02066F 0%, #010442 90%);
+  background-image: linear-gradient(180deg, #0123B4 0%, #011A8F 90%);
   background-repeat: no-repeat;
   filter: contrast(1.05) brightness(0.92) saturate(1.1);
   border: none;
