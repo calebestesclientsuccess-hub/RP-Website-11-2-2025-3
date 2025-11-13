@@ -7,8 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { WidgetZone } from "@/components/WidgetZone";
 import { CostEquationCard } from "@/components/CostEquationCard";
 import { ComparisonTable } from "@/components/ComparisonTable";
-import { HeroJourneyGrid } from "@/components/HeroJourneyGrid";
-import { ArrowRight, Users, Brain, BookOpen, Target, Settings, Wrench } from "lucide-react";
+import { ArrowRight, Users, Brain, BookOpen } from "lucide-react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { useRef, lazy, Suspense } from "react";
@@ -69,29 +68,6 @@ export default function GTMEnginePage() {
     {
       oldWay: "Own zero IP when they leave - start from scratch",
       newWay: "Own 100% of the GTM playbook and Signal Factory forever"
-    }
-  ];
-
-  const architectContributions = [
-    {
-      title: "GTM Architect Contribution",
-      description: "Redesigned the entire ICP, messaging framework, and multi-channel strategy to align with the new market position.",
-      icon: <Target className="w-6 h-6 text-primary" />
-    },
-    {
-      title: "AI Architect Contribution",
-      description: "Built a custom Signal Factory that identified high-intent prospects 3 weeks before they entered active buying cycles.",
-      icon: <Brain className="w-6 h-6 text-signal-green" />
-    },
-    {
-      title: "Elite Coach Contribution",
-      description: "Trained the BDR pod on consultative selling techniques, increasing meeting-to-opp conversion by 2.8x.",
-      icon: <Users className="w-6 h-6 text-purple-500" />
-    },
-    {
-      title: "RevOps Contribution",
-      description: "Optimized the entire tech stack and CRM workflows, reducing manual tasks by 15 hours/week per rep.",
-      icon: <Settings className="w-6 h-6 text-red-500" />
     }
   ];
 
@@ -440,6 +416,9 @@ export default function GTMEnginePage() {
               The Proof:{" "}
               <span className="gradient-text gradient-hero">A Real-World "Hero's Journey"</span>
             </h2>
+            <p className="text-2xl font-semibold mb-4">
+              From 0-3 Sales to 15/Day: How We Fixed a "Too Good to Be True" Offer
+            </p>
           </div>
 
           <Card className="p-8 md:p-12 bg-primary/5 border-2 border-primary">
@@ -447,35 +426,60 @@ export default function GTMEnginePage() {
               <div>
                 <h3 className="text-xl font-bold mb-3">The Pain:</h3>
                 <p className="leading-relaxed">
-                  A Series B SaaS company burning $40K/month on a BDR who delivered 3 meetings in 6 months. Pipeline was dead. Board was furious.
+                  A B2B compliance client had a 10-SDR team making 300+ calls per day and failing, booking only 0-3 sales. They were burning cash and their high-cost "Lone Wolf" team was on the verge of collapse.
                 </p>
               </div>
 
               <div>
                 <h3 className="text-xl font-bold mb-3">The Diagnosis:</h3>
                 <p className="leading-relaxed">
-                  Classic "Lone Wolf Trap." No playbook, no coaching, no systems. Just hope and a generic tech stack.
+                  Our GTM Architects listened to the calls. The #1 killer wasn't the reps; it was the architecture. Their core offer—"For $300 I'll save you $7500 in fines"—sounded "too good to be true". It was a massive price-value disconnect that triggered skepticism and caused prospects to disengage.
                 </p>
               </div>
 
               <div>
-                <h3 className="text-xl font-bold mb-3">The Reframe:</h3>
-                <p className="leading-relaxed">
-                  We built a complete Fullstack Sales Unit. New ICP, new messaging, AI-powered Signal Factory, and an elite 2-person pod trained on Impact Selling.
+                <h3 className="text-xl font-bold mb-3">The Reframe (The "Fullstack" Solution):</h3>
+                <p className="leading-relaxed mb-6">
+                  We didn't just "train" the reps. We re-engineered the entire GTM asset. This was the "Platonic Ideal," where every Architect contributed:
                 </p>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card className="p-6 bg-background/50">
+                    <h4 className="font-bold mb-2 text-lg">The "Visionary Architect" (Caleb)</h4>
+                    <p className="text-sm leading-relaxed">
+                      Orchestrated the new motion. He fixed the value equation, flipping the script from a weak "value" offer to a powerful "problem-led" one using Loss Aversion. He also raised the price from $300 to $750 to make the value believable against the $7,500 federal fine.
+                    </p>
+                  </Card>
+
+                  <Card className="p-6 bg-background/50">
+                    <h4 className="font-bold mb-2 text-lg">The "Brand Guardian" (Mariya)</h4>
+                    <p className="text-sm leading-relaxed">
+                      Solved the trust problem by producing an "authority" asset—an educational video starring an actress ("Ms. Samantha") positioned as the company's leading compliance expert. This created "Textbook Authority Bias".
+                    </p>
+                  </Card>
+
+                  <Card className="p-6 bg-background/50">
+                    <h4 className="font-bold mb-2 text-lg">The "Talent" & "AI" Architects (Muneeb & Danyal)</h4>
+                    <p className="text-sm leading-relaxed">
+                      Wrote the new cold call scripts for the playbook. Reps were trained not to sell, but to reference "Ms. Samantha's video". This instantly transferred the video's authority to the SDR, "warming the call".
+                    </p>
+                  </Card>
+
+                  <Card className="p-6 bg-background/50">
+                    <h4 className="font-bold mb-2 text-lg">The "Talent" Insight (Muneeb & Caleb)</h4>
+                    <p className="text-sm leading-relaxed">
+                      We realized the client didn't need "hunters"; they needed "trust builders." We helped them staff the team with former CSMs and Account Managers, who excelled at building instant rapport for a fast, obvious sale.
+                    </p>
+                  </Card>
+                </div>
               </div>
 
               <div>
                 <h3 className="text-xl font-bold mb-3">The Result:</h3>
                 <p className="leading-relaxed font-semibold">
-                  42 qualified opportunities in the first 90 days. $2.1M pipeline generated in 6 months. The system now runs internally with 100% IP ownership.
+                  Within 3 weeks of launching the new, integrated playbook, the 10-SDR team's daily sales jumped from 0-3 to 5-15 sales per day. We transformed a failing, high-cost "Lone Wolf" team into a predictable, engineered profit center.
                 </p>
               </div>
-            </div>
-
-            <div className="mt-8">
-              <h4 className="text-lg font-bold mb-4 text-center">How the 4 Architects Contributed:</h4>
-              <HeroJourneyGrid contributions={architectContributions} />
             </div>
           </Card>
         </div>
