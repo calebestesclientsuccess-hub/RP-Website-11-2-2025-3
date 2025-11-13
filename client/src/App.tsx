@@ -67,6 +67,7 @@ const AssessmentConfigFormLazy = lazy(() => import("@/pages/admin/AssessmentConf
 const CampaignsListLazy = lazy(() => import("@/pages/admin/CampaignsList"));
 const CampaignFormLazy = lazy(() => import("@/pages/admin/CampaignForm"));
 const AssessmentAdminDashboardLazy = lazy(() => import("@/pages/AssessmentAdminDashboard"));
+const ContentLibraryLazy = lazy(() => import("@/pages/admin/ContentLibrary"));
 
 // Loading fallback component
 function PageLoadingFallback() {
@@ -98,6 +99,7 @@ const ForgotPasswordPage = withLazyLoading(ForgotPasswordPageLazy);
 const ResetPasswordPage = withLazyLoading(ResetPasswordPageLazy);
 const WelcomePage = withLazyLoading(WelcomePageLazy);
 const AdminDashboard = withLazyLoading(AdminDashboardLazy);
+const ContentLibrary = withLazyLoading(ContentLibraryLazy);
 const FeatureFlagsPage = withLazyLoading(FeatureFlagsPageLazy);
 const BlogPostsList = withLazyLoading(BlogPostsListLazy);
 const BlogPostForm = withLazyLoading(BlogPostFormLazy);
@@ -157,8 +159,9 @@ function Router() {
       <Route path="/admin/forgot-password" component={ForgotPasswordPage} />
       <Route path="/admin/reset-password/:token" component={ResetPasswordPage} />
       <Route path="/admin/welcome" component={WelcomePage} />
-      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/content" component={ContentLibrary} />
       <Route path="/admin/feature-flags" component={FeatureFlagsPage} />
+      <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/assessment-submissions" component={AssessmentAdminDashboard} />
       <Route path="/admin/assessments/new" component={AssessmentConfigForm} />
       <Route path="/admin/assessments/:id/edit" component={AssessmentConfigForm} />

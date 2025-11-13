@@ -916,6 +916,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Unified Content Library API - aggregates all content types
+  app.get("/api/admin/content", requireAuth, async (req, res) => {
+    try {
+      const { type, status, search } = req.query;
+      const tenantId = req.tenantId;
+      
+      // Fetch all content types in parallel
+      const [blogs, videos, testimonials, portfolios, jobs] = await Promise.all([
+        storage.getAllBlogPosts(tenantId, false), // Get all, filter later
+        storage.getAllVideoPosts(tenantId, false),
+        storage.getAllTestimonials(tenantId, false),
+        storage.getAllProjects(tenantId),
+        storage.getAllJobPostings(tenantId, false),
+      ]);
+      
+      // Helper function to calculate status based on timestamps
+      const calculateStatus = (published: boolean, scheduledFor: Date | null | undefined, publishedAt: Date | null | undefined): 'published' | 'draft' | 'scheduled' => {
+        if (scheduledFor && new Date(scheduledFor) > new Date()) {
+          return 'scheduled';
+        }
+        if (published && publishedAt) {
+          return 'published';
+        }
+        return 'draft';
+      };
+      
+      // Map each content type to unified ContentSummary format
+      const content = [
+        ...blogs.map(b => ({
+          id: b.id,
+          type: 'blog' as const,
+          title: b.title,
+          status: calculateStatus(b.published, b.scheduledFor, b.publishedAt),
+          scheduledFor: b.scheduledFor || null,
+          publishedAt: b.publishedAt || null,
+          featured: false, // blogs don't have featured field
+          thumbnailUrl: b.featuredImage || null,
+          excerpt: b.excerpt || '',
+          author: b.author || '',
+        })),
+        ...videos.map(v => ({
+          id: v.id,
+          type: 'video' as const,
+          title: v.title,
+          status: calculateStatus(v.published, v.scheduledFor, v.publishedAt),
+          scheduledFor: v.scheduledFor || null,
+          publishedAt: v.publishedAt || null,
+          featured: false, // videos don't have featured field
+          thumbnailUrl: v.thumbnailUrl || null,
+          excerpt: v.description || '',
+          author: v.author || '',
+        })),
+        ...testimonials.map(t => ({
+          id: t.id,
+          type: 'testimonial' as const,
+          title: t.name,
+          status: 'published' as const, // testimonials are always published
+          scheduledFor: null,
+          publishedAt: t.createdAt ? new Date(t.createdAt).toISOString() : null,
+          featured: t.featured || false,
+          thumbnailUrl: t.avatarUrl || null,
+          excerpt: t.quote ? (t.quote.substring(0, 100) + (t.quote.length > 100 ? '...' : '')) : '',
+          author: `${t.title || ''} at ${t.company || ''}`,
+        })),
+        ...portfolios.map(p => ({
+          id: p.id,
+          type: 'portfolio' as const,
+          title: p.title || '',
+          status: 'published' as const, // portfolios are always published
+          scheduledFor: null,
+          publishedAt: p.createdAt ? new Date(p.createdAt).toISOString() : null,
+          featured: false,
+          thumbnailUrl: p.thumbnailUrl || null,
+          excerpt: p.clientName || '',
+          author: p.clientName || '',
+        })),
+        ...jobs.map(j => ({
+          id: j.id,
+          type: 'job' as const,
+          title: j.title || '',
+          status: j.active ? 'published' as const : 'draft' as const,
+          scheduledFor: null,
+          publishedAt: j.createdAt ? new Date(j.createdAt).toISOString() : null,
+          featured: false,
+          thumbnailUrl: null,
+          excerpt: `${j.department || ''} - ${j.location || ''}`,
+          author: j.department || '',
+        })),
+      ];
+      
+      // Apply filters
+      let filtered = content;
+      
+      if (type && type !== 'all') {
+        filtered = filtered.filter(item => item.type === type);
+      }
+      
+      if (status && status !== 'all') {
+        if (status === 'scheduled') {
+          filtered = filtered.filter(item => 
+            item.scheduledFor && new Date(item.scheduledFor) > new Date()
+          );
+        } else {
+          filtered = filtered.filter(item => item.status === status);
+        }
+      }
+      
+      if (search && typeof search === 'string') {
+        const searchLower = search.toLowerCase();
+        filtered = filtered.filter(item => 
+          item.title.toLowerCase().includes(searchLower) ||
+          (item.excerpt && item.excerpt.toLowerCase().includes(searchLower)) ||
+          (item.author && item.author.toLowerCase().includes(searchLower))
+        );
+      }
+      
+      // Sort by publishedAt descending (most recent first), with fallback to createdAt for drafts
+      filtered.sort((a, b) => {
+        const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : (a.scheduledFor ? new Date(a.scheduledFor).getTime() : 0);
+        const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : (b.scheduledFor ? new Date(b.scheduledFor).getTime() : 0);
+        return dateB - dateA;
+      });
+      
+      return res.json(filtered);
+    } catch (error) {
+      console.error("Error fetching unified content:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Blog posts endpoints
   app.get("/api/blog-posts", async (req, res) => {
     try {
