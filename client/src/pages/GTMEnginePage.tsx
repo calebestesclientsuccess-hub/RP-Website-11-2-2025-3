@@ -135,14 +135,8 @@ export default function GTMEnginePage() {
       </section>
 
       {/* Video Section - The Fullstack Sales Unit Visualization */}
-      <section className="relative py-12 px-4 md:px-6 lg:px-8">
+      <section className="relative -mt-16 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8">
-            <p className="text-xl md:text-2xl leading-relaxed max-w-3xl mx-auto">
-              You don't have a headcount problem; you have an architecture problem. This is the blueprint for the GTM asset that scales.
-            </p>
-          </div>
-          
           <Suspense fallback={
             <div className="flex flex-col items-center justify-center min-h-[600px] gap-4">
               <Skeleton className="h-96 w-full max-w-4xl rounded-lg" />
