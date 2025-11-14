@@ -49,7 +49,7 @@ import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templat
 import { sendGmailEmail } from "./utils/gmail-client";
 import { sendLeadNotificationEmail } from "./utils/lead-notifications";
 import { db } from "./db";
-import { createRateLimiter } from "./middleware/rate-limit";
+import { leadLimiter } from "./middleware/rate-limit";
 import seoHealthRouter from "./routes/seo-health";
 
 // Define default director configuration for new scenes
