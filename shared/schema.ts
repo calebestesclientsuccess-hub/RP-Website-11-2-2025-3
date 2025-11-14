@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean, integer, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, integer, jsonb, unique, uniqueIndex, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -640,6 +640,44 @@ export const projectScenes = pgTable("project_scenes", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// AI-powered scene generation prompt templates
+export const promptTemplates = pgTable("prompt_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  sceneType: text("scene_type"), // 'text', 'image', 'video', 'split', etc. (null = universal)
+  scope: text("scope").default("director").notNull(), // 'director', 'voiceover' (future extensibility)
+  templateContent: text("template_content").notNull(),
+  variablesMeta: jsonb("variables_meta").$type<Array<{
+    name: string;
+    description: string;
+    required: boolean;
+    example?: string;
+  }>>(), // Placeholder descriptors for UI validation
+  outputSchema: jsonb("output_schema"), // For Gemini response validation
+  isDefault: boolean("is_default").default(false).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  version: integer("version").default(1).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdBy: varchar("created_by").references(() => users.id),
+  updatedBy: varchar("updated_by").references(() => users.id),
+}, (table) => [
+  // Unique constraint: name unique per tenant
+  unique("unique_name_per_tenant").on(table.tenantId, table.name),
+  
+  // Partial unique index: only one default template per tenant/sceneType/scope
+  // CRITICAL: Use COALESCE to handle NULL sceneType (universal templates) so uniqueness is enforced
+  uniqueIndex("unique_default_per_type_scope")
+    .on(table.tenantId, sql`COALESCE(${table.sceneType}, '')`, table.scope)
+    .where(sql`${table.isDefault} = true`),
+  
+  // Regular composite index for query performance
+  index("tenant_type_active_idx")
+    .on(table.tenantId, table.sceneType, table.isActive),
+]);
+
 // Insert schemas for projects
 export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
@@ -807,6 +845,28 @@ export const insertProjectSceneSchema = createInsertSchema(projectScenes).omit({
 
 export const updateProjectSceneSchema = insertProjectSceneSchema.partial();
 
+// Insert schemas for prompt templates
+export const insertPromptTemplateSchema = createInsertSchema(promptTemplates).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+  updatedAt: true,
+  createdBy: true,
+  updatedBy: true,
+}).extend({
+  // Preprocessors: convert blank strings to null for optional fields
+  description: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
+  sceneType: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
+});
+
+export const updatePromptTemplateSchema = insertPromptTemplateSchema.partial();
+
 // Director configuration constants and defaults
 export const ENTRY_EFFECTS = ["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-in", "zoom-out", "sudden"] as const;
 export const EXIT_EFFECTS = ["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-out", "dissolve"] as const;
@@ -856,3 +916,6 @@ export type ProjectScene = Omit<typeof projectScenes.$inferSelect, 'sceneConfig'
 };
 export type InsertProjectScene = z.infer<typeof insertProjectSceneSchema>;
 export type DirectorConfig = z.infer<typeof directorConfigSchema>;
+export type PromptTemplate = typeof promptTemplates.$inferSelect;
+export type InsertPromptTemplate = z.infer<typeof insertPromptTemplateSchema>;
+export type UpdatePromptTemplate = z.infer<typeof updatePromptTemplateSchema>;

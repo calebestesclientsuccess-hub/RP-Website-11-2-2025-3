@@ -23,9 +23,10 @@ import {
   type FeatureFlag, type InsertFeatureFlag,
   type Project, type InsertProject,
   type ProjectScene, type InsertProjectScene,
+  type PromptTemplate, type InsertPromptTemplate,
   users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens,
   assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants, leads, featureFlags, insertLeadSchema,
-  projects, projectScenes
+  projects, projectScenes, promptTemplates
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, like, ilike, sql } from "drizzle-orm";
@@ -146,6 +147,14 @@ export interface IStorage {
   createProjectScene(tenantId: string, projectId: string, scene: InsertProjectScene): Promise<ProjectScene>;
   updateProjectScene(tenantId: string, projectId: string, id: string, scene: Partial<InsertProjectScene>): Promise<ProjectScene | null>;
   deleteProjectScene(tenantId: string, projectId: string, id: string): Promise<boolean>;
+
+  // Prompt Templates for AI scene generation
+  getAllPromptTemplates(tenantId: string, activeOnly?: boolean): Promise<PromptTemplate[]>;
+  getPromptTemplateById(tenantId: string, id: string): Promise<PromptTemplate | undefined>;
+  getDefaultPromptTemplate(tenantId: string, sceneType?: string | null, scope?: string): Promise<PromptTemplate | undefined>;
+  createPromptTemplate(tenantId: string, userId: string, template: InsertPromptTemplate): Promise<PromptTemplate>;
+  updatePromptTemplate(tenantId: string, id: string, userId: string, template: Partial<InsertPromptTemplate>): Promise<PromptTemplate>;
+  deletePromptTemplate(tenantId: string, id: string): Promise<void>;
 }
 
 export class DbStorage implements IStorage {
@@ -868,6 +877,103 @@ export class DbStorage implements IStorage {
       .where(and(eq(projectScenes.id, id), eq(projectScenes.projectId, projectId)))
       .returning();
     return result.length > 0;
+  }
+
+  // Prompt Templates CRUD methods
+  async getAllPromptTemplates(tenantId: string, activeOnly?: boolean): Promise<PromptTemplate[]> {
+    const conditions = [eq(promptTemplates.tenantId, tenantId)];
+    
+    if (activeOnly) {
+      conditions.push(eq(promptTemplates.isActive, true));
+    }
+    
+    return db.select()
+      .from(promptTemplates)
+      .where(and(...conditions))
+      .orderBy(desc(promptTemplates.createdAt));
+  }
+
+  async getPromptTemplateById(tenantId: string, id: string): Promise<PromptTemplate | undefined> {
+    const [template] = await db.select()
+      .from(promptTemplates)
+      .where(and(eq(promptTemplates.tenantId, tenantId), eq(promptTemplates.id, id)));
+    return template;
+  }
+
+  async getDefaultPromptTemplate(
+    tenantId: string, 
+    sceneType?: string | null, 
+    scope: string = 'global'
+  ): Promise<PromptTemplate | undefined> {
+    const conditions = [
+      eq(promptTemplates.tenantId, tenantId),
+      eq(promptTemplates.isDefault, true),
+      eq(promptTemplates.isActive, true),
+      eq(promptTemplates.scope, scope)
+    ];
+
+    // Handle sceneType with NULL-safe comparison
+    if (sceneType === null || sceneType === undefined) {
+      conditions.push(sql`${promptTemplates.sceneType} IS NULL`);
+    } else {
+      conditions.push(eq(promptTemplates.sceneType, sceneType));
+    }
+
+    const [template] = await db.select()
+      .from(promptTemplates)
+      .where(and(...conditions))
+      .limit(1);
+    
+    return template;
+  }
+
+  async createPromptTemplate(
+    tenantId: string, 
+    userId: string, 
+    template: InsertPromptTemplate
+  ): Promise<PromptTemplate> {
+    const [newTemplate] = await db.insert(promptTemplates)
+      .values({
+        ...template,
+        tenantId,
+        createdBy: userId,
+        updatedBy: userId,
+      })
+      .returning();
+    
+    return newTemplate;
+  }
+
+  async updatePromptTemplate(
+    tenantId: string, 
+    id: string, 
+    userId: string, 
+    template: Partial<InsertPromptTemplate>
+  ): Promise<PromptTemplate> {
+    const [updatedTemplate] = await db.update(promptTemplates)
+      .set({
+        ...template,
+        updatedBy: userId,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(promptTemplates.tenantId, tenantId), eq(promptTemplates.id, id)))
+      .returning();
+    
+    if (!updatedTemplate) {
+      throw new Error('Prompt template not found or access denied');
+    }
+    
+    return updatedTemplate;
+  }
+
+  async deletePromptTemplate(tenantId: string, id: string): Promise<void> {
+    const result = await db.delete(promptTemplates)
+      .where(and(eq(promptTemplates.tenantId, tenantId), eq(promptTemplates.id, id)))
+      .returning();
+    
+    if (result.length === 0) {
+      throw new Error('Prompt template not found or access denied');
+    }
   }
 }
 
