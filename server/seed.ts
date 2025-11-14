@@ -1,8 +1,18 @@
 import { db } from "./db";
-import { blogPosts, testimonials, jobPostings } from "@shared/schema";
+import { tenants, blogPosts, videoPosts, widgetConfigs, testimonials, jobPostings } from "@shared/schema";
+import { DEFAULT_TENANT_ID } from "./middleware/tenant";
 
 async function seed() {
   console.log("Seeding database...");
+
+  // Seed default tenant
+  await db.insert(tenants).values([
+    {
+      id: DEFAULT_TENANT_ID,
+      name: "Revenue Party",
+      slug: "revenueparty",
+    },
+  ]);
 
   // Seed blog posts
   await db.insert(blogPosts).values([
@@ -70,7 +80,7 @@ An SDR making 50 calls a day with 2% connect rate and 10% conversion gets:
 - ~20 per month
 
 The same SDR with proper infrastructure:
-- Better targeting → 5% connect rate  
+- Better targeting → 5% connect rate
 - Better messaging → 15% conversion
 - Result: 3.75 appointments per day, 75+ per month
 
@@ -108,7 +118,7 @@ These signals appear 3-6 months before traditional intent data. They're invisibl
 
 Our Signal Factory combines:
 1. **Data aggregation**: 40+ sources per account
-2. **Pattern recognition**: ML models trained on closed-won deals  
+2. **Pattern recognition**: ML models trained on closed-won deals
 3. **Signal prioritization**: Predictive scoring that actually predicts
 
 The output: A daily feed of accounts entering their buying window, before they know they're shopping.

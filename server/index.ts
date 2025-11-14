@@ -33,6 +33,14 @@ app.use(
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      // Tenant-specific cookies (if using subdomains)
+      domain: process.env.NODE_ENV === "production" ? ".revenueparty.com" : undefined,
+      sameSite: "lax",
+    },
+    // Add tenant to session
+    genid: (req) => {
+      const tenantPrefix = (req as any).tenantId?.substring(0, 8) || 'default';
+      return `${tenantPrefix}_${require('crypto').randomBytes(16).toString('hex')}`;
     },
   })
 );

@@ -14,11 +14,16 @@ export const tenants = pgTable("tenants", {
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  username: text("username").notNull(),
   password: text("password").notNull(),
-  email: text("email").unique(),
+  email: text("email"),
   role: text("role").notNull().default("manager"),
-});
+}, (table) => ({
+  // Composite unique constraint: username unique per tenant
+  uniqueUsernamePerTenant: unique().on(table.tenantId, table.username),
+  uniqueEmailPerTenant: unique().on(table.tenantId, table.email),
+}));
 
 export const passwordResetTokens = pgTable("password_reset_tokens", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
