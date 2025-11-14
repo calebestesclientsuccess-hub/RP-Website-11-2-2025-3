@@ -1427,7 +1427,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/job-postings", async (req, res) => {
+  app.post("/api/job-postings", requireAuth, async (req, res) => {
     try {
       const result = insertJobPostingSchema.safeParse(req.body);
       if (!result.success) {

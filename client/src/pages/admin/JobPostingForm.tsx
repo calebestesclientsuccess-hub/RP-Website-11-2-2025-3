@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -94,6 +95,21 @@ export default function JobPostingForm() {
     setLocation("/admin/content?type=job");
   };
 
+  // Populate form when editing (useEffect to avoid render-time state updates)
+  useEffect(() => {
+    if (isEdit && job) {
+      form.reset({
+        title: job.title,
+        department: job.department,
+        location: job.location,
+        type: job.type,
+        description: job.description,
+        requirements: job.requirements,
+        active: job.active,
+      });
+    }
+  }, [job, isEdit, form]);
+
   if (isEdit && isLoading) {
     return (
       <ProtectedRoute>
@@ -107,18 +123,6 @@ export default function JobPostingForm() {
         </div>
       </ProtectedRoute>
     );
-  }
-
-  if (isEdit && job) {
-    form.reset({
-      title: job.title,
-      department: job.department,
-      location: job.location,
-      type: job.type,
-      description: job.description,
-      requirements: job.requirements,
-      active: job.active,
-    });
   }
 
   return (

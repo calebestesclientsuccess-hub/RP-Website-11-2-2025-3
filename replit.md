@@ -46,6 +46,16 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
         - Routes: Lazy-loaded at /admin/projects/new and /admin/projects/:id/edit
         - Cache Management: Complete TanStack Query v5 invalidation for list, detail, and public queries (/api/projects, /api/projects/:id, /api/branding/projects)
         - ContentLibrary Integration: Full CRUD operations with create/edit/delete actions, "Portfolio Project" option in Add Content dropdown
+    - **Job Postings CRUD** (✅ Complete - Task 4): Full-featured job postings management for careers page
+        - Storage Layer: CRUD methods (getAllJobPostings, getJobPosting, createJobPosting, updateJobPosting, deleteJobPosting) following testimonials pattern with tenant isolation
+        - API Routes: 5 secure endpoints at /api/job-postings with requireAuth, 404 handling, and Zod validation
+        - Schema: 7 required fields (title, department, location, type, description, requirements) plus active boolean (default true)
+        - JobPostingForm Component: Comprehensive form with validation, loading states, Active toggle switch
+        - Form Reset Pattern: useEffect-based form population to avoid render-time state updates
+        - Routes: Lazy-loaded at /admin/job-postings/new and /admin/job-postings/:id/edit
+        - Cache Management: Complete TanStack Query v5 invalidation for list, detail, and admin content queries
+        - ContentLibrary Integration: Full CRUD operations with create/edit/delete actions, "Job Posting" option in Add Content dropdown
+        - Security: All endpoints require authentication, tenant isolation enforced
     - Database-driven blog with Markdown rendering and an admin dashboard for managing blog posts, video content, and widget configuration. Features rich text editor, content scheduling, and authentication.
 - **SEO Optimizations**: Comprehensive technical SEO foundation including `robots.txt`, `sitemap.xml`, favicons, canonical URLs, `react-helmet-async` for meta tags, structured data (JSON-LD), and Core Web Vitals optimization.
 - **Error Handling**: Single global `ErrorBoundary` component.
