@@ -36,7 +36,14 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
     - In-Grid Expansion with `layoutId` morphing animations for project details.
     - Scrollytelling encyclopedia pages (`/branding/:slug`) with trigger-based GSAP animations and a scene renderer interpreting `sceneConfig` JSONB for dynamic content. Features a 7-layer fix stack for animation reliability and accessibility.
     - API-backed project loading with production content.
-    - **AI-Powered Scene Generation**: Gemini-based scene creation using structured JSON output with validation. Features prompt templates (database-stored with tenant isolation), type-safe scene configuration, and mandatory preview before saving.
+    - **AI-Powered Scene Generation**: Natural language to scene conversion using Gemini 2.5 Flash.
+        - **Architecture**: Three-layer validation system (Gemini constraints → API validation → Frontend normalization)
+        - **Type Normalization**: Maps AI-suggested types (hero, testimonial) to valid DB schema types (text, quote, image, video, split, gallery, fullscreen)
+        - **Duration Detection**: Smart heuristic detects milliseconds (≥50) vs seconds, converts and clamps to schema limits (entry/exit ≤5s, animation ≤10s)
+        - **Required Field Enforcement**: Ensures text scenes have both heading and body (uses subheading as fallback)
+        - **User Flow**: Three-tab editor (Quick Add, Advanced, AI Generate) → Prompt input → JSON preview → Save to database
+        - **Error Handling**: Detailed validation messages with field-level errors surfaced in UI toasts
+        - **API**: POST `/api/scenes/generate-with-ai` with lazy-loaded Gemini client
 
 **System Design Choices:**
 - **Frontend**: React 18 (Vite), Tailwind CSS, Wouter (routing), React Query (data fetching), Shadcn UI.
