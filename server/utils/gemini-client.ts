@@ -47,6 +47,7 @@ export async function generateSceneWithGemini(
 ): Promise<GeneratedSceneConfig> {
   const fullPrompt = buildScenePrompt(prompt, sceneType, systemInstructions);
 
+  // Use exact pattern from blueprint JSON output example
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: fullPrompt,
@@ -113,7 +114,9 @@ export async function generateSceneWithGemini(
     }
   });
 
-  const sceneConfig = JSON.parse(response.text || "{}") as GeneratedSceneConfig;
+  // Extract text from response - blueprint pattern uses response.text
+  const responseText = response.text || "";
+  const sceneConfig = JSON.parse(responseText) as GeneratedSceneConfig;
   
   // Validate and sanitize output
   validateSceneConfig(sceneConfig);
