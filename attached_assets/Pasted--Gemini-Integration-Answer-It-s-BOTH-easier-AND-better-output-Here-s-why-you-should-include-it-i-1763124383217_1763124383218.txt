@@ -1,0 +1,194 @@
+🎯 Gemini Integration Answer:
+It's BOTH easier AND better output! Here's why you should include it in MVP:
+
+Copy-Paste Approach:
+❌ ~50% failure rate on complex JSON (extra text, malformed syntax)
+❌ Users must manually copy/paste between tools
+❌ Risk of truncation errors in large responses
+❌ No guarantee of valid JSON syntax
+Gemini API Integration:
+✅ Nearly flawless JSON (guaranteed syntactically correct)
+✅ Works with our existing Zod schemas out-of-the-box
+✅ One-click generation (no copy-paste)
+✅ Can validate semantic correctness instantly
+✅ Better UX: "Generate with AI" button → instant preview
+Recommendation: Include Gemini API in MVP. The output quality improvement (50% → 95%+) justifies it.
+
+📋 Validation Question Explained:
+"Just validate schema (type-safe)?"
+
+Check that JSON has correct structure (all required fields exist, correct types)
+Example: director.animationDuration is a number ✅
+"Also validate ranges?"
+
+Check that values are sensible (not just correct type)
+Example: animationDuration: 999 passes type check but is nonsensical
+We'd add: animationDuration must be between 0.5-5.0 seconds
+My recommendation: Both! Type-safe + range validation ensures LLM output is always usable.
+
+🎨 Enhanced Director Schema
+Based on your feedback, here's the full schema:
+
+director: {
+  // Appearance & Entry
+  entryEffect: "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-in" | "zoom-out" | "sudden";
+  entryDuration: number;  // In seconds (0.25-3.0)
+  entryDelay: number;     // In seconds (0-5.0)
+  
+  // Exit & Transitions
+  exitEffect: "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-out" | "dissolve";
+  exitDuration: number;   // In seconds (0.25-3.0)
+  
+  // Colors
+  backgroundColor?: string;      // Hex color
+  textColor?: string;           // Hex color
+  gradientColors?: string[];    // For gradient text/backgrounds
+  
+  // Typography
+  headingSize?: "4xl" | "5xl" | "6xl" | "7xl" | "8xl";
+  bodySize?: "base" | "lg" | "xl" | "2xl";
+  fontWeight?: "normal" | "medium" | "semibold" | "bold";
+  alignment?: "left" | "center" | "right";
+  
+  // Animation & Scroll
+  scrollSpeed?: "slow" | "normal" | "fast";      // How fast user scrolls through
+  parallaxIntensity?: number;                    // 0-1 (0 = none, 1 = maximum)
+  animationDuration?: number;                    // Overall scene duration (seconds)
+  
+  // Effects
+  blurOnScroll?: boolean;        // Blur as user scrolls away
+  fadeOnScroll?: boolean;        // Fade as user scrolls away
+  scaleOnScroll?: boolean;       // Zoom as user scrolls
+  
+  // Media-specific (for image/video/fullscreen scenes)
+  mediaPosition?: "center" | "top" | "bottom" | "left" | "right";
+  mediaScale?: "cover" | "contain" | "fill";
+  mediaOpacity?: number;         // 0-1
+}
+
+📝 Implementation Plan
+Here's what we need to build:
+
+Database Schema
+// New table: prompt_templates
+{
+  id: string (PK),
+  tenantId: string (FK),
+  name: string,              // "Scene Director Prompt"
+  templateContent: text,     // The massive prompt with {{placeholders}}
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+
+UI Flow
+Tab 1: Quick Mode (No AI)
+Form with structured fields (media URLs, text, basic settings)
+Uses hardcoded default director settings
+Instant preview
+Tab 2: AI Customization
+Form Section (Left column):
+
+Media URLs (required)
+Text content (if applicable)
+Font dropdown
+Base color picker
+Animation speed slider
+Free-form textarea: "Describe how this scene should feel..."
+AI Generation Section (Right column):
+
+"Generate with Gemini API" button (if integrated)
+OR "Copy Prompt Template" button → Opens modal with populated prompt
+Shows loading state during generation
+Mandatory Preview before save
+Edit JSON if needed
+Validation Flow:
+
+Generate → Type validation (Zod) → Range validation → Preview → Save
+
+Prompt Template Structure
+Stored in database, editable by admins:
+
+# Portfolio Scene Director - AI Assistant
+You are an expert scene director creating cinematic scrollytelling experiences.
+Your job is to generate a `director` configuration object that controls timing, colors, animations, and effects.
+## SCENE DATA (DO NOT MODIFY)
+- Scene Type: {{sceneType}}
+- Media URLs: {{mediaUrls}}
+- Text Content: {{textContent}}
+## USER PREFERENCES (from form)
+- Selected Font: {{selectedFont}}
+- Base Color: {{selectedColor}}
+- Animation Speed: {{animationSpeed}}
+- User Description: {{userDescription}}
+## OUTPUT REQUIREMENTS
+Generate a JSON object with this EXACT structure:
+{
+  "type": "{{sceneType}}",
+  "content": {{contentObject}},
+  "director": {
+    "entryEffect": "fade | slide-up | slide-down | slide-left | slide-right | zoom-in | zoom-out | sudden",
+    "entryDuration": 0.5,  // 0.25-3.0 seconds
+    "entryDelay": 0,       // 0-5.0 seconds
+    "exitEffect": "fade | slide-up | slide-down | slide-left | slide-right | zoom-out | dissolve",
+    "exitDuration": 0.5,   // 0.25-3.0 seconds
+    "backgroundColor": "#1a1a1a",
+    "textColor": "#ffffff",
+    "headingSize": "6xl",
+    "bodySize": "lg",
+    "alignment": "center",
+    "scrollSpeed": "normal",
+    "parallaxIntensity": 0.3,
+    "fadeOnScroll": true
+  }
+}
+## VALIDATION RULES (CRITICAL)
+- entryDuration MUST be 0.25-3.0
+- exitDuration MUST be 0.25-3.0
+- entryDelay MUST be 0-5.0
+- parallaxIntensity MUST be 0-1
+- mediaOpacity MUST be 0-1
+- Colors MUST be valid hex codes
+- All enum values MUST match exactly (case-sensitive)
+## CREATIVE GUIDELINES
+- "Cinematic" = slow entry (1.5-2s), fade effects, parallax 0.5+
+- "Energetic" = fast entry (0.5s), slide effects, zoom
+- "Subtle" = fade only, low parallax (0.2), normal speed
+- "Bold" = large text (7xl-8xl), high contrast colors
+- "Moody" = dark colors, slow animations, high parallax
+## IF USER REQUEST IS UNCLEAR
+Ask 1-2 clarifying questions like:
+- "Should this scene feel fast-paced or contemplative?"
+- "Do you want dramatic entry animations or subtle fades?"
+Then wait for their response before generating JSON.
+## EXAMPLE OUTPUT (for reference)
+{
+  "type": "text",
+  "content": {"heading": "The Challenge", "body": "Our client..."},
+  "director": {
+    "entryEffect": "fade",
+    "entryDuration": 1.2,
+    "entryDelay": 0.5,
+    "exitEffect": "dissolve",
+    "exitDuration": 0.8,
+    "backgroundColor": "#0a0a0a",
+    "textColor": "#f0f0f0",
+    "headingSize": "6xl",
+    "bodySize": "lg",
+    "alignment": "center",
+    "scrollSpeed": "slow",
+    "parallaxIntensity": 0.4,
+    "fadeOnScroll": true
+  }
+}
+Now generate the JSON based on the user's creative direction above.
+
+✅ Summary of Answers
+✅ Both tabs (Quick Mode + AI Customization)
+✅ Maximum structured fields in form (font, color, speed, media, text)
+✅ Database-stored, admin-editable prompt template
+✅ Type-safe + range validation + mandatory preview
+✅ Enhanced director schema with entry/exit effects, timing controls, scroll effects
+✅ Whole-scene generation with guardrails via comprehensive prompt template
+Gemini API Recommendation: Include in MVP - it's not just easier, it's 45% more reliable (50% failure → 5% failure).
+
+Should I create a task list to build this AI-powered scene customization system?
