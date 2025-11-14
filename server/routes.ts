@@ -7,8 +7,8 @@ import path from "path";
 import { storage } from "./storage";
 import { DEFAULT_TENANT_ID } from "./middleware/tenant";
 import cloudinary from "./cloudinary";
-import { 
-  insertEmailCaptureSchema, 
+import {
+  insertEmailCaptureSchema,
   insertBlogPostSchema,
   insertVideoPostSchema,
   insertWidgetConfigSchema,
@@ -49,6 +49,8 @@ import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templat
 import { sendGmailEmail } from "./utils/gmail-client";
 import { sendLeadNotificationEmail } from "./utils/lead-notifications";
 import { db } from "./db";
+import { createRateLimiter } from "./middleware/rate-limit";
+import seoHealthRouter from "./routes/seo-health";
 
 // Define default director configuration for new scenes
 const DEFAULT_DIRECTOR_CONFIG = {
@@ -94,7 +96,7 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
 
 /**
  * Generate a unique slug from a title for assessment configs
- * 
+ *
  * @param title - The title to convert into a slug
  * @param tenantId - The tenant ID to check uniqueness within
  * @param storage - Storage instance to check for existing slugs
@@ -102,8 +104,8 @@ function requireAuth(req: Request, res: Response, next: NextFunction) {
  * @returns A unique slug string
  */
 async function generateSlug(
-  title: string, 
-  tenantId: string, 
+  title: string,
+  tenantId: string,
   storage: any,
   excludeId?: string
 ): Promise<string> {
@@ -147,13 +149,13 @@ async function generateSlug(
 
 /**
  * Calculate assessment bucket based on core philosophy answers
- * Bucket assignment is determined by Q1 (Own vs Rent), Q2 (Sale Type), 
+ * Bucket assignment is determined by Q1 (Own vs Rent), Q2 (Sale Type),
  * Q3 (Critical Piece), and Q11 (Budget)
- * 
+ *
  * Priority order (highest to lowest):
  * 1. Person Trap (q3='a') - overrides all other combinations
  * 2. Hot MQL Architect - Own + Consultative + System + $8k+ budget
- * 3. Architecture Gap - Own + Consultative + System + <$8k budget  
+ * 3. Architecture Gap - Own + Consultative + System + <$8k budget
  * 4. Agency - Rent + Transactional
  * 5. Freelancer - Own + Transactional
  * 6. Default: Architecture Gap (catch-all for nurture)
@@ -167,7 +169,7 @@ function calculateBucket(data: Partial<InsertAssessmentResponse>): string {
     return 'person-trap';
   }
 
-  // Priority 2: Hot MQL Architect 
+  // Priority 2: Hot MQL Architect
   // Own + Consultative + System + High Budget = Ready for GTM Pod
   if (q1 === 'b' && q2 === 'b' && q3 === 'e' && q11 === 'ii') {
     return 'hot-mql-architect';
@@ -186,7 +188,7 @@ function calculateBucket(data: Partial<InsertAssessmentResponse>): string {
   }
 
   // Priority 5: Freelancer
-  // Own + Transactional = Freelancer approach  
+  // Own + Transactional = Freelancer approach
   if (q1 === 'b' && q2 === 'a') {
     return 'freelancer';
   }
@@ -432,23 +434,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const resetToken = await storage.getPasswordResetToken(token);
 
       if (!resetToken) {
-        return res.status(400).json({ 
-          valid: false, 
-          error: "Invalid reset token" 
+        return res.status(400).json({
+          valid: false,
+          error: "Invalid reset token"
         });
       }
 
       if (resetToken.used) {
-        return res.status(400).json({ 
-          valid: false, 
-          error: "This reset link has already been used" 
+        return res.status(400).json({
+          valid: false,
+          error: "This reset link has already been used"
         });
       }
 
       if (new Date() > new Date(resetToken.expiresAt)) {
-        return res.status(400).json({ 
-          valid: false, 
-          error: "This reset link has expired" 
+        return res.status(400).json({
+          valid: false,
+          error: "This reset link has expired"
         });
       }
 
@@ -626,7 +628,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Share ROI Report endpoint
   app.post("/api/share-roi-report", async (req, res) => {
     try {
-      const { emails, ltv, closeRate, engineName, monthlyInvestment, monthlySQOs, 
+      const { emails, ltv, closeRate, engineName, monthlyInvestment, monthlySQOs,
               costPerMeeting, projectedDealsPerMonth, projectedLTVPerMonth, monthlyROI,
               annualSQOs, projectedLTVPerYear } = req.body;
 
@@ -648,7 +650,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate numeric fields
-      if (typeof ltv !== 'number' || typeof closeRate !== 'number' || 
+      if (typeof ltv !== 'number' || typeof closeRate !== 'number' ||
           typeof monthlyInvestment !== 'number' || typeof monthlySQOs !== 'number' ||
           typeof costPerMeeting !== 'number' || typeof projectedDealsPerMonth !== 'number' ||
           typeof projectedLTVPerMonth !== 'number' || typeof monthlyROI !== 'number') {
@@ -815,7 +817,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Send notification email to all users (don't await - run in background)
-      sendLeadNotificationEmail(lead).catch(err => 
+      sendLeadNotificationEmail(lead).catch(err =>
         console.error("Failed to send lead notification:", err)
       );
 
@@ -833,8 +835,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Lead capture endpoint for GTM Audit requests
-  app.post("/api/leads/audit-request", async (req, res) => {
+  // Lead submission endpoints
+  const leadLimiter = createRateLimiter({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 3, // 3 requests per hour
+    message: "Too many submissions. Please try again later."
+  });
+
+  app.post("/api/leads/audit-request", leadLimiter, async (req, res) => {
     try {
       const auditSchema = z.object({
         fullName: z.string().min(2, "Full name is required"),
@@ -868,7 +876,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Send notification email to all users (don't await - run in background)
-      sendLeadNotificationEmail(lead).catch(err => 
+      sendLeadNotificationEmail(lead).catch(err =>
         console.error("Failed to send lead notification:", err)
       );
 
@@ -1028,7 +1036,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (status && status !== 'all') {
         if (status === 'scheduled') {
-          filtered = filtered.filter(item => 
+          filtered = filtered.filter(item =>
             item.scheduledFor && new Date(item.scheduledFor) > new Date()
           );
         } else {
@@ -1038,7 +1046,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (search && typeof search === 'string') {
         const searchLower = search.toLowerCase();
-        filtered = filtered.filter(item => 
+        filtered = filtered.filter(item =>
           item.title.toLowerCase().includes(searchLower) ||
           (item.excerpt && item.excerpt.toLowerCase().includes(searchLower)) ||
           (item.author && item.author.toLowerCase().includes(searchLower))
@@ -1680,9 +1688,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(sceneConfig);
     } catch (error) {
       console.error("Error generating scene with AI:", error);
-      return res.status(500).json({ 
-        error: "Failed to generate scene", 
-        details: error instanceof Error ? error.message : "Unknown error" 
+      return res.status(500).json({
+        error: "Failed to generate scene",
+        details: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
@@ -2000,8 +2008,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Validate scope against schema constraints
       if (scope !== 'global' && scope !== 'tenant') {
-        return res.status(400).json({ 
-          error: "Invalid scope parameter. Must be 'global' or 'tenant'" 
+        return res.status(400).json({
+          error: "Invalid scope parameter. Must be 'global' or 'tenant'"
         });
       }
 
@@ -2154,9 +2162,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating scene with AI:", error);
       if (error instanceof Error) {
-        return res.status(500).json({ 
-          error: "AI generation failed", 
-          details: error.message 
+        return res.status(500).json({
+          error: "AI generation failed",
+          details: error.message
         });
       }
       return res.status(500).json({ error: "Internal server error" });
@@ -2271,7 +2279,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Send notification email to all users (don't await - run in background)
-      sendLeadNotificationEmail(lead).catch(err => 
+      sendLeadNotificationEmail(lead).catch(err =>
         console.error("Failed to send lead notification:", err)
       );
 
@@ -2324,16 +2332,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: result.data.email,
         source: "gtm-assessment-blueprint",
         pageUrl: result.data.path,
-        formData: JSON.stringify({ 
-          q1: result.data.q1, 
-          q2: result.data.q2 
+        formData: JSON.stringify({
+          q1: result.data.q1,
+          q2: result.data.q2
         }),
         userAgent: req.headers['user-agent'],
         ipAddress: req.ip,
       });
 
       // Send notification email to all users (don't await - run in background)
-      sendLeadNotificationEmail(lead).catch(err => 
+      sendLeadNotificationEmail(lead).catch(err =>
         console.error("Failed to send lead notification:", err)
       );
 
@@ -2439,7 +2447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const config = await storage.getAssessmentConfigById(req.tenantId, assessmentId);
 
         if (!config) {
-          return res.status(404).json({ 
+          return res.status(404).json({
             error: "Assessment configuration not found",
             details: `No assessment found with ID: ${assessmentId}`
           });
@@ -2453,7 +2461,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const answers = await storage.getAnswersByAssessmentId(assessmentId);
 
           if (answers.length === 0) {
-            return res.status(400).json({ 
+            return res.status(400).json({
               error: "No answers configured",
               details: "This assessment has no answers configured for scoring"
             });
@@ -2463,7 +2471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const buckets = await storage.getBucketsByAssessmentId(assessmentId);
 
           if (buckets.length === 0) {
-            return res.status(400).json({ 
+            return res.status(400).json({
               error: "No result buckets configured",
               details: "This assessment has no result buckets configured"
             });
@@ -2475,7 +2483,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Handle case where no bucket matches
           if (!bucket) {
             // Try to find a default bucket (first one, or one with no score bounds)
-            const defaultBucket = buckets.find(b => 
+            const defaultBucket = buckets.find(b =>
               b.minScore === null && b.maxScore === null
             ) || buckets[0];
 
@@ -2483,7 +2491,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.warn(`No exact match found, using default bucket: ${defaultBucket.bucketKey}`);
               bucket = defaultBucket.bucketKey;
             } else {
-              return res.status(400).json({ 
+              return res.status(400).json({
                 error: "No matching result found",
                 details: "Your score did not match any configured result bucket"
               });
@@ -2513,17 +2521,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: submittedData.q20,
           source: "pipeline-assessment",
           pageUrl: "/pipeline-assessment",
-          formData: JSON.stringify({ 
+          formData: JSON.stringify({
             sessionId,
             bucket,
-            assessmentData: submittedData 
+            assessmentData: submittedData
           }),
           userAgent: req.headers['user-agent'],
           ipAddress: req.ip,
         });
 
         // Send notification email to all users (don't await - run in background)
-        sendLeadNotificationEmail(lead).catch(err => 
+        sendLeadNotificationEmail(lead).catch(err =>
           console.error("Failed to send lead notification:", err)
         );
       }
@@ -2535,7 +2543,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error submitting assessment:", error);
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error"
       });
@@ -2648,8 +2656,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let configData = result.data;
       if (!configData.slug || configData.slug.trim() === '') {
         if (!configData.title) {
-          return res.status(400).json({ 
-            error: "Title is required to generate slug" 
+          return res.status(400).json({
+            error: "Title is required to generate slug"
           });
         }
         configData.slug = await generateSlug(configData.title, req.tenantId, storage);
@@ -3113,8 +3121,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         for (const existingCampaign of allCampaigns) {
           // Skip if not active or not inline or no target zone
-          if (!existingCampaign.isActive || 
-              existingCampaign.displayAs !== "inline" || 
+          if (!existingCampaign.isActive ||
+              existingCampaign.displayAs !== "inline" ||
               !existingCampaign.targetZone) {
             continue;
           }
@@ -3127,8 +3135,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             // If either campaign targets all pages (empty array), there's a conflict
             // Or if there are any overlapping pages
-            const hasOverlap = existingPages.length === 0 || 
-                              newPages.length === 0 || 
+            const hasOverlap = existingPages.length === 0 ||
+                              newPages.length === 0 ||
                               existingPages.some(page => newPages.includes(page));
 
             if (hasOverlap) {
@@ -3176,8 +3184,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           // Skip if not active or not inline or no target zone
-          if (!existingCampaign.isActive || 
-              existingCampaign.displayAs !== "inline" || 
+          if (!existingCampaign.isActive ||
+              existingCampaign.displayAs !== "inline" ||
               !existingCampaign.targetZone) {
             continue;
           }
@@ -3190,8 +3198,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
             // If either campaign targets all pages (empty array), there's a conflict
             // Or if there are any overlapping pages
-            const hasOverlap = existingPages.length === 0 || 
-                              newPages.length === 0 || 
+            const hasOverlap = existingPages.length === 0 ||
+                              newPages.length === 0 ||
                               existingPages.some(page => newPages.includes(page));
 
             if (hasOverlap) {
@@ -3351,18 +3359,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           company: company || undefined,
           source: "configurable-assessment",
           pageUrl: req.headers.referer || `/assessments/${assessmentId}`,
-          formData: JSON.stringify({ 
-            assessmentId, 
+          formData: JSON.stringify({
+            assessmentId,
             sessionId,
             finalScore,
-            finalBucketKey 
+            finalBucketKey
           }),
           userAgent: req.headers['user-agent'],
           ipAddress: req.ip,
         });
 
         // Send notification email to all users (don't await - run in background)
-        sendLeadNotificationEmail(lead).catch(err => 
+        sendLeadNotificationEmail(lead).catch(err =>
           console.error("Failed to send lead notification:", err)
         );
       }
@@ -3455,18 +3463,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         company: company || undefined,
         source: "configurable-assessment",
         pageUrl: req.headers.referer || `/assessments/${response.assessmentConfigId}`,
-        formData: JSON.stringify({ 
-          assessmentId: response.assessmentConfigId, 
+        formData: JSON.stringify({
+          assessmentId: response.assessmentConfigId,
           sessionId,
           finalScore: response.finalScore,
-          finalBucketKey: response.finalBucketKey 
+          finalBucketKey: response.finalBucketKey
         }),
         userAgent: req.headers['user-agent'],
         ipAddress: req.ip,
       });
 
       // Send notification email to all users (don't await - run in background)
-      sendLeadNotificationEmail(lead).catch(err => 
+      sendLeadNotificationEmail(lead).catch(err =>
         console.error("Failed to send lead notification:", err)
       );
 
@@ -3610,6 +3618,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+
+  // Dynamic sitemap
+  app.use(sitemapRouter);
+
+  // SEO health check
+  app.use(seoHealthRouter);
 
   return httpServer;
 }

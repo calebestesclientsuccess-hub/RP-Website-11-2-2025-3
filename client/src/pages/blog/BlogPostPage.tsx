@@ -1,4 +1,3 @@
-
 import { SEO } from "@/components/SEO";
 import { ArticleSchema } from "@/components/schemas/ArticleSchema";
 import { ReadingProgressBar } from "@/components/ReadingProgressBar";
@@ -46,7 +45,7 @@ export default function BlogPostPage() {
         authorName={post.author}
         imageUrl={post.featuredImage}
       />
-      
+
       <article className="container mx-auto px-4 py-16 max-w-4xl">
         <header className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">{post.title}</h1>
@@ -63,8 +62,8 @@ export default function BlogPostPage() {
         <WidgetZone zone="zone-1" />
 
         {post.featuredImage && (
-          <img 
-            src={post.featuredImage} 
+          <img
+            src={post.featuredImage}
             alt={post.title}
             className="w-full rounded-lg mb-12"
           />
@@ -72,7 +71,7 @@ export default function BlogPostPage() {
 
         <WidgetZone zone="zone-2" />
 
-        <div 
+        <div
           className="prose prose-lg max-w-none"
           dangerouslySetInnerHTML={{ __html: htmlContent }}
         />

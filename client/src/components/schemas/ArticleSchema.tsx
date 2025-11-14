@@ -8,6 +8,7 @@ interface ArticleSchemaProps {
   authorName?: string;
   imageUrl?: string;
   articleType?: 'Article' | 'BlogPosting' | 'NewsArticle';
+  wordCount?: number;
 }
 
 export function ArticleSchema({
@@ -17,7 +18,8 @@ export function ArticleSchema({
   dateModified,
   authorName = "Revenue Party",
   imageUrl = "https://revenueparty.com/og-image.png",
-  articleType = "Article"
+  articleType = "Article",
+  wordCount
 }: ArticleSchemaProps) {
   const schema = {
     "@context": "https://schema.org",
@@ -27,6 +29,7 @@ export function ArticleSchema({
     "image": imageUrl,
     "datePublished": datePublished,
     "dateModified": dateModified || datePublished,
+    ...(wordCount && { "wordCount": wordCount }),
     "author": {
       "@type": "Organization",
       "name": authorName,
@@ -39,6 +42,10 @@ export function ArticleSchema({
         "@type": "ImageObject",
         "url": "https://revenueparty.com/logo.png"
       }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": typeof window !== 'undefined' ? window.location.href : 'https://revenueparty.com'
     }
   };
 

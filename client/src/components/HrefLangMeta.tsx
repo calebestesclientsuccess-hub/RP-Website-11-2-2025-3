@@ -5,17 +5,19 @@ interface HrefLangMetaProps {
 }
 
 export default function HrefLangMeta({ pathname }: HrefLangMetaProps) {
-  const siteUrl = 'https://revenueparty.com';
-  const fullUrl = `${siteUrl}${pathname}`;
+  const baseUrl = 'https://revenueparty.com';
 
   return (
     <Helmet>
-      {/* Primary language version */}
-      <link rel="alternate" hrefLang="en" href={fullUrl} />
-      <link rel="alternate" hrefLang="x-default" href={fullUrl} />
+      {/* Global default */}
+      <link rel="alternate" hrefLang="x-default" href={`${baseUrl}${pathname}`} />
 
-      {/* Add more language versions here as needed */}
-      {/* Example: <link rel="alternate" hrefLang="es" href={`${siteUrl}/es${pathname}`} /> */}
+      {/* English variants */}
+      <link rel="alternate" hrefLang="en" href={`${baseUrl}${pathname}`} />
+      <link rel="alternate" hrefLang="en-US" href={`${baseUrl}${pathname}`} />
+      <link rel="alternate" hrefLang="en-GB" href={`${baseUrl}${pathname}`} />
+      <link rel="alternate" hrefLang="en-CA" href={`${baseUrl}${pathname}`} />
+      <link rel="alternate" hrefLang="en-AU" href={`${baseUrl}${pathname}`} />
     </Helmet>
   );
 }
