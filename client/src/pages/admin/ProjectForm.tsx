@@ -31,6 +31,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { Loader2, X, Plus } from "lucide-react";
+import ProjectSceneEditor from "./ProjectSceneEditor";
 
 const formSchema = insertProjectSchema.extend({
   // Only override required fields - let optional fields use backend preprocessors
@@ -109,15 +110,16 @@ export default function ProjectForm() {
       const response = await apiRequest("POST", "/api/projects", data);
       return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/content"] });
       queryClient.invalidateQueries({ queryKey: ["/api/branding/projects"] });
       toast({
         title: "Success",
-        description: "Project created successfully",
+        description: "Project created successfully. You can now add scrollytelling scenes by editing this project.",
       });
-      setLocation("/admin/content?type=portfolio");
+      // Navigate to edit mode so user can add scenes
+      setLocation(`/admin/projects/${data.id}/edit`);
     },
     onError: (error: Error) => {
       toast({
@@ -590,6 +592,13 @@ export default function ProjectForm() {
                     </div>
                   </form>
                 </Form>
+
+                {/* Scrollytelling Scene Editor - Only Available in Edit Mode */}
+                {isEdit && projectId && (
+                  <div className="mt-8 border-t pt-8">
+                    <ProjectSceneEditor projectId={projectId} />
+                  </div>
+                )}
               </div>
             </main>
           </div>
