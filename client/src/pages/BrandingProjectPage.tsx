@@ -205,6 +205,19 @@ export default function BrandingProjectPage() {
       // Merge director config with defaults
       const director = { ...DEFAULT_DIRECTOR_CONFIG, ...(scene.sceneConfig.director || {}) };
       
+      // Debug logging for director config
+      console.log(`[Scene ${index}] Director config:`, {
+        entryEffect: director.entryEffect,
+        entryDuration: director.entryDuration,
+        entryDelay: director.entryDelay,
+        exitEffect: director.exitEffect,
+        exitDuration: director.exitDuration,
+        scrollSpeed: director.scrollSpeed,
+        parallaxIntensity: director.parallaxIntensity,
+        fadeOnScroll: director.fadeOnScroll,
+        scaleOnScroll: director.scaleOnScroll,
+      });
+      
       // Get scrub speed based on director config
       const scrubSpeed = scrollSpeedMap[director.scrollSpeed] || 1.5;
       
@@ -243,12 +256,24 @@ export default function BrandingProjectPage() {
       const entryDuration = director.entryEffect === 'sudden' ? 0.1 : (director.entryDuration || DEFAULT_DIRECTOR_CONFIG.entryDuration);
       const exitDuration = director.exitDuration || 0.8;
       
+      // CRITICAL: Set initial hidden state immediately before timeline runs
+      // This ensures scenes start invisible and animate in on scroll
+      console.log(`[Scene ${index}] Setting initial state:`, entryEffect.from);
+      gsap.set(element, entryEffect.from);
+      console.log(`[Scene ${index}] After gsap.set, computed opacity:`, window.getComputedStyle(element).opacity);
+      
       if (prefersReducedMotion) {
         // Simplified timeline for accessibility - just fade in/out
         timeline
           .fromTo(element, 
             { opacity: 0 }, 
-            { opacity: 1, duration: 0.3, delay: director.entryDelay || 0, ease: "none" }
+            { 
+              opacity: 1, 
+              duration: 0.3, 
+              delay: director.entryDelay || 0, 
+              ease: "none",
+              immediateRender: true // Apply initial state immediately
+            }
           )
           .to(element, 
             { opacity: 0, duration: 0.3, ease: "none" }, 
@@ -264,7 +289,8 @@ export default function BrandingProjectPage() {
             ...entryEffect.to,
             duration: entryDuration,
             delay: director.entryDelay || 0,
-            ease: "power3.out"
+            ease: "power3.out",
+            immediateRender: true // Apply initial hidden state immediately
           }
         );
         
@@ -286,10 +312,11 @@ export default function BrandingProjectPage() {
         }
         
         // Phase 4: Optional continuous effects (fade/scale during visible phase)
-        if (director.fadeOnScroll && !director.exitEffect) {
-          // Apply fade during visible→exit transition
+        if (director.fadeOnScroll) {
+          // Apply fade during visible phase (works alongside exit effects)
+          // Use a separate timeline or lower opacity target to avoid conflicts
           timeline.to(element, {
-            opacity: 0.5,
+            opacity: 0.7, // Higher than 0.5 to leave room for exit fade
             duration: holdDuration,
             ease: "none"
           }, "visible");
@@ -454,8 +481,9 @@ export default function BrandingProjectPage() {
             <section
               key={scene.id}
               data-scene={index}
-              className="min-h-screen flex items-center justify-center px-4 py-24"
+              className="min-h-screen flex items-center justify-center px-4 py-24 opacity-0"
               data-testid={`scene-${index}`}
+              style={{ willChange: 'opacity, transform' }}
             >
               <div className="container mx-auto max-w-4xl">
                 {/* Render scene based on sceneConfig type */}
