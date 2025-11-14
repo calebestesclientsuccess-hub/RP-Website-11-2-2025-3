@@ -306,6 +306,9 @@ export default function PortfolioBuilder() {
           quotes: requestPayload.catalog.quotes.length,
         }
       });
+      
+      // DIAGNOSTIC: Log full catalog to verify image data
+      console.log('[Portfolio Builder] Full catalog being sent:', JSON.stringify(requestPayload.catalog, null, 2));
 
       const response = await apiRequest("POST", "/api/portfolio/generate-with-ai", requestPayload);
 
