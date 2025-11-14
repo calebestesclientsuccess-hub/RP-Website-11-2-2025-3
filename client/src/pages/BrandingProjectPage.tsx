@@ -54,6 +54,35 @@ const objectFitMap: Record<string, string> = {
   "fill": "object-fill",
 };
 
+// GSAP animation mapping for director entry/exit effects
+const entryEffectMap: Record<string, { from: gsap.TweenVars; to: gsap.TweenVars }> = {
+  'fade': { from: { opacity: 0 }, to: { opacity: 1 } },
+  'slide-up': { from: { opacity: 0, y: 100 }, to: { opacity: 1, y: 0 } },
+  'slide-down': { from: { opacity: 0, y: -100 }, to: { opacity: 1, y: 0 } },
+  'slide-left': { from: { opacity: 0, x: 100 }, to: { opacity: 1, x: 0 } },
+  'slide-right': { from: { opacity: 0, x: -100 }, to: { opacity: 1, x: 0 } },
+  'zoom-in': { from: { opacity: 0, scale: 0.8 }, to: { opacity: 1, scale: 1 } },
+  'zoom-out': { from: { opacity: 0, scale: 1.2 }, to: { opacity: 1, scale: 1 } },
+  'sudden': { from: { opacity: 0 }, to: { opacity: 1 } }, // Instant transition
+};
+
+const exitEffectMap: Record<string, gsap.TweenVars> = {
+  'fade': { opacity: 0 },
+  'slide-up': { opacity: 0, y: -100 },
+  'slide-down': { opacity: 0, y: 100 },
+  'slide-left': { opacity: 0, x: -100 },
+  'slide-right': { opacity: 0, x: 100 },
+  'zoom-out': { opacity: 0, scale: 0.8 },
+  'dissolve': { opacity: 0, filter: 'blur(10px)' },
+};
+
+// Scroll speed mapping to GSAP scrub values
+const scrollSpeedMap: Record<string, number> = {
+  'slow': 3,
+  'normal': 1.5,
+  'fast': 0.5,
+};
+
 interface Project {
   id: string;
   slug: string;
@@ -121,6 +150,14 @@ export default function BrandingProjectPage() {
   useEffect(() => {
     if (!scenes || scenes.length === 0 || !scrollContainerRef.current) return;
 
+    // Debug: Verify GSAP is loaded
+    console.log('[BrandingProjectPage] GSAP loaded:', typeof gsap !== 'undefined');
+    console.log('[BrandingProjectPage] ScrollTrigger loaded:', typeof ScrollTrigger !== 'undefined');
+    console.log('[BrandingProjectPage] Scenes count:', scenes.length);
+
+    // Detect prefers-reduced-motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     // Clean up previous ScrollTrigger instances
     ScrollTrigger.getAll().forEach(trigger => trigger.kill());
 
@@ -131,7 +168,7 @@ export default function BrandingProjectPage() {
 
     // Hero parallax effect
     const heroParallax = scrollContainerRef.current.querySelector('[data-hero-parallax]');
-    if (heroParallax) {
+    if (heroParallax && !prefersReducedMotion) {
       gsap.to(heroParallax, {
         yPercent: 50,
         ease: "none",
@@ -163,21 +200,30 @@ export default function BrandingProjectPage() {
     
     sceneElements.forEach((element, index) => {
       const scene = scenes[index];
+      if (!scene) return;
       
-      // Parallax effect on images within the scene
-      const images = element.querySelectorAll('img, video');
-      images.forEach((img) => {
-        gsap.to(img, {
-          yPercent: 20,
-          ease: "none",
-          scrollTrigger: {
-            trigger: element,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1.5,
-          }
+      // Merge director config with defaults
+      const director = { ...DEFAULT_DIRECTOR_CONFIG, ...(scene.sceneConfig.director || {}) };
+      
+      // Get scrub speed based on director config
+      const scrubSpeed = scrollSpeedMap[director.scrollSpeed] || 1.5;
+      
+      // Parallax effect on images within the scene (if enabled)
+      if (!prefersReducedMotion && director.parallaxIntensity > 0) {
+        const images = element.querySelectorAll('img, video');
+        images.forEach((img) => {
+          gsap.to(img, {
+            yPercent: 20 * director.parallaxIntensity, // Scale parallax by intensity (0-1)
+            ease: "none",
+            scrollTrigger: {
+              trigger: element,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: scrubSpeed,
+            }
+          });
         });
-      });
+      }
 
       // Track active scene
       ScrollTrigger.create({
@@ -188,46 +234,101 @@ export default function BrandingProjectPage() {
         onEnterBack: () => setActiveSceneIndex(index),
       });
 
-      // Main scene animation based on config
-      const animationType = scene?.sceneConfig?.animation || "fade";
+      // Entry animation based on director config
+      const entryEffect = entryEffectMap[director.entryEffect] || entryEffectMap.fade;
+      const animationDuration = director.entryEffect === 'sudden' ? 0.1 : (director.entryDuration || DEFAULT_DIRECTOR_CONFIG.entryDuration);
       
-      let animationConfig;
-      switch (animationType) {
-        case "slide":
-          animationConfig = {
-            from: { opacity: 0, x: -100 },
-            to: { opacity: 1, x: 0 }
-          };
-          break;
-        case "zoom":
-          animationConfig = {
-            from: { opacity: 0, scale: 0.8 },
-            to: { opacity: 1, scale: 1 }
-          };
-          break;
-        case "fade":
-        default:
-          animationConfig = {
-            from: { opacity: 0, y: 80 },
-            to: { opacity: 1, y: 0 }
-          };
+      if (prefersReducedMotion) {
+        // Simplified animation for accessibility
+        gsap.fromTo(
+          element,
+          { opacity: 0 },
+          {
+            opacity: 1,
+            duration: 0.3,
+            delay: director.entryDelay,
+            scrollTrigger: {
+              trigger: element,
+              start: "top 75%",
+              toggleActions: "play none none reverse",
+            }
+          }
+        );
+      } else {
+        gsap.fromTo(
+          element,
+          entryEffect.from,
+          {
+            ...entryEffect.to,
+            duration: animationDuration,
+            delay: director.entryDelay,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: element,
+              start: "top 75%",
+              end: "top 25%",
+              toggleActions: "play none none reverse",
+            }
+          }
+        );
       }
 
-      gsap.fromTo(
-        element,
-        animationConfig.from,
-        {
-          ...animationConfig.to,
-          duration: 1.2,
-          ease: "power3.out",
+      // Exit animation based on director config
+      if (!prefersReducedMotion && director.exitEffect) {
+        const exitAnimation = exitEffectMap[director.exitEffect];
+        if (exitAnimation) {
+          ScrollTrigger.create({
+            trigger: element,
+            start: "bottom bottom",
+            end: "bottom top",
+            onLeave: () => {
+              gsap.to(element, {
+                ...exitAnimation,
+                duration: director.exitDuration || 0.8,
+                ease: "power2.in",
+              });
+            },
+            onEnterBack: () => {
+              // Reset to fully visible state when scrolling back (clear all possible transformations)
+              gsap.to(element, {
+                opacity: 1,
+                y: 0,
+                x: 0,
+                scale: 1,
+                filter: 'blur(0px)',
+                clearProps: 'all', // Clear all GSAP-applied properties for clean reset
+                duration: 0.5,
+              });
+            },
+          });
+        }
+      }
+
+      // Optional: Fade on scroll effect (only if no exit effect configured to avoid conflicts)
+      if (!prefersReducedMotion && director.fadeOnScroll && !director.exitEffect) {
+        gsap.to(element, {
+          opacity: 0.5, // Min opacity higher to avoid conflict with exit animations
           scrollTrigger: {
             trigger: element,
-            start: "top 75%",
-            end: "top 25%",
-            toggleActions: "play none none reverse",
+            start: "center center",
+            end: "bottom top",
+            scrub: scrubSpeed,
           }
-        }
-      );
+        });
+      }
+
+      // Optional: Scale on scroll effect
+      if (!prefersReducedMotion && director.scaleOnScroll) {
+        gsap.to(element, {
+          scale: 0.95,
+          scrollTrigger: {
+            trigger: element,
+            start: "center center",
+            end: "bottom top",
+            scrub: scrubSpeed,
+          }
+        });
+      }
     });
 
     return () => {
