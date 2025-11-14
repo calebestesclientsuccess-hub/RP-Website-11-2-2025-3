@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Copy } from "lucide-react";
+import { Plus, Edit, Trash2, Copy, Sparkles, Loader2 as LoaderIcon } from "lucide-react";
 import { DirectorConfigForm } from "@/components/DirectorConfigForm";
 import { DEFAULT_DIRECTOR_CONFIG, type ProjectScene } from "@shared/schema";
 
@@ -122,6 +122,12 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("quick");
+  
+  // AI Generation state
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiSceneType, setAiSceneType] = useState<string>("");
+  const [aiGeneratedJson, setAiGeneratedJson] = useState<string>("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const form = useForm<z.infer<typeof quickModeSchema>>({
     resolver: zodResolver(quickModeSchema),
@@ -380,6 +386,75 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
     return sceneConfig?.type || "unknown";
   };
 
+  const handleAiGenerate = async () => {
+    if (!aiPrompt.trim()) {
+      toast({ title: "Please enter a scene description", variant: "destructive" });
+      return;
+    }
+
+    setIsGenerating(true);
+    setAiGeneratedJson("");
+
+    try {
+      const response = await apiRequest("POST", "/api/scenes/generate-with-ai", {
+        prompt: aiPrompt,
+        sceneType: aiSceneType || undefined,
+      });
+
+      const data = await response.json();
+      
+      // Convert Gemini output to scene config format with proper defaults
+      const sceneConfig = {
+        type: data.sceneType || "text",
+        content: {
+          ...(data.headline && { heading: data.headline }),
+          ...(data.bodyText && { body: data.bodyText }),
+          ...(data.subheadline && { subheading: data.subheadline }),
+          ...(data.mediaUrl && { url: data.mediaUrl }),
+          ...(data.mediaType && { mediaType: data.mediaType }),
+        },
+        director: {
+          ...DEFAULT_DIRECTOR_CONFIG,
+          ...(data.backgroundColor && { backgroundColor: data.backgroundColor }),
+          ...(data.textColor && { textColor: data.textColor }),
+          ...(data.fadeInDuration && { entryDuration: data.fadeInDuration }),
+          ...(data.fadeOutDuration && { exitDuration: data.fadeOutDuration }),
+          ...(data.parallaxSpeed && { parallaxIntensity: data.parallaxSpeed }),
+          ...(data.duration && { animationDuration: data.duration }),
+          ...(data.delayBeforeEntry && { entryDelay: data.delayBeforeEntry }),
+        },
+      };
+
+      setAiGeneratedJson(JSON.stringify(sceneConfig, null, 2));
+      toast({ title: "Scene generated successfully!" });
+    } catch (error) {
+      console.error("AI generation error:", error);
+      toast({ 
+        title: "Failed to generate scene", 
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "destructive" 
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleApplyAiScene = () => {
+    if (!aiGeneratedJson) {
+      toast({ title: "No AI-generated scene to apply", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(aiGeneratedJson);
+      setSceneJson(aiGeneratedJson);
+      setActiveTab("advanced");
+      toast({ title: "AI scene applied to Advanced JSON editor" });
+    } catch (error) {
+      toast({ title: "Failed to apply scene", variant: "destructive" });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -417,8 +492,12 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
             </DialogHeader>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-              <TabsList className="grid w-full grid-cols-2" data-testid="tabs-scene-editor">
+              <TabsList className="grid w-full grid-cols-3" data-testid="tabs-scene-editor">
                 <TabsTrigger value="quick" data-testid="tab-quick-mode">Quick Mode</TabsTrigger>
+                <TabsTrigger value="ai" data-testid="tab-ai-generate">
+                  <Sparkles className="w-4 h-4 mr-1" />
+                  AI Generate
+                </TabsTrigger>
                 <TabsTrigger value="advanced" data-testid="tab-advanced-json">Advanced JSON</TabsTrigger>
               </TabsList>
 
@@ -697,6 +776,95 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
                     </div>
                   </div>
                 </Form>
+              </TabsContent>
+
+              <TabsContent value="ai" className="space-y-6 mt-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Describe Your Scene</label>
+                    <Textarea
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      placeholder="Example: Create a hero section for a SaaS product launch with bold typography, dark gradient background, and modern aesthetic. Include a powerful headline about revolutionizing sales teams."
+                      className="min-h-[120px]"
+                      data-testid="textarea-ai-prompt"
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Describe what you want - be specific about mood, content, colors, and style.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Scene Type (Optional)</label>
+                    <Select value={aiSceneType} onValueChange={setAiSceneType}>
+                      <SelectTrigger data-testid="select-ai-scene-type">
+                        <SelectValue placeholder="Auto-detect from description..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Auto-detect</SelectItem>
+                        <SelectItem value="text">Text Section</SelectItem>
+                        <SelectItem value="image">Image</SelectItem>
+                        <SelectItem value="video">Video</SelectItem>
+                        <SelectItem value="split">Split Layout</SelectItem>
+                        <SelectItem value="hero">Hero Section</SelectItem>
+                        <SelectItem value="quote">Quote/Testimonial</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
+                    onClick={handleAiGenerate}
+                    disabled={!aiPrompt.trim() || isGenerating}
+                    className="w-full"
+                    data-testid="button-generate-ai-scene"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <LoaderIcon className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Generate Scene with AI
+                      </>
+                    )}
+                  </Button>
+
+                  {aiGeneratedJson && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium">Generated Scene Configuration</label>
+                        <Badge variant="secondary">Preview</Badge>
+                      </div>
+                      <Textarea
+                        value={aiGeneratedJson}
+                        onChange={(e) => setAiGeneratedJson(e.target.value)}
+                        className="font-mono text-sm min-h-[300px]"
+                        data-testid="textarea-ai-generated-json"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleApplyAiScene}
+                          variant="default"
+                          data-testid="button-apply-ai-scene"
+                        >
+                          Apply to Advanced JSON
+                        </Button>
+                        <Button
+                          onClick={handleAdvancedSave}
+                          disabled={createMutation.isPending || updateMutation.isPending}
+                          variant="outline"
+                          data-testid="button-save-ai-scene-direct"
+                        >
+                          {createMutation.isPending || updateMutation.isPending
+                            ? "Saving..."
+                            : "Save Scene Directly"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </TabsContent>
 
               <TabsContent value="advanced" className="space-y-4 mt-6">

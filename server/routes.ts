@@ -1637,6 +1637,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Scene Generation endpoint
+  app.post("/api/scenes/generate-with-ai", requireAuth, async (req, res) => {
+    try {
+      const requestSchema = z.object({
+        prompt: z.string().min(1, "Prompt is required"),
+        sceneType: z.string().optional(),
+        systemInstructions: z.string().optional(),
+      });
+
+      const result = requestSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const { prompt, sceneType, systemInstructions } = result.data;
+
+      // Lazy-load Gemini client to avoid startup errors if not configured
+      const { generateSceneWithGemini } = await import("./utils/gemini-client");
+      
+      const sceneConfig = await generateSceneWithGemini(
+        prompt,
+        sceneType,
+        systemInstructions
+      );
+
+      return res.json(sceneConfig);
+    } catch (error) {
+      console.error("Error generating scene with AI:", error);
+      return res.status(500).json({ 
+        error: "Failed to generate scene", 
+        details: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
   // Prompt Templates endpoints (for AI scene generation)
   // NOTE: These routes use requireAuth only. For production, consider adding
   // role-based authorization (e.g., requireTenantRole('admin')) to mutation endpoints
