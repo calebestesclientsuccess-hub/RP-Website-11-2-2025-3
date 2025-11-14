@@ -133,6 +133,7 @@ export default function ContentLibrary() {
       video: `/admin/video-posts/${item.id}/edit`,
       testimonial: `/admin/testimonials/${item.id}/edit`,
       portfolio: `/admin/projects/${item.id}/edit`,
+      job: `/admin/job-postings/${item.id}/edit`,
     };
     
     const route = routes[item.type];
@@ -148,7 +149,7 @@ export default function ContentLibrary() {
   };
   
   const canEdit = (type: string) => {
-    return type === 'blog' || type === 'video' || type === 'testimonial' || type === 'portfolio';
+    return type === 'blog' || type === 'video' || type === 'testimonial' || type === 'portfolio' || type === 'job';
   };
 
   const handleDelete = (item: ContentSummary) => {
@@ -249,8 +250,8 @@ export default function ContentLibrary() {
                       <DropdownMenuItem onClick={() => setLocation('/admin/projects/new')}>
                         Portfolio Project
                       </DropdownMenuItem>
-                      <DropdownMenuItem disabled>
-                        Job Posting (Coming Soon)
+                      <DropdownMenuItem onClick={() => setLocation('/admin/job-postings/new')}>
+                        Job Posting
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
