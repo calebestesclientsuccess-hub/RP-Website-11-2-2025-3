@@ -3613,9 +3613,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
 
-  // Dynamic sitemap
-  app.use(sitemapRouter);
-
   // SEO health check
   app.use(seoHealthRouter);
 
