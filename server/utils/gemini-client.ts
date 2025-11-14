@@ -61,7 +61,7 @@ export async function generateSceneWithGemini(
         properties: {
           sceneType: { 
             type: Type.STRING,
-            description: "Type of scene (e.g., 'hero', 'testimonial', 'stats', 'timeline')"
+            description: "Type of scene. MUST be one of: 'text', 'image', 'video', 'split', 'gallery', 'quote', 'fullscreen'. Use 'text' for hero/headline sections, 'quote' for testimonials."
           },
           headline: { 
             type: Type.STRING,

@@ -158,6 +158,10 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
       const response = await apiRequest("POST", `/api/projects/${projectId}/scenes`, {
         sceneConfig,
       });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(JSON.stringify(errorData));
+      }
       return await response.json();
     },
     onSuccess: () => {
@@ -169,8 +173,18 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
       setSceneJson("");
       setJsonError(null);
     },
-    onError: () => {
-      toast({ title: "Failed to create scene", variant: "destructive" });
+    onError: (error) => {
+      console.error("Scene creation error:", error.message);
+      try {
+        const errorData = JSON.parse(error.message);
+        toast({ 
+          title: "Failed to create scene", 
+          description: errorData.details || errorData.error || "Unknown validation error",
+          variant: "destructive" 
+        });
+      } catch {
+        toast({ title: "Failed to create scene", variant: "destructive" });
+      }
     },
   });
 
@@ -386,6 +400,18 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
     return sceneConfig?.type || "unknown";
   };
 
+  // Normalize AI-generated scene types to valid database types
+  const normalizeSceneType = (aiType: string): string => {
+    const typeMap: Record<string, string> = {
+      'hero': 'text',
+      'testimonial': 'quote',
+      'stats': 'text',
+      'timeline': 'text',
+      'section': 'text',
+    };
+    return typeMap[aiType.toLowerCase()] || aiType;
+  };
+
   const handleAiGenerate = async () => {
     if (!aiPrompt.trim()) {
       toast({ title: "Please enter a scene description", variant: "destructive" });
@@ -398,30 +424,54 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
     try {
       const response = await apiRequest("POST", "/api/scenes/generate-with-ai", {
         prompt: aiPrompt,
-        sceneType: aiSceneType || undefined,
+        sceneType: (aiSceneType && aiSceneType !== "auto") ? aiSceneType : undefined,
       });
 
       const data = await response.json();
       
-      // Convert Gemini output to scene config format with proper defaults
+      // Normalize and convert Gemini output to scene config format with proper defaults
+      const normalizedType = normalizeSceneType(data.sceneType || "text");
+      
+      // Build content with schema requirements
+      const content: any = {};
+      
+      if (data.headline) content.heading = data.headline;
+      if (data.bodyText) content.body = data.bodyText;
+      if (data.subheadline) content.subheading = data.subheadline;
+      if (data.mediaUrl) content.url = data.mediaUrl;
+      if (data.mediaType) content.mediaType = data.mediaType;
+      
+      // Ensure required fields for text scenes (heading + body both required)
+      if (normalizedType === "text") {
+        if (!content.heading) content.heading = "Untitled Scene";
+        if (!content.body) {
+          // Use subheading as body if body is missing, or generate a placeholder
+          content.body = content.subheading || "Add your scene content here.";
+        }
+      }
+      
+      // Clamp director timing values to schema constraints (in seconds)
+      const clampDuration = (value: number | undefined, max: number): number | undefined => {
+        if (value === undefined) return undefined;
+        // Detect milliseconds: values >= 50 are milliseconds (since max valid seconds is 10)
+        // Convert to seconds if in milliseconds, otherwise use as-is
+        const seconds = value >= 50 ? value / 1000 : value;
+        // Clamp to valid range (0.1s to max)
+        return Math.min(Math.max(seconds, 0.1), max);
+      };
+      
       const sceneConfig = {
-        type: data.sceneType || "text",
-        content: {
-          ...(data.headline && { heading: data.headline }),
-          ...(data.bodyText && { body: data.bodyText }),
-          ...(data.subheadline && { subheading: data.subheadline }),
-          ...(data.mediaUrl && { url: data.mediaUrl }),
-          ...(data.mediaType && { mediaType: data.mediaType }),
-        },
+        type: normalizedType,
+        content,
         director: {
           ...DEFAULT_DIRECTOR_CONFIG,
           ...(data.backgroundColor && { backgroundColor: data.backgroundColor }),
           ...(data.textColor && { textColor: data.textColor }),
-          ...(data.fadeInDuration && { entryDuration: data.fadeInDuration }),
-          ...(data.fadeOutDuration && { exitDuration: data.fadeOutDuration }),
-          ...(data.parallaxSpeed && { parallaxIntensity: data.parallaxSpeed }),
-          ...(data.duration && { animationDuration: data.duration }),
-          ...(data.delayBeforeEntry && { entryDelay: data.delayBeforeEntry }),
+          ...(data.fadeInDuration && { entryDuration: clampDuration(data.fadeInDuration, 5) }),
+          ...(data.fadeOutDuration && { exitDuration: clampDuration(data.fadeOutDuration, 5) }),
+          ...(data.parallaxSpeed && { parallaxIntensity: Math.min(Math.max(data.parallaxSpeed, 0), 1) }),
+          ...(data.duration && { animationDuration: clampDuration(data.duration, 10) }),
+          ...(data.delayBeforeEntry && { entryDelay: clampDuration(data.delayBeforeEntry, 5) }),
         },
       };
 
@@ -452,6 +502,28 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
       toast({ title: "AI scene applied to Advanced JSON editor" });
     } catch (error) {
       toast({ title: "Failed to apply scene", variant: "destructive" });
+    }
+  };
+
+  const handleAiSave = () => {
+    if (!aiGeneratedJson) {
+      toast({ title: "No AI-generated scene to save", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const parsedConfig = JSON.parse(aiGeneratedJson);
+      if (editingScene) {
+        updateMutation.mutate({ sceneId: editingScene.id, sceneConfig: parsedConfig });
+      } else {
+        createMutation.mutate(parsedConfig);
+      }
+    } catch (error) {
+      toast({ 
+        title: "Invalid JSON", 
+        description: "The AI-generated JSON is not valid. Please fix it before saving.",
+        variant: "destructive" 
+      });
     }
   };
 
@@ -796,12 +868,12 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
 
                   <div>
                     <label className="text-sm font-medium mb-2 block">Scene Type (Optional)</label>
-                    <Select value={aiSceneType} onValueChange={setAiSceneType}>
+                    <Select value={aiSceneType || "auto"} onValueChange={setAiSceneType}>
                       <SelectTrigger data-testid="select-ai-scene-type">
                         <SelectValue placeholder="Auto-detect from description..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Auto-detect</SelectItem>
+                        <SelectItem value="auto">Auto-detect</SelectItem>
                         <SelectItem value="text">Text Section</SelectItem>
                         <SelectItem value="image">Image</SelectItem>
                         <SelectItem value="video">Video</SelectItem>
@@ -852,7 +924,7 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
                           Apply to Advanced JSON
                         </Button>
                         <Button
-                          onClick={handleAdvancedSave}
+                          onClick={handleAiSave}
                           disabled={createMutation.isPending || updateMutation.isPending}
                           variant="outline"
                           data-testid="button-save-ai-scene-direct"
