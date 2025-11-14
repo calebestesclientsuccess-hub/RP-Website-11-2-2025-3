@@ -70,10 +70,10 @@ SCENE TYPES (choose based on content):
 
 DIRECTOR CONFIG (controls transitions - SET THESE FOR EVERY SCENE):
 {
-  "entryEffect": "fade" | "slide-up" | "slide-down" | "zoom-in" | "zoom-out" | "sudden",
+  "entryEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-in" | "zoom-out" | "sudden",
   "entryDuration": 0.5-5.0 (seconds - how long entry animation lasts),
   "entryDelay": 0-10.0 (seconds - delay before entry starts),
-  "exitEffect": "fade" | "slide-up" | "slide-down" | "zoom-out" | "dissolve",
+  "exitEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-out" | "dissolve",
   "exitDuration": 0.5-5.0 (seconds - how long exit animation lasts),
   "backgroundColor": "#RRGGBB" (hex color for scene background),
   "textColor": "#RRGGBB" (hex color for text),

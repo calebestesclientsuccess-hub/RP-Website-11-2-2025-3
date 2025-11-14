@@ -304,8 +304,8 @@ export default function BrandingProjectPage() {
           delete toState.opacity;
         }
         
-        // Animate section element
-        // NOTE: Using "top bottom" start point ensures animation plays even when scrollToScene() centers the scene
+        // Animate section element with scrub for smooth scroll-driven animation
+        // NOTE: Using scrub makes the animation progress tied to scroll position
         gsap.fromTo(
           element,
           fromState,
@@ -317,6 +317,8 @@ export default function BrandingProjectPage() {
             scrollTrigger: {
               trigger: element,
               start: "top bottom",
+              end: "center center",
+              scrub: scrubSpeed,
               toggleActions: "play none none reverse",
             }
           }
@@ -352,38 +354,38 @@ export default function BrandingProjectPage() {
             delete exitState.opacity;
           }
           
-          ScrollTrigger.create({
-            trigger: element,
-            start: "bottom bottom",
-            end: "bottom top",
-            onLeave: () => {
-              gsap.to(element, {
-                ...exitState,
-                duration: exitDuration,
-                ease: "power2.in",
-              });
-            },
-            onEnterBack: () => {
-              // Reset to visible state when scrolling back
-              gsap.to(element, {
-                autoAlpha: 1,
-                y: 0,
-                x: 0,
-                scale: 1,
-                filter: 'blur(0px)',
-                duration: 0.3,
-              });
-              
-              // Also reset media elements to their target opacity
-              const mediaElements = element.querySelectorAll('[data-media-opacity]');
-              mediaElements.forEach((media) => {
-                const targetOpacity = parseFloat((media as HTMLElement).dataset.mediaOpacity || '1');
-                gsap.to(media, {
-                  opacity: targetOpacity,
+          // Use scrub for smooth scroll-driven exit animation
+          gsap.to(element, {
+            ...exitState,
+            duration: exitDuration,
+            ease: "power2.in",
+            scrollTrigger: {
+              trigger: element,
+              start: "center top",
+              end: "bottom top",
+              scrub: scrubSpeed,
+              onEnterBack: () => {
+                // Reset to visible state when scrolling back
+                gsap.to(element, {
+                  autoAlpha: 1,
+                  y: 0,
+                  x: 0,
+                  scale: 1,
+                  filter: 'blur(0px)',
                   duration: 0.3,
                 });
-              });
-            },
+                
+                // Also reset media elements to their target opacity
+                const mediaElements = element.querySelectorAll('[data-media-opacity]');
+                mediaElements.forEach((media) => {
+                  const targetOpacity = parseFloat((media as HTMLElement).dataset.mediaOpacity || '1');
+                  gsap.to(media, {
+                    opacity: targetOpacity,
+                    duration: 0.3,
+                  });
+                });
+              },
+            }
           });
         }
         
