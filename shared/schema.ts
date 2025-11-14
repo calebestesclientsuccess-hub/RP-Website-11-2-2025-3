@@ -673,10 +673,97 @@ export const insertProjectSchema = createInsertSchema(projects).omit({
 
 export const updateProjectSchema = insertProjectSchema.partial();
 
+// Scene content validation schemas
+const textSceneSchema = z.object({
+  type: z.literal("text"),
+  content: z.object({
+    heading: z.string().min(1),
+    body: z.string().min(1),
+  }).passthrough(), // Allow additional properties
+});
+
+const imageSceneSchema = z.object({
+  type: z.literal("image"),
+  content: z.object({
+    url: z.string().url(),
+  }).passthrough(),
+});
+
+const videoSceneSchema = z.object({
+  type: z.literal("video"),
+  content: z.object({
+    url: z.string().url(),
+  }).passthrough(),
+});
+
+const splitSceneSchema = z.object({
+  type: z.literal("split"),
+  content: z.object({
+    media: z.string().url(),
+    heading: z.string().min(1),
+  }).passthrough(),
+});
+
+const gallerySceneSchema = z.object({
+  type: z.literal("gallery"),
+  content: z.object({
+    images: z.array(z.string().url()).min(1),
+  }).passthrough(),
+});
+
+const quoteSceneSchema = z.object({
+  type: z.literal("quote"),
+  content: z.object({
+    quote: z.string().min(1),
+  }).passthrough(),
+});
+
+const fullscreenSceneSchema = z.object({
+  type: z.literal("fullscreen"),
+  content: z.object({
+    media: z.string().url(),
+    mediaType: z.enum(["image", "video"]),
+  }).passthrough(),
+});
+
+// Discriminated union of all scene types
+const sceneConfigSchema = z.discriminatedUnion("type", [
+  textSceneSchema,
+  imageSceneSchema,
+  videoSceneSchema,
+  splitSceneSchema,
+  gallerySceneSchema,
+  quoteSceneSchema,
+  fullscreenSceneSchema,
+]);
+
 export const insertProjectSceneSchema = createInsertSchema(projectScenes).omit({
   id: true,
   projectId: true,
   createdAt: true,
+}).extend({
+  sceneConfig: z.string().transform((val, ctx) => {
+    try {
+      const parsed = JSON.parse(val);
+      const result = sceneConfigSchema.safeParse(parsed);
+      
+      if (!result.success) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Invalid scene config: ${result.error.errors.map(e => e.message).join(", ")}`,
+        });
+        return z.NEVER;
+      }
+      
+      return val; // Return original string for storage
+    } catch (e) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Scene config must be valid JSON",
+      });
+      return z.NEVER;
+    }
+  }),
 });
 
 export const updateProjectSceneSchema = insertProjectSceneSchema.partial();
