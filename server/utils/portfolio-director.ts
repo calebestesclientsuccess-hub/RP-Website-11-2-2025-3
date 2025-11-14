@@ -69,6 +69,9 @@ SCENE TYPES (choose based on content):
 - "fullscreen": Immersive media (use for wow moments, transitions)
 
 DIRECTOR CONFIG (controls transitions - SET THESE FOR EVERY SCENE):
+
+CRITICAL: You MUST interpret the director's notes and translate them into these exact fields:
+
 {
   "entryEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-in" | "zoom-out" | "sudden",
   "entryDuration": 0.5-5.0 (seconds - how long entry animation lasts),
@@ -87,6 +90,30 @@ DIRECTOR CONFIG (controls transitions - SET THESE FOR EVERY SCENE):
   "blurOnScroll": true | false (blur on scroll)
 }
 
+EXAMPLE: If director says "text enters from left and exits to right" → use:
+{
+  "entryEffect": "slide-right",  // slide-right means coming FROM left
+  "entryDuration": 1.2,
+  "exitEffect": "slide-right",   // slide-right means exiting TO right
+  "exitDuration": 1.0
+}
+
+EXAMPLE: If director says "slow reveal, build anticipation" → use:
+{
+  "entryEffect": "fade",
+  "entryDuration": 2.5,
+  "entryDelay": 0.5
+}
+
+EXAMPLE: If director says "zooms in dramatically during scroll, crossfades to next" → use:
+{
+  "entryEffect": "zoom-in",
+  "entryDuration": 1.5,
+  "scaleOnScroll": true,
+  "exitEffect": "dissolve",
+  "exitDuration": 0.8
+}
+
 TRANSITION DESIGN RULES:
 1. Fast entries (0.8-1.2s) for energy, slow entries (2.0-3.0s) for drama
 2. Match exit of Scene N with entry of Scene N+1 (fade-out → fade-in, slide-down → slide-up)
@@ -95,6 +122,17 @@ TRANSITION DESIGN RULES:
 5. Dark backgrounds (#0a0a0a, #1a1a1a) for text scenes, lighter for images
 6. Create rhythm: fast → slow → fast (like music)
 7. Use "dissolve" exit for smooth transitions to next scene
+
+INTERPRETING DIRECTOR'S NOTES:
+- "enters from left" → entryEffect: "slide-right" (element slides from left edge)
+- "exits to right" → exitEffect: "slide-right" (element slides toward right edge)
+- "zooms in" → entryEffect: "zoom-in" + scaleOnScroll: true
+- "crossfade" / "dissolve" → exitEffect: "dissolve"
+- "slow reveal" → entryDuration: 2.0-3.0
+- "quick transition" → entryDuration: 0.5-0.8
+- "build anticipation" → entryDelay: 0.5-1.0
+- "dramatic" → parallaxIntensity: 0.6-0.8
+- "subtle" → parallaxIntensity: 0.2-0.4
 
 PACING GUIDELINES:
 - Hero/opening scene: Slow, dramatic entry (2.5s fade-in)

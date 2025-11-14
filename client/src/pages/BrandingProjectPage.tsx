@@ -249,16 +249,20 @@ export default function BrandingProjectPage() {
       });
 
       // Get director-configured effects and durations
-      const entryEffect = entryEffectMap[director.entryEffect] || entryEffectMap.fade;
-      const exitEffect = director.exitEffect ? exitEffectMap[director.exitEffect] : null;
+      const entryEffect = entryEffectMap[director.entryEffect || 'fade'] || entryEffectMap.fade;
+      const exitEffect = director.exitEffect ? (exitEffectMap[director.exitEffect] || exitEffectMap.fade) : null;
       const entryDuration = director.entryEffect === 'sudden' ? 0.1 : (director.entryDuration || DEFAULT_DIRECTOR_CONFIG.entryDuration);
-      const exitDuration = director.exitDuration || 0.8;
+      const exitDuration = director.exitDuration || DEFAULT_DIRECTOR_CONFIG.exitDuration;
       
       console.log(`[Scene ${index}] Animation setup:`, {
-        entryEffect: director.entryEffect,
+        configuredEntry: director.entryEffect,
+        resolvedEntryEffect: entryEffect,
         entryDuration,
-        exitEffect: director.exitEffect,
+        configuredExit: director.exitEffect,
+        resolvedExitEffect: exitEffect,
         exitDuration,
+        scaleOnScroll: director.scaleOnScroll,
+        fadeOnScroll: director.fadeOnScroll,
       });
       
       // PHASE 1: Diagnostic logging to falsify hypotheses H1-H5
@@ -354,6 +358,8 @@ export default function BrandingProjectPage() {
             delete exitState.opacity;
           }
           
+          console.log(`[Scene ${index}] Exit animation configured:`, exitState);
+          
           // Use scrub for smooth scroll-driven exit animation
           gsap.to(element, {
             ...exitState,
@@ -364,7 +370,11 @@ export default function BrandingProjectPage() {
               start: "center top",
               end: "bottom top",
               scrub: scrubSpeed,
+              onEnter: () => {
+                console.log(`[Scene ${index}] Exit trigger fired`);
+              },
               onEnterBack: () => {
+                console.log(`[Scene ${index}] Reversing exit, resetting to visible`);
                 // Reset to visible state when scrolling back
                 gsap.to(element, {
                   autoAlpha: 1,
