@@ -234,101 +234,85 @@ export default function BrandingProjectPage() {
         onEnterBack: () => setActiveSceneIndex(index),
       });
 
-      // Entry animation based on director config
+      // Create unified timeline for bi-directional scrollytelling
+      const timeline = gsap.timeline({ paused: true });
+      
+      // Get director-configured effects and durations
       const entryEffect = entryEffectMap[director.entryEffect] || entryEffectMap.fade;
-      const animationDuration = director.entryEffect === 'sudden' ? 0.1 : (director.entryDuration || DEFAULT_DIRECTOR_CONFIG.entryDuration);
+      const exitEffect = director.exitEffect ? exitEffectMap[director.exitEffect] : null;
+      const entryDuration = director.entryEffect === 'sudden' ? 0.1 : (director.entryDuration || DEFAULT_DIRECTOR_CONFIG.entryDuration);
+      const exitDuration = director.exitDuration || 0.8;
       
       if (prefersReducedMotion) {
-        // Simplified animation for accessibility
-        gsap.fromTo(
-          element,
-          { opacity: 0 },
-          {
-            opacity: 1,
-            duration: 0.3,
-            delay: director.entryDelay,
-            scrollTrigger: {
-              trigger: element,
-              start: "top 75%",
-              toggleActions: "play none none reverse",
-            }
-          }
-        );
+        // Simplified timeline for accessibility - just fade in/out
+        timeline
+          .fromTo(element, 
+            { opacity: 0 }, 
+            { opacity: 1, duration: 0.3, delay: director.entryDelay || 0, ease: "none" }
+          )
+          .to(element, 
+            { opacity: 0, duration: 0.3, ease: "none" }, 
+            "+=0.5" // Hold visible state briefly
+          );
       } else {
-        gsap.fromTo(
-          element,
-          entryEffect.from,
-          {
+        // Build full timeline: hidden → entry → visible → exit → hidden
+        
+        // Phase 1: Entry animation (unfold on down-scroll)
+        timeline.fromTo(element,
+          { ...entryEffect.from },
+          { 
             ...entryEffect.to,
-            duration: animationDuration,
-            delay: director.entryDelay,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: element,
-              start: "top 75%",
-              end: "top 25%",
-              toggleActions: "play none none reverse",
-            }
+            duration: entryDuration,
+            delay: director.entryDelay || 0,
+            ease: "power3.out"
           }
         );
-      }
-
-      // Exit animation based on director config
-      if (!prefersReducedMotion && director.exitEffect) {
-        const exitAnimation = exitEffectMap[director.exitEffect];
-        if (exitAnimation) {
-          ScrollTrigger.create({
-            trigger: element,
-            start: "bottom bottom",
-            end: "bottom top",
-            onLeave: () => {
-              gsap.to(element, {
-                ...exitAnimation,
-                duration: director.exitDuration || 0.8,
-                ease: "power2.in",
-              });
-            },
-            onEnterBack: () => {
-              // Reset to fully visible state when scrolling back (clear all possible transformations)
-              gsap.to(element, {
-                opacity: 1,
-                y: 0,
-                x: 0,
-                scale: 1,
-                filter: 'blur(0px)',
-                clearProps: 'all', // Clear all GSAP-applied properties for clean reset
-                duration: 0.5,
-              });
-            },
+        
+        // Phase 2: Visible state (hold position)
+        // Add label for visible state - scene stays here during middle scroll range
+        timeline.addLabel("visible", timeline.duration());
+        
+        // Add hold time proportional to viewport to create "reading zone"
+        const holdDuration = 0.5;
+        timeline.to(element, { duration: holdDuration }, "visible");
+        
+        // Phase 3: Exit animation (refold on down-scroll, only if configured)
+        if (exitEffect) {
+          timeline.to(element, {
+            ...exitEffect,
+            duration: exitDuration,
+            ease: "power2.in"
           });
         }
+        
+        // Phase 4: Optional continuous effects (fade/scale during visible phase)
+        if (director.fadeOnScroll && !director.exitEffect) {
+          // Apply fade during visible→exit transition
+          timeline.to(element, {
+            opacity: 0.5,
+            duration: holdDuration,
+            ease: "none"
+          }, "visible");
+        }
+        
+        if (director.scaleOnScroll) {
+          // Apply scale during visible→exit transition
+          timeline.to(element, {
+            scale: 0.95,
+            duration: holdDuration,
+            ease: "none"
+          }, "visible");
+        }
       }
-
-      // Optional: Fade on scroll effect (only if no exit effect configured to avoid conflicts)
-      if (!prefersReducedMotion && director.fadeOnScroll && !director.exitEffect) {
-        gsap.to(element, {
-          opacity: 0.5, // Min opacity higher to avoid conflict with exit animations
-          scrollTrigger: {
-            trigger: element,
-            start: "center center",
-            end: "bottom top",
-            scrub: scrubSpeed,
-          }
-        });
-      }
-
-      // Optional: Scale on scroll effect
-      if (!prefersReducedMotion && director.scaleOnScroll) {
-        gsap.to(element, {
-          scale: 0.95,
-          scrollTrigger: {
-            trigger: element,
-            start: "center center",
-            end: "bottom top",
-            scrub: scrubSpeed,
-          }
-        });
-      }
+      
+      // Attach timeline to ScrollTrigger with scrub for bi-directional playback
+      ScrollTrigger.create({
+        trigger: element,
+        start: "top 80%", // Start slightly before scene enters viewport
+        end: "bottom 20%", // End slightly after scene leaves viewport
+        scrub: scrubSpeed, // Smooth scrubbing based on director.scrollSpeed
+        animation: timeline,
+      });
     });
 
     return () => {
