@@ -29,14 +29,10 @@ import {
 } from "@/components/ui/select";
 import { Plus, Edit, Trash2, Copy } from "lucide-react";
 import { DirectorConfigForm } from "@/components/DirectorConfigForm";
-import { DEFAULT_DIRECTOR_CONFIG } from "@shared/schema";
+import { DEFAULT_DIRECTOR_CONFIG, type ProjectScene } from "@shared/schema";
 
-interface ProjectScene {
-  id: string;
-  projectId: string;
-  sceneConfig: string;
-  createdAt: string;
-}
+// Extract SceneConfig type from ProjectScene
+type SceneConfig = ProjectScene['sceneConfig'];
 
 interface SceneEditorProps {
   projectId: string;
@@ -151,12 +147,12 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
     enabled: !!projectId,
   });
 
-  const createMutation = useMutation({
-    mutationFn: async (sceneConfig: string) => {
+  const createMutation = useMutation<ProjectScene, Error, SceneConfig>({
+    mutationFn: async (sceneConfig) => {
       const response = await apiRequest("POST", `/api/projects/${projectId}/scenes`, {
         sceneConfig,
       });
-      return response;
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "scenes"] });
@@ -172,12 +168,12 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
     },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: async ({ sceneId, sceneConfig }: { sceneId: string; sceneConfig: string }) => {
+  const updateMutation = useMutation<ProjectScene, Error, { sceneId: string; sceneConfig: SceneConfig }>({
+    mutationFn: async ({ sceneId, sceneConfig }) => {
       const response = await apiRequest("PATCH", `/api/projects/${projectId}/scenes/${sceneId}`, {
         sceneConfig,
       });
-      return response;
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "scenes"] });
@@ -310,7 +306,7 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
       sceneConfig.director = data.director;
     }
 
-    return JSON.stringify(sceneConfig);
+    return sceneConfig; // Return object directly (jsonb column handles objects)
   };
 
   const handleQuickModeSave = () => {
@@ -328,41 +324,39 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
   const handleAdvancedSave = () => {
     if (!validateJson(sceneJson)) return;
 
+    const parsedConfig = JSON.parse(sceneJson); // Parse JSON from editor
     if (editingScene) {
-      updateMutation.mutate({ sceneId: editingScene.id, sceneConfig: sceneJson });
+      updateMutation.mutate({ sceneId: editingScene.id, sceneConfig: parsedConfig });
     } else {
-      createMutation.mutate(sceneJson);
+      createMutation.mutate(parsedConfig);
     }
   };
 
   const handleEdit = (scene: ProjectScene) => {
     setEditingScene(scene);
-    try {
-      const parsed = JSON.parse(scene.sceneConfig);
-      const formatted = JSON.stringify(parsed, null, 2);
-      setSceneJson(formatted);
-      validateJson(formatted);
-      
-      // Populate form for Quick Mode
-      form.setValue("type", parsed.type);
-      
-      if (parsed.content) {
-        if (parsed.content.heading) form.setValue("heading", parsed.content.heading);
-        if (parsed.content.body) form.setValue("body", parsed.content.body);
-        if (parsed.content.url) form.setValue("url", parsed.content.url);
-        if (parsed.content.media) form.setValue("media", parsed.content.media);
-        if (parsed.content.quote) form.setValue("quote", parsed.content.quote);
-        if (parsed.content.author) form.setValue("author", parsed.content.author);
-        if (parsed.content.role) form.setValue("role", parsed.content.role);
-        if (parsed.content.images) form.setValue("images", parsed.content.images.join(", "));
-        if (parsed.content.mediaType) form.setValue("mediaType", parsed.content.mediaType);
-      }
+    // sceneConfig is already an object (jsonb column), just format for display
+    const formatted = JSON.stringify(scene.sceneConfig, null, 2);
+    setSceneJson(formatted);
+    validateJson(formatted);
+    
+    // Populate form for Quick Mode
+    const config = scene.sceneConfig as any;
+    form.setValue("type", config.type);
+    
+    if (config.content) {
+      if (config.content.heading) form.setValue("heading", config.content.heading);
+      if (config.content.body) form.setValue("body", config.content.body);
+      if (config.content.url) form.setValue("url", config.content.url);
+      if (config.content.media) form.setValue("media", config.content.media);
+      if (config.content.quote) form.setValue("quote", config.content.quote);
+      if (config.content.author) form.setValue("author", config.content.author);
+      if (config.content.role) form.setValue("role", config.content.role);
+      if (config.content.images) form.setValue("images", config.content.images.join(", "));
+      if (config.content.mediaType) form.setValue("mediaType", config.content.mediaType);
+    }
 
-      if (parsed.director) {
-        form.setValue("director", parsed.director);
-      }
-    } catch {
-      setSceneJson(scene.sceneConfig);
+    if (config.director) {
+      form.setValue("director", config.director);
     }
     setIsDialogOpen(true);
   };
@@ -375,18 +369,15 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
 
   const handleDuplicate = (scene: ProjectScene) => {
     setEditingScene(null);
-    setSceneJson(scene.sceneConfig);
-    validateJson(scene.sceneConfig);
+    const formatted = JSON.stringify(scene.sceneConfig, null, 2);
+    setSceneJson(formatted);
+    validateJson(formatted);
     setIsDialogOpen(true);
   };
 
-  const getSceneType = (sceneConfig: string): string => {
-    try {
-      const parsed = JSON.parse(sceneConfig);
-      return parsed.type || "unknown";
-    } catch {
-      return "invalid";
-    }
+  const getSceneType = (sceneConfig: any): string => {
+    // sceneConfig is already an object (jsonb column)
+    return sceneConfig?.type || "unknown";
   };
 
   return (
@@ -789,7 +780,7 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
                     <Badge variant="secondary">{getSceneType(scene.sceneConfig)}</Badge>
                   </div>
                   <pre className="text-xs text-muted-foreground bg-muted p-2 rounded overflow-x-auto max-h-20">
-                    {scene.sceneConfig}
+                    {JSON.stringify(scene.sceneConfig, null, 2)}
                   </pre>
                 </div>
                 <div className="flex gap-1 ml-4">

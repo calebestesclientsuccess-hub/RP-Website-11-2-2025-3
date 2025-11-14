@@ -828,6 +828,7 @@ export class DbStorage implements IStorage {
       .where(eq(projectScenes.projectId, projectId))
       .orderBy(desc(projectScenes.createdAt));
     
+    // JSONB column auto-parses, no manual parsing needed
     return scenes;
   }
 
@@ -838,6 +839,7 @@ export class DbStorage implements IStorage {
     }
     
     const [newScene] = await db.insert(projectScenes).values({ ...scene, projectId }).returning();
+    // JSONB column auto-parses, no manual parsing needed
     return newScene;
   }
 
@@ -852,6 +854,7 @@ export class DbStorage implements IStorage {
       .where(and(eq(projectScenes.id, id), eq(projectScenes.projectId, projectId)))
       .returning();
     
+    // JSONB column auto-parses, no manual parsing needed
     return updatedScene || null;
   }
 

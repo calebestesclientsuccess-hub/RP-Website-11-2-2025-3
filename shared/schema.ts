@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, integer, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -630,7 +630,13 @@ export const projects = pgTable("projects", {
 export const projectScenes = pgTable("project_scenes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
-  sceneConfig: text("scene_config").notNull(), // JSONB stored as text for Drizzle compatibility
+  sceneConfig: jsonb("scene_config").notNull().$type<{
+    type: string;
+    content: any;
+    layout?: string;
+    animation?: string;
+    director?: Record<string, any>;
+  }>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -781,7 +787,7 @@ const fullscreenSceneWithDirectorSchema = fullscreenSceneSchema.extend({
 });
 
 // Discriminated union of all scene types
-const sceneConfigSchema = z.discriminatedUnion("type", [
+export const sceneConfigSchema = z.discriminatedUnion("type", [
   textSceneWithDirectorSchema,
   imageSceneWithDirectorSchema,
   videoSceneWithDirectorSchema,
@@ -796,28 +802,7 @@ export const insertProjectSceneSchema = createInsertSchema(projectScenes).omit({
   projectId: true,
   createdAt: true,
 }).extend({
-  sceneConfig: z.string().transform((val, ctx) => {
-    try {
-      const parsed = JSON.parse(val);
-      const result = sceneConfigSchema.safeParse(parsed);
-      
-      if (!result.success) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Invalid scene config: ${result.error.errors.map(e => e.message).join(", ")}`,
-        });
-        return z.NEVER;
-      }
-      
-      return val; // Return original string for storage
-    } catch (e) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Scene config must be valid JSON",
-      });
-      return z.NEVER;
-    }
-  }),
+  sceneConfig: sceneConfigSchema, // Validate object structure directly (jsonb column)
 });
 
 export const updateProjectSceneSchema = insertProjectSceneSchema.partial();
@@ -864,6 +849,10 @@ export type CalculatorConfig = z.infer<typeof calculatorConfigSchema>;
 export type SeoMetadata = z.infer<typeof seoMetadataSchema>;
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
-export type ProjectScene = typeof projectScenes.$inferSelect;
+export type SceneConfig = z.infer<typeof sceneConfigSchema>;
+// ProjectScene with properly typed sceneConfig
+export type ProjectScene = Omit<typeof projectScenes.$inferSelect, 'sceneConfig'> & {
+  sceneConfig: SceneConfig;
+};
 export type InsertProjectScene = z.infer<typeof insertProjectSceneSchema>;
 export type DirectorConfig = z.infer<typeof directorConfigSchema>;
