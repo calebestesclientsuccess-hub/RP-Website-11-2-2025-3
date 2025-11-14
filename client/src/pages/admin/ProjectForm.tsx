@@ -46,6 +46,7 @@ export default function ProjectForm() {
   const { id: projectId } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  // Don't use const - this needs to be reactive to projectId changes
   const isEdit = !!projectId;
 
   // State for dynamic arrays
@@ -108,7 +109,7 @@ export default function ProjectForm() {
   const createMutation = useMutation({
     mutationFn: async (data: InsertProject) => {
       const response = await apiRequest("POST", "/api/projects", data);
-      return response;
+      return await response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
@@ -133,7 +134,7 @@ export default function ProjectForm() {
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<InsertProject>) => {
       const response = await apiRequest("PATCH", `/api/projects/${projectId}`, data);
-      return response;
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
@@ -594,7 +595,7 @@ export default function ProjectForm() {
                 </Form>
 
                 {/* Scrollytelling Scene Editor - Only Available in Edit Mode */}
-                {isEdit && projectId && (
+                {isEdit && projectId && typeof projectId === 'string' && projectId !== 'undefined' && (
                   <div className="mt-8 border-t pt-8">
                     <ProjectSceneEditor projectId={projectId} />
                   </div>
