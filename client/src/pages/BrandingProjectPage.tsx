@@ -7,8 +7,52 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { DirectorConfig, DEFAULT_DIRECTOR_CONFIG } from "@shared/schema";
 
 gsap.registerPlugin(ScrollTrigger);
+
+// Helper utility maps for director configuration (outside component for performance)
+const headingSizeMap: Record<string, string> = {
+  "4xl": "text-4xl md:text-5xl",
+  "5xl": "text-5xl md:text-6xl",
+  "6xl": "text-5xl md:text-6xl",
+  "7xl": "text-6xl md:text-7xl",
+  "8xl": "text-7xl md:text-8xl",
+};
+
+const bodySizeMap: Record<string, string> = {
+  "base": "text-base md:text-lg",
+  "lg": "text-lg md:text-xl",
+  "xl": "text-xl md:text-2xl",
+  "2xl": "text-2xl md:text-3xl",
+};
+
+const fontWeightMap: Record<string, string> = {
+  "normal": "font-normal",
+  "medium": "font-medium",
+  "semibold": "font-semibold",
+  "bold": "font-bold",
+};
+
+const alignmentMap: Record<string, string> = {
+  "left": "text-left",
+  "center": "text-center",
+  "right": "text-right",
+};
+
+const objectPositionMap: Record<string, string> = {
+  "center": "object-center",
+  "top": "object-top",
+  "bottom": "object-bottom",
+  "left": "object-left",
+  "right": "object-right",
+};
+
+const objectFitMap: Record<string, string> = {
+  "cover": "object-cover",
+  "contain": "object-contain",
+  "fill": "object-fill",
+};
 
 interface Project {
   id: string;
@@ -29,6 +73,29 @@ interface ProjectScene {
     content: any;
     layout?: string;
     animation?: string;
+    director?: {
+      entryEffect?: string;
+      entryDuration?: number;
+      entryDelay?: number;
+      exitEffect?: string;
+      exitDuration?: number;
+      backgroundColor?: string;
+      textColor?: string;
+      gradientColors?: string[];
+      headingSize?: string;
+      bodySize?: string;
+      fontWeight?: string;
+      alignment?: string;
+      scrollSpeed?: string;
+      parallaxIntensity?: number;
+      animationDuration?: number;
+      blurOnScroll?: boolean;
+      fadeOnScroll?: boolean;
+      scaleOnScroll?: boolean;
+      mediaPosition?: string;
+      mediaScale?: string;
+      mediaOpacity?: number;
+    };
   };
 }
 
@@ -353,18 +420,27 @@ export default function BrandingProjectPage() {
   );
 }
 
-// Scene renderer component that interprets sceneConfig
+// Scene renderer component that interprets sceneConfig with director customization
 function SceneRenderer({ scene }: { scene: ProjectScene }) {
   const { type, content, layout = "default" } = scene.sceneConfig;
+
+  // Merge director config with defaults
+  const director = { ...DEFAULT_DIRECTOR_CONFIG, ...(scene.sceneConfig.director || {}) };
 
   switch (type) {
     case "text":
       return (
-        <div className="prose prose-invert max-w-none">
-          <h2 className="text-5xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
+        <div className="max-w-none" style={{ backgroundColor: director.backgroundColor }}>
+          <h2 
+            className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]} mb-8`}
+            style={{ color: director.textColor }}
+          >
             {content.heading}
           </h2>
-          <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
+          <p 
+            className={`${bodySizeMap[director.bodySize]} ${alignmentMap[director.alignment]} leading-relaxed`}
+            style={{ color: director.textColor }}
+          >
             {content.body}
           </p>
         </div>
@@ -372,9 +448,12 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
 
     case "image":
       return (
-        <div className="space-y-8">
+        <div className="space-y-8" style={{ backgroundColor: director.backgroundColor }}>
           {content.heading && (
-            <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
+            <h2 
+              className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]}`}
+              style={{ color: director.textColor }}
+            >
               {content.heading}
             </h2>
           )}
@@ -382,21 +461,30 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
             <img
               src={content.url}
               alt={content.alt || "Scene image"}
-              className="w-full h-full object-cover"
+              className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
+              style={{ opacity: director.mediaOpacity }}
               loading="lazy"
             />
           </div>
           {content.caption && (
-            <p className="text-lg text-muted-foreground text-center italic">{content.caption}</p>
+            <p 
+              className={`${bodySizeMap[director.bodySize]} ${alignmentMap[director.alignment]} italic`}
+              style={{ color: director.textColor }}
+            >
+              {content.caption}
+            </p>
           )}
         </div>
       );
 
     case "video":
       return (
-        <div className="space-y-8">
+        <div className="space-y-8" style={{ backgroundColor: director.backgroundColor }}>
           {content.heading && (
-            <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
+            <h2 
+              className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]}`}
+              style={{ color: director.textColor }}
+            >
               {content.heading}
             </h2>
           )}
@@ -404,26 +492,38 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
             <video
               src={content.url}
               controls
-              className="w-full h-full object-cover"
+              className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
+              style={{ opacity: director.mediaOpacity }}
             />
           </div>
           {content.caption && (
-            <p className="text-lg text-muted-foreground text-center italic">{content.caption}</p>
+            <p 
+              className={`${bodySizeMap[director.bodySize]} ${alignmentMap[director.alignment]} italic`}
+              style={{ color: director.textColor }}
+            >
+              {content.caption}
+            </p>
           )}
         </div>
       );
 
     case "split":
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center" style={{ backgroundColor: director.backgroundColor }}>
           <div className={`space-y-6 ${layout === "reverse" ? "md:order-2" : "md:order-1"}`}>
             {content.heading && (
-              <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
+              <h2 
+                className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]}`}
+                style={{ color: director.textColor }}
+              >
                 {content.heading}
               </h2>
             )}
             {content.body && (
-              <p className="text-xl text-muted-foreground leading-relaxed">
+              <p 
+                className={`${bodySizeMap[director.bodySize]} ${alignmentMap[director.alignment]} leading-relaxed`}
+                style={{ color: director.textColor }}
+              >
                 {content.body}
               </p>
             )}
@@ -433,13 +533,15 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               <video
                 src={content.mediaUrl}
                 controls
-                className="w-full h-full object-cover"
+                className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
+                style={{ opacity: director.mediaOpacity }}
               />
             ) : (
               <img
                 src={content.mediaUrl}
                 alt={content.alt || "Scene media"}
-                className="w-full h-full object-cover"
+                className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
+                style={{ opacity: director.mediaOpacity }}
                 loading="lazy"
               />
             )}
@@ -449,9 +551,12 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
 
     case "gallery":
       return (
-        <div className="space-y-8">
+        <div className="space-y-8" style={{ backgroundColor: director.backgroundColor }}>
           {content.heading && (
-            <h2 className="text-5xl md:text-6xl font-bold text-center bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
+            <h2 
+              className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]}`}
+              style={{ color: director.textColor }}
+            >
               {content.heading}
             </h2>
           )}
@@ -462,12 +567,18 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                   <img
                     src={img.url}
                     alt={img.alt || `Gallery image ${idx + 1}`}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]} hover:scale-105 transition-transform duration-500`}
+                    style={{ opacity: director.mediaOpacity }}
                     loading="lazy"
                   />
                 </div>
                 {img.caption && (
-                  <p className="text-sm text-muted-foreground text-center">{img.caption}</p>
+                  <p 
+                    className={`text-sm ${alignmentMap[director.alignment]}`}
+                    style={{ color: director.textColor }}
+                  >
+                    {img.caption}
+                  </p>
                 )}
               </div>
             ))}
@@ -477,15 +588,25 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
 
     case "quote":
       return (
-        <div className="max-w-3xl mx-auto text-center space-y-8">
-          <div className="text-6xl md:text-8xl text-primary/20">"</div>
-          <blockquote className="text-3xl md:text-4xl font-medium leading-relaxed text-foreground">
+        <div className={`max-w-3xl mx-auto space-y-8 ${alignmentMap[director.alignment]}`} style={{ backgroundColor: director.backgroundColor }}>
+          <div className="text-6xl md:text-8xl opacity-20" style={{ color: director.textColor }}>"</div>
+          <blockquote 
+            className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} leading-relaxed`}
+            style={{ color: director.textColor }}
+          >
             {content.quote}
           </blockquote>
           {content.author && (
-            <cite className="block text-xl text-muted-foreground not-italic">
+            <cite 
+              className={`block ${bodySizeMap[director.bodySize]} not-italic`}
+              style={{ color: director.textColor, opacity: 0.8 }}
+            >
               — {content.author}
-              {content.role && <span className="block text-base mt-2">{content.role}</span>}
+              {content.role && (
+                <span className="block text-base mt-2" style={{ opacity: 0.6 }}>
+                  {content.role}
+                </span>
+              )}
             </cite>
           )}
         </div>
@@ -493,19 +614,21 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
 
     case "fullscreen":
       return (
-        <div className="relative -mx-4 md:-mx-8 lg:-mx-12">
+        <div className="relative -mx-4 md:-mx-8 lg:-mx-12" style={{ backgroundColor: director.backgroundColor }}>
           <div className="aspect-[21/9] rounded-xl overflow-hidden">
             {content.mediaType === "video" ? (
               <video
                 src={content.url}
                 controls
-                className="w-full h-full object-cover"
+                className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
+                style={{ opacity: director.mediaOpacity }}
               />
             ) : (
               <img
                 src={content.url}
                 alt={content.alt || "Full screen media"}
-                className="w-full h-full object-cover"
+                className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
+                style={{ opacity: director.mediaOpacity }}
                 loading="lazy"
               />
             )}
@@ -513,12 +636,20 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/50 to-transparent flex items-end p-12">
                 <div className="max-w-2xl">
                   {content.heading && (
-                    <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+                    <h2 
+                      className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} mb-4`}
+                      style={{ color: director.textColor }}
+                    >
                       {content.heading}
                     </h2>
                   )}
                   {content.body && (
-                    <p className="text-xl text-white/90">{content.body}</p>
+                    <p 
+                      className={`${bodySizeMap[director.bodySize]}`}
+                      style={{ color: director.textColor, opacity: 0.9 }}
+                    >
+                      {content.body}
+                    </p>
                   )}
                 </div>
               </div>
@@ -529,7 +660,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
 
     default:
       return (
-        <div className="text-center text-muted-foreground p-12 border border-dashed border-border rounded-xl">
+        <div className="text-center p-12 border border-dashed border-border rounded-xl" style={{ color: director.textColor }}>
           <p className="text-lg">Unknown scene type: {type}</p>
           <p className="text-sm mt-2">Available types: text, image, video, split, gallery, quote, fullscreen</p>
         </div>
