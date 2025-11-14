@@ -1765,6 +1765,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Scene Generation endpoint (uses Gemini via Replit AI Integrations)
+  app.post("/api/scenes/generate-with-ai", requireAuth, async (req, res) => {
+    try {
+      const schema = z.object({
+        prompt: z.string().min(10, "Prompt must be at least 10 characters"),
+        sceneType: z.string().optional(),
+        templateId: z.string().optional(),
+      });
+
+      const result = schema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const { prompt, sceneType, templateId } = result.data;
+
+      // Load prompt template if specified
+      let systemInstructions: string | undefined;
+      if (templateId) {
+        const template = await storage.getPromptTemplateById(req.tenantId, templateId);
+        if (template && template.isActive) {
+          systemInstructions = template.promptTemplate;
+        }
+      }
+
+      // Lazy-load Gemini client to avoid module errors if not yet used
+      const { generateSceneWithGemini } = await import("./utils/gemini-client");
+
+      // Generate scene configuration using Gemini
+      const sceneConfig = await generateSceneWithGemini(
+        prompt,
+        sceneType,
+        systemInstructions
+      );
+
+      return res.status(200).json({
+        success: true,
+        sceneConfig,
+        message: "Scene generated successfully. Please review before saving."
+      });
+    } catch (error) {
+      console.error("Error generating scene with AI:", error);
+      if (error instanceof Error) {
+        return res.status(500).json({ 
+          error: "AI generation failed", 
+          details: error.message 
+        });
+      }
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Public Branding Project endpoints (for scrollytelling pages)
   app.get("/api/branding/projects", async (req, res) => {
     try {
