@@ -836,12 +836,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Lead submission endpoints
-  const leadLimiter = createRateLimiter({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 3, // 3 requests per hour
-    message: "Too many submissions. Please try again later."
-  });
-
   app.post("/api/leads/audit-request", leadLimiter, async (req, res) => {
     try {
       const auditSchema = z.object({
