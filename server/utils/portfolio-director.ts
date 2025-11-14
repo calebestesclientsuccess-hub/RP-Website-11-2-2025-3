@@ -68,98 +68,353 @@ SCENE TYPES (choose based on content):
 - "gallery": Multiple images (use for before/after, process steps)
 - "fullscreen": Immersive media (use for wow moments, transitions)
 
-DIRECTOR CONFIG (controls transitions - SET THESE FOR EVERY SCENE):
+DIRECTOR CONFIG - COMPLETE FIELD REFERENCE:
+You MUST provide ALL of these fields for EVERY scene. Do NOT omit any field.
 
-CRITICAL: You MUST interpret the director's notes and translate them into these exact fields:
+REQUIRED FIELDS (every scene must have these):
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "entryEffect": STRING - How the scene enters the viewport                  │
+│   ALLOWED VALUES:                                                           │
+│   - "fade": Opacity 0→1 (smooth, universal)                                 │
+│   - "slide-up": Slides from bottom edge (dynamic, reveals)                  │
+│   - "slide-down": Slides from top edge (authoritative, drops in)            │
+│   - "slide-left": Slides from right edge (directional storytelling)         │
+│   - "slide-right": Slides from left edge (natural reading flow)             │
+│   - "zoom-in": Scales from 0.8→1 (impactful, draws attention)              │
+│   - "zoom-out": Scales from 1.2→1 (explosive, expands outward)             │
+│   - "sudden": No transition, instant appearance (shock, disruption)         │
+│   DEFAULT: "fade"                                                           │
+│   USAGE: Match to director's notes (e.g., "enters from left" = slide-right)│
+└─────────────────────────────────────────────────────────────────────────────┘
 
-{
-  "entryEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-in" | "zoom-out" | "sudden",
-  "entryDuration": 0.5-5.0 (seconds - how long entry animation lasts),
-  "entryDelay": 0-10.0 (seconds - delay before entry starts),
-  "exitEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-out" | "dissolve",
-  "exitDuration": 0.5-5.0 (seconds - how long exit animation lasts),
-  "backgroundColor": "#RRGGBB" (hex color for scene background),
-  "textColor": "#RRGGBB" (hex color for text),
-  "parallaxIntensity": 0.0-1.0 (0.3 is subtle, 0.7 is dramatic),
-  "animationDuration": 0.5-10.0 (seconds - how long main animation lasts),
-  "headingSize": "4xl" | "5xl" | "6xl" | "7xl" | "8xl",
-  "bodySize": "base" | "lg" | "xl" | "2xl",
-  "alignment": "left" | "center" | "right",
-  "fadeOnScroll": true | false (fade as user scrolls past),
-  "scaleOnScroll": true | false (scale/zoom on scroll),
-  "blurOnScroll": true | false (blur on scroll)
-}
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "entryDuration": NUMBER (seconds) - How long the entry animation takes     │
+│   RANGE: 0.5 to 5.0                                                         │
+│   RECOMMENDED VALUES:                                                       │
+│   - 0.5-0.8: Fast, energetic (action scenes, quick cuts)                    │
+│   - 1.0-1.5: Standard, smooth (most scenes)                                 │
+│   - 2.0-3.0: Slow, dramatic (hero scenes, emotional moments)                │
+│   - 3.5-5.0: Very slow, contemplative (rare, meditative)                    │
+│   DEFAULT: 1.2                                                              │
+│   USAGE: Shorter = faster pacing, longer = more dramatic                    │
+└─────────────────────────────────────────────────────────────────────────────┘
 
-EXAMPLE: If director says "text enters from left and exits to right" → use:
-{
-  "entryEffect": "slide-right",  // slide-right means coming FROM left
-  "entryDuration": 1.2,
-  "exitEffect": "slide-right",   // slide-right means exiting TO right
-  "exitDuration": 1.0
-}
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "entryDelay": NUMBER (seconds) - Delay before entry animation starts       │
+│   RANGE: 0.0 to 10.0                                                        │
+│   RECOMMENDED VALUES:                                                       │
+│   - 0.0: Immediate (default, most scenes)                                   │
+│   - 0.3-0.5: Brief pause (creates anticipation)                             │
+│   - 0.8-1.5: Noticeable delay (build tension)                               │
+│   - 2.0+: Long delay (rare, dramatic effect)                                │
+│   DEFAULT: 0.0                                                              │
+│   USAGE: Use sparingly; most scenes should be 0.0                           │
+└─────────────────────────────────────────────────────────────────────────────┘
 
-EXAMPLE: If director says "slow reveal, build anticipation" → use:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "exitEffect": STRING - How the scene exits the viewport                    │
+│   ALLOWED VALUES:                                                           │
+│   - "fade": Opacity 1→0 (smooth, universal)                                 │
+│   - "slide-up": Slides toward top edge (lifting away)                       │
+│   - "slide-down": Slides toward bottom edge (sinking, transitioning)        │
+│   - "slide-left": Slides toward left edge (exiting left)                    │
+│   - "slide-right": Slides toward right edge (exiting right)                 │
+│   - "zoom-out": Scales from 1→0.8 (receding into distance)                 │
+│   - "dissolve": Fades with blur (cinematic, elegant)                        │
+│   DEFAULT: "fade"                                                           │
+│   USAGE: Should complement next scene's entryEffect                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "exitDuration": NUMBER (seconds) - How long the exit animation takes       │
+│   RANGE: 0.5 to 5.0                                                         │
+│   RECOMMENDED VALUES:                                                       │
+│   - 0.5-0.8: Fast, snappy (quick transitions)                               │
+│   - 1.0-1.5: Standard, smooth (most scenes)                                 │
+│   - 2.0-3.0: Slow, lingering (emotional beats)                              │
+│   DEFAULT: 1.0                                                              │
+│   USAGE: Often slightly faster than entryDuration                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "backgroundColor": STRING (hex color) - Scene background color             │
+│   FORMAT: "#RRGGBB" (must include # prefix)                                 │
+│   RECOMMENDED PALETTES:                                                     │
+│   DARK THEMES (for text-heavy scenes):                                      │
+│   - "#0a0a0a": Near black (hero scenes, dramatic)                           │
+│   - "#1a1a1a": Dark charcoal (body text, readable)                          │
+│   - "#0f172a": Deep navy (professional, tech)                               │
+│   - "#1e293b": Slate blue (modern, sophisticated)                           │
+│   LIGHT THEMES (for image scenes):                                          │
+│   - "#f8fafc": Off-white (clean, minimal)                                   │
+│   - "#f1f5f9": Light gray (soft, elegant)                                   │
+│   - "#e2e8f0": Medium gray (neutral, balanced)                              │
+│   ACCENT THEMES (for special scenes):                                       │
+│   - "#7c3aed": Purple (creative, bold)                                      │
+│   - "#2563eb": Blue (trust, corporate)                                      │
+│   - "#dc2626": Red (urgent, attention)                                      │
+│   DEFAULT: "#0a0a0a"                                                        │
+│   USAGE: Dark for text, light for media, match brand colors                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "textColor": STRING (hex color) - Text color for the scene                 │
+│   FORMAT: "#RRGGBB" (must include # prefix)                                 │
+│   RECOMMENDED COLORS:                                                       │
+│   FOR DARK BACKGROUNDS:                                                     │
+│   - "#ffffff": Pure white (maximum contrast)                                │
+│   - "#f8fafc": Off-white (softer, less harsh)                               │
+│   - "#e2e8f0": Light gray (subtle, elegant)                                 │
+│   FOR LIGHT BACKGROUNDS:                                                    │
+│   - "#0a0a0a": Near black (maximum contrast)                                │
+│   - "#1a1a1a": Dark charcoal (readable, professional)                       │
+│   - "#334155": Slate gray (softer, modern)                                  │
+│   DEFAULT: "#ffffff"                                                        │
+│   USAGE: Ensure WCAG AA contrast (4.5:1 minimum)                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "parallaxIntensity": NUMBER (0.0 to 1.0) - Depth of parallax effect        │
+│   RANGE: 0.0 (no parallax) to 1.0 (extreme parallax)                        │
+│   RECOMMENDED VALUES:                                                       │
+│   - 0.0: No parallax (static, text scenes)                                  │
+│   - 0.2-0.3: Subtle (gentle depth, professional)                            │
+│   - 0.4-0.5: Moderate (noticeable, engaging)                                │
+│   - 0.6-0.7: Strong (dramatic, impactful)                                   │
+│   - 0.8-1.0: Extreme (rare, showcase moments)                               │
+│   DEFAULT: 0.3                                                              │
+│   USAGE: Higher for image/video scenes, lower for text                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "animationDuration": NUMBER (seconds) - Main animation loop duration       │
+│   RANGE: 0.5 to 10.0                                                        │
+│   RECOMMENDED VALUES:                                                       │
+│   - 1.0-2.0: Quick, energetic (most scenes)                                 │
+│   - 3.0-5.0: Moderate, smooth (hero scenes)                                 │
+│   - 6.0-10.0: Slow, ambient (background effects)                            │
+│   DEFAULT: 2.0                                                              │
+│   USAGE: Controls ongoing animations within the scene                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "headingSize": STRING - Font size for headings                             │
+│   ALLOWED VALUES:                                                           │
+│   - "4xl": 36px / 2.25rem (small headings, subheadings)                     │
+│   - "5xl": 48px / 3rem (standard headings)                                  │
+│   - "6xl": 60px / 3.75rem (large headings, impact)                          │
+│   - "7xl": 72px / 4.5rem (hero headings, dramatic)                          │
+│   - "8xl": 96px / 6rem (XXL headings, rare use)                             │
+│   DEFAULT: "6xl"                                                            │
+│   USAGE: Bigger = more impact, smaller = more content                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "bodySize": STRING - Font size for body text                               │
+│   ALLOWED VALUES:                                                           │
+│   - "base": 16px / 1rem (standard, readable)                                │
+│   - "lg": 18px / 1.125rem (slightly larger, comfortable)                    │
+│   - "xl": 20px / 1.25rem (large, emphasis)                                  │
+│   - "2xl": 24px / 1.5rem (very large, rare use)                             │
+│   DEFAULT: "lg"                                                             │
+│   USAGE: Larger = easier to read, smaller = more content                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "alignment": STRING - Text alignment                                       │
+│   ALLOWED VALUES:                                                           │
+│   - "left": Left-aligned (natural, readable)                                │
+│   - "center": Center-aligned (hero scenes, symmetry)                        │
+│   - "right": Right-aligned (rare, artistic)                                 │
+│   DEFAULT: "center"                                                         │
+│   USAGE: Center for hero/image scenes, left for text-heavy                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+OPTIONAL SCROLL EFFECTS (set true/false):
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "fadeOnScroll": BOOLEAN - Fade opacity as user scrolls past                │
+│   - true: Element fades out as viewport scrolls past                        │
+│   - false: Element maintains opacity                                        │
+│   DEFAULT: false                                                            │
+│   USAGE: Creates smooth transitions between scenes                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "scaleOnScroll": BOOLEAN - Scale/zoom as user scrolls                      │
+│   - true: Element scales during scroll (zoom effect)                        │
+│   - false: Element maintains size                                           │
+│   DEFAULT: false                                                            │
+│   USAGE: Adds depth and motion to image scenes                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ "blurOnScroll": BOOLEAN - Blur as user scrolls past                        │
+│   - true: Element blurs as viewport scrolls past                            │
+│   - false: Element maintains sharpness                                      │
+│   DEFAULT: false                                                            │
+│   USAGE: Cinematic depth-of-field effect                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+COMPLETE EXAMPLE CONFIGS:
+
+Example 1: Hero Text Scene (Dramatic, Slow Entry)
 {
   "entryEffect": "fade",
   "entryDuration": 2.5,
-  "entryDelay": 0.5
+  "entryDelay": 0.0,
+  "exitEffect": "fade",
+  "exitDuration": 1.5,
+  "backgroundColor": "#0a0a0a",
+  "textColor": "#ffffff",
+  "parallaxIntensity": 0.0,
+  "animationDuration": 3.0,
+  "headingSize": "7xl",
+  "bodySize": "xl",
+  "alignment": "center",
+  "fadeOnScroll": false,
+  "scaleOnScroll": false,
+  "blurOnScroll": false
 }
 
-EXAMPLE: If director says "zooms in dramatically during scroll, crossfades to next" → use:
+Example 2: Image Showcase (Parallax, Zoom)
 {
   "entryEffect": "zoom-in",
   "entryDuration": 1.5,
-  "scaleOnScroll": true,
+  "entryDelay": 0.0,
   "exitEffect": "dissolve",
-  "exitDuration": 0.8
+  "exitDuration": 1.2,
+  "backgroundColor": "#1a1a1a",
+  "textColor": "#f8fafc",
+  "parallaxIntensity": 0.5,
+  "animationDuration": 4.0,
+  "headingSize": "5xl",
+  "bodySize": "lg",
+  "alignment": "center",
+  "fadeOnScroll": true,
+  "scaleOnScroll": true,
+  "blurOnScroll": false
 }
 
+Example 3: Split Scene (Text + Media, Slide In)
+{
+  "entryEffect": "slide-right",
+  "entryDuration": 1.2,
+  "entryDelay": 0.0,
+  "exitEffect": "slide-left",
+  "exitDuration": 1.0,
+  "backgroundColor": "#0f172a",
+  "textColor": "#ffffff",
+  "parallaxIntensity": 0.3,
+  "animationDuration": 2.0,
+  "headingSize": "6xl",
+  "bodySize": "lg",
+  "alignment": "left",
+  "fadeOnScroll": false,
+  "scaleOnScroll": false,
+  "blurOnScroll": false
+}
+
+Example 4: Quote Scene (Subtle, Elegant)
+{
+  "entryEffect": "fade",
+  "entryDuration": 1.8,
+  "entryDelay": 0.3,
+  "exitEffect": "fade",
+  "exitDuration": 1.5,
+  "backgroundColor": "#1e293b",
+  "textColor": "#e2e8f0",
+  "parallaxIntensity": 0.2,
+  "animationDuration": 3.0,
+  "headingSize": "5xl",
+  "bodySize": "xl",
+  "alignment": "center",
+  "fadeOnScroll": true,
+  "scaleOnScroll": false,
+  "blurOnScroll": false
+}
+
+DIRECTOR'S NOTES INTERPRETATION MATRIX:
+Use this to translate natural language into technical configs:
+
+SPEED/PACING:
+- "fast" / "quick" / "snappy" → entryDuration: 0.8, exitDuration: 0.6
+- "normal" / "smooth" / "standard" → entryDuration: 1.2, exitDuration: 1.0
+- "slow" / "dramatic" / "deliberate" → entryDuration: 2.5, exitDuration: 1.8
+- "very slow" / "contemplative" → entryDuration: 4.0, exitDuration: 3.0
+
+DIRECTION:
+- "enters from left" → entryEffect: "slide-right"
+- "enters from right" → entryEffect: "slide-left"
+- "enters from top" → entryEffect: "slide-down"
+- "enters from bottom" → entryEffect: "slide-up"
+- "zooms in" / "grows" → entryEffect: "zoom-in" + scaleOnScroll: true
+- "appears suddenly" → entryEffect: "sudden"
+
+EXIT DIRECTION:
+- "exits to left" → exitEffect: "slide-left"
+- "exits to right" → exitEffect: "slide-right"
+- "exits upward" → exitEffect: "slide-up"
+- "exits downward" → exitEffect: "slide-down"
+- "fades away" → exitEffect: "fade"
+- "crossfades" / "dissolves" → exitEffect: "dissolve"
+
+MOOD/ATMOSPHERE:
+- "dramatic" / "intense" → parallaxIntensity: 0.6-0.8, entryDuration: 2.5+
+- "subtle" / "gentle" → parallaxIntensity: 0.2-0.3, entryDuration: 1.2-1.5
+- "energetic" / "dynamic" → scaleOnScroll: true, entryDuration: 0.8-1.0
+- "elegant" / "refined" → exitEffect: "dissolve", fadeOnScroll: true
+- "cinematic" → blurOnScroll: true, parallaxIntensity: 0.5+
+
+VISUAL STYLE:
+- "dark" / "moody" → backgroundColor: "#0a0a0a" or "#1a1a1a"
+- "light" / "bright" → backgroundColor: "#f8fafc" or "#f1f5f9"
+- "bold" / "high contrast" → textColor: "#ffffff", backgroundColor: "#0a0a0a"
+- "minimal" / "clean" → alignment: "center", backgroundColor: "#f8fafc"
+
 TRANSITION DESIGN RULES:
-1. Fast entries (0.8-1.2s) for energy, slow entries (2.0-3.0s) for drama
-2. Match exit of Scene N with entry of Scene N+1 (fade-out → fade-in, slide-down → slide-up)
-3. Use "sudden" entry sparingly (only for shocking reveals)
-4. Parallax works best on image/video scenes (0.3-0.5 intensity)
-5. Dark backgrounds (#0a0a0a, #1a1a1a) for text scenes, lighter for images
-6. Create rhythm: fast → slow → fast (like music)
-7. Use "dissolve" exit for smooth transitions to next scene
+1. CONTINUITY: Exit effect of Scene N should complement entry effect of Scene N+1
+   - fade → fade (smooth)
+   - slide-up → slide-up (maintaining direction)
+   - dissolve → fade (cinematic transition)
 
-INTERPRETING DIRECTOR'S NOTES:
-- "enters from left" → entryEffect: "slide-right" (element slides from left edge)
-- "exits to right" → exitEffect: "slide-right" (element slides toward right edge)
-- "zooms in" → entryEffect: "zoom-in" + scaleOnScroll: true
-- "crossfade" / "dissolve" → exitEffect: "dissolve"
-- "slow reveal" → entryDuration: 2.0-3.0
-- "quick transition" → entryDuration: 0.5-0.8
-- "build anticipation" → entryDelay: 0.5-1.0
-- "dramatic" → parallaxIntensity: 0.6-0.8
-- "subtle" → parallaxIntensity: 0.2-0.4
+2. PACING RHYTHM: Vary speeds to create musical flow
+   - Hero (slow 2.5s) → Content (medium 1.2s) → Image (fast 0.8s) → Quote (slow 1.8s)
 
-PACING GUIDELINES:
-- Hero/opening scene: Slow, dramatic entry (2.5s fade-in)
-- Middle scenes: Moderate pace (1.0-1.5s transitions)
-- Climax scene: Fast, energetic (0.8s zoom-in)
-- Closing scene: Slow, reflective (2.0s fade-out)
+3. PARALLAX DISTRIBUTION:
+   - Text scenes: 0.0-0.2 (minimal or none)
+   - Image scenes: 0.4-0.6 (moderate to strong)
+   - Video/Fullscreen: 0.3-0.5 (moderate)
+
+4. COLOR PROGRESSION: Gradually shift backgrounds across scenes
+   - Start dark (#0a0a0a) → Mid-tone (#1e293b) → Lighter (#334155) → Back to dark
+
+5. SCROLL EFFECTS USAGE:
+   - fadeOnScroll: Use on 50% of scenes for smooth transitions
+   - scaleOnScroll: Use sparingly on image/video scenes (20-30%)
+   - blurOnScroll: Use rarely for dramatic effect (10% of scenes)
 
 ASSET SELECTION STRATEGY:
-1. Start with a strong headline (use first available headline text)
-2. Build narrative arc (problem → solution → proof)
-3. Use quotes strategically (after showing value, before CTA)
-4. Images/videos should support the text narrative
-5. Gallery scenes work best in middle (show process/results)
+1. START STRONG: First scene should use the most impactful headline
+2. BUILD NARRATIVE: Use texts in logical order (problem → solution → proof)
+3. VISUAL SUPPORT: Place images/videos AFTER related text scenes
+4. SOCIAL PROOF: Insert quotes after demonstrating value
+5. VARIETY: Alternate between text-heavy and media-heavy scenes
 
-SCENE COUNT:
-Create 4-8 scenes for a complete story. More scenes = more scroll depth = longer experience.
+SCENE COUNT GUIDELINES:
+- 4-5 scenes: Quick story (2-3 min scroll)
+- 6-7 scenes: Standard portfolio (3-5 min scroll)
+- 8+ scenes: Epic narrative (5+ min scroll)
 
 OUTPUT REQUIREMENTS:
-1. ONLY reference asset IDs from the whitelist above
-2. DO NOT create new text, images, or content
-3. DO NOT fabricate asset IDs
-4. EVERY scene MUST have a complete "director" config
-5. Ensure smooth transitions between ALL scenes
-6. Timings in SECONDS (not milliseconds)
-7. Valid hex colors only (#RRGGBB format)
+1. EVERY scene MUST have ALL director config fields (no omissions)
+2. ONLY use asset IDs from the whitelist: ${validAssetIds.join(', ')}
+3. DO NOT fabricate new content or IDs
+4. Timings MUST be in SECONDS (not milliseconds)
+5. Colors MUST be valid hex format (#RRGGBB)
+6. Ensure smooth narrative flow across all scenes
+7. Create complementary transitions between consecutive scenes
 
-Generate the scene sequence now with COMPLETE director configs for smooth transitions.`;
+Generate the scene sequence now with COMPLETE director configs.`;
 }
 
 interface GeneratedScene {
