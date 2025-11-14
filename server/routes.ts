@@ -50,6 +50,14 @@ import { sendGmailEmail } from "./utils/gmail-client";
 import { sendLeadNotificationEmail } from "./utils/lead-notifications";
 import { db } from "./db";
 
+// Define default director configuration for new scenes
+const DEFAULT_DIRECTOR_CONFIG = {
+  timing: 5,
+  effects: "fade",
+  colors: { background: "#000000", text: "#FFFFFF" },
+  transition: "fade",
+};
+
 // Configure multer for memory storage (files will be uploaded to Cloudinary)
 const pdfUpload = multer({
   storage: multer.memoryStorage(),
@@ -120,7 +128,7 @@ async function generateSlug(
   // Check for uniqueness and append random suffix if needed
   while (attempt < maxAttempts) {
     const existing = await storage.getAssessmentConfigBySlug(tenantId, slug);
-    
+
     // If no existing config found, or if it's the same one we're updating, slug is unique
     if (!existing || (excludeId && existing.id === excludeId)) {
       return slug;
@@ -631,7 +639,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate email formats
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const invalidEmails = emails.filter((email: string) => !emailRegex.test(email));
-      
+
       if (invalidEmails.length > 0) {
         return res.status(400).json({
           error: "Invalid email format",
@@ -692,63 +700,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     </div>
     <div class="content">
       <p>Here's your personalized ROI analysis for a guaranteed sales engine:</p>
-      
+
       <div class="metric">
         <div class="metric-label">Average LTV</div>
         <div class="metric-value">${formatCurrency(ltv)}</div>
       </div>
-      
+
       <div class="metric">
         <div class="metric-label">Your Close Rate from Qualified Meetings</div>
         <div class="metric-value">${closeRate}%</div>
       </div>
-      
+
       <div class="metric">
         <div class="metric-label">Selected Engine</div>
         <div class="metric-value">${engineName}</div>
       </div>
-      
+
       <div class="metric">
         <div class="metric-label">Monthly Investment</div>
         <div class="metric-value">${formatCurrency(monthlyInvestment)}</div>
       </div>
-      
+
       <div class="metric">
         <div class="metric-label">Guaranteed SQOs per Month</div>
         <div class="metric-value">${monthlySQOs} meetings</div>
       </div>
-      
+
       <div class="metric">
         <div class="metric-label">Cost per Guaranteed Meeting</div>
         <div class="metric-value">${costPerMeeting > 0 ? formatCurrency(costPerMeeting) : 'N/A'}</div>
       </div>
-      
+
       <div class="metric">
         <div class="metric-label">Projected New Deals per Month</div>
         <div class="metric-value">${formatNumber(projectedDealsPerMonth, 1)} deals</div>
       </div>
-      
+
       <div class="metric">
         <div class="metric-label">New Revenue Booked Per Month</div>
         <div class="metric-value">${projectedLTVPerMonth > 0 ? formatCurrency(projectedLTVPerMonth) : '$0'}</div>
       </div>
-      
+
       <div class="metric">
         <div class="metric-label">New Revenue Booked Per Year</div>
         <div class="metric-value">${projectedLTVPerYear > 0 ? formatCurrency(projectedLTVPerYear) : '$0'}</div>
         <p style="margin: 5px 0 0 0; font-size: 12px; color: #6b7280;">Based on ${annualSQOs} meetings/year*<br><em>*December excluded for training</em></p>
       </div>
-      
+
       <div class="highlight">
         <div class="metric-label" style="color: rgba(255,255,255,0.9);">Your Monthly ROI</div>
         <div class="highlight-value">${monthlyROI > 0 ? `${formatNumber(monthlyROI, 0)}x` : '0x'}</div>
         <p style="margin: 10px 0 0 0; font-size: 14px;">Return on Investment Multiplier</p>
       </div>
-      
+
       <div style="text-align: center;">
         <a href="https://revenueparty.com/roi-calculator" class="cta">View Full Calculator</a>
       </div>
-      
+
       <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px;">
         <strong>What This Means:</strong> For every dollar invested in your GTM Engine, you're projected to generate ${monthlyROI > 0 ? `${formatNumber(monthlyROI, 1)}x` : '0x'} in client lifetime value. This assumes a ${closeRate}% close rate from qualified meetings and an average client LTV of ${formatCurrency(ltv)}.
       </p>
@@ -805,7 +813,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userAgent: req.headers['user-agent'],
         ipAddress: req.ip,
       });
-      
+
       // Send notification email to all users (don't await - run in background)
       sendLeadNotificationEmail(lead).catch(err => 
         console.error("Failed to send lead notification:", err)
@@ -858,7 +866,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userAgent: req.headers['user-agent'],
         ipAddress: req.ip,
       });
-      
+
       // Send notification email to all users (don't await - run in background)
       sendLeadNotificationEmail(lead).catch(err => 
         console.error("Failed to send lead notification:", err)
@@ -896,7 +904,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const leads = await storage.getAllLeads(req.tenantId, filters);
-      
+
       return res.json({
         success: true,
         count: leads.length,
@@ -926,7 +934,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { type, status, search } = req.query;
       const tenantId = req.tenantId;
-      
+
       // Fetch all content types in parallel
       const [blogs, videos, testimonials, portfolios, jobs] = await Promise.all([
         storage.getAllBlogPosts(tenantId, false), // Get all, filter later
@@ -935,7 +943,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storage.getAllProjects(tenantId),
         storage.getAllJobPostings(tenantId, false),
       ]);
-      
+
       // Helper function to calculate status based on timestamps
       const calculateStatus = (published: boolean, scheduledFor: Date | null | undefined, publishedAt: Date | null | undefined): 'published' | 'draft' | 'scheduled' => {
         if (scheduledFor && new Date(scheduledFor) > new Date()) {
@@ -946,7 +954,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         return 'draft';
       };
-      
+
       // Map each content type to unified ContentSummary format
       const content = [
         ...blogs.map(b => ({
@@ -1010,14 +1018,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           author: j.department || '',
         })),
       ];
-      
+
       // Apply filters
       let filtered = content;
-      
+
       if (type && type !== 'all') {
         filtered = filtered.filter(item => item.type === type);
       }
-      
+
       if (status && status !== 'all') {
         if (status === 'scheduled') {
           filtered = filtered.filter(item => 
@@ -1027,7 +1035,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           filtered = filtered.filter(item => item.status === status);
         }
       }
-      
+
       if (search && typeof search === 'string') {
         const searchLower = search.toLowerCase();
         filtered = filtered.filter(item => 
@@ -1036,14 +1044,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           (item.author && item.author.toLowerCase().includes(searchLower))
         );
       }
-      
+
       // Sort by publishedAt descending (most recent first), with fallback to createdAt for drafts
       filtered.sort((a, b) => {
         const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : (a.scheduledFor ? new Date(a.scheduledFor).getTime() : 0);
         const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : (b.scheduledFor ? new Date(b.scheduledFor).getTime() : 0);
         return dateB - dateA;
       });
-      
+
       return res.json(filtered);
     } catch (error) {
       console.error("Error fetching unified content:", error);
@@ -1319,7 +1327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!existing) {
         return res.status(404).json({ error: "Testimonial not found" });
       }
-      
+
       const result = insertTestimonialSchema.partial().safeParse(req.body);
       if (!result.success) {
         const validationError = fromZodError(result.error);
@@ -1328,12 +1336,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      
+
       // Strip undefined keys while preserving null (allows clearing optional fields)
       const updateData = Object.fromEntries(
         Object.entries(result.data).filter(([_, value]) => value !== undefined)
       );
-      
+
       const testimonial = await storage.updateTestimonial(req.tenantId, req.params.id, updateData);
       return res.json(testimonial);
     } catch (error) {
@@ -1348,7 +1356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!existing) {
         return res.status(404).json({ error: "Testimonial not found" });
       }
-      
+
       await storage.deleteTestimonial(req.tenantId, req.params.id);
       return res.status(204).send();
     } catch (error) {
@@ -1363,7 +1371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!existing) {
         return res.status(404).json({ error: "Testimonial not found" });
       }
-      
+
       const { featured } = req.body;
       if (typeof featured !== 'boolean') {
         return res.status(400).json({ error: "featured must be a boolean" });
@@ -1541,12 +1549,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      
+
       // Strip undefined keys while preserving null (allows clearing optional fields)
       const updateData = Object.fromEntries(
         Object.entries(result.data).filter(([_, value]) => value !== undefined)
       );
-      
+
       const project = await storage.updateProject(req.tenantId, req.params.id, updateData);
       if (!project) {
         return res.status(404).json({ error: "Project not found or access denied" });
@@ -1662,7 +1670,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Lazy-load Gemini client to avoid startup errors if not configured
       const { generateSceneWithGemini } = await import("./utils/gemini-client");
-      
+
       const sceneConfig = await generateSceneWithGemini(
         prompt,
         sceneType,
@@ -1679,7 +1687,167 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Portfolio Generation endpoint (full portfolio orchestration from content catalog)
+  // Enhanced AI Portfolio Generation endpoint (scene-by-scene with per-scene AI prompts)
+  app.post("/api/portfolio/generate-enhanced", requireAuth, async (req, res) => {
+    try {
+      const requestSchema = z.object({
+        projectId: z.string().nullable(),
+        newProjectTitle: z.string().optional(),
+        newProjectSlug: z.string().optional(),
+        newProjectClient: z.string().optional(),
+        scenes: z.array(z.object({
+          id: z.string(),
+          sceneType: z.enum(["text", "image", "video", "split", "gallery", "quote", "fullscreen"]),
+          aiPrompt: z.string().min(1, "AI prompt required for each scene"),
+          content: z.object({
+            heading: z.string().optional(),
+            body: z.string().optional(),
+            url: z.string().optional(),
+            media: z.string().optional(),
+            quote: z.string().optional(),
+            author: z.string().optional(),
+            role: z.string().optional(),
+            images: z.string().optional(),
+            mediaType: z.enum(["image", "video"]).optional(),
+          }),
+          director: z.any(),
+        })).min(1, "At least one scene required"),
+        portfolioAiPrompt: z.string().min(1, "Portfolio orchestration prompt required"),
+      });
+
+      const result = requestSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt } = result.data;
+
+      console.log(`[Portfolio Enhanced] Generating ${scenes.length} scenes with per-scene AI prompts`);
+
+      // Lazy-load Gemini client
+      const { generateSceneWithGemini } = await import("./utils/gemini-client");
+
+      // Generate each scene with AI
+      const enhancedScenes = [];
+      for (let i = 0; i < scenes.length; i++) {
+        const scene = scenes[i];
+        console.log(`[Portfolio Enhanced] Processing scene ${i + 1}: ${scene.sceneType}`);
+
+        // Build system instructions from portfolio-level prompt
+        const systemInstructions = `Portfolio Context: ${portfolioAiPrompt}\n\nThis is scene ${i + 1} of ${scenes.length} in the portfolio.`;
+
+        // Generate AI-enhanced scene config
+        const aiEnhanced = await generateSceneWithGemini(
+          scene.aiPrompt,
+          scene.sceneType,
+          systemInstructions
+        );
+
+        // Merge user-provided content with AI enhancements
+        const mergedContent: any = { ...aiEnhanced };
+
+        // Override with user-provided values if present
+        if (scene.content.heading) mergedContent.headline = scene.content.heading;
+        if (scene.content.body) mergedContent.bodyText = scene.content.body;
+        if (scene.content.url) mergedContent.mediaUrl = scene.content.url;
+        if (scene.content.media) mergedContent.mediaUrl = scene.content.media;
+        if (scene.content.quote) mergedContent.quote = scene.content.quote;
+        if (scene.content.author) mergedContent.author = scene.content.author;
+
+        // Build final scene config
+        const sceneConfig: any = {
+          type: aiEnhanced.sceneType || scene.sceneType,
+          content: {},
+        };
+
+        // Map content based on scene type
+        if (sceneConfig.type === "text") {
+          sceneConfig.content.heading = mergedContent.headline || mergedContent.heading || "Untitled";
+          sceneConfig.content.body = mergedContent.bodyText || mergedContent.body || "";
+        } else if (sceneConfig.type === "image") {
+          sceneConfig.content.url = mergedContent.mediaUrl || mergedContent.url || "";
+          sceneConfig.content.alt = mergedContent.alt || "Image";
+        } else if (sceneConfig.type === "quote") {
+          sceneConfig.content.quote = mergedContent.quote || "";
+          sceneConfig.content.author = mergedContent.author || "";
+          sceneConfig.content.role = scene.content.role || mergedContent.role;
+        }
+
+        // Merge director config (user settings take precedence)
+        sceneConfig.director = {
+          ...DEFAULT_DIRECTOR_CONFIG,
+          ...(aiEnhanced.director || {}),
+          ...(scene.director || {}),
+        };
+
+        enhancedScenes.push(sceneConfig);
+      }
+
+      console.log(`[Portfolio Enhanced] All ${enhancedScenes.length} scenes enhanced with AI`);
+
+      // Create or update project
+      const result_data = await db.transaction(async (tx) => {
+        let finalProjectId: string;
+
+        if (projectId) {
+          // Add to existing project
+          finalProjectId = projectId;
+          console.log(`[Portfolio Enhanced] Adding scenes to existing project ${finalProjectId}`);
+        } else {
+          // Create new project
+          if (!newProjectTitle || !newProjectSlug || !newProjectClient) {
+            throw new Error("New project requires title, slug, and client");
+          }
+
+          const [newProject] = await tx.insert(projects).values({
+            tenantId: req.tenantId,
+            title: newProjectTitle,
+            slug: newProjectSlug,
+            client: newProjectClient,
+            description: `AI-generated portfolio with ${enhancedScenes.length} scenes`,
+            thumbnail: "",
+            status: "draft",
+          }).returning();
+
+          finalProjectId = newProject.id;
+          console.log(`[Portfolio Enhanced] Created new project ${finalProjectId}`);
+        }
+
+        // Create all scenes
+        const createdScenes = [];
+        for (let i = 0; i < enhancedScenes.length; i++) {
+          const [scene] = await tx.insert(projectScenes).values({
+            projectId: finalProjectId,
+            sceneConfig: enhancedScenes[i],
+            order: i,
+          }).returning();
+          createdScenes.push(scene);
+        }
+
+        console.log(`[Portfolio Enhanced] Created ${createdScenes.length} scenes`);
+
+        return {
+          projectId: finalProjectId,
+          scenesCreated: createdScenes.length,
+          scenes: createdScenes,
+        };
+      });
+
+      return res.status(201).json(result_data);
+    } catch (error) {
+      console.error("Error generating enhanced portfolio:", error);
+      return res.status(500).json({
+        error: "Failed to generate portfolio",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // AI Portfolio Generation endpoint (orchestrates entire portfolio from content catalog)
   app.post("/api/portfolio/generate-with-ai", requireAuth, async (req, res) => {
     try {
       // Validate request
@@ -1717,7 +1885,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Call AI to orchestrate scenes
       console.log(`[Portfolio AI] Generating scenes for ${catalog.texts.length} texts, ${catalog.images.length} images, ${catalog.videos.length} videos, ${catalog.quotes.length} quotes`);
-      
+
       let aiResult;
       try {
         aiResult = await generatePortfolioWithAI(catalog);
@@ -1747,13 +1915,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result_data = await db.transaction(async (tx) => {
         // Determine or create project
         let finalProjectId: string;
-        
+
         if (projectId && projectId !== null && projectId !== '') {
           // Verify existing project access
           const [existingProject] = await tx.select()
             .from(projects)
             .where(and(eq(projects.tenantId, req.tenantId), eq(projects.id, projectId)));
-          
+
           if (!existingProject) {
             throw new Error('Project not found or access denied');
           }
@@ -1829,24 +1997,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const sceneType = req.query.sceneType as string | undefined;
       const scope = (req.query.scope as string) || 'global';
-      
+
       // Validate scope against schema constraints
       if (scope !== 'global' && scope !== 'tenant') {
         return res.status(400).json({ 
           error: "Invalid scope parameter. Must be 'global' or 'tenant'" 
         });
       }
-      
+
       const template = await storage.getDefaultPromptTemplate(
         req.tenantId,
         sceneType === 'null' ? null : sceneType,
         scope
       );
-      
+
       if (!template) {
         return res.status(404).json({ error: "Default template not found" });
       }
-      
+
       return res.json(template);
     } catch (error) {
       console.error("Error fetching default prompt template:", error);
@@ -1877,11 +2045,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      
+
       if (!req.session.userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
-      
+
       const template = await storage.createPromptTemplate(
         req.tenantId,
         req.session.userId,
@@ -1904,11 +2072,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      
+
       if (!req.session.userId) {
         return res.status(401).json({ error: "Unauthorized" });
       }
-      
+
       const template = await storage.updatePromptTemplate(
         req.tenantId,
         req.params.id,
@@ -1999,7 +2167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/branding/projects", async (req, res) => {
     try {
       const projects = await storage.getAllProjects(req.tenantId);
-      
+
       // Map database format to frontend-expected format
       const mapped = projects.map(p => ({
         id: p.id,
@@ -2017,7 +2185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           author: p.testimonialAuthor
         } : undefined
       }));
-      
+
       return res.json(mapped);
     } catch (error) {
       console.error("Error fetching all projects:", error);
@@ -2089,7 +2257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const leadCapture = await storage.createLeadCapture(req.tenantId, result.data);
-      
+
       // Also save to unified leads table
       const lead = await storage.createLead(req.tenantId, {
         email: result.data.email,
@@ -2101,7 +2269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userAgent: req.headers['user-agent'],
         ipAddress: req.ip,
       });
-      
+
       // Send notification email to all users (don't await - run in background)
       sendLeadNotificationEmail(lead).catch(err => 
         console.error("Failed to send lead notification:", err)
@@ -2150,7 +2318,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const capture = await storage.createBlueprintCapture(result.data);
-      
+
       // Also save to unified leads table
       const lead = await storage.createLead(req.tenantId, {
         email: result.data.email,
@@ -2163,7 +2331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userAgent: req.headers['user-agent'],
         ipAddress: req.ip,
       });
-      
+
       // Send notification email to all users (don't await - run in background)
       sendLeadNotificationEmail(lead).catch(err => 
         console.error("Failed to send lead notification:", err)
@@ -2338,7 +2506,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         bucket,
         completed: true,
       });
-      
+
       // If email (q20) is provided, save to unified leads table
       if (submittedData.q20) {
         const lead = await storage.createLead(req.tenantId, {
@@ -2353,7 +2521,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userAgent: req.headers['user-agent'],
           ipAddress: req.ip,
         });
-        
+
         // Send notification email to all users (don't await - run in background)
         sendLeadNotificationEmail(lead).catch(err => 
           console.error("Failed to send lead notification:", err)
@@ -2507,7 +2675,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       let updateData = result.data;
-      
+
       // Auto-generate slug if explicitly set to empty or if title is being updated without a slug
       if (updateData.slug !== undefined && (!updateData.slug || updateData.slug.trim() === '')) {
         // If slug is being cleared, we need a title to generate a new one
@@ -2515,7 +2683,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!existingConfig) {
           return res.status(404).json({ error: "Assessment config not found" });
         }
-        
+
         const titleForSlug = updateData.title || existingConfig.title;
         updateData.slug = await generateSlug(titleForSlug, req.tenantId, storage, req.params.id);
       }
@@ -2615,10 +2783,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { questionId } = req.params;
       console.log('[API] Fetching answers for questionId:', questionId);
-      
+
       const answers = await storage.getAnswersByQuestionId(questionId);
       console.log('[API] Found', answers.length, 'answers for questionId:', questionId);
-      
+
       return res.json(answers);
     } catch (error) {
       console.error("Error fetching answers:", error);
@@ -2942,7 +3110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Zone conflict validation for inline campaigns
       if (campaignData.displayAs === "inline" && campaignData.targetZone) {
         const allCampaigns = await storage.getAllCampaigns(req.tenantId);
-        
+
         for (const existingCampaign of allCampaigns) {
           // Skip if not active or not inline or no target zone
           if (!existingCampaign.isActive || 
@@ -2956,7 +3124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Check for overlapping pages
             const existingPages = existingCampaign.targetPages || [];
             const newPages = campaignData.targetPages || [];
-            
+
             // If either campaign targets all pages (empty array), there's a conflict
             // Or if there are any overlapping pages
             const hasOverlap = existingPages.length === 0 || 
@@ -3000,7 +3168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Zone conflict validation for inline campaigns
       if (campaignData.displayAs === "inline" && campaignData.targetZone) {
         const allCampaigns = await storage.getAllCampaigns(req.tenantId);
-        
+
         for (const existingCampaign of allCampaigns) {
           // Skip the campaign being updated
           if (existingCampaign.id === req.params.id) {
@@ -3019,7 +3187,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Check for overlapping pages
             const existingPages = existingCampaign.targetPages || [];
             const newPages = campaignData.targetPages || [];
-            
+
             // If either campaign targets all pages (empty array), there's a conflict
             // Or if there are any overlapping pages
             const hasOverlap = existingPages.length === 0 || 
@@ -3091,12 +3259,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Configurable Assessment Response endpoints
-  
+
   // POST /api/configurable-assessments/:id/submit - Submit assessment answers
   app.post("/api/configurable-assessments/:id/submit", async (req, res) => {
     try {
       const assessmentId = req.params.id;
-      
+
       // Get the assessment config
       const config = await storage.getAssessmentConfigById(req.tenantId, assessmentId);
       if (!config) {
@@ -3174,7 +3342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const response = await storage.createConfigurableResponse(req.tenantId, responseData);
-      
+
       // If email is provided (PRE_GATED or UNGATED with optional email), save to unified leads table
       if (email) {
         const lead = await storage.createLead(req.tenantId, {
@@ -3192,7 +3360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userAgent: req.headers['user-agent'],
           ipAddress: req.ip,
         });
-        
+
         // Send notification email to all users (don't await - run in background)
         sendLeadNotificationEmail(lead).catch(err => 
           console.error("Failed to send lead notification:", err)
@@ -3214,7 +3382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Email was required in submission, generate result URL and return result
         const resultUrl = `/assessments/results/${sessionId}`;
         await storage.updateConfigurableResponse(req.tenantId, sessionId, { resultUrl });
-        
+
         return res.json({
           sessionId,
           resultUrl,
@@ -3279,7 +3447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           resultUrl,
         }
       );
-      
+
       // Save to unified leads table
       const lead = await storage.createLead(req.tenantId, {
         email,
@@ -3296,7 +3464,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userAgent: req.headers['user-agent'],
         ipAddress: req.ip,
       });
-      
+
       // Send notification email to all users (don't await - run in background)
       sendLeadNotificationEmail(lead).catch(err => 
         console.error("Failed to send lead notification:", err)
@@ -3424,11 +3592,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/events", requireAuth, async (req, res) => {
     try {
       const filters: { campaignId?: string; eventType?: string } = {};
-      
+
       if (req.query.campaignId && typeof req.query.campaignId === 'string') {
         filters.campaignId = req.query.campaignId;
       }
-      
+
       if (req.query.eventType && typeof req.query.eventType === 'string') {
         filters.eventType = req.query.eventType;
       }

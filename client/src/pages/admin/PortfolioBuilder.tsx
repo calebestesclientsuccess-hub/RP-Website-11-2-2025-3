@@ -9,10 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Upload, X, Plus, Sparkles, Loader2 } from "lucide-react";
+import { Plus, X, Sparkles, Loader2, Edit, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Project } from "@shared/schema";
 import {
@@ -22,40 +21,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { DirectorConfigForm } from "@/components/DirectorConfigForm";
+import { DEFAULT_DIRECTOR_CONFIG } from "@shared/schema";
+import { useForm } from "react-hook-form";
 
-// Content catalog types
-interface TextAsset {
+interface SceneBuilder {
   id: string;
-  type: "headline" | "paragraph" | "subheading";
-  content: string;
-}
-
-interface ImageAsset {
-  id: string;
-  url: string;
-  alt: string;
-  caption?: string;
-}
-
-interface VideoAsset {
-  id: string;
-  url: string;
-  caption?: string;
-}
-
-interface QuoteAsset {
-  id: string;
-  quote: string;
-  author: string;
-  role?: string;
-}
-
-interface ContentCatalog {
-  texts: TextAsset[];
-  images: ImageAsset[];
-  videos: VideoAsset[];
-  quotes: QuoteAsset[];
-  directorNotes: string;
+  sceneType: "text" | "image" | "video" | "split" | "gallery" | "quote" | "fullscreen";
+  aiPrompt: string; // Natural language description for this scene
+  content: {
+    heading?: string;
+    body?: string;
+    url?: string;
+    media?: string;
+    quote?: string;
+    author?: string;
+    role?: string;
+    images?: string;
+    mediaType?: "image" | "video";
+  };
+  director: any;
 }
 
 export default function PortfolioBuilder() {
@@ -70,22 +62,33 @@ export default function PortfolioBuilder() {
   const [newProjectSlug, setNewProjectSlug] = useState("");
   const [newProjectClient, setNewProjectClient] = useState("");
 
-  // Content catalog state
-  const [catalog, setCatalog] = useState<ContentCatalog>({
-    texts: [],
-    images: [],
-    videos: [],
-    quotes: [],
-    directorNotes: "",
+  // Scene builders array
+  const [scenes, setScenes] = useState<SceneBuilder[]>([]);
+  const [editingSceneId, setEditingSceneId] = useState<string | null>(null);
+  const [isSceneDialogOpen, setIsSceneDialogOpen] = useState(false);
+
+  // Portfolio-level AI orchestration prompt
+  const [portfolioAiPrompt, setPortfolioAiPrompt] = useState("");
+
+  // Scene form state
+  const form = useForm({
+    defaultValues: {
+      sceneType: "text" as const,
+      aiPrompt: "",
+      heading: "",
+      body: "",
+      url: "",
+      media: "",
+      quote: "",
+      author: "",
+      role: "",
+      images: "",
+      mediaType: "image" as const,
+      director: DEFAULT_DIRECTOR_CONFIG,
+    },
   });
 
-  // Form inputs for adding new assets
-  const [textInput, setTextInput] = useState({ type: "headline" as const, content: "" });
-  const [imageInput, setImageInput] = useState({ url: "", alt: "", caption: "" });
-  const [videoInput, setVideoInput] = useState({ url: "", caption: "" });
-  const [quoteInput, setQuoteInput] = useState({ quote: "", author: "", role: "" });
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const sceneType = form.watch("sceneType");
 
   const style = {
     "--sidebar-width": "16rem",
@@ -97,159 +100,88 @@ export default function PortfolioBuilder() {
     queryKey: ["/api/branding/projects"],
   });
 
-  // Add text asset
-  const handleAddText = () => {
-    if (!textInput.content.trim()) {
-      toast({ title: "Error", description: "Text content is required", variant: "destructive" });
+  // Add or update scene
+  const handleSaveScene = () => {
+    const formData = form.getValues();
+
+    if (!formData.aiPrompt.trim()) {
+      toast({ title: "Error", description: "Please provide an AI prompt for this scene", variant: "destructive" });
       return;
     }
-    const newText: TextAsset = {
-      id: `text-${Date.now()}`,
-      type: textInput.type,
-      content: textInput.content.trim(),
+
+    const sceneBuilder: SceneBuilder = {
+      id: editingSceneId || `scene-${Date.now()}`,
+      sceneType: formData.sceneType,
+      aiPrompt: formData.aiPrompt,
+      content: {
+        heading: formData.heading,
+        body: formData.body,
+        url: formData.url,
+        media: formData.media,
+        quote: formData.quote,
+        author: formData.author,
+        role: formData.role,
+        images: formData.images,
+        mediaType: formData.mediaType,
+      },
+      director: formData.director,
     };
-    setCatalog(prev => ({ ...prev, texts: [...prev.texts, newText] }));
-    setTextInput({ type: "headline", content: "" });
-    toast({ title: "Text added to catalog" });
-  };
 
-  // Add image asset
-  const handleAddImage = () => {
-    if (!imageInput.url || !imageInput.alt) {
-      toast({ title: "Error", description: "Image URL and alt text are required", variant: "destructive" });
-      return;
+    if (editingSceneId) {
+      setScenes(scenes.map(s => s.id === editingSceneId ? sceneBuilder : s));
+      toast({ title: "Scene updated" });
+    } else {
+      setScenes([...scenes, sceneBuilder]);
+      toast({ title: "Scene added" });
     }
-    const newImage: ImageAsset = {
-      id: `image-${Date.now()}`,
-      url: imageInput.url,
-      alt: imageInput.alt,
-      caption: imageInput.caption || undefined,
-    };
-    setCatalog(prev => ({ ...prev, images: [...prev.images, newImage] }));
-    setImageInput({ url: "", alt: "", caption: "" });
-    toast({ title: "Image added to catalog" });
+
+    setIsSceneDialogOpen(false);
+    setEditingSceneId(null);
+    form.reset({
+      sceneType: "text",
+      aiPrompt: "",
+      director: DEFAULT_DIRECTOR_CONFIG,
+    });
   };
 
-  // Add video asset
-  const handleAddVideo = () => {
-    if (!videoInput.url) {
-      toast({ title: "Error", description: "Video URL is required", variant: "destructive" });
-      return;
-    }
-    const newVideo: VideoAsset = {
-      id: `video-${Date.now()}`,
-      url: videoInput.url,
-      caption: videoInput.caption || undefined,
-    };
-    setCatalog(prev => ({ ...prev, videos: [...prev.videos, newVideo] }));
-    setVideoInput({ url: "", caption: "" });
-    toast({ title: "Video added to catalog" });
+  const handleEditScene = (scene: SceneBuilder) => {
+    setEditingSceneId(scene.id);
+    form.reset({
+      sceneType: scene.sceneType,
+      aiPrompt: scene.aiPrompt,
+      heading: scene.content.heading || "",
+      body: scene.content.body || "",
+      url: scene.content.url || "",
+      media: scene.content.media || "",
+      quote: scene.content.quote || "",
+      author: scene.content.author || "",
+      role: scene.content.role || "",
+      images: scene.content.images || "",
+      mediaType: scene.content.mediaType || "image",
+      director: scene.director || DEFAULT_DIRECTOR_CONFIG,
+    });
+    setIsSceneDialogOpen(true);
   };
 
-  // Add quote asset
-  const handleAddQuote = () => {
-    if (!quoteInput.quote || !quoteInput.author) {
-      toast({ title: "Error", description: "Quote and author are required", variant: "destructive" });
-      return;
-    }
-    const newQuote: QuoteAsset = {
-      id: `quote-${Date.now()}`,
-      quote: quoteInput.quote,
-      author: quoteInput.author,
-      role: quoteInput.role || undefined,
-    };
-    setCatalog(prev => ({ ...prev, quotes: [...prev.quotes, newQuote] }));
-    setQuoteInput({ quote: "", author: "", role: "" });
-    toast({ title: "Quote added to catalog" });
+  const handleDeleteScene = (id: string) => {
+    setScenes(scenes.filter(s => s.id !== id));
+    toast({ title: "Scene removed" });
   };
 
-  // Upload image to Cloudinary
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleMoveScene = (id: string, direction: "up" | "down") => {
+    const index = scenes.findIndex(s => s.id === id);
+    if (index === -1) return;
 
-    setUploadingImage(true);
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= scenes.length) return;
 
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const data = await response.json();
-      setImageInput(prev => ({ ...prev, url: data.url }));
-      toast({ title: "Image uploaded successfully" });
-    } catch (error) {
-      toast({
-        title: "Upload failed",
-        description: error instanceof Error ? error.message : "Failed to upload image",
-        variant: "destructive",
-      });
-    } finally {
-      setUploadingImage(false);
-    }
+    const newScenes = [...scenes];
+    [newScenes[index], newScenes[newIndex]] = [newScenes[newIndex], newScenes[index]];
+    setScenes(newScenes);
   };
 
-  // Upload video to Cloudinary (uses same image endpoint)
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadingVideo(true);
-    try {
-      const formData = new FormData();
-      formData.append('image', file); // Backend uses multer config
-
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const data = await response.json();
-      setVideoInput(prev => ({ ...prev, url: data.url }));
-      toast({ title: "Video uploaded successfully" });
-    } catch (error) {
-      toast({
-        title: "Upload failed",
-        description: error instanceof Error ? error.message : "Failed to upload video",
-        variant: "destructive",
-      });
-    } finally {
-      setUploadingVideo(false);
-    }
-  };
-
-  // Remove asset from catalog
-  const removeText = (id: string) => {
-    setCatalog(prev => ({ ...prev, texts: prev.texts.filter(t => t.id !== id) }));
-  };
-
-  const removeImage = (id: string) => {
-    setCatalog(prev => ({ ...prev, images: prev.images.filter(i => i.id !== id) }));
-  };
-
-  const removeVideo = (id: string) => {
-    setCatalog(prev => ({ ...prev, videos: prev.videos.filter(v => v.id !== id) }));
-  };
-
-  const removeQuote = (id: string) => {
-    setCatalog(prev => ({ ...prev, quotes: prev.quotes.filter(q => q.id !== id) }));
-  };
-
-  // Generate scenes with AI director
-  const handleGenerateScenes = async () => {
+  // Generate portfolio with AI
+  const handleGeneratePortfolio = async () => {
     // Validation
     if (isNewProject) {
       if (!newProjectTitle.trim()) {
@@ -269,48 +201,30 @@ export default function PortfolioBuilder() {
       return;
     }
 
-    const totalAssets = catalog.texts.length + catalog.images.length + catalog.videos.length + catalog.quotes.length;
-    if (totalAssets === 0) {
-      toast({ title: "Error", description: "Please add at least one asset to the catalog", variant: "destructive" });
+    if (scenes.length === 0) {
+      toast({ title: "Error", description: "Please add at least one scene", variant: "destructive" });
       return;
     }
 
-    if (!catalog.directorNotes.trim()) {
-      toast({ title: "Error", description: "Please provide director's notes", variant: "destructive" });
+    if (!portfolioAiPrompt.trim()) {
+      toast({ title: "Error", description: "Please provide portfolio-level AI orchestration guidance", variant: "destructive" });
       return;
     }
-
-    console.log('[Portfolio Builder] Starting generation...', {
-      isNewProject,
-      projectId: selectedProjectId,
-      assetCount: totalAssets,
-      directorNotesLength: catalog.directorNotes.length
-    });
 
     setIsGenerating(true);
     try {
       const requestPayload = {
-        catalog,
         projectId: isNewProject ? null : selectedProjectId,
         newProjectTitle: isNewProject ? newProjectTitle : undefined,
         newProjectSlug: isNewProject ? newProjectSlug : undefined,
         newProjectClient: isNewProject ? newProjectClient : undefined,
+        scenes: scenes,
+        portfolioAiPrompt: portfolioAiPrompt,
       };
 
-      console.log('[Portfolio Builder] Request payload:', {
-        ...requestPayload,
-        catalog: {
-          texts: requestPayload.catalog.texts.length,
-          images: requestPayload.catalog.images.length,
-          videos: requestPayload.catalog.videos.length,
-          quotes: requestPayload.catalog.quotes.length,
-        }
-      });
+      console.log('[Portfolio Builder] Generating with scene-by-scene config:', requestPayload);
 
-      // DIAGNOSTIC: Log full catalog to verify image data
-      console.log('[Portfolio Builder] Full catalog being sent:', JSON.stringify(requestPayload.catalog, null, 2));
-
-      const response = await apiRequest("POST", "/api/portfolio/generate-with-ai", requestPayload);
+      const response = await apiRequest("POST", "/api/portfolio/generate-enhanced", requestPayload);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -354,7 +268,7 @@ export default function PortfolioBuilder() {
             <header className="flex items-center justify-between p-4 border-b">
               <div className="flex items-center gap-4">
                 <SidebarTrigger data-testid="button-sidebar-toggle" />
-                <h1 className="text-2xl font-bold">AI Portfolio Builder</h1>
+                <h1 className="text-2xl font-bold">AI Portfolio Builder (Enhanced)</h1>
               </div>
             </header>
 
@@ -407,9 +321,6 @@ export default function PortfolioBuilder() {
                             placeholder="project-slug"
                             data-testid="input-project-slug"
                           />
-                          <p className="text-xs text-muted-foreground">
-                            URL-friendly identifier (e.g., "acme-rebrand")
-                          </p>
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="project-client">Client Name *</Label>
@@ -442,329 +353,118 @@ export default function PortfolioBuilder() {
                   </CardContent>
                 </Card>
 
-                {/* Content Catalog */}
+                {/* Scene Builder */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>2. Build Content Catalog</CardTitle>
-                    <CardDescription>
-                      Add all your content (text, images, videos, quotes). The AI will orchestrate how they appear.
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle>2. Build Scenes</CardTitle>
+                        <CardDescription>
+                          Add scenes one-by-one with AI guidance for each
+                        </CardDescription>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          setEditingSceneId(null);
+                          form.reset({
+                            sceneType: "text",
+                            aiPrompt: "",
+                            director: DEFAULT_DIRECTOR_CONFIG,
+                          });
+                          setIsSceneDialogOpen(true);
+                        }}
+                        data-testid="button-add-scene"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Scene
+                      </Button>
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <Tabs defaultValue="text" className="w-full">
-                      <TabsList className="grid w-full grid-cols-4">
-                        <TabsTrigger value="text" data-testid="tab-text">
-                          Text ({catalog.texts.length})
-                        </TabsTrigger>
-                        <TabsTrigger value="images" data-testid="tab-images">
-                          Images ({catalog.images.length})
-                        </TabsTrigger>
-                        <TabsTrigger value="videos" data-testid="tab-videos">
-                          Videos ({catalog.videos.length})
-                        </TabsTrigger>
-                        <TabsTrigger value="quotes" data-testid="tab-quotes">
-                          Quotes ({catalog.quotes.length})
-                        </TabsTrigger>
-                      </TabsList>
-
-                      {/* Text Tab */}
-                      <TabsContent value="text" className="space-y-4">
-                        <div className="space-y-3">
-                          <Label>Text Type</Label>
-                          <Select
-                            value={textInput.type}
-                            onValueChange={(value) => setTextInput(prev => ({ ...prev, type: value as any }))}
-                          >
-                            <SelectTrigger data-testid="select-text-type">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="headline">Headline</SelectItem>
-                              <SelectItem value="subheading">Subheading</SelectItem>
-                              <SelectItem value="paragraph">Paragraph</SelectItem>
-                            </SelectContent>
-                          </Select>
-
-                          <Label>Content</Label>
-                          <Textarea
-                            value={textInput.content}
-                            onChange={(e) => setTextInput(prev => ({ ...prev, content: e.target.value }))}
-                            placeholder="Enter your text content..."
-                            rows={3}
-                            data-testid="input-text-content"
-                          />
-
-                          <Button onClick={handleAddText} data-testid="button-add-text">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Text
-                          </Button>
-                        </div>
-
-                        {/* Text Catalog Display */}
-                        {catalog.texts.length > 0 && (
-                          <div className="space-y-2 mt-6">
-                            <Label>Text Catalog</Label>
-                            {catalog.texts.map((text) => (
-                              <div
-                                key={text.id}
-                                className="flex items-start justify-between p-3 bg-muted rounded-lg gap-3"
-                                data-testid={`text-item-${text.id}`}
-                              >
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-xs text-muted-foreground mb-1">{text.type}</div>
-                                  <div className="text-sm truncate">{text.content}</div>
+                    {scenes.length === 0 ? (
+                      <div className="text-center text-muted-foreground py-8">
+                        No scenes yet. Click "Add Scene" to get started.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {scenes.map((scene, index) => (
+                          <Card key={scene.id} className="p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="font-medium">Scene {index + 1}</span>
+                                  <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded">
+                                    {scene.sceneType}
+                                  </span>
                                 </div>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => removeText(text.id)}
-                                  data-testid={`button-remove-text-${text.id}`}
-                                >
-                                  <X className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-
-                      {/* Images Tab */}
-                      <TabsContent value="images" className="space-y-4">
-                        <div className="space-y-3">
-                          <Label>Upload Image</Label>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageUpload}
-                              disabled={uploadingImage}
-                              data-testid="input-image-file"
-                            />
-                            {uploadingImage && <Loader2 className="w-4 h-4 animate-spin" />}
-                          </div>
-
-                          {imageInput.url && (
-                            <>
-                              <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-                                <img src={imageInput.url} alt="Preview" className="w-full h-full object-cover" />
-                              </div>
-
-                              <Label>Alt Text (Required)</Label>
-                              <Input
-                                value={imageInput.alt}
-                                onChange={(e) => setImageInput(prev => ({ ...prev, alt: e.target.value }))}
-                                placeholder="Describe the image..."
-                                data-testid="input-image-alt"
-                              />
-
-                               <Label>Caption (Optional)</Label>
-                               <Input
-                                 value={imageInput.caption}
-                                 onChange={(e) => setImageInput(prev => ({ ...prev, caption: e.target.value }))}
-                                 placeholder="Optional caption..."
-                                 data-testid="input-image-caption"
-                               />
-
-                               <div className="pt-4 border-t">
-                                 <Button
-                                   onClick={handleAddImage}
-                                   data-testid="button-add-image"
-                                   size="lg"
-                                   className="w-full"
-                                 >
-                                   <Plus className="w-4 h-4 mr-2" />
-                                   Add Image to Catalog
-                                 </Button>
-                                 <p className="text-xs text-muted-foreground mt-2 text-center">
-                                   Click to save this image to your catalog before generating
-                                 </p>
-                               </div>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Image Catalog Display */}
-                        {catalog.images.length > 0 && (
-                          <div className="space-y-2 mt-6">
-                            <Label>Image Catalog</Label>
-                            <div className="grid grid-cols-2 gap-3">
-                              {catalog.images.map((image) => (
-                                <div
-                                  key={image.id}
-                                  className="relative group rounded-lg overflow-hidden bg-muted"
-                                  data-testid={`image-item-${image.id}`}
-                                >
-                                  <img src={image.url} alt={image.alt} className="w-full aspect-video object-cover" />
-                                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <Button
-                                      variant="destructive"
-                                      size="icon"
-                                      onClick={() => removeImage(image.id)}
-                                      data-testid={`button-remove-image-${image.id}`}
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-                                  <div className="p-2 text-xs text-muted-foreground truncate">{image.alt}</div>
+                                <div className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                                  <strong>AI Prompt:</strong> {scene.aiPrompt}
                                 </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </TabsContent>
-
-                      {/* Videos Tab */}
-                      <TabsContent value="videos" className="space-y-4">
-                        <div className="space-y-3">
-                          <Label>Video URL or Upload</Label>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="file"
-                              accept="video/*"
-                              onChange={handleVideoUpload}
-                              disabled={uploadingVideo}
-                              data-testid="input-video-file"
-                            />
-                            {uploadingVideo && <Loader2 className="w-4 h-4 animate-spin" />}
-                          </div>
-
-                          <Label>Or enter URL directly</Label>
-                          <Input
-                            value={videoInput.url}
-                            onChange={(e) => setVideoInput(prev => ({ ...prev, url: e.target.value }))}
-                            placeholder="https://..."
-                            data-testid="input-video-url"
-                          />
-
-                          {videoInput.url && (
-                            <>
-                              <Label>Caption (Optional)</Label>
-                              <Input
-                                value={videoInput.caption}
-                                onChange={(e) => setVideoInput(prev => ({ ...prev, caption: e.target.value }))}
-                                placeholder="Optional caption..."
-                                data-testid="input-video-caption"
-                              />
-
-                              <Button onClick={handleAddVideo} data-testid="button-add-video">
-                                <Plus className="w-4 h-4 mr-2" />
-                                Add Video
-                              </Button>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Video Catalog Display */}
-                        {catalog.videos.length > 0 && (
-                          <div className="space-y-2 mt-6">
-                            <Label>Video Catalog</Label>
-                            {catalog.videos.map((video) => (
-                              <div
-                                key={video.id}
-                                className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                                data-testid={`video-item-${video.id}`}
-                              >
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-sm truncate">{video.url}</div>
-                                  {video.caption && <div className="text-xs text-muted-foreground mt-1">{video.caption}</div>}
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => removeVideo(video.id)}
-                                  data-testid={`button-remove-video-${video.id}`}
-                                >
-                                  <X className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-
-                      {/* Quotes Tab */}
-                      <TabsContent value="quotes" className="space-y-4">
-                        <div className="space-y-3">
-                          <Label>Quote</Label>
-                          <Textarea
-                            value={quoteInput.quote}
-                            onChange={(e) => setQuoteInput(prev => ({ ...prev, quote: e.target.value }))}
-                            placeholder="Enter the quote..."
-                            rows={3}
-                            data-testid="input-quote-text"
-                          />
-
-                          <Label>Author</Label>
-                          <Input
-                            value={quoteInput.author}
-                            onChange={(e) => setQuoteInput(prev => ({ ...prev, author: e.target.value }))}
-                            placeholder="Author name"
-                            data-testid="input-quote-author"
-                          />
-
-                          <Label>Role (Optional)</Label>
-                          <Input
-                            value={quoteInput.role}
-                            onChange={(e) => setQuoteInput(prev => ({ ...prev, role: e.target.value }))}
-                            placeholder="CEO, Designer, etc."
-                            data-testid="input-quote-role"
-                          />
-
-                          <Button onClick={handleAddQuote} data-testid="button-add-quote">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Quote
-                          </Button>
-                        </div>
-
-                        {/* Quote Catalog Display */}
-                        {catalog.quotes.length > 0 && (
-                          <div className="space-y-2 mt-6">
-                            <Label>Quote Catalog</Label>
-                            {catalog.quotes.map((quote) => (
-                              <div
-                                key={quote.id}
-                                className="flex items-start justify-between p-4 bg-muted rounded-lg gap-3"
-                                data-testid={`quote-item-${quote.id}`}
-                              >
-                                <div className="flex-1">
-                                  <div className="text-sm italic mb-2">"{quote.quote}"</div>
+                                {scene.content.heading && (
                                   <div className="text-xs text-muted-foreground">
-                                    — {quote.author}
-                                    {quote.role && `, ${quote.role}`}
+                                    Heading: {scene.content.heading}
                                   </div>
-                                </div>
+                                )}
+                              </div>
+                              <div className="flex gap-1">
                                 <Button
-                                  variant="ghost"
                                   size="icon"
-                                  onClick={() => removeQuote(quote.id)}
-                                  data-testid={`button-remove-quote-${quote.id}`}
+                                  variant="ghost"
+                                  onClick={() => handleMoveScene(scene.id, "up")}
+                                  disabled={index === 0}
+                                  data-testid={`button-move-up-${scene.id}`}
                                 >
-                                  <X className="w-4 h-4" />
+                                  <ArrowUp className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => handleMoveScene(scene.id, "down")}
+                                  disabled={index === scenes.length - 1}
+                                  data-testid={`button-move-down-${scene.id}`}
+                                >
+                                  <ArrowDown className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => handleEditScene(scene)}
+                                  data-testid={`button-edit-${scene.id}`}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => handleDeleteScene(scene.id)}
+                                  data-testid={`button-delete-${scene.id}`}
+                                >
+                                  <Trash2 className="w-4 h-4" />
                                 </Button>
                               </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-                    </Tabs>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
-                {/* Director's Notes */}
+                {/* Portfolio-Level AI Orchestration */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>3. Director's Notes</CardTitle>
+                    <CardTitle>3. Portfolio Orchestration</CardTitle>
                     <CardDescription>
-                      Describe the visual style, pacing, and mood you want (e.g., "Cinematic, slow reveal, build anticipation")
+                      Describe how the scenes should flow together (pacing, transitions, overall mood)
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Textarea
-                      value={catalog.directorNotes}
-                      onChange={(e) => setCatalog(prev => ({ ...prev, directorNotes: e.target.value }))}
-                      placeholder="Fast-paced, energetic, tech-forward with smooth transitions..."
+                      value={portfolioAiPrompt}
+                      onChange={(e) => setPortfolioAiPrompt(e.target.value)}
+                      placeholder="Example: Create a cinematic journey that builds anticipation. Start slow and dramatic, accelerate through the middle sections, then end with high energy. Use smooth dissolve transitions between scenes and maintain dark, moody backgrounds throughout."
                       rows={4}
-                      data-testid="input-director-notes"
+                      data-testid="textarea-portfolio-ai-prompt"
                     />
                   </CardContent>
                 </Card>
@@ -774,12 +474,12 @@ export default function PortfolioBuilder() {
                   <CardHeader>
                     <CardTitle>4. Generate Portfolio</CardTitle>
                     <CardDescription>
-                      AI will orchestrate your content into a compelling scrollytelling experience
+                      AI will enhance each scene and orchestrate the overall flow
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Button
-                      onClick={handleGenerateScenes}
+                      onClick={handleGeneratePortfolio}
                       disabled={isGenerating}
                       size="lg"
                       className="w-full"
@@ -788,7 +488,7 @@ export default function PortfolioBuilder() {
                       {isGenerating ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating Scenes...
+                          Generating Portfolio...
                         </>
                       ) : (
                         <>
@@ -804,6 +504,134 @@ export default function PortfolioBuilder() {
           </div>
         </div>
       </SidebarProvider>
+
+      {/* Scene Editor Dialog */}
+      <Dialog open={isSceneDialogOpen} onOpenChange={setIsSceneDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingSceneId ? "Edit Scene" : "Add Scene"}</DialogTitle>
+            <DialogDescription>
+              Configure scene details and provide AI guidance
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 mt-4">
+            {/* Scene Type */}
+            <div className="space-y-2">
+              <Label>Scene Type</Label>
+              <Select
+                value={form.watch("sceneType")}
+                onValueChange={(value) => form.setValue("sceneType", value as any)}
+              >
+                <SelectTrigger data-testid="select-scene-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="text">Text Section</SelectItem>
+                  <SelectItem value="image">Image</SelectItem>
+                  <SelectItem value="video">Video</SelectItem>
+                  <SelectItem value="split">Split Layout</SelectItem>
+                  <SelectItem value="gallery">Gallery</SelectItem>
+                  <SelectItem value="quote">Quote/Testimonial</SelectItem>
+                  <SelectItem value="fullscreen">Fullscreen Media</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* AI Prompt for this scene */}
+            <div className="space-y-2">
+              <Label>AI Prompt for This Scene *</Label>
+              <Textarea
+                value={form.watch("aiPrompt")}
+                onChange={(e) => form.setValue("aiPrompt", e.target.value)}
+                placeholder="Example: Create a bold hero section with dramatic entrance. Use large typography, dark gradient background, and emphasize the revolutionary nature of the product."
+                rows={3}
+                data-testid="textarea-scene-ai-prompt"
+              />
+            </div>
+
+            {/* Content Fields */}
+            <Card className="p-4 space-y-4">
+              <h4 className="font-medium">Content (Optional - AI will enhance)</h4>
+
+              {sceneType === "text" && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Heading</Label>
+                    <Input
+                      value={form.watch("heading")}
+                      onChange={(e) => form.setValue("heading", e.target.value)}
+                      placeholder="Optional: provide base heading"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Body Text</Label>
+                    <Textarea
+                      value={form.watch("body")}
+                      onChange={(e) => form.setValue("body", e.target.value)}
+                      placeholder="Optional: provide base content"
+                      rows={3}
+                    />
+                  </div>
+                </>
+              )}
+
+              {sceneType === "image" && (
+                <div className="space-y-2">
+                  <Label>Image URL</Label>
+                  <Input
+                    value={form.watch("url")}
+                    onChange={(e) => form.setValue("url", e.target.value)}
+                    placeholder="https://..."
+                  />
+                </div>
+              )}
+
+              {sceneType === "quote" && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Quote</Label>
+                    <Textarea
+                      value={form.watch("quote")}
+                      onChange={(e) => form.setValue("quote", e.target.value)}
+                      placeholder="The quote text..."
+                      rows={3}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Author</Label>
+                    <Input
+                      value={form.watch("author")}
+                      onChange={(e) => form.setValue("author", e.target.value)}
+                      placeholder="Author name"
+                    />
+                  </div>
+                </>
+              )}
+            </Card>
+
+            {/* Director Config */}
+            <Card className="p-4">
+              <DirectorConfigForm form={form} sceneType={sceneType} />
+            </Card>
+
+            <div className="flex gap-2">
+              <Button onClick={handleSaveScene} data-testid="button-save-scene">
+                {editingSceneId ? "Update Scene" : "Add Scene"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsSceneDialogOpen(false);
+                  setEditingSceneId(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </ProtectedRoute>
   );
 }
