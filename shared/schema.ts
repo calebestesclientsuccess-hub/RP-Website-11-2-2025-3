@@ -721,16 +721,20 @@ export const updateProjectSchema = insertProjectSchema.partial();
 const textSceneSchema = z.object({
   type: z.literal("text"),
   content: z.object({
-    heading: z.string().min(1),
-    body: z.string().min(1),
-  }).passthrough(), // Allow additional properties
+    heading: z.string().min(1).max(60, "Heading should be under 60 characters for SEO"),
+    headingLevel: z.enum(["h1", "h2", "h3", "h4", "h5", "h6"]).default("h2"),
+    body: z.string().min(50, "Body text should be at least 50 characters for quality content"),
+    metaDescription: z.string().min(120).max(160).optional(),
+  }),
 });
 
 const imageSceneSchema = z.object({
   type: z.literal("image"),
   content: z.object({
     url: z.string().url(),
-  }).passthrough(),
+    alt: z.string().min(10, "Alt text must be at least 10 characters").max(125, "Alt text must be under 125 characters"),
+    title: z.string().optional(),
+  }),
 });
 
 const videoSceneSchema = z.object({

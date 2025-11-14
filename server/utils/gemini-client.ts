@@ -142,14 +142,19 @@ function buildScenePrompt(
   const baseInstructions = `You are a creative director specializing in scrollytelling web experiences.
 Generate a scene configuration for a brand portfolio website based on the user's creative direction.
 
-IMPORTANT CONSTRAINTS:
+CRITICAL SEO CONSTRAINTS (VIOLATIONS WILL BE REJECTED):
+- ALL images MUST have descriptive alt text (10-125 characters, no keyword stuffing)
+- Headlines MUST be under 60 characters for SEO optimization
+- Body text MUST be at least 50 characters for quality content
+- Use only valid sceneTypes: text, image, video, split, gallery, quote, fullscreen
+- For hero sections, use type "text" with headingLevel "h1"
+- For testimonials, use type "quote"
+- NEVER use generic alt text like "image" or "photo"
+
+ANIMATION CONSTRAINTS:
 - Use realistic values for animation timings (duration: 800-2000ms, fadeIn/Out: 400-1000ms)
 - Use web-safe hex colors that provide good contrast
-- Parallax speed should be between 0.5 and 2.0
-- If no media URL is provided by user, leave mediaUrl empty
-- Keep headlines concise (max 10 words) and impactful
-- Body text should be 1-3 sentences maximum
-- Choose appropriate sceneType based on content (hero, testimonial, stats, timeline, media, text)`;
+- Parallax speed should be between 0.5 and 2.0`;
 
   const sceneTypeConstraint = sceneType 
     ? `\n\nREQUIRED: Set sceneType to "${sceneType}"` 

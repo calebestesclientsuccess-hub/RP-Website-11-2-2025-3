@@ -1921,6 +1921,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         prompt: z.string().min(10, "Prompt must be at least 10 characters"),
         sceneType: z.string().optional(),
         templateId: z.string().optional(),
+        projectId: z.string().optional(), // For validating against existing scenes
       });
 
       const result = schema.safeParse(req.body);
@@ -1932,7 +1933,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const { prompt, sceneType, templateId } = result.data;
+      const { prompt, sceneType, templateId, projectId } = result.data;
 
       // Load prompt template if specified
       let systemInstructions: string | undefined;
