@@ -1,8 +1,10 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 
 /**
  * Gemini AI Client for Scene Generation
  * Uses Replit AI Integrations (no API key required, charges billed to credits)
+ * UPGRADED: Now uses gemini-2.5-pro for complex scene reasoning
  */
 
 const ai = new GoogleGenAI({
@@ -15,30 +17,47 @@ const ai = new GoogleGenAI({
 
 /**
  * Scene configuration output from Gemini
+ * Now supports multi-asset hybrid scenes
  */
 export interface GeneratedSceneConfig {
   sceneType: string;
+  assetIds?: string[]; // New: supports multiple assets per scene
   headline?: string;
   subheadline?: string;
   bodyText?: string;
   mediaUrl?: string;
   mediaType?: 'image' | 'video';
+  additionalMedia?: Array<{
+    url: string;
+    type: 'image' | 'video';
+    alt?: string;
+    caption?: string;
+  }>;
   backgroundColor?: string;
   textColor?: string;
-  duration?: number;
-  parallaxSpeed?: number;
-  fadeInDuration?: number;
-  fadeOutDuration?: number;
-  delayBeforeEntry?: number;
+  director?: {
+    entryDuration?: number;
+    exitDuration?: number;
+    animationDuration?: number;
+    parallaxIntensity?: number;
+    entryEffect?: string;
+    exitEffect?: string;
+    headingSize?: string;
+    bodySize?: string;
+    alignment?: string;
+    fadeOnScroll?: boolean;
+    scaleOnScroll?: boolean;
+    blurOnScroll?: boolean;
+  };
 }
 
 /**
- * Generate a scene configuration using Gemini with structured JSON output
+ * Generate a scene configuration using Gemini Pro with structured JSON output
  * 
  * @param prompt - The user's creative direction for the scene
  * @param sceneType - Optional scene type constraint (e.g., 'hero', 'testimonial')
  * @param systemInstructions - Additional system-level guidance for the AI
- * @returns Structured scene configuration
+ * @returns Structured scene configuration with hybrid composition support
  */
 export async function generateSceneWithGemini(
   prompt: string,
@@ -47,9 +66,8 @@ export async function generateSceneWithGemini(
 ): Promise<GeneratedSceneConfig> {
   const fullPrompt = buildScenePrompt(prompt, sceneType, systemInstructions);
 
-  // Official SDK pattern for structured JSON output with message object array
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.5-pro", // Pro model for complex scene reasoning
     contents: [{
       role: "user",
       parts: [{ text: fullPrompt }]
@@ -61,11 +79,11 @@ export async function generateSceneWithGemini(
         properties: {
           sceneType: { 
             type: Type.STRING,
-            description: "Type of scene. MUST be one of: 'text', 'image', 'video', 'split', 'gallery', 'quote', 'fullscreen'. Use 'text' for hero/headline sections, 'quote' for testimonials."
+            description: "Type of scene. MUST be one of: 'text', 'image', 'video', 'split', 'gallery', 'quote', 'fullscreen'"
           },
           headline: { 
             type: Type.STRING,
-            description: "Main headline text for the scene"
+            description: "Main headline text (H1 or H2)"
           },
           subheadline: { 
             type: Type.STRING,
@@ -73,43 +91,55 @@ export async function generateSceneWithGemini(
           },
           bodyText: { 
             type: Type.STRING,
-            description: "Body copy or description text"
+            description: "Body copy or description text (can be markdown)"
           },
           mediaUrl: { 
             type: Type.STRING,
-            description: "URL to image or video asset"
+            description: "Primary image or video URL"
           },
           mediaType: { 
             type: Type.STRING,
-            description: "Media type: 'image' or 'video'"
+            description: "Primary media type: 'image' or 'video'"
+          },
+          additionalMedia: {
+            type: Type.ARRAY,
+            description: "Additional media assets for hybrid scenes (galleries, multi-image layouts)",
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                url: { type: Type.STRING, description: "Media URL" },
+                type: { type: Type.STRING, description: "'image' or 'video'" },
+                alt: { type: Type.STRING, description: "Alt text for images (SEO required)" },
+                caption: { type: Type.STRING, description: "Optional caption" }
+              },
+              required: ["url", "type"]
+            }
           },
           backgroundColor: { 
             type: Type.STRING,
-            description: "Hex color code for background (e.g., '#000000')"
+            description: "Hex color code for background (e.g., '#0a0a0a')"
           },
           textColor: { 
             type: Type.STRING,
-            description: "Hex color code for text (e.g., '#FFFFFF')"
+            description: "Hex color code for text (e.g., '#ffffff')"
           },
-          duration: { 
-            type: Type.INTEGER,
-            description: "Animation duration in milliseconds"
-          },
-          parallaxSpeed: { 
-            type: Type.NUMBER,
-            description: "Parallax scroll speed (0.5 = slower, 2 = faster)"
-          },
-          fadeInDuration: { 
-            type: Type.INTEGER,
-            description: "Fade-in animation duration in milliseconds"
-          },
-          fadeOutDuration: { 
-            type: Type.INTEGER,
-            description: "Fade-out animation duration in milliseconds"
-          },
-          delayBeforeEntry: { 
-            type: Type.INTEGER,
-            description: "Delay before scene enters in milliseconds"
+          director: {
+            type: Type.OBJECT,
+            description: "Director config for scroll animations",
+            properties: {
+              entryDuration: { type: Type.NUMBER, description: "Entry animation duration in seconds (0.1-5)" },
+              exitDuration: { type: Type.NUMBER, description: "Exit animation duration in seconds (0.1-5)" },
+              animationDuration: { type: Type.NUMBER, description: "Main animation duration in seconds (0.1-10)" },
+              parallaxIntensity: { type: Type.NUMBER, description: "0-1, default 0.3" },
+              entryEffect: { type: Type.STRING, description: "fade, slide-up, slide-down, zoom-in, sudden" },
+              exitEffect: { type: Type.STRING, description: "fade, slide-up, slide-down, dissolve" },
+              headingSize: { type: Type.STRING, description: "4xl, 5xl, 6xl, 7xl, or 8xl" },
+              bodySize: { type: Type.STRING, description: "base, lg, xl, or 2xl" },
+              alignment: { type: Type.STRING, description: "left, center, or right" },
+              fadeOnScroll: { type: Type.BOOLEAN, description: "Enable fade during scroll" },
+              scaleOnScroll: { type: Type.BOOLEAN, description: "Enable scale during scroll" },
+              blurOnScroll: { type: Type.BOOLEAN, description: "Enable blur during scroll" }
+            }
           }
         },
         required: ["sceneType"]
@@ -117,7 +147,6 @@ export async function generateSceneWithGemini(
     }
   });
 
-  // Parse JSON response (SDK returns JSON string when responseMimeType is set)
   const responseText = response.text;
   if (!responseText) {
     throw new Error("No response from Gemini AI");
@@ -133,28 +162,70 @@ export async function generateSceneWithGemini(
 
 /**
  * Build the complete prompt for scene generation
+ * Now emphasizes hybrid composition capabilities
  */
 function buildScenePrompt(
   userPrompt: string,
   sceneType?: string,
   systemInstructions?: string
 ): string {
-  const baseInstructions = `You are a creative director specializing in scrollytelling web experiences.
+  const baseInstructions = `You are a cinematic director specializing in scrollytelling web experiences.
 Generate a scene configuration for a brand portfolio website based on the user's creative direction.
 
-CRITICAL SEO CONSTRAINTS (VIOLATIONS WILL BE REJECTED):
+HYBRID SCENE COMPOSITION:
+You can now create MULTI-ASSET scenes with flexible layouts:
+- Text scenes can include H1 + H2 + body + images
+- Image scenes can be single image OR galleries (2-8 images)
+- Split scenes can have text + multiple media assets
+- Quote scenes can have background video or images
+
+SCENE TYPE CAPABILITIES:
+- "text": Headlines (H1/H2) + body copy + optional images (hero sections, chapter openers)
+- "image": Single image OR gallery (2-8 images) with captions
+- "video": Video background or focal video with optional text overlay
+- "quote": Testimonials with author + optional background media
+- "split": Side-by-side text + media (supports multiple media assets)
+- "gallery": Multiple images in grid layout (4, 6, or 8 images)
+- "fullscreen": Immersive media takeover (image or video)
+
+CRITICAL SEO CONSTRAINTS:
 - ALL images MUST have descriptive alt text (10-125 characters, no keyword stuffing)
 - Headlines MUST be under 60 characters for SEO optimization
 - Body text MUST be at least 50 characters for quality content
-- Use only valid sceneTypes: text, image, video, split, gallery, quote, fullscreen
-- For hero sections, use type "text" with headingLevel "h1"
-- For testimonials, use type "quote"
 - NEVER use generic alt text like "image" or "photo"
 
-ANIMATION CONSTRAINTS:
-- Use realistic values for animation timings (duration: 800-2000ms, fadeIn/Out: 400-1000ms)
-- Use web-safe hex colors that provide good contrast
-- Parallax speed should be between 0.5 and 2.0`;
+DIRECTOR CONFIG GUIDELINES:
+Use these to create cinematic transitions:
+
+SPEED/PACING:
+- "fast" / "snappy" → entryDuration: 0.8, exitDuration: 0.6
+- "normal" / "smooth" → entryDuration: 1.2, exitDuration: 1.0
+- "slow" / "dramatic" → entryDuration: 2.5, exitDuration: 1.8
+
+DIRECTION:
+- "enters from left" → entryEffect: "slide-right"
+- "enters from right" → entryEffect: "slide-left"
+- "enters from top" → entryEffect: "slide-down"
+- "enters from bottom" → entryEffect: "slide-up"
+- "zooms in" → entryEffect: "zoom-in" + scaleOnScroll: true
+- "fades in" → entryEffect: "fade"
+
+EXIT EFFECTS:
+- "exits to left" → exitEffect: "slide-left"
+- "exits upward" → exitEffect: "slide-up"
+- "fades away" → exitEffect: "fade"
+- "dissolves" → exitEffect: "dissolve"
+
+MOOD/ATMOSPHERE:
+- "dramatic" → parallaxIntensity: 0.6-0.8, entryDuration: 2.5+
+- "subtle" → parallaxIntensity: 0.2-0.3, fadeOnScroll: true
+- "energetic" → scaleOnScroll: true, entryDuration: 0.8-1.0
+- "cinematic" → blurOnScroll: true, parallaxIntensity: 0.5+
+
+COLOR GUIDELINES:
+- Use dark backgrounds (#0a0a0a, #1a1a1a) for drama
+- Use light backgrounds (#f8fafc, #f1f5f9) for brightness
+- Ensure high contrast between text and background`;
 
   const sceneTypeConstraint = sceneType 
     ? `\n\nREQUIRED: Set sceneType to "${sceneType}"` 
@@ -169,7 +240,7 @@ ANIMATION CONSTRAINTS:
 USER'S CREATIVE DIRECTION:
 ${userPrompt}
 
-Generate a complete scene configuration following the schema.`;
+Generate a complete scene configuration with director settings for cinematic scroll animations.`;
 }
 
 /**
@@ -180,22 +251,25 @@ function validateSceneConfig(config: GeneratedSceneConfig): void {
     throw new Error("Generated scene must include sceneType");
   }
 
-  // Validate duration ranges
-  if (config.duration !== undefined && (config.duration < 0 || config.duration > 10000)) {
-    throw new Error("Duration must be between 0 and 10000ms");
-  }
+  // Validate director config if present
+  if (config.director) {
+    const { entryDuration, exitDuration, animationDuration, parallaxIntensity } = config.director;
 
-  if (config.fadeInDuration !== undefined && (config.fadeInDuration < 0 || config.fadeInDuration > 5000)) {
-    throw new Error("fadeInDuration must be between 0 and 5000ms");
-  }
+    if (entryDuration !== undefined && (entryDuration < 0.1 || entryDuration > 5)) {
+      throw new Error("entryDuration must be between 0.1 and 5 seconds");
+    }
 
-  if (config.fadeOutDuration !== undefined && (config.fadeOutDuration < 0 || config.fadeOutDuration > 5000)) {
-    throw new Error("fadeOutDuration must be between 0 and 5000ms");
-  }
+    if (exitDuration !== undefined && (exitDuration < 0.1 || exitDuration > 5)) {
+      throw new Error("exitDuration must be between 0.1 and 5 seconds");
+    }
 
-  // Validate parallax speed
-  if (config.parallaxSpeed !== undefined && (config.parallaxSpeed < 0.1 || config.parallaxSpeed > 5)) {
-    throw new Error("parallaxSpeed must be between 0.1 and 5");
+    if (animationDuration !== undefined && (animationDuration < 0.1 || animationDuration > 10)) {
+      throw new Error("animationDuration must be between 0.1 and 10 seconds");
+    }
+
+    if (parallaxIntensity !== undefined && (parallaxIntensity < 0 || parallaxIntensity > 1)) {
+      throw new Error("parallaxIntensity must be between 0 and 1");
+    }
   }
 
   // Validate hex colors
@@ -210,6 +284,15 @@ function validateSceneConfig(config: GeneratedSceneConfig): void {
   // Validate media type
   if (config.mediaType && !['image', 'video'].includes(config.mediaType)) {
     throw new Error("mediaType must be 'image' or 'video'");
+  }
+
+  // Validate additional media
+  if (config.additionalMedia) {
+    for (const media of config.additionalMedia) {
+      if (!['image', 'video'].includes(media.type)) {
+        throw new Error("additionalMedia type must be 'image' or 'video'");
+      }
+    }
   }
 }
 
