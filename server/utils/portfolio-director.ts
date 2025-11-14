@@ -245,12 +245,20 @@ export function convertToSceneConfigs(
   const videoMap = new Map(catalog.videos.map((v) => [v.id, v]));
   const quoteMap = new Map(catalog.quotes.map((q) => [q.id, q]));
 
+  console.log('[Portfolio Director] Asset Maps:', {
+    texts: Array.from(textMap.keys()),
+    images: Array.from(imageMap.keys()),
+    videos: Array.from(videoMap.keys()),
+    quotes: Array.from(quoteMap.keys()),
+  });
+
   // Validate all asset references exist
   const validAssetIds = buildAssetWhitelist(catalog);
   for (const aiScene of aiScenes) {
+    console.log(`[Portfolio Director] Scene type "${aiScene.sceneType}" wants assets:`, aiScene.assetIds);
     for (const assetId of aiScene.assetIds) {
       if (!validAssetIds.includes(assetId)) {
-        console.warn(`Warning: AI referenced non-existent asset ID: ${assetId}`);
+        console.error(`❌ AI referenced non-existent asset ID: ${assetId}. Valid IDs: ${validAssetIds.join(', ')}`);
       }
     }
   }
@@ -289,13 +297,21 @@ export function convertToSceneConfigs(
         // Expects 1 image asset
         const imageId = aiScene.assetIds.find((id) => imageMap.has(id));
         const image = imageId ? imageMap.get(imageId) : null;
+        
+        if (!image) {
+          console.error(`❌ [Portfolio Director] Image scene failed - no matching image found for assetIds:`, aiScene.assetIds);
+          console.error(`   Available image IDs:`, Array.from(imageMap.keys()));
+        } else {
+          console.log(`✅ [Portfolio Director] Image scene matched:`, { imageId, url: image.url });
+        }
+        
         sceneConfig.content = image ? {
           url: image.url,
           alt: image.alt || "",
           caption: image.caption,
         } : {
           url: "https://via.placeholder.com/800x600",
-          alt: "Placeholder image",
+          alt: "Placeholder image (NO MATCH FOUND)",
         };
         break;
       }
