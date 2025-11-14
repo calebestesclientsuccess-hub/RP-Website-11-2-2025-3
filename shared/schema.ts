@@ -639,6 +639,36 @@ export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
   tenantId: true,
   createdAt: true,
+}).extend({
+  // Preprocessors: convert blank strings to null for optional fields
+  clientName: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
+  thumbnailUrl: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().url().nullable().optional()
+  ),
+  challengeText: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
+  solutionText: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
+  outcomeText: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
+  testimonialText: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
+  testimonialAuthor: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
 });
 
 export const updateProjectSchema = insertProjectSchema.partial();

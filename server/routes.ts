@@ -1497,7 +1497,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
-      const project = await storage.updateProject(req.tenantId, req.params.id, result.data);
+      
+      // Strip undefined keys while preserving null (allows clearing optional fields)
+      const updateData = Object.fromEntries(
+        Object.entries(result.data).filter(([_, value]) => value !== undefined)
+      );
+      
+      const project = await storage.updateProject(req.tenantId, req.params.id, updateData);
       if (!project) {
         return res.status(404).json({ error: "Project not found or access denied" });
       }

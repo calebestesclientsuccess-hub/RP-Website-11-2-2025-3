@@ -80,7 +80,7 @@ export default function ContentLibrary() {
         blog: `/api/blog-posts/${id}`,
         video: `/api/video-posts/${id}`,
         testimonial: `/api/testimonials/${id}`,
-        portfolio: `/api/branding/projects/${id}`,
+        portfolio: `/api/projects/${id}`,
         job: `/api/job-postings/${id}`,
       };
       
@@ -97,6 +97,11 @@ export default function ContentLibrary() {
       if (data.type === 'testimonial') {
         queryClient.invalidateQueries({ queryKey: ['/api/testimonials'] });
         queryClient.invalidateQueries({ queryKey: ['/api/testimonials', data.id] });
+      }
+      if (data.type === 'portfolio') {
+        queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/projects', data.id] });
+        queryClient.invalidateQueries({ queryKey: ['/api/branding/projects'] });
       }
       toast({ title: "Content deleted successfully" });
     },
@@ -127,6 +132,7 @@ export default function ContentLibrary() {
       blog: `/admin/blog-posts/${item.id}/edit`,
       video: `/admin/video-posts/${item.id}/edit`,
       testimonial: `/admin/testimonials/${item.id}/edit`,
+      portfolio: `/admin/projects/${item.id}/edit`,
     };
     
     const route = routes[item.type];
@@ -142,7 +148,7 @@ export default function ContentLibrary() {
   };
   
   const canEdit = (type: string) => {
-    return type === 'blog' || type === 'video' || type === 'testimonial';
+    return type === 'blog' || type === 'video' || type === 'testimonial' || type === 'portfolio';
   };
 
   const handleDelete = (item: ContentSummary) => {
@@ -240,8 +246,8 @@ export default function ContentLibrary() {
                       <DropdownMenuItem onClick={() => setLocation('/admin/testimonials/new')}>
                         Testimonial
                       </DropdownMenuItem>
-                      <DropdownMenuItem disabled>
-                        Portfolio Project (Coming Soon)
+                      <DropdownMenuItem onClick={() => setLocation('/admin/projects/new')}>
+                        Portfolio Project
                       </DropdownMenuItem>
                       <DropdownMenuItem disabled>
                         Job Posting (Coming Soon)
