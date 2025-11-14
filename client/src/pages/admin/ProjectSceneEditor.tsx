@@ -162,17 +162,40 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
     },
   });
 
+  const ALLOWED_SCENE_TYPES = ["text", "image", "video", "split", "gallery", "quote", "fullscreen"];
+
   const validateJson = (json: string): boolean => {
     try {
       const parsed = JSON.parse(json);
+      
+      // Validate type exists
       if (!parsed.type) {
         setJsonError("Scene must have a 'type' property");
         return false;
       }
+      
+      // Validate type is one of the allowed values
+      if (!ALLOWED_SCENE_TYPES.includes(parsed.type)) {
+        setJsonError(`Scene type must be one of: ${ALLOWED_SCENE_TYPES.join(", ")}`);
+        return false;
+      }
+      
+      // Validate content exists and is a non-empty object
       if (!parsed.content) {
         setJsonError("Scene must have a 'content' property");
         return false;
       }
+      
+      if (typeof parsed.content !== "object" || parsed.content === null) {
+        setJsonError("Scene 'content' must be an object");
+        return false;
+      }
+      
+      if (Object.keys(parsed.content).length === 0) {
+        setJsonError("Scene 'content' must contain at least one property");
+        return false;
+      }
+      
       setJsonError(null);
       return true;
     } catch (e) {

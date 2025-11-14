@@ -12,7 +12,7 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 10, // Maximum number of clients in the pool (reduced from 20)
   idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 2000, // Return error if connection takes longer than 2 seconds
+  connectionTimeoutMillis: 5000, // Return error if connection takes longer than 5 seconds (increased for operations with tenant checks)
 });
 
 export const db = drizzle(pool, { schema });
