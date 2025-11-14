@@ -726,15 +726,69 @@ const fullscreenSceneSchema = z.object({
   }).passthrough(),
 });
 
+// Director configuration schema (optional customization)
+const directorConfigSchema = z.object({
+  entryEffect: z.enum(["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-in", "zoom-out", "sudden"]).optional(),
+  entryDuration: z.number().min(0.25).max(5.0).optional(),
+  entryDelay: z.number().min(0).max(10.0).optional(),
+  exitEffect: z.enum(["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-out", "dissolve"]).optional(),
+  exitDuration: z.number().min(0.25).max(5.0).optional(),
+  backgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  textColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  gradientColors: z.array(z.string().regex(/^#[0-9A-Fa-f]{6}$/)).optional(),
+  headingSize: z.enum(["4xl", "5xl", "6xl", "7xl", "8xl"]).optional(),
+  bodySize: z.enum(["base", "lg", "xl", "2xl"]).optional(),
+  fontWeight: z.enum(["normal", "medium", "semibold", "bold"]).optional(),
+  alignment: z.enum(["left", "center", "right"]).optional(),
+  scrollSpeed: z.enum(["slow", "normal", "fast"]).optional(),
+  parallaxIntensity: z.number().min(0).max(1).optional(),
+  animationDuration: z.number().min(0.5).max(10.0).optional(),
+  blurOnScroll: z.boolean().optional(),
+  fadeOnScroll: z.boolean().optional(),
+  scaleOnScroll: z.boolean().optional(),
+  mediaPosition: z.enum(["center", "top", "bottom", "left", "right"]).optional(),
+  mediaScale: z.enum(["cover", "contain", "fill"]).optional(),
+  mediaOpacity: z.number().min(0).max(1).optional(),
+}).optional();
+
+// Update scene schemas to include optional director config
+const textSceneWithDirectorSchema = textSceneSchema.extend({
+  director: directorConfigSchema,
+});
+
+const imageSceneWithDirectorSchema = imageSceneSchema.extend({
+  director: directorConfigSchema,
+});
+
+const videoSceneWithDirectorSchema = videoSceneSchema.extend({
+  director: directorConfigSchema,
+});
+
+const splitSceneWithDirectorSchema = splitSceneSchema.extend({
+  director: directorConfigSchema,
+});
+
+const gallerySceneWithDirectorSchema = gallerySceneSchema.extend({
+  director: directorConfigSchema,
+});
+
+const quoteSceneWithDirectorSchema = quoteSceneSchema.extend({
+  director: directorConfigSchema,
+});
+
+const fullscreenSceneWithDirectorSchema = fullscreenSceneSchema.extend({
+  director: directorConfigSchema,
+});
+
 // Discriminated union of all scene types
 const sceneConfigSchema = z.discriminatedUnion("type", [
-  textSceneSchema,
-  imageSceneSchema,
-  videoSceneSchema,
-  splitSceneSchema,
-  gallerySceneSchema,
-  quoteSceneSchema,
-  fullscreenSceneSchema,
+  textSceneWithDirectorSchema,
+  imageSceneWithDirectorSchema,
+  videoSceneWithDirectorSchema,
+  splitSceneWithDirectorSchema,
+  gallerySceneWithDirectorSchema,
+  quoteSceneWithDirectorSchema,
+  fullscreenSceneWithDirectorSchema,
 ]);
 
 export const insertProjectSceneSchema = createInsertSchema(projectScenes).omit({
@@ -768,6 +822,40 @@ export const insertProjectSceneSchema = createInsertSchema(projectScenes).omit({
 
 export const updateProjectSceneSchema = insertProjectSceneSchema.partial();
 
+// Director configuration constants and defaults
+export const ENTRY_EFFECTS = ["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-in", "zoom-out", "sudden"] as const;
+export const EXIT_EFFECTS = ["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-out", "dissolve"] as const;
+export const HEADING_SIZES = ["4xl", "5xl", "6xl", "7xl", "8xl"] as const;
+export const BODY_SIZES = ["base", "lg", "xl", "2xl"] as const;
+export const FONT_WEIGHTS = ["normal", "medium", "semibold", "bold"] as const;
+export const ALIGNMENTS = ["left", "center", "right"] as const;
+export const SCROLL_SPEEDS = ["slow", "normal", "fast"] as const;
+export const MEDIA_POSITIONS = ["center", "top", "bottom", "left", "right"] as const;
+export const MEDIA_SCALES = ["cover", "contain", "fill"] as const;
+
+export const DEFAULT_DIRECTOR_CONFIG = {
+  entryEffect: "fade" as const,
+  entryDuration: 1.0,
+  entryDelay: 0,
+  exitEffect: "fade" as const,
+  exitDuration: 0.8,
+  backgroundColor: "#0a0a0a",
+  textColor: "#f0f0f0",
+  headingSize: "6xl" as const,
+  bodySize: "lg" as const,
+  fontWeight: "normal" as const,
+  alignment: "center" as const,
+  scrollSpeed: "normal" as const,
+  parallaxIntensity: 0.3,
+  animationDuration: 2.0,
+  fadeOnScroll: true,
+  blurOnScroll: false,
+  scaleOnScroll: false,
+  mediaPosition: "center" as const,
+  mediaScale: "cover" as const,
+  mediaOpacity: 1.0,
+};
+
 // Types
 export type FormField = z.infer<typeof formFieldSchema>;
 export type FormConfig = z.infer<typeof formConfigSchema>;
@@ -778,3 +866,4 @@ export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type ProjectScene = typeof projectScenes.$inferSelect;
 export type InsertProjectScene = z.infer<typeof insertProjectSceneSchema>;
+export type DirectorConfig = z.infer<typeof directorConfigSchema>;
