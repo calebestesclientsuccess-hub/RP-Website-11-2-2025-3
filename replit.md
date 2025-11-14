@@ -36,6 +36,7 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
     - In-Grid Expansion with `layoutId` morphing animations for project details.
     - Scrollytelling encyclopedia pages (`/branding/:slug`) with trigger-based GSAP animations and a scene renderer interpreting `sceneConfig` JSONB for dynamic content. Features a 7-layer fix stack for animation reliability and accessibility.
     - API-backed project loading with production content.
+    - **AI-Powered Scene Generation**: Gemini-based scene creation using structured JSON output with validation. Features prompt templates (database-stored with tenant isolation), type-safe scene configuration, and mandatory preview before saving.
 
 **System Design Choices:**
 - **Frontend**: React 18 (Vite), Tailwind CSS, Wouter (routing), React Query (data fetching), Shadcn UI.
@@ -57,3 +58,4 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 - **React Hook Form**: Form management and validation.
 - **Zod**: Schema validation.
 - **Gmail Connector**: Email sending service.
+- **Gemini AI (Replit AI Integrations)**: Multimodal LLM for scene generation. Uses gemini-2.5-flash model via Replit's managed service (no API key required, billed to credits).
