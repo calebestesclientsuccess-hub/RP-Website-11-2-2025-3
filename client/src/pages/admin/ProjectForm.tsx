@@ -84,7 +84,7 @@ export default function ProjectForm() {
   // Populate form when editing
   useEffect(() => {
     if (isEdit && project) {
-      form.reset({
+      const formData = {
         slug: project.slug,
         title: project.title,
         clientName: project.clientName || "",
@@ -97,7 +97,8 @@ export default function ProjectForm() {
         modalMediaUrls: project.modalMediaUrls || [],
         testimonialText: project.testimonialText || "",
         testimonialAuthor: project.testimonialAuthor || "",
-      });
+      };
+      form.reset(formData);
       setCategories(project.categories || []);
       setMediaUrls(project.modalMediaUrls || []);
     }
@@ -153,17 +154,12 @@ export default function ProjectForm() {
   });
 
   const onSubmit = (data: FormValues) => {
-    // Include dynamic arrays in submission
-    const submitData = {
-      ...data,
-      categories,
-      modalMediaUrls: mediaUrls,
-    };
-
+    // Schema preprocessors handle blank → null
+    // Arrays are already synced via form.setValue
     if (isEdit) {
-      updateMutation.mutate(submitData);
+      updateMutation.mutate(data);
     } else {
-      createMutation.mutate(submitData as InsertProject);
+      createMutation.mutate(data as InsertProject);
     }
   };
 
@@ -173,24 +169,32 @@ export default function ProjectForm() {
 
   const handleAddCategory = () => {
     if (categoryInput.trim()) {
-      setCategories([...categories, categoryInput.trim()]);
+      const newCategories = [...categories, categoryInput.trim()];
+      setCategories(newCategories);
+      form.setValue('categories', newCategories as any);
       setCategoryInput("");
     }
   };
 
   const handleRemoveCategory = (index: number) => {
-    setCategories(categories.filter((_, i) => i !== index));
+    const newCategories = categories.filter((_, i) => i !== index);
+    setCategories(newCategories);
+    form.setValue('categories', newCategories as any);
   };
 
   const handleAddMediaUrl = () => {
     if (mediaUrlInput.trim()) {
-      setMediaUrls([...mediaUrls, mediaUrlInput.trim()]);
+      const newMediaUrls = [...mediaUrls, mediaUrlInput.trim()];
+      setMediaUrls(newMediaUrls);
+      form.setValue('modalMediaUrls', newMediaUrls as any);
       setMediaUrlInput("");
     }
   };
 
   const handleRemoveMediaUrl = (index: number) => {
-    setMediaUrls(mediaUrls.filter((_, i) => i !== index));
+    const newMediaUrls = mediaUrls.filter((_, i) => i !== index);
+    setMediaUrls(newMediaUrls);
+    form.setValue('modalMediaUrls', newMediaUrls as any);
   };
 
   if (isEdit && isLoading) {

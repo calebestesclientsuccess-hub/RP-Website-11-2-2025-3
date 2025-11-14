@@ -36,6 +36,16 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
         - Routes: Lazy-loaded at /admin/testimonials/new and /admin/testimonials/:id/edit
         - Cache Management: Complete TanStack Query v5 invalidation for both list and detail queries across all mutations (create, update, delete, toggle featured)
         - ContentLibrary Integration: Full CRUD operations available from unified interface
+    - **Portfolio Projects CRUD** (✅ Complete - Task 3): Comprehensive portfolio management for 3-level branding system
+        - Storage Layer: Existing CRUD methods (getAllProjects, getProjectById, createProject, updateProject, deleteProject) with tenant isolation
+        - API Routes: 5 secure endpoints at /api/projects with requireAuth, 404 handling, Zod validation, and undefined filtering
+        - Schema Architecture: Preprocessors convert blank strings → null for 7 optional fields (clientName, thumbnailUrl, challengeText, solutionText, outcomeText, testimonialText, testimonialAuthor), enabling field clearing
+        - ProjectForm Component: Comprehensive form with 13 fields including dynamic arrays for categories and media URLs
+        - Dynamic Arrays: Categories and modalMediaUrls synced with react-hook-form via setValue on every add/remove operation
+        - Form Sections: Basic Info (title, slug, client, thumbnail, categories), Content (challenge/solution/outcome), Media (type selection, URL array), Testimonial (optional quote/author)
+        - Routes: Lazy-loaded at /admin/projects/new and /admin/projects/:id/edit
+        - Cache Management: Complete TanStack Query v5 invalidation for list, detail, and public queries (/api/projects, /api/projects/:id, /api/branding/projects)
+        - ContentLibrary Integration: Full CRUD operations with create/edit/delete actions, "Portfolio Project" option in Add Content dropdown
     - Database-driven blog with Markdown rendering and an admin dashboard for managing blog posts, video content, and widget configuration. Features rich text editor, content scheduling, and authentication.
 - **SEO Optimizations**: Comprehensive technical SEO foundation including `robots.txt`, `sitemap.xml`, favicons, canonical URLs, `react-helmet-async` for meta tags, structured data (JSON-LD), and Core Web Vitals optimization.
 - **Error Handling**: Single global `ErrorBoundary` component.
