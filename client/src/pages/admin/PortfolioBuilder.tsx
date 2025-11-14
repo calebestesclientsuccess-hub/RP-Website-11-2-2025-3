@@ -64,7 +64,7 @@ export default function PortfolioBuilder() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [isNewProject, setIsNewProject] = useState(true);
-  
+
   // New project metadata
   const [newProjectTitle, setNewProjectTitle] = useState("");
   const [newProjectSlug, setNewProjectSlug] = useState("");
@@ -205,7 +205,7 @@ export default function PortfolioBuilder() {
     setUploadingVideo(true);
     try {
       const formData = new FormData();
-      formData.append('image', file); // Backend uses same multer config
+      formData.append('image', file); // Backend uses multer config
 
       const response = await fetch('/api/upload/image', {
         method: 'POST',
@@ -306,7 +306,7 @@ export default function PortfolioBuilder() {
           quotes: requestPayload.catalog.quotes.length,
         }
       });
-      
+
       // DIAGNOSTIC: Log full catalog to verify image data
       console.log('[Portfolio Builder] Full catalog being sent:', JSON.stringify(requestPayload.catalog, null, 2));
 
@@ -319,7 +319,7 @@ export default function PortfolioBuilder() {
 
       const result = await response.json();
       console.log('[Portfolio Builder] Generation successful:', result);
-      
+
       toast({
         title: "Success!",
         description: `Generated ${result.scenesCreated} scenes successfully`,
@@ -557,18 +557,28 @@ export default function PortfolioBuilder() {
                                 data-testid="input-image-alt"
                               />
 
-                              <Label>Caption (Optional)</Label>
-                              <Input
-                                value={imageInput.caption}
-                                onChange={(e) => setImageInput(prev => ({ ...prev, caption: e.target.value }))}
-                                placeholder="Optional caption..."
-                                data-testid="input-image-caption"
-                              />
+                               <Label>Caption (Optional)</Label>
+                               <Input
+                                 value={imageInput.caption}
+                                 onChange={(e) => setImageInput(prev => ({ ...prev, caption: e.target.value }))}
+                                 placeholder="Optional caption..."
+                                 data-testid="input-image-caption"
+                               />
 
-                              <Button onClick={handleAddImage} data-testid="button-add-image">
-                                <Plus className="w-4 h-4 mr-2" />
-                                Add Image
-                              </Button>
+                               <div className="pt-4 border-t">
+                                 <Button
+                                   onClick={handleAddImage}
+                                   data-testid="button-add-image"
+                                   size="lg"
+                                   className="w-full"
+                                 >
+                                   <Plus className="w-4 h-4 mr-2" />
+                                   Add Image to Catalog
+                                 </Button>
+                                 <p className="text-xs text-muted-foreground mt-2 text-center">
+                                   Click to save this image to your catalog before generating
+                                 </p>
+                               </div>
                             </>
                           )}
                         </div>
