@@ -1,15 +1,26 @@
 
 import { db } from "../server/db";
-import { projects, projectScenes } from "@shared/schema";
+import { projects, projectScenes, tenants } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 async function seedPortfolioTest() {
   console.log("🎨 Seeding test portfolio content...");
 
   try {
+    // Get the default tenant (or first tenant)
+    const [defaultTenant] = await db.select().from(tenants).limit(1);
+    
+    if (!defaultTenant) {
+      throw new Error("No tenant found. Please run database migrations first.");
+    }
+
+    console.log(`✅ Using tenant: ${defaultTenant.name} (${defaultTenant.id})`);
+
     // Create test project
     const [testProject] = await db
       .insert(projects)
       .values({
+        tenantId: defaultTenant.id,
         slug: "test-branding-portfolio",
         title: "Revolutionary SaaS Platform",
         clientName: "TechFlow Inc.",
@@ -34,7 +45,6 @@ async function seedPortfolioTest() {
     const testScenes = [
       {
         projectId: testProject.id,
-        order: 0,
         sceneConfig: {
           type: "text",
           content: {
@@ -57,7 +67,6 @@ async function seedPortfolioTest() {
       },
       {
         projectId: testProject.id,
-        order: 1,
         sceneConfig: {
           type: "image",
           content: {
@@ -79,7 +88,6 @@ async function seedPortfolioTest() {
       },
       {
         projectId: testProject.id,
-        order: 2,
         sceneConfig: {
           type: "split",
           content: {
@@ -106,7 +114,6 @@ async function seedPortfolioTest() {
       },
       {
         projectId: testProject.id,
-        order: 3,
         sceneConfig: {
           type: "quote",
           content: {
@@ -129,7 +136,6 @@ async function seedPortfolioTest() {
       },
       {
         projectId: testProject.id,
-        order: 4,
         sceneConfig: {
           type: "gallery",
           content: {
@@ -168,7 +174,6 @@ async function seedPortfolioTest() {
       },
       {
         projectId: testProject.id,
-        order: 5,
         sceneConfig: {
           type: "text",
           content: {
