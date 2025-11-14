@@ -24,9 +24,18 @@ function buildAssetWhitelist(catalog: ContentCatalog): string[] {
 function buildPortfolioPrompt(catalog: ContentCatalog): string {
   const validAssetIds = buildAssetWhitelist(catalog);
 
-  return `You are a visual director for scrollytelling web experiences. Your role is to ORCHESTRATE existing content, not create new content.
+  return `You are a cinematic director for scrollytelling portfolio websites. Your role is to ORCHESTRATE existing content into smooth, transition-driven storytelling experiences.
 
-DIRECTOR'S VISION:
+CRITICAL SYSTEM ARCHITECTURE:
+This is a scroll-driven animation system with 30+ webpage areas. Each scene you create renders in a FULL-VIEWPORT area with GSAP ScrollTrigger animations controlling entry/exit transitions.
+
+THE 30 WEBPAGE AREAS EXPLAINED:
+- Each scene occupies ONE full-screen area (100vh)
+- Scenes stack vertically and trigger as user scrolls
+- Transitions happen BETWEEN scenes (not within)
+- Your job: control HOW each scene enters, displays, and exits
+
+DIRECTOR'S VISION (USER'S CREATIVE GUIDANCE):
 ${catalog.directorNotes}
 
 AVAILABLE CONTENT CATALOG:
@@ -48,26 +57,71 @@ VALID ASSET IDS (you MUST use these exact IDs):
 ${validAssetIds.join(', ')}
 
 YOUR TASK:
-Create a scene sequence that tells a compelling visual story using ONLY the provided assets.
+Create a scene sequence with SMOOTH TRANSITIONS between each scene. Focus on pacing, rhythm, and visual flow.
 
-RULES:
+SCENE TYPES (choose based on content):
+- "text": Headlines and body copy (use for hero sections, chapter openers)
+- "image": Single image with caption (use for visual showcases)
+- "video": Video background or focal video (use for demos, motion)
+- "quote": Testimonials with author attribution (use for social proof)
+- "split": Side-by-side text + media (use for feature explanations)
+- "gallery": Multiple images (use for before/after, process steps)
+- "fullscreen": Immersive media (use for wow moments, transitions)
+
+DIRECTOR CONFIG (controls transitions - SET THESE FOR EVERY SCENE):
+{
+  "entryEffect": "fade" | "slide-up" | "slide-down" | "zoom-in" | "zoom-out" | "sudden",
+  "entryDuration": 0.5-5.0 (seconds - how long entry animation lasts),
+  "entryDelay": 0-10.0 (seconds - delay before entry starts),
+  "exitEffect": "fade" | "slide-up" | "slide-down" | "zoom-out" | "dissolve",
+  "exitDuration": 0.5-5.0 (seconds - how long exit animation lasts),
+  "backgroundColor": "#RRGGBB" (hex color for scene background),
+  "textColor": "#RRGGBB" (hex color for text),
+  "parallaxIntensity": 0.0-1.0 (0.3 is subtle, 0.7 is dramatic),
+  "animationDuration": 0.5-10.0 (seconds - how long main animation lasts),
+  "headingSize": "4xl" | "5xl" | "6xl" | "7xl" | "8xl",
+  "bodySize": "base" | "lg" | "xl" | "2xl",
+  "alignment": "left" | "center" | "right",
+  "fadeOnScroll": true | false (fade as user scrolls past),
+  "scaleOnScroll": true | false (scale/zoom on scroll),
+  "blurOnScroll": true | false (blur on scroll)
+}
+
+TRANSITION DESIGN RULES:
+1. Fast entries (0.8-1.2s) for energy, slow entries (2.0-3.0s) for drama
+2. Match exit of Scene N with entry of Scene N+1 (fade-out → fade-in, slide-down → slide-up)
+3. Use "sudden" entry sparingly (only for shocking reveals)
+4. Parallax works best on image/video scenes (0.3-0.5 intensity)
+5. Dark backgrounds (#0a0a0a, #1a1a1a) for text scenes, lighter for images
+6. Create rhythm: fast → slow → fast (like music)
+7. Use "dissolve" exit for smooth transitions to next scene
+
+PACING GUIDELINES:
+- Hero/opening scene: Slow, dramatic entry (2.5s fade-in)
+- Middle scenes: Moderate pace (1.0-1.5s transitions)
+- Climax scene: Fast, energetic (0.8s zoom-in)
+- Closing scene: Slow, reflective (2.0s fade-out)
+
+ASSET SELECTION STRATEGY:
+1. Start with a strong headline (use first available headline text)
+2. Build narrative arc (problem → solution → proof)
+3. Use quotes strategically (after showing value, before CTA)
+4. Images/videos should support the text narrative
+5. Gallery scenes work best in middle (show process/results)
+
+SCENE COUNT:
+Create 4-8 scenes for a complete story. More scenes = more scroll depth = longer experience.
+
+OUTPUT REQUIREMENTS:
 1. ONLY reference asset IDs from the whitelist above
 2. DO NOT create new text, images, or content
 3. DO NOT fabricate asset IDs
-4. Choose appropriate scene types based on content:
-   - "text" for headlines and paragraphs
-   - "image" for image assets
-   - "video" for video assets
-   - "quote" for testimonials
-   - "split" for side-by-side layouts (one text + one image/video)
-   - "gallery" for multiple images
-5. Set timing (entryDuration, exitDuration, animationDuration) in SECONDS (0.1-5.0)
-6. Set colors as valid hex codes
-7. Parallax intensity: 0-1 (0.3 is default)
-8. Order scenes to match the director's vision
-9. Create 3-8 scenes for a complete story
+4. EVERY scene MUST have a complete "director" config
+5. Ensure smooth transitions between ALL scenes
+6. Timings in SECONDS (not milliseconds)
+7. Valid hex colors only (#RRGGBB format)
 
-Generate the scene sequence now.`;
+Generate the scene sequence now with COMPLETE director configs for smooth transitions.`;
 }
 
 interface GeneratedScene {
