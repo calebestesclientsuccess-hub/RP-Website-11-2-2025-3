@@ -85,7 +85,13 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
         - **Dynamic Routes**: /branding/:slug pages with GSAP-powered scroll-driven animations honoring prefers-reduced-motion
         - **Particle Dissolve**: 1.2s canvas-based transition from Level 2 expansion to Level 3 scrollytelling delivering "raw energy of life" feeling
         - **Scene Renderer**: Interprets project_scenes.sceneConfig JSONB with 7 scene types (hero, text, image, video, split-layout, gallery, testimonial)
-        - **Immersive Animations**: Full-viewport parallax sections, scroll-triggered reveals, cinematic fade transitions using GSAP ScrollTrigger
+        - **Bi-Directional Scrollytelling**: Unified timeline architecture for video-playback-style animation
+            - Single gsap.timeline() per scene with ScrollTrigger scrub for automatic forward/reverse playback
+            - Timeline phases: [Entry Delay] → [Entry Animation] → [Visible Hold] → [Exit Animation]
+            - Scroll down: Timeline plays forward 0→100% (unfold), Scroll up: Timeline reverses 100→0% (refold)
+            - Infinite replay without reset logic - animations cleanly replay on repeated scroll passes
+            - Director config fully controls timeline: entryEffect (8 types), entryDuration, entryDelay, exitEffect (7 types), exitDuration, scrollSpeed (slow/normal/fast), parallaxIntensity (0-1), fadeOnScroll, scaleOnScroll
+            - Accessibility: Simplified fade timeline for prefers-reduced-motion with delay support
         - **Navigation UI**: Scroll progress tracking, scene navigation, return to portfolio button with persistent header
         - **Data Architecture**: Database-driven with extended schema (client_name, categories, testimonial_text, testimonial_author fields)
         - **API Integration**: Public endpoint GET /api/branding/projects returns all projects with React Query consumption
