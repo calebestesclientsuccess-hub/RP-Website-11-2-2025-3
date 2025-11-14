@@ -31,6 +31,7 @@ import {
 import { DirectorConfigForm } from "@/components/DirectorConfigForm";
 import { DEFAULT_DIRECTOR_CONFIG } from "@shared/schema";
 import { useForm } from "react-hook-form";
+import { Form } from "@/components/ui/form";
 
 interface SceneBuilder {
   id: string;
@@ -515,121 +516,123 @@ export default function PortfolioBuilder() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 mt-4">
-            {/* Scene Type */}
-            <div className="space-y-2">
-              <Label>Scene Type</Label>
-              <Select
-                value={form.watch("sceneType")}
-                onValueChange={(value) => form.setValue("sceneType", value as any)}
-              >
-                <SelectTrigger data-testid="select-scene-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="text">Text Section</SelectItem>
-                  <SelectItem value="image">Image</SelectItem>
-                  <SelectItem value="video">Video</SelectItem>
-                  <SelectItem value="split">Split Layout</SelectItem>
-                  <SelectItem value="gallery">Gallery</SelectItem>
-                  <SelectItem value="quote">Quote/Testimonial</SelectItem>
-                  <SelectItem value="fullscreen">Fullscreen Media</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <Form {...form}>
+            <div className="space-y-6 mt-4">
+              {/* Scene Type */}
+              <div className="space-y-2">
+                <Label>Scene Type</Label>
+                <Select
+                  value={form.watch("sceneType")}
+                  onValueChange={(value) => form.setValue("sceneType", value as any)}
+                >
+                  <SelectTrigger data-testid="select-scene-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="text">Text Section</SelectItem>
+                    <SelectItem value="image">Image</SelectItem>
+                    <SelectItem value="video">Video</SelectItem>
+                    <SelectItem value="split">Split Layout</SelectItem>
+                    <SelectItem value="gallery">Gallery</SelectItem>
+                    <SelectItem value="quote">Quote/Testimonial</SelectItem>
+                    <SelectItem value="fullscreen">Fullscreen Media</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* AI Prompt for this scene */}
-            <div className="space-y-2">
-              <Label>AI Prompt for This Scene *</Label>
-              <Textarea
-                value={form.watch("aiPrompt")}
-                onChange={(e) => form.setValue("aiPrompt", e.target.value)}
-                placeholder="Example: Create a bold hero section with dramatic entrance. Use large typography, dark gradient background, and emphasize the revolutionary nature of the product."
-                rows={3}
-                data-testid="textarea-scene-ai-prompt"
-              />
-            </div>
+              {/* AI Prompt for this scene */}
+              <div className="space-y-2">
+                <Label>AI Prompt for This Scene *</Label>
+                <Textarea
+                  value={form.watch("aiPrompt")}
+                  onChange={(e) => form.setValue("aiPrompt", e.target.value)}
+                  placeholder="Example: Create a bold hero section with dramatic entrance. Use large typography, dark gradient background, and emphasize the revolutionary nature of the product."
+                  rows={3}
+                  data-testid="textarea-scene-ai-prompt"
+                />
+              </div>
 
-            {/* Content Fields */}
-            <Card className="p-4 space-y-4">
-              <h4 className="font-medium">Content (Optional - AI will enhance)</h4>
+              {/* Content Fields */}
+              <Card className="p-4 space-y-4">
+                <h4 className="font-medium">Content (Optional - AI will enhance)</h4>
 
-              {sceneType === "text" && (
-                <>
+                {sceneType === "text" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Heading</Label>
+                      <Input
+                        value={form.watch("heading")}
+                        onChange={(e) => form.setValue("heading", e.target.value)}
+                        placeholder="Optional: provide base heading"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Body Text</Label>
+                      <Textarea
+                        value={form.watch("body")}
+                        onChange={(e) => form.setValue("body", e.target.value)}
+                        placeholder="Optional: provide base content"
+                        rows={3}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {sceneType === "image" && (
                   <div className="space-y-2">
-                    <Label>Heading</Label>
+                    <Label>Image URL</Label>
                     <Input
-                      value={form.watch("heading")}
-                      onChange={(e) => form.setValue("heading", e.target.value)}
-                      placeholder="Optional: provide base heading"
+                      value={form.watch("url")}
+                      onChange={(e) => form.setValue("url", e.target.value)}
+                      placeholder="https://..."
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Body Text</Label>
-                    <Textarea
-                      value={form.watch("body")}
-                      onChange={(e) => form.setValue("body", e.target.value)}
-                      placeholder="Optional: provide base content"
-                      rows={3}
-                    />
-                  </div>
-                </>
-              )}
+                )}
 
-              {sceneType === "image" && (
-                <div className="space-y-2">
-                  <Label>Image URL</Label>
-                  <Input
-                    value={form.watch("url")}
-                    onChange={(e) => form.setValue("url", e.target.value)}
-                    placeholder="https://..."
-                  />
-                </div>
-              )}
+                {sceneType === "quote" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Quote</Label>
+                      <Textarea
+                        value={form.watch("quote")}
+                        onChange={(e) => form.setValue("quote", e.target.value)}
+                        placeholder="The quote text..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Author</Label>
+                      <Input
+                        value={form.watch("author")}
+                        onChange={(e) => form.setValue("author", e.target.value)}
+                        placeholder="Author name"
+                      />
+                    </div>
+                  </>
+                )}
+              </Card>
 
-              {sceneType === "quote" && (
-                <>
-                  <div className="space-y-2">
-                    <Label>Quote</Label>
-                    <Textarea
-                      value={form.watch("quote")}
-                      onChange={(e) => form.setValue("quote", e.target.value)}
-                      placeholder="The quote text..."
-                      rows={3}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Author</Label>
-                    <Input
-                      value={form.watch("author")}
-                      onChange={(e) => form.setValue("author", e.target.value)}
-                      placeholder="Author name"
-                    />
-                  </div>
-                </>
-              )}
-            </Card>
+              {/* Director Config */}
+              <Card className="p-4">
+                <DirectorConfigForm form={form} sceneType={sceneType} />
+              </Card>
 
-            {/* Director Config */}
-            <Card className="p-4">
-              <DirectorConfigForm form={form} sceneType={sceneType} />
-            </Card>
-
-            <div className="flex gap-2">
-              <Button onClick={handleSaveScene} data-testid="button-save-scene">
-                {editingSceneId ? "Update Scene" : "Add Scene"}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsSceneDialogOpen(false);
-                  setEditingSceneId(null);
-                }}
-              >
-                Cancel
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={handleSaveScene} data-testid="button-save-scene">
+                  {editingSceneId ? "Update Scene" : "Add Scene"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsSceneDialogOpen(false);
+                    setEditingSceneId(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
-          </div>
+          </Form>
         </DialogContent>
       </Dialog>
     </ProtectedRoute>
