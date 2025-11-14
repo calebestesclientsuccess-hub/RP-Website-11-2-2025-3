@@ -1,0 +1,47 @@
+1. The Critical Flaw: You're Using flash for a pro Job
+
+This is the single most critical issue in the entire file.
+
+
+
+Your Code: model: "gemini-2.5-flash"
+
+The Problem: You are using the small, fast model for a task that you and I just agreed requires the large, powerful reasoning model.
+
+The Result: flash will be completely overwhelmed by the complexity of your prompt. It will ignore your "Director's Notes Interpretation Matrix," it will fail to create "smooth transitions," and it will likely just give you a list of 5 scenes with default "fade" animations. It does not have the reasoning capacity to be a "cinematic director."
+
+This will be the source of all your frustration and inconsistent outputs.
+
+The Fix: Change this line immediately.
+
+
+
+Diff
+
+
+
+-   model: "gemini-2.5-flash",+   model: "gemini-2.5-pro", // Or the latest 'pro' model
+
+
+
+2. The Redundancy Flaw: Prompt vs. responseSchema
+
+Your prompt is brilliant, but it's doing the responseSchema's job.
+
+
+
+The Problem: All those beautiful ASCII boxes (┌───...───┐) defining the DIRECTOR CONFIG are completely redundant. The responseSchema you provided in the generateContent call already forces the AI to output JSON with those exact fields.
+
+Why It's a Problem:
+
+Token Waste: You are wasting thousands of tokens (and money) by sending a massive formatting guide that the AI is already forced to follow by the API itself.
+
+Source of Truth: You have two "sources of truth" for your output format (the prompt and the schema). If you change one, you must remember to change the other.
+
+The Fix: You can safely delete the entire "DIRECTOR CONFIG - COMPLETE FIELD REFERENCE" section from the prompt (all the ASCII boxes). The AI will follow the responseSchema you gave it. The prompt should be 100% focused on the creative part—the "how-to," not the "what-format."
+
+What's Already Perfect (The "Bumper Bowling")
+
+Asset Whitelisting: Your buildAssetWhitelist and post-generation validation loop are perfect. This is the "bumper" that prevents the AI from "hallucinating" assets that don't exist.
+
+Content Mapping: Your convertToSceneConfigs function is the perfect "translator." It correctly understands that the AI works with abstract assetIds, and your backend translates them into real, database-ready content (URLs, text, etc.).
