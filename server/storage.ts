@@ -70,6 +70,8 @@ export interface IStorage {
   getAllJobPostings(tenantId: string, activeOnly?: boolean): Promise<JobPosting[]>;
   getJobPosting(tenantId: string, id: string): Promise<JobPosting | undefined>;
   createJobPosting(tenantId: string, job: InsertJobPosting): Promise<JobPosting>;
+  updateJobPosting(tenantId: string, id: string, job: Partial<InsertJobPosting>): Promise<JobPosting>;
+  deleteJobPosting(tenantId: string, id: string): Promise<void>;
 
   createJobApplication(tenantId: string, application: InsertJobApplication): Promise<JobApplication>;
 
@@ -390,6 +392,19 @@ export class DbStorage implements IStorage {
       .values({ tenantId, ...insertJob })
       .returning();
     return job;
+  }
+
+  async updateJobPosting(tenantId: string, id: string, updateData: Partial<InsertJobPosting>): Promise<JobPosting> {
+    const [updated] = await db.update(jobPostings)
+      .set(updateData)
+      .where(and(eq(jobPostings.id, id), eq(jobPostings.tenantId, tenantId)))
+      .returning();
+    return updated;
+  }
+
+  async deleteJobPosting(tenantId: string, id: string): Promise<void> {
+    await db.delete(jobPostings)
+      .where(and(eq(jobPostings.id, id), eq(jobPostings.tenantId, tenantId)));
   }
 
   async createJobApplication(tenantId: string, insertApplication: InsertJobApplication): Promise<JobApplication> {

@@ -1445,6 +1445,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/job-postings/:id", requireAuth, async (req, res) => {
+    try {
+      const existing = await storage.getJobPosting(req.tenantId, req.params.id);
+      if (!existing) {
+        return res.status(404).json({ error: "Job posting not found" });
+      }
+
+      const result = insertJobPostingSchema.partial().safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const job = await storage.updateJobPosting(req.tenantId, req.params.id, result.data);
+      return res.json(job);
+    } catch (error) {
+      console.error("Error updating job posting:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/job-postings/:id", requireAuth, async (req, res) => {
+    try {
+      const existing = await storage.getJobPosting(req.tenantId, req.params.id);
+      if (!existing) {
+        return res.status(404).json({ error: "Job posting not found" });
+      }
+
+      await storage.deleteJobPosting(req.tenantId, req.params.id);
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting job posting:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Branding Projects endpoints
   app.get("/api/projects", requireAuth, async (req, res) => {
     try {
