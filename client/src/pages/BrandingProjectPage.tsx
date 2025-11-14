@@ -134,6 +134,7 @@ export default function BrandingProjectPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [activeSceneIndex, setActiveSceneIndex] = useState<number>(0);
   const [scrollProgress, setScrollProgress] = useState<number>(0);
+  const [animationsReady, setAnimationsReady] = useState(false);
 
   // Fetch project data
   const { data: project, isLoading: isLoadingProject } = useQuery<Project>({
@@ -260,52 +261,104 @@ export default function BrandingProjectPage() {
         exitDuration,
       });
       
+      // PHASE 1: Diagnostic logging to falsify hypotheses H1-H5
+      console.log(`[Scene ${index}] Pre-GSAP State:`, {
+        dataScene: (element as HTMLElement).dataset.scene,
+        className: element.className,
+        hasOpacityZeroClass: element.classList.contains('opacity-0'),
+        computedOpacity: getComputedStyle(element).opacity,
+        computedVisibility: getComputedStyle(element).visibility,
+        tagName: element.tagName,
+        inlineStyle: (element as HTMLElement).style.cssText,
+      });
+      
       if (prefersReducedMotion) {
         // Simplified animation for accessibility - just fade in/out
         gsap.fromTo(
           element,
-          { opacity: 0 },
+          { autoAlpha: 0 },
           {
-            opacity: 1,
+            autoAlpha: 1,
             duration: 0.3,
             delay: director.entryDelay || 0,
             scrollTrigger: {
               trigger: element,
-              start: "top 75%",
+              start: "top bottom",
               toggleActions: "play none none reverse",
             }
           }
         );
       } else {
-        // Set initial hidden state explicitly before ScrollTrigger takes over
-        gsap.set(element, entryEffect.from);
-        
         // Entry animation - trigger when scene enters viewport
+        // Build 'from' state with autoAlpha instead of opacity
+        const fromState = { ...entryEffect.from };
+        if ('opacity' in fromState) {
+          fromState.autoAlpha = fromState.opacity;
+          delete fromState.opacity;
+        }
+        
+        // Build 'to' state with autoAlpha instead of opacity
+        const toState = { ...entryEffect.to };
+        if ('opacity' in toState) {
+          toState.autoAlpha = toState.opacity;
+          delete toState.opacity;
+        }
+        
+        // Animate section element
+        // NOTE: Using "top bottom" start point ensures animation plays even when scrollToScene() centers the scene
         gsap.fromTo(
           element,
-          { ...entryEffect.from },
+          fromState,
           {
-            ...entryEffect.to,
+            ...toState,
             duration: entryDuration,
             delay: director.entryDelay || 0,
             ease: "power3.out",
             scrollTrigger: {
               trigger: element,
-              start: "top 75%",
+              start: "top bottom",
               toggleActions: "play none none reverse",
             }
           }
         );
         
+        // Also animate media elements inside the scene (images/videos with data-media-opacity)
+        const mediaElements = element.querySelectorAll('[data-media-opacity]');
+        mediaElements.forEach((media) => {
+          const targetOpacity = parseFloat((media as HTMLElement).dataset.mediaOpacity || '1');
+          gsap.fromTo(
+            media,
+            { opacity: 0 },
+            {
+              opacity: targetOpacity,
+              duration: entryDuration,
+              delay: director.entryDelay || 0,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: element,
+                start: "top bottom",
+                toggleActions: "play none none reverse",
+              }
+            }
+          );
+        });
+        
         // Exit animation - trigger when scene leaves viewport (if configured)
         if (exitEffect) {
+          // Build exit state with autoAlpha instead of opacity
+          const exitState = { ...exitEffect };
+          if ('opacity' in exitState) {
+            exitState.autoAlpha = exitState.opacity;
+            delete exitState.opacity;
+          }
+          
           ScrollTrigger.create({
             trigger: element,
             start: "bottom bottom",
             end: "bottom top",
             onLeave: () => {
               gsap.to(element, {
-                ...exitEffect,
+                ...exitState,
                 duration: exitDuration,
                 ease: "power2.in",
               });
@@ -313,12 +366,22 @@ export default function BrandingProjectPage() {
             onEnterBack: () => {
               // Reset to visible state when scrolling back
               gsap.to(element, {
-                opacity: 1,
+                autoAlpha: 1,
                 y: 0,
                 x: 0,
                 scale: 1,
                 filter: 'blur(0px)',
                 duration: 0.3,
+              });
+              
+              // Also reset media elements to their target opacity
+              const mediaElements = element.querySelectorAll('[data-media-opacity]');
+              mediaElements.forEach((media) => {
+                const targetOpacity = parseFloat((media as HTMLElement).dataset.mediaOpacity || '1');
+                gsap.to(media, {
+                  opacity: targetOpacity,
+                  duration: 0.3,
+                });
               });
             },
           });
@@ -352,20 +415,48 @@ export default function BrandingProjectPage() {
       }
     });
 
+    // Signal that animations are ready for programmatic navigation
+    setAnimationsReady(true);
+
     return () => {
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
       window.removeEventListener('scroll', updateScrollProgress);
+      setAnimationsReady(false);
     };
   }, [scenes]);
 
   // Navigate to a specific scene
   const scrollToScene = (index: number) => {
+    // CRITICAL: Gate navigation until animations are ready
+    // Prevents button clicks before ScrollTrigger initialization completes
+    if (!animationsReady) {
+      console.warn('[scrollToScene] Animations not ready yet, deferring navigation');
+      return;
+    }
+    
     if (!scrollContainerRef.current) return;
     const sceneElements = scrollContainerRef.current.querySelectorAll('[data-scene]');
     const targetScene = sceneElements[index] as HTMLElement;
     
     if (targetScene) {
-      targetScene.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // CRITICAL FIX: Scroll to position that brings scene INSIDE viewport
+      // Previous calculation (sceneTop - viewportHeight - 100) left scene BELOW viewport
+      // Example: sceneTop=1500, viewportHeight=800 → target=600 → new top=900 (still below 800!)
+      // New calculation brings scene to 40% down viewport, ensuring trigger fires
+      const sceneTop = targetScene.getBoundingClientRect().top + window.scrollY;
+      const viewportHeight = window.innerHeight;
+      const scrollTarget = sceneTop - (viewportHeight * 0.4); // Position scene at 40% down viewport
+      
+      console.log('[scrollToScene] Scrolling to scene', index, 'target:', scrollTarget);
+      window.scrollTo({ top: scrollTarget, behavior: 'smooth' });
+      
+      // CRITICAL: Refresh ScrollTrigger after programmatic scroll
+      // ScrollTrigger doesn't always detect programmatic scroll events
+      // Refresh ensures triggers fire correctly
+      setTimeout(() => {
+        console.log('[scrollToScene] Refreshing ScrollTrigger');
+        ScrollTrigger.refresh();
+      }, 100); // Small delay to ensure scroll has started
     }
   };
 
@@ -443,7 +534,8 @@ export default function BrandingProjectPage() {
                   <button
                     key={index}
                     onClick={() => scrollToScene(index)}
-                    className="group hover-elevate active-elevate-2 p-1 rounded-full transition-all"
+                    disabled={!animationsReady}
+                    className="group hover-elevate active-elevate-2 p-1 rounded-full transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     data-testid={`button-scene-${index}`}
                     aria-label={`Go to scene ${index + 1}`}
                   >
@@ -491,9 +583,9 @@ export default function BrandingProjectPage() {
             <section
               key={scene.id}
               data-scene={index}
-              className="min-h-screen flex items-center justify-center px-4 py-24 opacity-0"
+              className="min-h-screen flex items-center justify-center px-4 py-24"
               data-testid={`scene-${index}`}
-              style={{ willChange: 'opacity, transform' }}
+              style={{ opacity: 0, visibility: 'hidden', willChange: 'opacity, transform' }}
             >
               <div className="container mx-auto max-w-4xl">
                 {/* Render scene based on sceneConfig type */}
@@ -585,7 +677,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               src={content.url}
               alt={content.alt || "Scene image"}
               className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
-              style={{ opacity: director.mediaOpacity }}
+              data-media-opacity={director.mediaOpacity}
               loading="lazy"
             />
           </div>
@@ -616,7 +708,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               src={content.url}
               controls
               className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
-              style={{ opacity: director.mediaOpacity }}
+              data-media-opacity={director.mediaOpacity}
             />
           </div>
           {content.caption && (
@@ -654,17 +746,17 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
           <div className={`aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-muted/50 ${layout === "reverse" ? "md:order-1" : "md:order-2"}`}>
             {content.mediaType === "video" ? (
               <video
-                src={content.mediaUrl}
+                src={content.media}
                 controls
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
-                style={{ opacity: director.mediaOpacity }}
+                data-media-opacity={director.mediaOpacity}
               />
             ) : (
               <img
-                src={content.mediaUrl}
+                src={content.media}
                 alt={content.alt || "Scene media"}
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
-                style={{ opacity: director.mediaOpacity }}
+                data-media-opacity={director.mediaOpacity}
                 loading="lazy"
               />
             )}
