@@ -33,6 +33,8 @@ import {
   updateProjectSchema,
   insertProjectSceneSchema,
   updateProjectSceneSchema,
+  insertPromptTemplateSchema,
+  updatePromptTemplateSchema,
   assessmentResultBuckets,
   type InsertAssessmentResponse
 } from "@shared/schema";
@@ -1631,6 +1633,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({ success: true });
     } catch (error) {
       console.error("Error deleting project scene:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Prompt Templates endpoints (for AI scene generation)
+  // NOTE: These routes use requireAuth only. For production, consider adding
+  // role-based authorization (e.g., requireTenantRole('admin')) to mutation endpoints
+  app.get("/api/prompt-templates", requireAuth, async (req, res) => {
+    try {
+      const activeOnly = req.query.activeOnly === 'true';
+      const templates = await storage.getAllPromptTemplates(req.tenantId, activeOnly);
+      return res.json(templates);
+    } catch (error) {
+      console.error("Error fetching prompt templates:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // IMPORTANT: /default route MUST come before /:id route
+  app.get("/api/prompt-templates/default", requireAuth, async (req, res) => {
+    try {
+      const sceneType = req.query.sceneType as string | undefined;
+      const scope = (req.query.scope as string) || 'global';
+      
+      // Validate scope against schema constraints
+      if (scope !== 'global' && scope !== 'tenant') {
+        return res.status(400).json({ 
+          error: "Invalid scope parameter. Must be 'global' or 'tenant'" 
+        });
+      }
+      
+      const template = await storage.getDefaultPromptTemplate(
+        req.tenantId,
+        sceneType === 'null' ? null : sceneType,
+        scope
+      );
+      
+      if (!template) {
+        return res.status(404).json({ error: "Default template not found" });
+      }
+      
+      return res.json(template);
+    } catch (error) {
+      console.error("Error fetching default prompt template:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/prompt-templates/:id", requireAuth, async (req, res) => {
+    try {
+      const template = await storage.getPromptTemplateById(req.tenantId, req.params.id);
+      if (!template) {
+        return res.status(404).json({ error: "Prompt template not found" });
+      }
+      return res.json(template);
+    } catch (error) {
+      console.error("Error fetching prompt template:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/prompt-templates", requireAuth, async (req, res) => {
+    try {
+      const result = insertPromptTemplateSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const template = await storage.createPromptTemplate(
+        req.tenantId,
+        req.session.userId,
+        result.data
+      );
+      return res.status(201).json(template);
+    } catch (error) {
+      console.error("Error creating prompt template:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/prompt-templates/:id", requireAuth, async (req, res) => {
+    try {
+      const result = updatePromptTemplateSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const template = await storage.updatePromptTemplate(
+        req.tenantId,
+        req.params.id,
+        req.session.userId,
+        result.data
+      );
+      return res.json(template);
+    } catch (error) {
+      console.error("Error updating prompt template:", error);
+      if (error instanceof Error && error.message.includes('not found')) {
+        return res.status(404).json({ error: "Prompt template not found or access denied" });
+      }
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/prompt-templates/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deletePromptTemplate(req.tenantId, req.params.id);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting prompt template:", error);
+      if (error instanceof Error && error.message.includes('not found')) {
+        return res.status(404).json({ error: "Prompt template not found or access denied" });
+      }
       return res.status(500).json({ error: "Internal server error" });
     }
   });
