@@ -71,6 +71,7 @@ const ContentLibraryLazy = lazy(() => import("@/pages/admin/ContentLibrary"));
 const TestimonialFormLazy = lazy(() => import("@/pages/admin/TestimonialForm"));
 const ProjectFormLazy = lazy(() => import("@/pages/admin/ProjectForm"));
 const JobPostingFormLazy = lazy(() => import("@/pages/admin/JobPostingForm"));
+const PortfolioBuilderLazy = lazy(() => import("@/pages/admin/PortfolioBuilder"));
 
 // Loading fallback component
 function PageLoadingFallback() {
@@ -117,6 +118,7 @@ const AssessmentAdminDashboard = withLazyLoading(AssessmentAdminDashboardLazy);
 const TestimonialForm = withLazyLoading(TestimonialFormLazy);
 const ProjectForm = withLazyLoading(ProjectFormLazy);
 const JobPostingForm = withLazyLoading(JobPostingFormLazy);
+const PortfolioBuilder = withLazyLoading(PortfolioBuilderLazy);
 
 
 function ScrollToTop() {
@@ -185,6 +187,7 @@ function Router() {
       <Route path="/admin/testimonials/:id/edit" component={TestimonialForm} />
       <Route path="/admin/projects/new" component={ProjectForm} />
       <Route path="/admin/projects/:id/edit" component={ProjectForm} />
+      <Route path="/admin/portfolio-builder" component={PortfolioBuilder} />
       <Route path="/admin/job-postings/new" component={JobPostingForm} />
       <Route path="/admin/job-postings/:id/edit" component={JobPostingForm} />
       <Route path="/admin/widget-config" component={WidgetConfigPage} />

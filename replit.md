@@ -44,6 +44,19 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
         - **User Flow**: Three-tab editor (Quick Add, Advanced, AI Generate) → Prompt input → JSON preview → Save to database
         - **Error Handling**: Detailed validation messages with field-level errors surfaced in UI toasts
         - **API**: POST `/api/scenes/generate-with-ai` with lazy-loaded Gemini client
+    - **AI Portfolio Builder** (`/admin/portfolio-builder`): Comprehensive project creation tool with AI-orchestrated scene generation.
+        - **Content Catalog System**: Structured asset management with the following fields:
+            - **Texts**: type (headline/subheading/paragraph, required) + content (required)
+            - **Images**: url (required) + alt (required for accessibility) + caption (optional)
+            - **Videos**: url (required) + caption (optional)
+            - **Quotes**: quote (required) + author (required) + role (optional)
+            - **Director Notes**: Non-empty string (required) providing AI orchestration guidance
+        - **AI Director Model**: Users provide all content; AI orchestrates presentation (scene ordering, timing, transitions, animations) based on director notes
+        - **Workflow**: Supports both new projects (requires title and slug; client optional) and adding scenes to existing projects
+        - **Validation**: Triple-layer enforcement (frontend UI → Zod schema refinement → backend runtime checks); catalog must contain at least one asset
+        - **Transactional Atomicity**: Drizzle transaction wrapper ensures project creation and scene inserts commit or rollback together
+        - **API**: POST `/api/portfolio/generate-with-ai` with Gemini orchestration via `portfolio-director.ts`
+        - **Navigation**: Accessible from admin sidebar with Sparkles icon
 
 **System Design Choices:**
 - **Frontend**: React 18 (Vite), Tailwind CSS, Wouter (routing), React Query (data fetching), Shadcn UI.

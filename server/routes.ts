@@ -35,9 +35,13 @@ import {
   updateProjectSceneSchema,
   insertPromptTemplateSchema,
   updatePromptTemplateSchema,
+  portfolioGenerateRequestSchema,
   assessmentResultBuckets,
-  type InsertAssessmentResponse
+  type InsertAssessmentResponse,
+  projects,
+  projectScenes
 } from "@shared/schema";
+import { eq, and, asc } from "drizzle-orm";
 import { calculatePointsBasedBucket, calculateDecisionTreeBucket } from "./utils/assessment-scoring";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
@@ -45,7 +49,6 @@ import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templat
 import { sendGmailEmail } from "./utils/gmail-client";
 import { sendLeadNotificationEmail } from "./utils/lead-notifications";
 import { db } from "./db";
-import { eq, asc } from "drizzle-orm";
 
 // Configure multer for memory storage (files will be uploaded to Cloudinary)
 const pdfUpload = multer({
@@ -1637,7 +1640,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Scene Generation endpoint
+  // AI Scene Generation endpoint (single scene, quick generation)
   app.post("/api/scenes/generate-with-ai", requireAuth, async (req, res) => {
     try {
       const requestSchema = z.object({
@@ -1672,6 +1675,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ 
         error: "Failed to generate scene", 
         details: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
+  // AI Portfolio Generation endpoint (full portfolio orchestration from content catalog)
+  app.post("/api/portfolio/generate-with-ai", requireAuth, async (req, res) => {
+    try {
+      // Validate request
+      const result = portfolioGenerateRequestSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const { catalog, projectId, newProjectTitle, newProjectSlug, newProjectClient } = result.data;
+
+      // Validate catalog has at least one asset
+      const totalAssets = catalog.texts.length + catalog.images.length + catalog.videos.length + catalog.quotes.length;
+      if (totalAssets === 0) {
+        return res.status(400).json({
+          error: "Catalog must contain at least one asset (text, image, video, or quote)",
+        });
+      }
+
+      // Validate new project requirements
+      if (!projectId && (!newProjectTitle || !newProjectSlug)) {
+        return res.status(400).json({
+          error: "New project requires title and slug",
+        });
+      }
+
+      // Lazy-load portfolio director
+      const { generatePortfolioWithAI, convertToSceneConfigs } = await import("./utils/portfolio-director");
+
+      // Call AI to orchestrate scenes
+      console.log(`[Portfolio AI] Generating scenes for ${catalog.texts.length} texts, ${catalog.images.length} images, ${catalog.videos.length} videos, ${catalog.quotes.length} quotes`);
+      const aiResult = await generatePortfolioWithAI(catalog);
+      console.log(`[Portfolio AI] Generated ${aiResult.scenes.length} scenes`);
+
+      // Convert AI scenes to database scene configs
+      const sceneConfigs = convertToSceneConfigs(aiResult.scenes, catalog);
+
+      // Wrap project creation and scene inserts in a transaction for atomicity
+      const result_data = await db.transaction(async (tx) => {
+        // Determine or create project
+        let finalProjectId: string;
+        
+        if (projectId) {
+          // Verify existing project access
+          const [existingProject] = await tx.select()
+            .from(projects)
+            .where(and(eq(projects.tenantId, req.tenantId), eq(projects.id, projectId)));
+          
+          if (!existingProject) {
+            throw new Error('Project not found or access denied');
+          }
+          finalProjectId = projectId;
+        } else {
+          // Create new project within transaction using tx client
+          const [newProject] = await tx.insert(projects).values({
+            tenantId: req.tenantId,
+            title: newProjectTitle!,
+            slug: newProjectSlug!,
+            clientName: newProjectClient || null,
+            thumbnailUrl: catalog.images[0]?.url || null,
+            categories: [],
+            challengeText: null,
+            solutionText: null,
+            outcomeText: null,
+            modalMediaType: "video",
+            modalMediaUrls: [],
+            testimonialText: null,
+            testimonialAuthor: null,
+          }).returning();
+          finalProjectId = newProject.id;
+          console.log(`[Portfolio AI] Created new project: ${finalProjectId}`);
+        }
+
+        // Bulk create scenes within transaction using tx client
+        const createdScenes = [];
+        for (const sceneConfig of sceneConfigs) {
+          const [scene] = await tx.insert(projectScenes).values({
+            projectId: finalProjectId,
+            sceneConfig,
+            order: createdScenes.length,
+          }).returning();
+          createdScenes.push(scene);
+        }
+
+        console.log(`[Portfolio AI] Created ${createdScenes.length} scenes for project ${finalProjectId}`);
+
+        return {
+          projectId: finalProjectId,
+          scenesCreated: createdScenes.length,
+          scenes: createdScenes,
+        };
+      });
+
+      return res.status(201).json(result_data);
+    } catch (error) {
+      console.error("Error generating portfolio with AI:", error);
+      return res.status(500).json({
+        error: "Failed to generate portfolio",
+        details: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
@@ -1829,7 +1939,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (templateId) {
         const template = await storage.getPromptTemplateById(req.tenantId, templateId);
         if (template && template.isActive) {
-          systemInstructions = template.promptTemplate;
+          systemInstructions = template.templateContent;
         }
       }
 

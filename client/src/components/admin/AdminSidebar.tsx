@@ -11,7 +11,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { FileText, Video, Settings, LogOut, LayoutDashboard, ClipboardList, Megaphone, Flag, Library } from "lucide-react";
+import { FileText, Video, Settings, LogOut, LayoutDashboard, ClipboardList, Megaphone, Flag, Library, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 
@@ -25,6 +25,11 @@ const menuItems = [
     title: "Content Library",
     url: "/admin/content",
     icon: Library,
+  },
+  {
+    title: "AI Portfolio Builder",
+    url: "/admin/portfolio-builder",
+    icon: Sparkles,
   },
   {
     title: "Feature Flags",

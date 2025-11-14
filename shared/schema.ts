@@ -919,3 +919,58 @@ export type DirectorConfig = z.infer<typeof directorConfigSchema>;
 export type PromptTemplate = typeof promptTemplates.$inferSelect;
 export type InsertPromptTemplate = z.infer<typeof insertPromptTemplateSchema>;
 export type UpdatePromptTemplate = z.infer<typeof updatePromptTemplateSchema>;
+
+// Portfolio Builder Content Catalog Schemas
+export const textAssetSchema = z.object({
+  id: z.string(),
+  type: z.enum(["headline", "paragraph", "subheading"]),
+  content: z.string().min(1),
+});
+
+export const imageAssetSchema = z.object({
+  id: z.string(),
+  url: z.string().url(),
+  alt: z.string().min(1),
+  caption: z.string().optional(),
+});
+
+export const videoAssetSchema = z.object({
+  id: z.string(),
+  url: z.string().url(),
+  caption: z.string().optional(),
+});
+
+export const quoteAssetSchema = z.object({
+  id: z.string(),
+  quote: z.string().min(1),
+  author: z.string().min(1),
+  role: z.string().optional(),
+});
+
+export const contentCatalogSchema = z.object({
+  texts: z.array(textAssetSchema),
+  images: z.array(imageAssetSchema),
+  videos: z.array(videoAssetSchema),
+  quotes: z.array(quoteAssetSchema),
+  directorNotes: z.string().min(1),
+}).refine(
+  (data) => data.texts.length + data.images.length + data.videos.length + data.quotes.length > 0,
+  { message: "Catalog must contain at least one asset (text, image, video, or quote)" }
+);
+
+export const portfolioGenerateRequestSchema = z.object({
+  catalog: contentCatalogSchema,
+  projectId: z.string().nullable(),
+  // New project metadata (required if projectId is null)
+  newProjectTitle: z.string().optional(),
+  newProjectSlug: z.string().optional(),
+  newProjectClient: z.string().optional(),
+});
+
+// Types
+export type TextAsset = z.infer<typeof textAssetSchema>;
+export type ImageAsset = z.infer<typeof imageAssetSchema>;
+export type VideoAsset = z.infer<typeof videoAssetSchema>;
+export type QuoteAsset = z.infer<typeof quoteAssetSchema>;
+export type ContentCatalog = z.infer<typeof contentCatalogSchema>;
+export type PortfolioGenerateRequest = z.infer<typeof portfolioGenerateRequestSchema>;
