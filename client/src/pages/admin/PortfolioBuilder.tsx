@@ -280,17 +280,42 @@ export default function PortfolioBuilder() {
       return;
     }
 
+    console.log('[Portfolio Builder] Starting generation...', {
+      isNewProject,
+      projectId: selectedProjectId,
+      assetCount: totalAssets,
+      directorNotesLength: catalog.directorNotes.length
+    });
+
     setIsGenerating(true);
     try {
-      const response = await apiRequest("POST", "/api/portfolio/generate-with-ai", {
+      const requestPayload = {
         catalog,
         projectId: isNewProject ? null : selectedProjectId,
         newProjectTitle: isNewProject ? newProjectTitle : undefined,
         newProjectSlug: isNewProject ? newProjectSlug : undefined,
         newProjectClient: isNewProject ? newProjectClient : undefined,
+      };
+
+      console.log('[Portfolio Builder] Request payload:', {
+        ...requestPayload,
+        catalog: {
+          texts: requestPayload.catalog.texts.length,
+          images: requestPayload.catalog.images.length,
+          videos: requestPayload.catalog.videos.length,
+          quotes: requestPayload.catalog.quotes.length,
+        }
       });
 
+      const response = await apiRequest("POST", "/api/portfolio/generate-with-ai", requestPayload);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || errorData.error || "Generation failed");
+      }
+
       const result = await response.json();
+      console.log('[Portfolio Builder] Generation successful:', result);
       
       toast({
         title: "Success!",
@@ -302,6 +327,7 @@ export default function PortfolioBuilder() {
         setLocation(`/admin/projects/${result.projectId}/edit`);
       }
     } catch (error) {
+      console.error('[Portfolio Builder] Generation error:', error);
       toast({
         title: "Generation failed",
         description: error instanceof Error ? error.message : "Failed to generate scenes",

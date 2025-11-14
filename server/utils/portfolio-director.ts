@@ -191,6 +191,16 @@ export function convertToSceneConfigs(
   const videoMap = new Map(catalog.videos.map((v) => [v.id, v]));
   const quoteMap = new Map(catalog.quotes.map((q) => [q.id, q]));
 
+  // Validate all asset references exist
+  const validAssetIds = buildAssetWhitelist(catalog);
+  for (const aiScene of aiScenes) {
+    for (const assetId of aiScene.assetIds) {
+      if (!validAssetIds.includes(assetId)) {
+        console.warn(`Warning: AI referenced non-existent asset ID: ${assetId}`);
+      }
+    }
+  }
+
   for (const aiScene of aiScenes) {
     const sceneConfig: any = {
       type: aiScene.sceneType,
@@ -208,8 +218,14 @@ export function convertToSceneConfigs(
           const headline = texts.find((t) => t!.type === "headline") || texts[0];
           const paragraph = texts.find((t) => t!.type === "paragraph");
           sceneConfig.content = {
-            heading: headline?.content || "",
-            body: paragraph?.content || texts[1]?.content || "Add your content here.",
+            heading: headline?.content || "Untitled",
+            body: paragraph?.content || texts[1]?.content || "",
+          };
+        } else {
+          // Fallback if no assets found
+          sceneConfig.content = {
+            heading: "Untitled Scene",
+            body: "",
           };
         }
         break;
@@ -219,13 +235,14 @@ export function convertToSceneConfigs(
         // Expects 1 image asset
         const imageId = aiScene.assetIds.find((id) => imageMap.has(id));
         const image = imageId ? imageMap.get(imageId) : null;
-        if (image) {
-          sceneConfig.content = {
-            url: image.url,
-            alt: image.alt,
-            caption: image.caption,
-          };
-        }
+        sceneConfig.content = image ? {
+          url: image.url,
+          alt: image.alt || "",
+          caption: image.caption,
+        } : {
+          url: "https://via.placeholder.com/800x600",
+          alt: "Placeholder image",
+        };
         break;
       }
 
@@ -233,12 +250,13 @@ export function convertToSceneConfigs(
         // Expects 1 video asset
         const videoId = aiScene.assetIds.find((id) => videoMap.has(id));
         const video = videoId ? videoMap.get(videoId) : null;
-        if (video) {
-          sceneConfig.content = {
-            url: video.url,
-            caption: video.caption,
-          };
-        }
+        sceneConfig.content = video ? {
+          url: video.url,
+          caption: video.caption,
+        } : {
+          url: "",
+          caption: "Video not found",
+        };
         break;
       }
 

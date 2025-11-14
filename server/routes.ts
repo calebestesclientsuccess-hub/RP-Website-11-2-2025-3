@@ -1703,29 +1703,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate new project requirements
-      if (!projectId && (!newProjectTitle || !newProjectSlug)) {
+      const isNewProject = !projectId || projectId === null;
+      if (isNewProject && (!newProjectTitle || !newProjectSlug)) {
         return res.status(400).json({
           error: "New project requires title and slug",
         });
       }
+
+      console.log(`[Portfolio AI] Processing request - Project: ${isNewProject ? 'NEW' : projectId}, Assets: ${totalAssets}`);
 
       // Lazy-load portfolio director
       const { generatePortfolioWithAI, convertToSceneConfigs } = await import("./utils/portfolio-director");
 
       // Call AI to orchestrate scenes
       console.log(`[Portfolio AI] Generating scenes for ${catalog.texts.length} texts, ${catalog.images.length} images, ${catalog.videos.length} videos, ${catalog.quotes.length} quotes`);
-      const aiResult = await generatePortfolioWithAI(catalog);
-      console.log(`[Portfolio AI] Generated ${aiResult.scenes.length} scenes`);
+      
+      let aiResult;
+      try {
+        aiResult = await generatePortfolioWithAI(catalog);
+        console.log(`[Portfolio AI] Generated ${aiResult.scenes.length} scenes`);
+      } catch (aiError) {
+        console.error('[Portfolio AI] Gemini generation failed:', aiError);
+        return res.status(500).json({
+          error: "AI scene generation failed",
+          details: aiError instanceof Error ? aiError.message : "Unknown error"
+        });
+      }
 
       // Convert AI scenes to database scene configs
-      const sceneConfigs = convertToSceneConfigs(aiResult.scenes, catalog);
+      let sceneConfigs;
+      try {
+        sceneConfigs = convertToSceneConfigs(aiResult.scenes, catalog);
+        console.log(`[Portfolio AI] Converted ${sceneConfigs.length} scene configs`);
+      } catch (conversionError) {
+        console.error('[Portfolio AI] Scene conversion failed:', conversionError);
+        return res.status(500).json({
+          error: "Scene conversion failed",
+          details: conversionError instanceof Error ? conversionError.message : "Unknown error"
+        });
+      }
 
       // Wrap project creation and scene inserts in a transaction for atomicity
       const result_data = await db.transaction(async (tx) => {
         // Determine or create project
         let finalProjectId: string;
         
-        if (projectId) {
+        if (projectId && projectId !== null && projectId !== '') {
           // Verify existing project access
           const [existingProject] = await tx.select()
             .from(projects)
@@ -1735,6 +1758,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             throw new Error('Project not found or access denied');
           }
           finalProjectId = projectId;
+          console.log(`[Portfolio AI] Using existing project: ${finalProjectId}`);
         } else {
           // Create new project within transaction using tx client
           const [newProject] = await tx.insert(projects).values({

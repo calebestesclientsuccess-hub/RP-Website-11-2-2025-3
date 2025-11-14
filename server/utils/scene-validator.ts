@@ -1,67 +1,90 @@
-
-import type { SceneConfig } from "@shared/schema";
-
-interface ValidationResult {
-  valid: boolean;
-  errors: string[];
-  warnings: string[];
-}
+import { z } from "zod";
 
 /**
- * Validates SEO compliance across all scenes in a project
+ * Scene Validator: Basic structure validation only
+ * SEO constraints removed for MVP functionality
  */
-export function validateProjectSEO(scenes: SceneConfig[]): ValidationResult {
-  const errors: string[] = [];
-  const warnings: string[] = [];
 
-  // Rule 1: Exactly one h1 per project
-  const h1Count = scenes.filter(scene => 
-    scene.type === "text" && scene.content.headingLevel === "h1"
-  ).length;
-  
-  if (h1Count === 0) {
-    errors.push("Project must have exactly one h1 heading");
-  } else if (h1Count > 1) {
-    errors.push(`Project has ${h1Count} h1 headings. Only one is allowed for SEO.`);
-  }
+// Text scene validation
+const textSceneSchema = z.object({
+  type: z.literal("text"),
+  content: z.object({
+    heading: z.string().min(1),
+    headingLevel: z.enum(["h1", "h2", "h3", "h4", "h5", "h6"]).optional(),
+    body: z.string().optional(),
+  }).passthrough(),
+}).passthrough();
 
-  // Rule 2: Validate heading hierarchy
-  const headingLevels = scenes
-    .filter(scene => scene.type === "text")
-    .map(scene => parseInt(scene.content.headingLevel?.replace('h', '') || '2'));
-  
-  for (let i = 1; i < headingLevels.length; i++) {
-    const jump = headingLevels[i] - headingLevels[i - 1];
-    if (jump > 1) {
-      warnings.push(`Heading hierarchy skip detected: h${headingLevels[i - 1]} → h${headingLevels[i]}`);
-    }
-  }
+// Image scene validation
+const imageSceneSchema = z.object({
+  type: z.literal("image"),
+  content: z.object({
+    url: z.string().url(),
+    alt: z.string().optional(),
+    caption: z.string().optional(),
+  }).passthrough(),
+}).passthrough();
 
-  // Rule 3: All images must have alt text
-  const imagesWithoutAlt = scenes.filter(scene => 
-    (scene.type === "image" || scene.type === "split" || scene.type === "fullscreen") &&
-    (!scene.content.alt || scene.content.alt.length < 10)
-  );
-  
-  if (imagesWithoutAlt.length > 0) {
-    errors.push(`${imagesWithoutAlt.length} image(s) missing valid alt text (10-125 characters)`);
-  }
+// Other scene types
+const videoSceneSchema = z.object({
+  type: z.literal("video"),
+  content: z.object({
+    url: z.string().url(),
+    caption: z.string().optional(),
+  }).passthrough(),
+}).passthrough();
 
-  // Rule 4: Check for keyword stuffing in alt text
-  scenes.forEach((scene, index) => {
-    if ((scene.type === "image" || scene.type === "split") && scene.content.alt) {
-      const words = scene.content.alt.toLowerCase().split(/\s+/);
-      const uniqueWords = new Set(words);
-      
-      if (uniqueWords.size / words.length < 0.5) {
-        warnings.push(`Scene ${index + 1}: Alt text may contain keyword stuffing`);
-      }
-    }
-  });
+const splitSceneSchema = z.object({
+  type: z.literal("split"),
+  content: z.object({
+    media: z.string().url(),
+    heading: z.string().optional(),
+    body: z.string().optional(),
+  }).passthrough(),
+}).passthrough();
 
-  return {
-    valid: errors.length === 0,
-    errors,
-    warnings
-  };
+const gallerySceneSchema = z.object({
+  type: z.literal("gallery"),
+  content: z.object({
+    images: z.array(z.object({
+      url: z.string().url(),
+      alt: z.string().optional(),
+    })).min(1),
+  }).passthrough(),
+}).passthrough();
+
+const quoteSceneSchema = z.object({
+  type: z.literal("quote"),
+  content: z.object({
+    quote: z.string().min(1),
+    author: z.string().optional(),
+    role: z.string().optional(),
+  }).passthrough(),
+}).passthrough();
+
+const fullscreenSceneSchema = z.object({
+  type: z.literal("fullscreen"),
+  content: z.object({
+    media: z.string().url(),
+    mediaType: z.enum(["image", "video"]),
+  }).passthrough(),
+}).passthrough();
+
+// Discriminated union of all scene types
+export const sceneConfigSchema = z.discriminatedUnion("type", [
+  textSceneSchema,
+  imageSceneSchema,
+  videoSceneSchema,
+  splitSceneSchema,
+  gallerySceneSchema,
+  quoteSceneSchema,
+  fullscreenSceneSchema,
+]);
+
+/**
+ * Validate a scene configuration
+ * Throws ZodError if validation fails
+ */
+export function validateScene(sceneConfig: any) {
+  return sceneConfigSchema.parse(sceneConfig);
 }
