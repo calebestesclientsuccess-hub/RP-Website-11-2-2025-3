@@ -162,18 +162,23 @@ interface GeneratedScene {
   sceneType: string;
   assetIds: string[]; // References to catalog assets
   layout?: string;
-  director?: {
-    entryDuration?: number;
-    exitDuration?: number;
+  director: {
+    // Required fields (enforced by Gemini schema)
+    entryDuration: number;
+    exitDuration: number;
+    backgroundColor: string;
+    textColor: string;
+    parallaxIntensity: number;
+    entryEffect: string;
+    exitEffect: string;
+    headingSize: string;
+    bodySize: string;
+    alignment: string;
+    // Optional fields
     animationDuration?: number;
-    backgroundColor?: string;
-    textColor?: string;
-    parallaxIntensity?: number;
-    entryEffect?: string;
-    exitEffect?: string;
-    headingSize?: string;
-    bodySize?: string;
-    alignment?: string;
+    fadeOnScroll?: boolean;
+    scaleOnScroll?: boolean;
+    blurOnScroll?: boolean;
   };
 }
 
@@ -307,7 +312,7 @@ export function convertToSceneConfigs(
       type: aiScene.sceneType,
       content: {},
       layout: aiScene.layout || "default",
-      director: aiScene.director || {},
+      director: aiScene.director, // Now always required by schema
     };
 
     // Map asset IDs to actual content based on scene type
