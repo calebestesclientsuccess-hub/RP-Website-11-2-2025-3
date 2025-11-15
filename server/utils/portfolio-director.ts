@@ -236,10 +236,11 @@ export async function generatePortfolioWithAI(
                     headingSize: { type: Type.STRING, description: "4xl, 5xl, 6xl, 7xl, or 8xl" },
                     bodySize: { type: Type.STRING, description: "base, lg, xl, or 2xl" },
                     alignment: { type: Type.STRING, description: "left, center, or right" },
-                  }
+                  },
+                  required: ["entryDuration", "exitDuration", "backgroundColor", "textColor", "parallaxIntensity", "entryEffect", "exitEffect", "headingSize", "bodySize", "alignment"]
                 }
               },
-              required: ["sceneType", "assetIds"]
+              required: ["sceneType", "assetIds", "director"]
             }
           }
         },

@@ -364,14 +364,15 @@ The result should be a mesmerizing journey that demonstrates every tool in the d
     console.log("\n🎬 Scene Summary:");
     console.log("═".repeat(80));
     result.scenes.forEach((scene: any, index: number) => {
-      const config = scene.sceneConfig || {};
+      const sceneConfig = scene.sceneConfig || {};
+      const director = sceneConfig.director || {};
       const effects = [
-        config.fadeOnScroll && 'fade',
-        config.scaleOnScroll && 'scale',
-        config.blurOnScroll && 'blur'
+        director.fadeOnScroll && 'fade',
+        director.scaleOnScroll && 'scale',
+        director.blurOnScroll && 'blur'
       ].filter(Boolean);
       
-      console.log(`${(index + 1).toString().padStart(2, '0')}. ${config.type?.toUpperCase().padEnd(6)} | Entry: ${config.entryEffect?.padEnd(12)} ${config.entryDuration}s | Parallax: ${config.parallaxIntensity} | Effects: ${effects.join('+') || 'none'}`);
+      console.log(`${(index + 1).toString().padStart(2, '0')}. ${sceneConfig.type?.toUpperCase().padEnd(6)} | Entry: ${director.entryEffect?.padEnd(12)} ${director.entryDuration}s | Parallax: ${director.parallaxIntensity} | BG: ${director.backgroundColor?.substring(0, 7)} | Effects: ${effects.join('+') || 'none'}`);
     });
 
     console.log("\n" + "═".repeat(80));
