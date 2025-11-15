@@ -29,10 +29,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Helmet } from "react-helmet-async";
-import { Plus, Search, MoreVertical, Edit, Trash2, Star, StarOff } from "lucide-react";
+import { Plus, Search, MoreVertical, Edit, Trash2, Star, StarOff, Sparkles, Loader2 } from "lucide-react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { Textarea } from "@/components/ui/textarea"; // Added Textarea
 
 type ContentType = 'all' | 'blog' | 'video' | 'testimonial' | 'portfolio' | 'job';
 type ContentStatus = 'all' | 'published' | 'draft' | 'scheduled';
@@ -56,6 +57,8 @@ export default function ContentLibrary() {
   const [typeFilter, setTypeFilter] = useState<ContentType>('all');
   const [statusFilter, setStatusFilter] = useState<ContentStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const { data: content, isLoading } = useQuery<ContentSummary[]>({
     queryKey: ['/api/admin/content', { type: typeFilter, status: statusFilter, search: searchQuery }],
@@ -65,7 +68,7 @@ export default function ContentLibrary() {
       if (filters.type !== 'all') params.append('type', filters.type);
       if (filters.status !== 'all') params.append('status', filters.status);
       if (filters.search) params.append('search', filters.search);
-      
+
       const paramsString = params.toString();
       const url = paramsString ? `${path}?${paramsString}` : path;
       const res = await fetch(url, { credentials: 'include' });
@@ -83,12 +86,12 @@ export default function ContentLibrary() {
         portfolio: `/api/projects/${id}`,
         job: `/api/job-postings/${id}`,
       };
-      
+
       const res = await fetch(endpoints[type], {
         method: 'DELETE',
         credentials: 'include',
       });
-      
+
       if (!res.ok) throw new Error('Failed to delete content');
       return { type, id };
     },
@@ -115,7 +118,7 @@ export default function ContentLibrary() {
       if (type !== 'testimonial') {
         throw new Error('Only testimonials support featured toggle');
       }
-      
+
       const response = await apiRequest("PATCH", `/api/testimonials/${id}/featured`, { featured: !featured });
       return { id };
     },
@@ -135,7 +138,7 @@ export default function ContentLibrary() {
       portfolio: `/admin/projects/${item.id}/edit`,
       job: `/admin/job-postings/${item.id}/edit`,
     };
-    
+
     const route = routes[item.type];
     if (!route) {
       toast({ 
@@ -147,7 +150,7 @@ export default function ContentLibrary() {
     }
     setLocation(route);
   };
-  
+
   const canEdit = (type: string) => {
     return type === 'blog' || type === 'video' || type === 'testimonial' || type === 'portfolio' || type === 'job';
   };
@@ -155,6 +158,24 @@ export default function ContentLibrary() {
   const handleDelete = (item: ContentSummary) => {
     if (confirm(`Are you sure you want to delete "${item.title}"?`)) {
       deleteMutation.mutate({ id: item.id, type: item.type });
+    }
+  };
+
+  const generatePortfolio = async () => {
+    if (!aiPrompt) {
+      toast({ title: "Please enter a prompt", variant: "destructive" });
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const response = await apiRequest("POST", "/api/admin/content/generate-portfolio", { prompt: aiPrompt });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/content'] });
+      toast({ title: "Portfolio generated successfully" });
+      setAiPrompt(''); // Clear prompt after successful generation
+    } catch (error) {
+      toast({ title: "Failed to generate portfolio", variant: "destructive" });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -189,6 +210,32 @@ export default function ContentLibrary() {
             </header>
             <main className="flex-1 overflow-auto p-6">
               <div className="max-w-7xl mx-auto space-y-6">
+                {/* AI Generation Section */}
+                <div className="flex items-center gap-4 p-6 border rounded-lg bg-background shadow-sm">
+                  <div className="flex-1">
+                    <Textarea
+                      placeholder="Enter your prompt to generate a portfolio..."
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      className="min-h-[80px]"
+                      disabled={isGenerating}
+                    />
+                  </div>
+                  <Button onClick={generatePortfolio} disabled={isGenerating || !aiPrompt}>
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Generate Portfolio
+                      </>
+                    )}
+                  </Button>
+                </div>
+
                 {/* Filters and Actions */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">

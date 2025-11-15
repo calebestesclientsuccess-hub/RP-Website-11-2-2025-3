@@ -70,6 +70,7 @@ export default function PortfolioBuilder() {
 
   // Portfolio-level AI orchestration prompt
   const [portfolioAiPrompt, setPortfolioAiPrompt] = useState("");
+  const [useAiDirector, setUseAiDirector] = useState(false); // NEW: Toggle for AI orchestration mode
 
   // Scene form state
   const form = useForm({
@@ -202,13 +203,23 @@ export default function PortfolioBuilder() {
       return;
     }
 
-    if (scenes.length === 0) {
-      toast({ title: "Error", description: "Please add at least one scene", variant: "destructive" });
+    if (!portfolioAiPrompt.trim()) {
+      toast({ title: "Error", description: "Please provide portfolio-level AI orchestration guidance", variant: "destructive" });
       return;
     }
 
-    if (!portfolioAiPrompt.trim()) {
-      toast({ title: "Error", description: "Please provide portfolio-level AI orchestration guidance", variant: "destructive" });
+    // AI Director Mode requires content catalog instead of manual scenes
+    if (useAiDirector) {
+      toast({ 
+        title: "AI Director Mode", 
+        description: "Build a content catalog in Content Library, then use this mode to let Gemini orchestrate the entire portfolio.",
+        variant: "default"
+      });
+      return;
+    }
+
+    if (scenes.length === 0) {
+      toast({ title: "Error", description: "Please add at least one scene", variant: "destructive" });
       return;
     }
 
@@ -454,19 +465,62 @@ export default function PortfolioBuilder() {
                 {/* Portfolio-Level AI Orchestration */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>3. Portfolio Orchestration</CardTitle>
-                    <CardDescription>
-                      Describe how the scenes should flow together (pacing, transitions, overall mood)
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle>3. Portfolio Orchestration</CardTitle>
+                        <CardDescription>
+                          Choose how AI assists with your portfolio creation
+                        </CardDescription>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="text-sm font-medium">AI Director Mode</label>
+                        <Button
+                          variant={useAiDirector ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setUseAiDirector(!useAiDirector)}
+                          data-testid="toggle-ai-director-mode"
+                        >
+                          {useAiDirector ? "Full AI" : "Hybrid"}
+                        </Button>
+                      </div>
+                    </div>
                   </CardHeader>
-                  <CardContent>
-                    <Textarea
-                      value={portfolioAiPrompt}
-                      onChange={(e) => setPortfolioAiPrompt(e.target.value)}
-                      placeholder="Example: Create a cinematic journey that builds anticipation. Start slow and dramatic, accelerate through the middle sections, then end with high energy. Use smooth dissolve transitions between scenes and maintain dark, moody backgrounds throughout."
-                      rows={4}
-                      data-testid="textarea-portfolio-ai-prompt"
-                    />
+                  <CardContent className="space-y-4">
+                    {useAiDirector ? (
+                      <div className="space-y-3">
+                        <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                          <h4 className="font-medium mb-2">🎬 Full AI Director Mode</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Gemini will orchestrate the ENTIRE portfolio: scene selection, ordering, timing, transitions, and effects.
+                            You provide content + vision, AI handles cinematic execution.
+                          </p>
+                        </div>
+                        <Textarea
+                          value={portfolioAiPrompt}
+                          onChange={(e) => setPortfolioAiPrompt(e.target.value)}
+                          placeholder="Example: Create a dramatic transformation narrative. Start with the crisis (dark, fast), transition to the solution (slow, authoritative), showcase proof with energy (fast zooms, bright), then close contemplatively (slow fade to black). Use the entire content catalog to tell this story."
+                          rows={6}
+                          data-testid="textarea-portfolio-ai-prompt"
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="p-4 bg-secondary/50 rounded-lg border">
+                          <h4 className="font-medium mb-2">✏️ Hybrid Mode (Current)</h4>
+                          <p className="text-sm text-muted-foreground">
+                            You manually build scenes above, AI enhances each one individually based on your per-scene prompts.
+                            You control structure, AI refines execution.
+                          </p>
+                        </div>
+                        <Textarea
+                          value={portfolioAiPrompt}
+                          onChange={(e) => setPortfolioAiPrompt(e.target.value)}
+                          placeholder="Example: Create smooth transitions between scenes. Use crossfades for emotional moments, quick cuts for energy. Maintain a dark, cinematic aesthetic throughout."
+                          rows={4}
+                          data-testid="textarea-portfolio-ai-prompt"
+                        />
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
