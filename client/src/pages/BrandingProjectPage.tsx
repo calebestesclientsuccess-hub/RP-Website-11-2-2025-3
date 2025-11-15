@@ -155,6 +155,7 @@ export default function BrandingProjectPage() {
     console.log('[BrandingProjectPage] GSAP loaded:', typeof gsap !== 'undefined');
     console.log('[BrandingProjectPage] ScrollTrigger loaded:', typeof ScrollTrigger !== 'undefined');
     console.log('[BrandingProjectPage] Scenes count:', scenes.length);
+    console.log('[GSAP] Initialization complete, animating', scenes?.length, 'scenes');
 
     // Detect prefers-reduced-motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -183,12 +184,14 @@ export default function BrandingProjectPage() {
     }
 
     // Hero Section Fade-In Animation (Not scroll-triggered, loads immediately)
+    console.log('[GSAP] Animating hero section');
     const heroTitle = document.querySelector('[data-testid="text-project-title"]');
     const heroSubtitle = document.querySelector('[data-testid="text-project-subtitle"]');
     const heroBounce = document.querySelector('[data-testid="hero-bounce-indicator"]');
     
     // Animate hero title
     if (heroTitle) {
+      console.log('[GSAP] Hero title found, animating with fade-in');
       gsap.fromTo(heroTitle, 
         { autoAlpha: 0, y: 30 }, 
         { 
@@ -290,8 +293,20 @@ export default function BrandingProjectPage() {
         trigger: element,
         start: "top center",
         end: "bottom center",
-        onEnter: () => setActiveSceneIndex(index),
-        onEnterBack: () => setActiveSceneIndex(index),
+        onEnter: () => {
+          console.log('[GSAP] Scene', index, 'became active (scrolling down)');
+          setActiveSceneIndex(index);
+        },
+        onEnterBack: () => {
+          console.log('[GSAP] Scene', index, 'became active (scrolling up)');
+          setActiveSceneIndex(index);
+        },
+        onLeave: () => {
+          console.log('[GSAP] Scene', index, 'left viewport (scrolling down)');
+        },
+        onLeaveBack: () => {
+          console.log('[GSAP] Scene', index, 'left viewport (scrolling up)');
+        },
       });
 
       // Get director-configured effects and durations
@@ -356,6 +371,7 @@ export default function BrandingProjectPage() {
         
         // Animate section element with time-based animation (not scroll-driven)
         // This allows smooth transitions that play over the configured duration
+        console.log('[GSAP] Creating entry animation for scene', index, 'with duration', entryDuration);
         gsap.fromTo(
           element,
           fromState,
@@ -370,6 +386,15 @@ export default function BrandingProjectPage() {
               end: "center center",
               // NO scrub - this makes it time-based instead of scroll-position-based
               toggleActions: "play none none reverse",
+              onEnter: () => {
+                console.log('[GSAP] Scene', index, 'animation started (onEnter)');
+              },
+              onComplete: () => {
+                console.log('[GSAP] Scene', index, 'animation completed (onComplete)');
+              },
+              onEnterBack: () => {
+                console.log('[GSAP] Scene', index, 'animation reversed (onEnterBack)');
+              },
             }
           }
         );
@@ -419,9 +444,14 @@ export default function BrandingProjectPage() {
               // NO scrub - makes it time-based instead of scroll-tied
               toggleActions: "play none none reverse",
               onEnter: () => {
+                console.log(`[GSAP] Scene ${index} exit animation started - leaving viewport`);
                 console.log(`[Scene ${index}] Exit trigger fired`);
               },
+              onComplete: () => {
+                console.log(`[GSAP] Scene ${index} exit animation completed`);
+              },
               onEnterBack: () => {
+                console.log(`[GSAP] Scene ${index} re-entering viewport - reversing exit`);
                 console.log(`[Scene ${index}] Reversing exit, resetting to visible`);
                 // Reset to visible state when scrolling back
                 gsap.to(element, {
