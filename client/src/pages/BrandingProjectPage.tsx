@@ -568,16 +568,7 @@ export default function BrandingProjectPage() {
         </nav>
 
         {/* Hero Scene */}
-        <section className="min-h-screen flex items-center justify-center relative pt-24 pb-12 px-4 overflow-hidden">
-          <div className="absolute inset-0 z-0" data-hero-parallax>
-            <img
-              src={project.thumbnailUrl}
-              alt={project.title}
-              className="w-full h-full object-cover opacity-20 scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/70 to-background" />
-          </div>
-
+        <section className="min-h-screen flex items-center justify-center relative pt-24 pb-12 px-4 overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
           <div className="container mx-auto relative z-10 text-center">
             <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-red-500 via-red-400 to-purple-500 bg-clip-text text-transparent" data-testid="text-project-title">
               {project.title}
