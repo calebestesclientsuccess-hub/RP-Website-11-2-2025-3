@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
+import crypto from "crypto";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { sessionPool } from "./db";
@@ -40,7 +41,7 @@ app.use(
     // Add tenant to session
     genid: (req) => {
       const tenantPrefix = (req as any).tenantId?.substring(0, 8) || 'default';
-      return `${tenantPrefix}_${require('crypto').randomBytes(16).toString('hex')}`;
+      return `${tenantPrefix}_${crypto.randomBytes(16).toString('hex')}`;
     },
   })
 );

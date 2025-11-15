@@ -1,14 +1,20 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { ContentCatalog } from "@shared/schema";
 
-// Initialize Gemini client with Replit AI Integrations
-const ai = new GoogleGenAI({
-  apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
-  httpOptions: {
-    apiVersion: "",
-    baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
-  },
-});
+// Lazy-load Gemini client to avoid ESM initialization issues
+let ai: GoogleGenAI | null = null;
+function getAIClient(): GoogleGenAI {
+  if (!ai) {
+    ai = new GoogleGenAI({
+      apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
+      httpOptions: {
+        apiVersion: "",
+        baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
+      },
+    });
+  }
+  return ai;
+}
 
 // Build asset ID whitelist from catalog
 function buildAssetWhitelist(catalog: ContentCatalog): string[] {
@@ -182,8 +188,9 @@ export async function generatePortfolioWithAI(
   catalog: ContentCatalog
 ): Promise<PortfolioGenerateResponse> {
   const prompt = buildPortfolioPrompt(catalog);
+  const aiClient = getAIClient();
 
-  const response = await ai.models.generateContent({
+  const response = await aiClient.models.generateContent({
     model: "gemini-2.5-pro", // Pro model for complex cinematic reasoning
     contents: [{
       role: "user",
