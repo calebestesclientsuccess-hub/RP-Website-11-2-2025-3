@@ -308,8 +308,8 @@ export default function BrandingProjectPage() {
           delete toState.opacity;
         }
         
-        // Animate section element with scrub for smooth scroll-driven animation
-        // NOTE: Using scrub makes the animation progress tied to scroll position
+        // Animate section element with time-based animation (not scroll-driven)
+        // This allows smooth transitions that play over the configured duration
         gsap.fromTo(
           element,
           fromState,
@@ -322,7 +322,7 @@ export default function BrandingProjectPage() {
               trigger: element,
               start: "top bottom",
               end: "center center",
-              scrub: scrubSpeed,
+              // NO scrub - this makes it time-based instead of scroll-position-based
               toggleActions: "play none none reverse",
             }
           }
@@ -360,16 +360,18 @@ export default function BrandingProjectPage() {
           
           console.log(`[Scene ${index}] Exit animation configured:`, exitState);
           
-          // Use scrub for smooth scroll-driven exit animation
+          // Use time-based exit animation instead of scroll-driven
+          // This creates smooth transitions that play over the configured duration
           gsap.to(element, {
             ...exitState,
             duration: exitDuration,
             ease: "power2.in",
             scrollTrigger: {
               trigger: element,
-              start: "center top",
+              start: "bottom center",
               end: "bottom top",
-              scrub: scrubSpeed,
+              // NO scrub - makes it time-based instead of scroll-tied
+              toggleActions: "play none none reverse",
               onEnter: () => {
                 console.log(`[Scene ${index}] Exit trigger fired`);
               },
