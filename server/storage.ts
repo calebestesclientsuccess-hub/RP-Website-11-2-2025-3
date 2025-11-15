@@ -29,7 +29,7 @@ import {
   projects, projectScenes, promptTemplates
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, like, ilike, sql } from "drizzle-orm";
+import { eq, desc, asc, and, or, like, ilike, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -835,7 +835,7 @@ export class DbStorage implements IStorage {
     const scenes = await db.select()
       .from(projectScenes)
       .where(eq(projectScenes.projectId, projectId))
-      .orderBy(desc(projectScenes.createdAt));
+      .orderBy(asc(projectScenes.order));
     
     // JSONB column auto-parses, no manual parsing needed
     return scenes;

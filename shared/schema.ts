@@ -642,6 +642,7 @@ export const projectScenes = pgTable("project_scenes", {
     animation?: string;
     director?: Record<string, any>;
   }>(),
+  order: integer("order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
