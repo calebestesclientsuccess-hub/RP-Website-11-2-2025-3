@@ -182,6 +182,52 @@ export default function BrandingProjectPage() {
       });
     }
 
+    // Hero Section Fade-In Animation (Not scroll-triggered, loads immediately)
+    const heroTitle = document.querySelector('[data-testid="text-project-title"]');
+    const heroSubtitle = document.querySelector('[data-testid="text-project-subtitle"]');
+    const heroBounce = document.querySelector('[data-testid="hero-bounce-indicator"]');
+    
+    // Animate hero title
+    if (heroTitle) {
+      gsap.fromTo(heroTitle, 
+        { autoAlpha: 0, y: 30 }, 
+        { 
+          autoAlpha: 1, 
+          y: 0, 
+          duration: prefersReducedMotion ? 0.5 : 2.5,
+          ease: "power3.out",
+          delay: prefersReducedMotion ? 0 : 0.3
+        }
+      );
+    }
+    
+    // Animate hero subtitle with delay
+    if (heroSubtitle) {
+      gsap.fromTo(heroSubtitle,
+        { autoAlpha: 0, y: 20 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: prefersReducedMotion ? 0.5 : 2,
+          ease: "power3.out",
+          delay: prefersReducedMotion ? 0.1 : 0.8
+        }
+      );
+    }
+    
+    // Animate bounce indicator with longer delay
+    if (heroBounce) {
+      gsap.fromTo(heroBounce,
+        { autoAlpha: 0 },
+        {
+          autoAlpha: 1,
+          duration: prefersReducedMotion ? 0.5 : 1.5,
+          ease: "power2.out",
+          delay: prefersReducedMotion ? 0.2 : 1.5
+        }
+      );
+    }
+
     // Track scroll progress on window
     const updateScrollProgress = () => {
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
@@ -570,13 +616,13 @@ export default function BrandingProjectPage() {
         {/* Hero Scene */}
         <section className="min-h-screen flex items-center justify-center relative pt-24 pb-12 px-4 overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
           <div className="container mx-auto relative z-10 text-center">
-            <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-red-500 via-red-400 to-purple-500 bg-clip-text text-transparent" data-testid="text-project-title">
+            <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-red-500 via-red-400 to-purple-500 bg-clip-text text-transparent opacity-0" data-testid="text-project-title">
               {project.title}
             </h1>
-            <p className="text-2xl md:text-3xl text-muted-foreground mb-8" data-testid="text-project-subtitle">
+            <p className="text-2xl md:text-3xl text-muted-foreground mb-8 opacity-0" data-testid="text-project-subtitle">
               Branding Portfolio
             </p>
-            <div className="inline-block animate-bounce mt-12">
+            <div className="inline-block animate-bounce mt-12 opacity-0" data-testid="hero-bounce-indicator">
               <Circle className="w-3 h-3 fill-muted-foreground text-muted-foreground opacity-50" />
             </div>
           </div>
