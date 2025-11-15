@@ -630,20 +630,30 @@ export default function BrandingProjectPage() {
 
         {/* Dynamic Scenes from Database */}
         {scenes && scenes.length > 0 ? (
-          scenes.map((scene, index) => (
-            <section
-              key={scene.id}
-              data-scene={index}
-              className="min-h-screen flex items-center justify-center px-4 py-24"
-              data-testid={`scene-${index}`}
-              style={{ opacity: 0, visibility: 'hidden', willChange: 'opacity, transform' }}
-            >
-              <div className="container mx-auto max-w-4xl">
-                {/* Render scene based on sceneConfig type */}
-                <SceneRenderer scene={scene} />
-              </div>
-            </section>
-          ))
+          scenes.map((scene, index) => {
+            // Merge director config with defaults
+            const director = { ...DEFAULT_DIRECTOR_CONFIG, ...(scene.sceneConfig.director || {}) };
+            
+            return (
+              <section
+                key={scene.id}
+                data-scene={index}
+                className="min-h-screen flex items-center justify-center px-4 py-24"
+                data-testid={`scene-${index}`}
+                style={{ 
+                  opacity: 0, 
+                  visibility: 'hidden', 
+                  willChange: 'opacity, transform',
+                  backgroundColor: director.backgroundColor 
+                }}
+              >
+                <div className="container mx-auto max-w-4xl">
+                  {/* Render scene based on sceneConfig type */}
+                  <SceneRenderer scene={scene} />
+                </div>
+              </section>
+            );
+          })
         ) : (
           /* Fallback: Challenge/Solution/Outcome */
           <>
@@ -696,7 +706,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
   switch (type) {
     case "text":
       return (
-        <div className="max-w-none" style={{ backgroundColor: director.backgroundColor }}>
+        <div className="max-w-none">
           <h2 
             className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]} mb-8`}
             style={{ color: director.textColor }}
@@ -714,7 +724,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
 
     case "image":
       return (
-        <div className="space-y-8" style={{ backgroundColor: director.backgroundColor }}>
+        <div className="space-y-8">
           {content.heading && (
             <h2 
               className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]}`}
@@ -745,7 +755,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
 
     case "video":
       return (
-        <div className="space-y-8" style={{ backgroundColor: director.backgroundColor }}>
+        <div className="space-y-8">
           {content.heading && (
             <h2 
               className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]}`}
@@ -775,7 +785,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
 
     case "split":
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center" style={{ backgroundColor: director.backgroundColor }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className={`space-y-6 ${layout === "reverse" ? "md:order-2" : "md:order-1"}`}>
             {content.heading && (
               <h2 
@@ -817,7 +827,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
 
     case "gallery":
       return (
-        <div className="space-y-8" style={{ backgroundColor: director.backgroundColor }}>
+        <div className="space-y-8">
           {content.heading && (
             <h2 
               className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]}`}
@@ -854,7 +864,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
 
     case "quote":
       return (
-        <div className={`max-w-3xl mx-auto space-y-8 ${alignmentMap[director.alignment]}`} style={{ backgroundColor: director.backgroundColor }}>
+        <div className={`max-w-3xl mx-auto space-y-8 ${alignmentMap[director.alignment]}`}>
           <div className="text-6xl md:text-8xl opacity-20" style={{ color: director.textColor }}>"</div>
           <blockquote 
             className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} leading-relaxed`}
@@ -880,7 +890,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
 
     case "fullscreen":
       return (
-        <div className="relative -mx-4 md:-mx-8 lg:-mx-12" style={{ backgroundColor: director.backgroundColor }}>
+        <div className="relative -mx-4 md:-mx-8 lg:-mx-12">
           <div className="aspect-[21/9] rounded-xl overflow-hidden">
             {content.mediaType === "video" ? (
               <video
