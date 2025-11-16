@@ -193,12 +193,6 @@ export default function PortfolioBuilder() {
 
   // --- Effects ---
 
-  // Load existing project scenes into the refinement interface when project is selected
-  useEffect(() => {
-    console.log('[Portfolio Builder] State Check:', {
-      isNewProject,
-
-
   // DEBUG: Log state changes
   useEffect(() => {
     console.log('[Portfolio Builder] State update:', {
@@ -210,6 +204,10 @@ export default function PortfolioBuilder() {
     });
   }, [conversationHistory, versions, activeVersionId, currentSceneJson]);
 
+  // Load existing project scenes into the refinement interface when project is selected
+  useEffect(() => {
+    console.log('[Portfolio Builder] State Check:', {
+      isNewProject,
       selectedProjectId,
       existingProjectScenes: existingProjectScenes?.length,
       currentSceneJson: currentSceneJson?.length,
