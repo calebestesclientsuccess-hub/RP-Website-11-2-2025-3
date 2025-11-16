@@ -36,11 +36,6 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
-    allowedHosts: [
-      '.replit.dev',
-      'localhost',
-      '127.0.0.1',
-      '0.0.0.0',
-    ],
+    allowedHosts: true,
   },
 });
