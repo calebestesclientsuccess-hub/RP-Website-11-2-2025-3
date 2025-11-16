@@ -834,7 +834,7 @@ export default function PortfolioBuilder() {
                 )}
 
                 {/* Show refinement mode if we have existing scenes OR generated scenes */}
-                {(currentSceneJson || (existingProjectScenes && existingProjectScenes.length > 0)) ? (
+                {(currentSceneJson || conversationHistory.length > 0 || (existingProjectScenes && existingProjectScenes.length > 0)) ? (
                   // REFINEMENT MODE - NEW CHAT INTERFACE
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Main Chat Column (2/3 width on large screens) */}
@@ -1104,8 +1104,8 @@ export default function PortfolioBuilder() {
                       })()}
                     </div>
                   </div>
-                ) : (
-                  // INITIAL GENERATION MODE
+                ) : !(existingProjectScenes && existingProjectScenes.length > 0) && (
+                  // INITIAL GENERATION MODE - Only show if no existing scenes
                   <Card>
                     <CardHeader>
                       <div className="flex items-center justify-between">
