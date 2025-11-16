@@ -168,21 +168,28 @@ export default function PortfolioBuilder() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const existingProjectScenes = existingProjectData?.scenes; // Assuming 'scenes' is an array of scene objects
+  // Fetch scenes separately for the selected project
+  const { data: existingProjectScenes, isLoading: isLoadingScenes, error: scenesError } = useQuery<any[]>({
+    queryKey: ["/api/projects", selectedProjectId, "scenes"],
+    enabled: !isNewProject && !!selectedProjectId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   // Debug: Log the raw project data
   useEffect(() => {
     if (!isNewProject && selectedProjectId) {
       console.log('[Portfolio Builder] Project Query Status:', {
         isLoadingProject,
-        hasError: !!projectError,
-        error: projectError,
+        isLoadingScenes,
+        hasError: !!projectError || !!scenesError,
+        projectError,
+        scenesError,
         existingProjectData: existingProjectData,
         scenesArray: existingProjectScenes,
         scenesLength: existingProjectScenes?.length
       });
     }
-  }, [existingProjectData, isLoadingProject, projectError, selectedProjectId, isNewProject, existingProjectScenes]);
+  }, [existingProjectData, existingProjectScenes, isLoadingProject, isLoadingScenes, projectError, scenesError, selectedProjectId, isNewProject]);
 
   // --- Effects ---
 
