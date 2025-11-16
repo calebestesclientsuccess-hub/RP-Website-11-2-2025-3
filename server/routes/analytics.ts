@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
@@ -7,31 +6,6 @@ const router = Router();
 
 // POST /api/analytics/web-vitals - Track Web Vitals metrics
 router.post('/web-vitals', async (req, res) => {
-  try {
-    const { name, value, rating, id, navigationType } = req.body;
-
-    if (!name || value === undefined) {
-      return res.status(400).json({ error: 'Missing required fields: name, value' });
-    }
-
-    await db.execute(sql`
-      INSERT INTO web_vitals (metric_name, metric_value, rating, metric_id, navigation_type, user_agent, page_url)
-      VALUES (${name}, ${value}, ${rating || null}, ${id || null}, ${navigationType || null}, ${req.headers['user-agent'] || null}, ${req.headers.referer || null})
-    `);
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Web Vitals tracking error:', error);
-    res.status(500).json({ error: 'Failed to record metric' });
-  }
-});
-
-export default router;
-
-const router = Router();
-
-// Store Web Vitals metrics
-router.post('/api/analytics/web-vitals', async (req, res) => {
   try {
     const { name, value, rating, delta, id, navigationType } = req.body;
 
@@ -52,11 +26,11 @@ router.post('/api/analytics/web-vitals', async (req, res) => {
   }
 });
 
-// Get Web Vitals dashboard data
-router.get('/api/analytics/web-vitals/summary', async (req, res) => {
+// GET /api/analytics/web-vitals/summary - Get Web Vitals dashboard data
+router.get('/web-vitals/summary', async (req, res) => {
   try {
     const days = parseInt(req.query.days as string) || 7;
-    
+
     const metrics = await db.execute(sql`
       SELECT 
         name,
