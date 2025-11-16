@@ -355,6 +355,7 @@ export default function BrandingProjectPage() {
                 // When scrolling UP back into this scene, reverse exit and restore entry
                 gsap.to(targetElement, {
                   ...toState,
+                  filter: 'blur(0px)', // Explicitly clear any blur
                   duration: entryDuration * 0.7, // Slightly faster on return
                   ease: "power2.out",
                 });
@@ -363,6 +364,7 @@ export default function BrandingProjectPage() {
                 // When scrolling UP past this scene, reverse to initial hidden state
                 gsap.to(targetElement, {
                   ...fromState,
+                  filter: 'blur(0px)', // Explicitly clear any blur
                   duration: entryDuration * 0.7,
                   ease: "power2.in",
                 });
