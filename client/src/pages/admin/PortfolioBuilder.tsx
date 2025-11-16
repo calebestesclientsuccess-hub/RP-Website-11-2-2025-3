@@ -722,9 +722,9 @@ export default function PortfolioBuilder() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div>
-                        <CardTitle>3. Portfolio Orchestration</CardTitle>
+                        <CardTitle>3. AI Orchestration & Generation</CardTitle>
                         <CardDescription>
-                          Choose your creative workflow mode
+                          Configure AI behavior and generate your portfolio
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-2">
@@ -818,18 +818,74 @@ export default function PortfolioBuilder() {
                   </CardContent>
                 </Card>
 
-                {/* Conversational Refinement Interface */}
-                {conversationHistory.length > 0 && (
+                {/* Generate Button - Show when no conversation exists */}
+                {conversationHistory.length === 0 && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>💬 Refinement Conversation</CardTitle>
+                      <CardTitle>
+                        {mode === "cinematic" ? "🎬 Generate Cinematic Portfolio" : "✨ Generate Enhanced Portfolio"}
+                      </CardTitle>
                       <CardDescription>
-                        Chat with Gemini to perfect your scenes
+                        AI will {mode === "cinematic" ? "orchestrate your story sections into scenes" : "enhance each scene and orchestrate the overall flow"}
                       </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button
+                        onClick={handleGeneratePortfolio}
+                        disabled={isRefining}
+                        size="lg"
+                        className="w-full"
+                        data-testid="button-generate-portfolio"
+                      >
+                        {isRefining ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Generating Portfolio...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Generate Portfolio with AI
+                          </>
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Conversational Refinement Interface - Only show after first generation */}
+                {conversationHistory.length > 0 && (
+                  <Card className="border-2 border-primary/20">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="flex items-center gap-2">
+                            💬 Refinement Conversation
+                            <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
+                              {conversationHistory.length / 2} iterations
+                            </span>
+                          </CardTitle>
+                          <CardDescription>
+                            Chat with Gemini to perfect your scenes. Reference specific scenes by number.
+                          </CardDescription>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setConversationHistory([]);
+                            setCurrentSceneJson("");
+                            setGeneratedScenes(null);
+                            setCurrentPrompt("");
+                          }}
+                        >
+                          Start Over
+                        </Button>
+                      </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {/* Conversation History */}
-                      <div className="space-y-3 max-h-[400px] overflow-y-auto border rounded-lg p-4">
+                      <div className="space-y-3 max-h-[500px] overflow-y-auto border rounded-lg p-4 bg-muted/30">
                         {conversationHistory.map((msg, idx) => (
                           <div
                             key={idx}
@@ -839,55 +895,88 @@ export default function PortfolioBuilder() {
                               className={`max-w-[80%] rounded-lg p-3 ${
                                 msg.role === 'user'
                                   ? 'bg-primary text-primary-foreground'
-                                  : 'bg-muted'
+                                  : 'bg-background border'
                               }`}
                             >
-                              <div className="text-xs font-medium mb-1">
-                                {msg.role === 'user' ? 'You' : 'Gemini'}
+                              <div className="text-xs font-medium mb-1 opacity-70">
+                                {msg.role === 'user' ? '👤 You' : '🤖 Gemini'}
                               </div>
                               <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
                             </div>
                           </div>
                         ))}
+                        {isRefining && (
+                          <div className="flex justify-start">
+                            <div className="bg-background border rounded-lg p-3">
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Gemini is thinking...
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-
-                      {/* Current Scene Preview */}
-                      {currentSceneJson && (
-                        <div className="border rounded-lg p-4 bg-muted/50">
-                          <div className="text-sm font-medium mb-2">Current Scene JSON:</div>
-                          <pre className="text-xs overflow-auto max-h-[200px]">
-                            {currentSceneJson}
-                          </pre>
-                        </div>
-                      )}
 
                       {/* Refinement Input */}
                       <div className="space-y-2">
-                        <Label htmlFor="refinement-prompt">Ask Gemini to refine:</Label>
+                        <Label htmlFor="refinement-prompt">Continue the conversation:</Label>
                         <Textarea
                           id="refinement-prompt"
                           value={currentPrompt}
                           onChange={(e) => setCurrentPrompt(e.target.value)}
-                          placeholder="Example: Make Scene 3 more dramatic with faster pacing"
+                          placeholder="Examples:&#10;• Make Scene 3 more dramatic with faster pacing&#10;• Add a fade transition between Scene 1 and 2&#10;• The hero section needs more impact"
                           rows={3}
+                          className="resize-none"
                         />
-                        <Button
-                          onClick={handleGeneratePortfolio}
-                          disabled={isRefining || !currentPrompt.trim()}
-                          className="w-full"
-                        >
-                          {isRefining ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Refining...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="w-4 h-4 mr-2" />
-                              Refine Scenes
-                            </>
-                          )}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={handleGeneratePortfolio}
+                            disabled={isRefining || !currentPrompt.trim()}
+                            className="flex-1"
+                          >
+                            {isRefining ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Refining...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-4 h-4 mr-2" />
+                                Refine Scenes
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => setCurrentPrompt("")}
+                            disabled={!currentPrompt.trim()}
+                          >
+                            Clear
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Quick Actions */}
+                      <div className="flex flex-wrap gap-2 pt-2 border-t">
+                        <div className="text-xs text-muted-foreground w-full mb-1">Quick refinements:</div>
+                        {[
+                          "Make it more dramatic",
+                          "Add smooth transitions",
+                          "Increase pacing",
+                          "More cinematic feel",
+                          "Simplify the flow"
+                        ].map((suggestion) => (
+                          <Button
+                            key={suggestion}
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setCurrentPrompt(suggestion)}
+                            disabled={isRefining}
+                            className="text-xs"
+                          >
+                            {suggestion}
+                          </Button>
+                        ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -899,9 +988,18 @@ export default function PortfolioBuilder() {
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
-                          <CardTitle>4. Generated Scenes</CardTitle>
+                          <CardTitle className="flex items-center gap-2">
+                            📋 Generated Scenes
+                            {conversationHistory.length > 2 && (
+                              <span className="text-xs px-2 py-1 bg-green-500/10 text-green-600 rounded">
+                                Updated
+                              </span>
+                            )}
+                          </CardTitle>
                           <CardDescription>
-                            AI-generated scenes based on your prompts
+                            {conversationHistory.length > 2 
+                              ? "Scenes refined based on your feedback" 
+                              : "AI-generated scenes based on your prompts"}
                           </CardDescription>
                           {generatedScenes.confidenceScore !== undefined && (
                             <div className="flex items-center gap-2 mt-2">
@@ -951,28 +1049,50 @@ export default function PortfolioBuilder() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      {generatedScenes.confidenceFactors && generatedScenes.confidenceFactors.length > 0 && (
-                        <Collapsible>
-                          <CollapsibleTrigger asChild>
-                            <Button variant="ghost" size="sm" className="w-full justify-between mb-2">
-                              <span className="text-sm text-muted-foreground">
-                                View Confidence Details ({generatedScenes.confidenceFactors.length} factors)
-                              </span>
-                              <ChevronDown className="h-4 w-4" />
-                            </Button>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent className="pt-2">
-                            <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-2 mb-4">
-                              {generatedScenes.confidenceFactors.map((factor: string, idx: number) => (
-                                <div key={idx} className="flex items-start gap-2 text-sm">
-                                  <span className="text-muted-foreground">•</span>
-                                  <span>{factor}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      )}
+                      <div className="space-y-2 mb-4">
+                        {generatedScenes.confidenceFactors && generatedScenes.confidenceFactors.length > 0 && (
+                          <Collapsible>
+                            <CollapsibleTrigger asChild>
+                              <Button variant="ghost" size="sm" className="w-full justify-between">
+                                <span className="text-sm text-muted-foreground">
+                                  View Confidence Details ({generatedScenes.confidenceFactors.length} factors)
+                                </span>
+                                <ChevronDown className="h-4 w-4" />
+                              </Button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="pt-2">
+                              <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-2">
+                                {generatedScenes.confidenceFactors.map((factor: string, idx: number) => (
+                                  <div key={idx} className="flex items-start gap-2 text-sm">
+                                    <span className="text-muted-foreground">•</span>
+                                    <span>{factor}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        )}
+                        
+                        {currentSceneJson && (
+                          <Collapsible>
+                            <CollapsibleTrigger asChild>
+                              <Button variant="ghost" size="sm" className="w-full justify-between">
+                                <span className="text-sm text-muted-foreground">
+                                  View Complete Scene JSON
+                                </span>
+                                <ChevronDown className="h-4 w-4" />
+                              </Button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent className="pt-2">
+                              <div className="rounded-lg border bg-muted/30 p-4">
+                                <pre className="text-xs overflow-auto max-h-[400px] whitespace-pre-wrap">
+                                  {currentSceneJson}
+                                </pre>
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        )}
+                      </div>
 
                       <div className="grid gap-4">
                         {(generatedScenes.scenes || generatedScenes).map((scene: any, index: number) => (
@@ -1001,37 +1121,6 @@ export default function PortfolioBuilder() {
                     </CardContent>
                   </Card>
                 )}
-
-                {/* Generate Button */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>5. Generate Portfolio</CardTitle>
-                    <CardDescription>
-                      AI will enhance each scene and orchestrate the overall flow
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button
-                      onClick={handleGeneratePortfolio}
-                      disabled={isRefining} // Changed from isGenerating to isRefining
-                      size="lg"
-                      className="w-full"
-                      data-testid="button-generate-portfolio"
-                    >
-                      {isRefining ? ( // Changed from isGenerating to isRefining
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Refining Portfolio... {/* Changed text */}
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4 mr-2" />
-                          Generate Portfolio with AI
-                        </>
-                      )}
-                    </Button>
-                  </CardContent>
-                </Card>
               </div>
             </main>
           </div>
