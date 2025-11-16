@@ -1591,15 +1591,15 @@ export default function PortfolioBuilder() {
                                 <div className="flex items-center gap-2 mb-2">
                                   <span className="font-medium">Scene {index + 1}</span>
                                   <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded">
-                                    {scene.sceneType}
+                                    {scene.type || scene.sceneType || 'unknown'}
                                   </span>
                                 </div>
                                 <div className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                                  <strong>AI Prompt:</strong> {scene.aiPrompt}
+                                  <strong>Type:</strong> {scene.type || scene.sceneType || 'N/A'}
                                 </div>
-                                {scene.content.heading && (
+                                {(scene.content?.heading || scene.headline) && (
                                   <div className="text-xs text-muted-foreground">
-                                    Heading: {scene.content.heading}
+                                    Heading: {scene.content?.heading || scene.headline}
                                   </div>
                                 )}
                               </div>
