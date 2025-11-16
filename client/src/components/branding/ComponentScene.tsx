@@ -5,7 +5,7 @@ import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { ComparisonTable } from "@/components/ComparisonTable";
 import { TestimonialCarousel } from "@/components/TestimonialCarousel";
 import { GTMTimeline } from "@/components/GTMTimeline";
-import { BuildAndRampTimeline } from "@/components/BuildAndRampTimeline";
+import BuildAndRampTimeline from "@/components/BuildAndRampTimeline";
 import { MiniCalculator } from "@/components/MiniCalculator";
 
 interface ComponentSceneProps {
