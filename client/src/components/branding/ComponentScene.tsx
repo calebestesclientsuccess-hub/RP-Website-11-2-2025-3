@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { ComparisonTable } from "@/components/ComparisonTable";
-import { TestimonialCarousel } from "@/components/TestimonialCarousel";
+import TestimonialCarousel from "@/components/TestimonialCarousel";
 import GTMTimeline from "@/components/GTMTimeline";
 import BuildAndRampTimeline from "@/components/BuildAndRampTimeline";
 import { MiniCalculator } from "@/components/MiniCalculator";
