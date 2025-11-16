@@ -41,7 +41,7 @@ router.get('/api/analytics/web-vitals/summary', async (req, res) => {
         COUNT(*)::integer as sample_count,
         (SUM(CASE WHEN rating = 'good' THEN 1 ELSE 0 END)::float / NULLIF(COUNT(*), 0) * 100)::numeric(5,2) as good_rate_percent
       FROM web_vitals_metrics
-      WHERE created_at > NOW() - make_interval(days => ${days})
+      WHERE created_at > NOW() - INTERVAL '1 day' * ${days}
       GROUP BY name
     `);
 
