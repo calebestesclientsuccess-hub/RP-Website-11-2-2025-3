@@ -195,11 +195,11 @@ export default function BrandingProjectPage() {
 
     // Animate hero title
     if (heroTitle) {
-      gsap.fromTo(heroTitle, 
-        { autoAlpha: 0, y: 30 }, 
-        { 
-          autoAlpha: 1, 
-          y: 0, 
+      gsap.fromTo(heroTitle,
+        { autoAlpha: 0, y: 30 },
+        {
+          autoAlpha: 1,
+          y: 0,
           duration: prefersReducedMotion ? 0.5 : 2.5,
           ease: "power3.out",
           delay: prefersReducedMotion ? 0 : 0.3
@@ -567,7 +567,7 @@ export default function BrandingProjectPage() {
               {/* Progress bar */}
               <div className="hidden md:flex items-center gap-2 mr-4">
                 <div className="w-32 h-1 bg-muted rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-gradient-to-r from-red-500 to-purple-500 transition-all duration-300"
                     style={{ width: `${scrollProgress}%` }}
                   />
@@ -627,8 +627,8 @@ export default function BrandingProjectPage() {
                 data-scene={index}
                 className="min-h-screen flex items-center justify-center px-4 py-24"
                 data-testid={`scene-${index}`}
-                style={{ 
-                  backgroundColor: director.backgroundColor 
+                style={{
+                  backgroundColor: director.backgroundColor
                 }}
               >
                 <div className="container mx-auto max-w-4xl" data-scene-content style={{ opacity: 0 }}>
@@ -691,13 +691,13 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
     case "text":
       return (
         <div className="max-w-none">
-          <h2 
+          <h2
             className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]} mb-8`}
             style={{ color: director.textColor }}
           >
             {content.heading}
           </h2>
-          <p 
+          <p
             className={`${bodySizeMap[director.bodySize]} ${alignmentMap[director.alignment]} leading-relaxed`}
             style={{ color: director.textColor }}
           >
@@ -710,7 +710,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
       return (
         <div className="space-y-8">
           {content.heading && (
-            <h2 
+            <h2
               className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]}`}
               style={{ color: director.textColor }}
             >
@@ -723,12 +723,11 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               alt={content.alt || "Scene image"}
               className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
               style={{ opacity: director.mediaOpacity }}
-              data-media-opacity={director.mediaOpacity}
               loading="lazy"
             />
           </div>
           {content.caption && (
-            <p 
+            <p
               className={`${bodySizeMap[director.bodySize]} ${alignmentMap[director.alignment]} italic`}
               style={{ color: director.textColor }}
             >
@@ -742,7 +741,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
       return (
         <div className="space-y-8">
           {content.heading && (
-            <h2 
+            <h2
               className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]}`}
               style={{ color: director.textColor }}
             >
@@ -758,7 +757,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
             />
           </div>
           {content.caption && (
-            <p 
+            <p
               className={`${bodySizeMap[director.bodySize]} ${alignmentMap[director.alignment]} italic`}
               style={{ color: director.textColor }}
             >
@@ -773,7 +772,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className={`space-y-6 ${layout === "reverse" ? "md:order-2" : "md:order-1"}`}>
             {content.heading && (
-              <h2 
+              <h2
                 className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]}`}
                 style={{ color: director.textColor }}
               >
@@ -781,7 +780,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               </h2>
             )}
             {content.body && (
-              <p 
+              <p
                 className={`${bodySizeMap[director.bodySize]} ${alignmentMap[director.alignment]} leading-relaxed`}
                 style={{ color: director.textColor }}
               >
@@ -803,7 +802,6 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 alt={content.alt || "Scene media"}
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                 style={{ opacity: director.mediaOpacity }}
-                data-media-opacity={director.mediaOpacity}
                 loading="lazy"
               />
             )}
@@ -815,7 +813,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
       return (
         <div className="space-y-8">
           {content.heading && (
-            <h2 
+            <h2
               className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} ${alignmentMap[director.alignment]}`}
               style={{ color: director.textColor }}
             >
@@ -831,12 +829,11 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                     alt={img.alt || `Gallery image ${idx + 1}`}
                     className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]} hover:scale-105 transition-transform duration-500`}
                     style={{ opacity: director.mediaOpacity }}
-                    data-media-opacity={director.mediaOpacity}
                     loading="lazy"
                   />
                 </div>
                 {img.caption && (
-                  <p 
+                  <p
                     className={`text-sm ${alignmentMap[director.alignment]}`}
                     style={{ color: director.textColor }}
                   >
@@ -853,14 +850,14 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
       return (
         <div className={`max-w-3xl mx-auto space-y-8 ${alignmentMap[director.alignment]}`}>
           <div className="text-6xl md:text-8xl opacity-20" style={{ color: director.textColor }}>"</div>
-          <blockquote 
+          <blockquote
             className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} leading-relaxed`}
             style={{ color: director.textColor }}
           >
             {content.quote}
           </blockquote>
           {content.author && (
-            <cite 
+            <cite
               className={`block ${bodySizeMap[director.bodySize]} not-italic`}
               style={{ color: director.textColor, opacity: 0.6 }}
             >
@@ -892,7 +889,6 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 alt={content.alt || "Full screen media"}
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                 style={{ opacity: director.mediaOpacity }}
-                data-media-opacity={director.mediaOpacity}
                 loading="lazy"
               />
             )}
@@ -900,7 +896,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/50 to-transparent flex items-end p-12">
                 <div className="max-w-2xl">
                   {content.heading && (
-                    <h2 
+                    <h2
                       className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight]} mb-4`}
                       style={{ color: director.textColor }}
                     >
@@ -908,7 +904,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                     </h2>
                   )}
                   {content.body && (
-                    <p 
+                    <p
                       className={`${bodySizeMap[director.bodySize]}`}
                       style={{ color: director.textColor, opacity: 0.9 }}
                     >
