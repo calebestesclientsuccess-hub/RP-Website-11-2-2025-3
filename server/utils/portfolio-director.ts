@@ -2476,7 +2476,7 @@ Before you return the refined JSON, you MUST first provide your "Creative Ration
 CREATIVE RATIONALE:
 "This gallery scene is Scene ${sceneIndex}.
 
-1. Asset Check (MANDATORY): I am validating all assets against the 'Do Not Overdraw' mandate. The user provided ${totalImagesProvided} images. The scene uses assetIds containing image placeholders. I will verify the highest index does not exceed the total available. All assets are valid. I am clear to proceed.
+1. Asset Check (MANDATORY): I am validating all assets against the 'Do Not Overdraw' mandate. The user provided ${totalImagesProvided} images. The scene uses assetIds: ["placeholder-image-3", "placeholder-image-4", "placeholder-image-5"]. The highest index is '5'. This is a valid asset selection as it is less than or equal to the total available. I am clear to proceed.
 
 2. Refinement 1 (Stagger): This is the most critical fix. A gallery's items must never appear at the same time. I am setting staggerChildren: 0.2s to create a rapid "waterfall" or "domino" effect as the images animate in. This directly serves the 'energetic' Director's Vision.
 
@@ -2502,13 +2502,13 @@ Critical Context:
   ${catalog.directorNotes}
 
 Original Scene JSON:
-${JSON.JSON.stringify(scene, null, 2)}
+${JSON.stringify(scene, null, 2)}
 
 Key Refinement Goals for Gallery Scenes
 
 Your task is to refine the scene above, focusing on these specific goals for a gallery layout:
 
-1. Asset Validation (Your #1 Goal): Before you do anything, check the scene's assetIds array. A gallery may use multiple images (e.g., ["placeholder-image-3", "placeholder-image-4", "placeholder-image-5"]). Find the highest placeholder index in that array. Does this index exceed the totalImagesProvided? If so, the scene is invalid, and you must report it (though the TD should have caught it).
+1. Asset Validation (Your #1 Goal): Before you do anything, check the scene's assetIds array. A gallery may use multiple images (e.g., ["placeholder-image-3", "placeholder-image-4", "placeholder-image-5"]). Find the highest placeholder index in that array. Does this index (5 in the example) exceed the totalImagesProvided? If so, the scene is invalid, and you must report it (though the TD should have caught it).
 2. Internal Rhythm (Your #2 Goal): A gallery's items must not appear simultaneously. It looks broken and amateurish. Your refinement MUST set staggerChildren to a non-zero value (e.g., 0.1s for "fast," 0.3s for "elegant") to create a sophisticated "waterfall" reveal.
 3. Pacing & Easing: Galleries are often "Act 2" content. They should feel energetic. Consider using "peppier" easing functions like back.out or power3.out. If the 'Director's Vision' is "fast," staggerChildren should be 0.1s and entryDuration should be short (~1.0s). If the vision is "elegant," staggerChildren should be 0.3s and entryDuration longer (~1.8s).
 
