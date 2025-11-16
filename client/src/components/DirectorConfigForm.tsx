@@ -830,6 +830,128 @@ export function DirectorConfigForm({ form, sceneType }: DirectorConfigFormProps)
         </div>
       </div>
 
+      {/* Cinematic Controls - Missing from current implementation */}
+      <div className="space-y-3">
+        <Label className="text-base font-semibold">Cinematic Controls</Label>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="transformOrigin">Transform Origin</Label>
+            <Select
+              value={form.watch("director.transformOrigin") || "center center"}
+              onValueChange={(value) => form.setValue("director.transformOrigin", value)}
+            >
+              <SelectTrigger id="transformOrigin">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="center center">Center</SelectItem>
+                <SelectItem value="top left">Top Left</SelectItem>
+                <SelectItem value="top center">Top Center</SelectItem>
+                <SelectItem value="top right">Top Right</SelectItem>
+                <SelectItem value="center left">Center Left</SelectItem>
+                <SelectItem value="center right">Center Right</SelectItem>
+                <SelectItem value="bottom left">Bottom Left</SelectItem>
+                <SelectItem value="bottom center">Bottom Center</SelectItem>
+                <SelectItem value="bottom right">Bottom Right</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Pivot point for rotations/scales
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="overflowBehavior">Overflow Behavior</Label>
+            <Select
+              value={form.watch("director.overflowBehavior") || "hidden"}
+              onValueChange={(value) => form.setValue("director.overflowBehavior", value)}
+            >
+              <SelectTrigger id="overflowBehavior">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="visible">Visible (no clipping)</SelectItem>
+                <SelectItem value="hidden">Hidden (clip content)</SelectItem>
+                <SelectItem value="auto">Auto (scrollbars if needed)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="customCSS">Custom CSS Classes</Label>
+          <Input
+            id="customCSS"
+            type="text"
+            placeholder="custom-class another-class"
+            value={form.watch("director.customCSSClasses") || ""}
+            onChange={(e) => form.setValue("director.customCSSClasses", e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">
+            Space-separated Tailwind classes for advanced styling
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="backdropBlur">Backdrop Blur</Label>
+            <Select
+              value={form.watch("director.backdropBlur") || "none"}
+              onValueChange={(value) => form.setValue("director.backdropBlur", value)}
+            >
+              <SelectTrigger id="backdropBlur">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="sm">Small</SelectItem>
+                <SelectItem value="md">Medium</SelectItem>
+                <SelectItem value="lg">Large</SelectItem>
+                <SelectItem value="xl">Extra Large</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="mixBlendMode">Blend Mode</Label>
+            <Select
+              value={form.watch("director.mixBlendMode") || "normal"}
+              onValueChange={(value) => form.setValue("director.mixBlendMode", value)}
+            >
+              <SelectTrigger id="mixBlendMode">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="normal">Normal</SelectItem>
+                <SelectItem value="multiply">Multiply</SelectItem>
+                <SelectItem value="screen">Screen</SelectItem>
+                <SelectItem value="overlay">Overlay</SelectItem>
+                <SelectItem value="difference">Difference</SelectItem>
+                <SelectItem value="exclusion">Exclusion</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <FormField
+            control={form.control}
+            name="director.enablePerspective"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between p-3 bg-card rounded-md">
+                <FormLabel className="!mt-0">3D Perspective (for rotate effects)</FormLabel>
+                <FormControl>
+                  <Switch
+                    checked={field.value ?? false}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+      </div>
+
       {/* Media Settings (conditional) */}
       {isMediaScene && (
         <Collapsible open={isMediaOpen} onOpenChange={setIsMediaOpen}>

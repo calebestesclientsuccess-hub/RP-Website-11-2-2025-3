@@ -28,6 +28,17 @@ interface DirectorConfig {
   mixBlendMode?: string;
   customCSSClasses?: string;
   enablePerspective?: boolean;
+  overflowBehavior?: string;
+  layerDepth?: number;
+  staggerChildren?: number;
+  fontWeight?: string;
+  textShadow?: boolean;
+  textGlow?: boolean;
+  paddingTop?: string;
+  paddingBottom?: string;
+  mediaPosition?: string;
+  mediaScale?: string;
+  mediaOpacity?: number;
 }
 
 interface SceneData {
@@ -41,6 +52,47 @@ interface SceneRendererProps {
   scene: SceneData;
   index: number;
 }
+
+// Helper to map heading/body sizes to Tailwind classes
+const headingSizeMap: Record<string, string> = {
+  "4xl": "text-4xl md:text-5xl",
+  "5xl": "text-5xl md:text-6xl",
+  "6xl": "text-5xl md:text-6xl lg:text-7xl",
+  "7xl": "text-6xl md:text-7xl lg:text-8xl",
+  "8xl": "text-7xl md:text-8xl lg:text-9xl",
+};
+
+const bodySizeMap: Record<string, string> = {
+  "base": "text-base md:text-lg",
+  "lg": "text-lg md:text-xl",
+  "xl": "text-xl md:text-2xl",
+  "2xl": "text-2xl md:text-3xl",
+};
+
+const fontWeightMap: Record<string, string> = {
+  "normal": "font-normal",
+  "medium": "font-medium",
+  "semibold": "font-semibold",
+  "bold": "font-bold",
+};
+
+const paddingMap: Record<string, string> = {
+  "none": "pt-0",
+  "sm": "pt-4",
+  "md": "pt-8",
+  "lg": "pt-12",
+  "xl": "pt-16",
+  "2xl": "pt-24",
+};
+
+const paddingBottomMap: Record<string, string> = {
+  "none": "pb-0",
+  "sm": "pb-4",
+  "md": "pb-8",
+  "lg": "pb-12",
+  "xl": "pb-16",
+  "2xl": "pb-24",
+};
 
 export function SceneRenderer({ scene, index }: SceneRendererProps) {
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -206,14 +258,16 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
 
   const { director, content, type } = scene;
 
-  // Build className from director config
+  // Build className from director config - NOW INCLUDES ALL CONTROLS
   const sceneClasses = [
     "min-h-screen",
     "flex",
     "items-center",
     "justify-center",
     "relative",
-    "overflow-hidden",
+    director.overflowBehavior === "visible" ? "overflow-visible" : director.overflowBehavior === "auto" ? "overflow-auto" : "overflow-hidden",
+    paddingMap[director.paddingTop || "md"],
+    paddingBottomMap[director.paddingBottom || "md"],
     director.customCSSClasses,
   ]
     .filter(Boolean)
@@ -223,6 +277,8 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
     `text-${director.alignment}`,
     director.backdropBlur && director.backdropBlur !== "none" ? `backdrop-blur-${director.backdropBlur}` : "",
     director.enablePerspective ? "perspective-1000" : "",
+    director.textShadow ? "drop-shadow-lg" : "",
+    director.textGlow ? "text-shadow-glow" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -234,6 +290,7 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
       style={{
         backgroundColor: director.backgroundColor,
         color: director.textColor,
+        zIndex: director.layerDepth || 5,
       }}
     >
       <div
@@ -246,11 +303,11 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
       >
         {type === "text" && (
           <div className="container mx-auto px-4">
-            <h1 className={`text-${director.headingSize} font-bold mb-4`}>
+            <h1 className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight || "bold"]} mb-4`}>
               {content.heading}
             </h1>
             {content.body && (
-              <p className={`text-${director.bodySize}`}>{content.body}</p>
+              <p className={`${bodySizeMap[director.bodySize]}`}>{content.body}</p>
             )}
           </div>
         )}
@@ -261,6 +318,7 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
               src={content.url}
               alt={content.alt}
               className="w-full h-auto object-cover"
+              style={{ opacity: director.mediaOpacity || 1 }}
             />
             {content.caption && (
               <p className="text-center mt-4 text-sm opacity-70">{content.caption}</p>
@@ -270,10 +328,10 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
 
         {type === "quote" && (
           <div className="container mx-auto px-4 max-w-4xl">
-            <blockquote className={`text-${director.headingSize} font-serif italic mb-6`}>
+            <blockquote className={`${headingSizeMap[director.headingSize]} font-serif italic mb-6`}>
               "{content.quote}"
             </blockquote>
-            <cite className={`text-${director.bodySize} not-italic`}>
+            <cite className={`${bodySizeMap[director.bodySize]} not-italic`}>
               — {content.author}
               {content.role && <span className="opacity-70">, {content.role}</span>}
             </cite>

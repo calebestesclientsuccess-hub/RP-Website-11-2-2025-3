@@ -156,6 +156,14 @@ export default function BrandingProjectPage() {
   const { data: scenes, isLoading: isLoadingScenes } = useQuery<ProjectScene[]>({
     queryKey: [`/api/branding/projects/${project?.id}/scenes`],
     enabled: !!project?.id,
+    onSuccess: (data) => {
+      // Validate director configs in development
+      if (import.meta.env.DEV && data) {
+        import('@/lib/director-validator').then(({ logDirectorConfigDiagnostics }) => {
+          logDirectorConfigDiagnostics(data);
+        });
+      }
+    },
   });
 
   // Initialize GSAP ScrollTrigger animations
