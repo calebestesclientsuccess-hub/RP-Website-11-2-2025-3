@@ -2030,6 +2030,64 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
+  // Content Assets API
+  app.post("/api/content-assets", requireAuth, async (req, res) => {
+    try {
+      const { assetType, title, tags, imageUrl, altText, videoUrl, videoCaption, duration, quoteText, quoteAuthor, quoteRole } = req.body;
+
+      if (!assetType || !['image', 'video', 'quote'].includes(assetType)) {
+        return res.status(400).json({ error: "Invalid asset type" });
+      }
+
+      const asset = await storage.createContentAsset(req.tenantId, {
+        assetType,
+        title,
+        tags,
+        imageUrl,
+        altText,
+        videoUrl,
+        videoCaption,
+        duration,
+        quoteText,
+        quoteAuthor,
+        quoteRole,
+      });
+
+      return res.status(201).json(asset);
+    } catch (error) {
+      console.error("Error creating content asset:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/content-assets", requireAuth, async (req, res) => {
+    try {
+      const { type } = req.query;
+      
+      let assets;
+      if (type && ['image', 'video', 'quote'].includes(type as string)) {
+        assets = await storage.getContentAssetsByType(req.tenantId, type as 'image' | 'video' | 'quote');
+      } else {
+        assets = await storage.getAllContentAssets(req.tenantId);
+      }
+
+      return res.json(assets);
+    } catch (error) {
+      console.error("Error fetching content assets:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/content-assets/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deleteContentAsset(req.tenantId, req.params.id);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting content asset:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Asset Mapping API
   app.get("/api/projects/:projectId/asset-map", requireAuth, async (req, res) => {
     try {

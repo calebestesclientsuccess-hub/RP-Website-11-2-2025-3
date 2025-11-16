@@ -14,8 +14,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ImageIcon, VideoIcon, Quote, Search, Check } from "lucide-react";
+import { ImageIcon, VideoIcon, Quote, Search, Check, Plus, Loader2 } from "lucide-react";
 import { getPlaceholderType, type PlaceholderId } from "@shared/placeholder-config";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Textarea } from "@/components/ui/textarea";
 
 interface AssetMapperModalProps {
   isOpen: boolean;
@@ -40,14 +44,95 @@ export function AssetMapperModal({
 }: AssetMapperModalProps) {
   const [selectedAssetId, setSelectedAssetId] = useState<string>(currentMapping || "");
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState<"select" | "create">("select");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Create asset form state
+  const [newAsset, setNewAsset] = useState({
+    title: "",
+    imageUrl: "",
+    altText: "",
+    videoUrl: "",
+    videoCaption: "",
+    quoteText: "",
+    quoteAuthor: "",
+    quoteRole: "",
+  });
 
   const placeholderType = getPlaceholderType(placeholderId);
+
+  // Create asset mutation
+  const createAssetMutation = useMutation({
+    mutationFn: async (assetData: any) => {
+      const response = await apiRequest("POST", "/api/content-assets", assetData);
+      if (!response.ok) throw new Error("Failed to create asset");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({ title: "Asset created successfully" });
+      queryClient.invalidateQueries({ queryKey: ["/api/content-assets"] });
+      setSelectedAssetId(data.id);
+      setActiveTab("select");
+      // Reset form
+      setNewAsset({
+        title: "",
+        imageUrl: "",
+        altText: "",
+        videoUrl: "",
+        videoCaption: "",
+        quoteText: "",
+        quoteAuthor: "",
+        quoteRole: "",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to create asset",
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSave = () => {
     if (selectedAssetId) {
       onSave(placeholderId, selectedAssetId);
       onClose();
     }
+  };
+
+  const handleCreateAsset = () => {
+    const assetData: any = {
+      assetType: placeholderType,
+      title: newAsset.title || undefined,
+    };
+
+    if (placeholderType === "image") {
+      if (!newAsset.imageUrl) {
+        toast({ title: "Image URL is required", variant: "destructive" });
+        return;
+      }
+      assetData.imageUrl = newAsset.imageUrl;
+      assetData.altText = newAsset.altText || undefined;
+    } else if (placeholderType === "video") {
+      if (!newAsset.videoUrl) {
+        toast({ title: "Video URL is required", variant: "destructive" });
+        return;
+      }
+      assetData.videoUrl = newAsset.videoUrl;
+      assetData.videoCaption = newAsset.videoCaption || undefined;
+    } else if (placeholderType === "quote") {
+      if (!newAsset.quoteText) {
+        toast({ title: "Quote text is required", variant: "destructive" });
+        return;
+      }
+      assetData.quoteText = newAsset.quoteText;
+      assetData.quoteAuthor = newAsset.quoteAuthor || undefined;
+      assetData.quoteRole = newAsset.quoteRole || undefined;
+    }
+
+    createAssetMutation.mutate(assetData);
   };
 
   const filterAssets = <T extends { id: string }>(assets: T[]): T[] => {
@@ -158,6 +243,122 @@ export function AssetMapperModal({
     );
   };
 
+  const renderCreateForm = () => {
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="asset-title">Title (Optional)</Label>
+          <Input
+            id="asset-title"
+            value={newAsset.title}
+            onChange={(e) => setNewAsset({ ...newAsset, title: e.target.value })}
+            placeholder="Give this asset a memorable name"
+          />
+        </div>
+
+        {placeholderType === "image" && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="image-url">Image URL *</Label>
+              <Input
+                id="image-url"
+                value={newAsset.imageUrl}
+                onChange={(e) => setNewAsset({ ...newAsset, imageUrl: e.target.value })}
+                placeholder="https://example.com/image.jpg"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="alt-text">Alt Text</Label>
+              <Input
+                id="alt-text"
+                value={newAsset.altText}
+                onChange={(e) => setNewAsset({ ...newAsset, altText: e.target.value })}
+                placeholder="Describe the image for accessibility"
+              />
+            </div>
+          </>
+        )}
+
+        {placeholderType === "video" && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="video-url">Video URL *</Label>
+              <Input
+                id="video-url"
+                value={newAsset.videoUrl}
+                onChange={(e) => setNewAsset({ ...newAsset, videoUrl: e.target.value })}
+                placeholder="https://example.com/video.mp4"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="video-caption">Caption</Label>
+              <Input
+                id="video-caption"
+                value={newAsset.videoCaption}
+                onChange={(e) => setNewAsset({ ...newAsset, videoCaption: e.target.value })}
+                placeholder="Video description"
+              />
+            </div>
+          </>
+        )}
+
+        {placeholderType === "quote" && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="quote-text">Quote *</Label>
+              <Textarea
+                id="quote-text"
+                value={newAsset.quoteText}
+                onChange={(e) => setNewAsset({ ...newAsset, quoteText: e.target.value })}
+                placeholder="Enter the quote text"
+                rows={3}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quote-author">Author</Label>
+              <Input
+                id="quote-author"
+                value={newAsset.quoteAuthor}
+                onChange={(e) => setNewAsset({ ...newAsset, quoteAuthor: e.target.value })}
+                placeholder="Who said this?"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quote-role">Role/Title</Label>
+              <Input
+                id="quote-role"
+                value={newAsset.quoteRole}
+                onChange={(e) => setNewAsset({ ...newAsset, quoteRole: e.target.value })}
+                placeholder="CEO, Designer, etc."
+              />
+            </div>
+          </>
+        )}
+
+        <Button
+          onClick={handleCreateAsset}
+          disabled={createAssetMutation.isPending}
+          className="w-full"
+        >
+          {createAssetMutation.isPending ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4 mr-2" />
+              Create & Select Asset
+            </>
+          )}
+        </Button>
+      </div>
+    );
+  };
+
   const getIcon = () => {
     switch (placeholderType) {
       case "image":
@@ -193,7 +394,7 @@ export function AssetMapperModal({
             <div>
               <DialogTitle>Assign Asset to {placeholderId}</DialogTitle>
               <DialogDescription>
-                Select a {placeholderType} from your content library ({getAssetCount()} available)
+                Select an existing {placeholderType} or create a new one
                 {currentMapping && (
                   <span className="block mt-1 text-xs text-primary">
                     Currently mapped: {currentMapping}
@@ -204,34 +405,51 @@ export function AssetMapperModal({
           </div>
         </DialogHeader>
 
-        <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder={`Search ${placeholderType}s...`}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
-            />
-          </div>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "select" | "create")} className="flex-1 flex flex-col overflow-hidden">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="select">
+              Select Existing ({getAssetCount()})
+            </TabsTrigger>
+            <TabsTrigger value="create">
+              <Plus className="w-4 h-4 mr-2" />
+              Create New
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Asset Grid/List */}
-          <ScrollArea className="flex-1">
-            {placeholderType === "image" && renderImageGrid()}
-            {placeholderType === "video" && renderVideoGrid()}
-            {placeholderType === "quote" && renderQuoteList()}
-
-            {getAssetCount() === 0 && (
-              <div className="text-center py-12 text-muted-foreground">
-                <p>No {placeholderType}s available in your content library.</p>
-                <p className="text-sm mt-2">Add some assets first before mapping placeholders.</p>
+          <TabsContent value="select" className="flex-1 overflow-hidden flex flex-col mt-4">
+            {getAssetCount() > 0 && (
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder={`Search ${placeholderType}s...`}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
               </div>
             )}
-          </ScrollArea>
-        </div>
 
-        {/* Actions */}
+            <ScrollArea className="flex-1">
+              {placeholderType === "image" && renderImageGrid()}
+              {placeholderType === "video" && renderVideoGrid()}
+              {placeholderType === "quote" && renderQuoteList()}
+
+              {getAssetCount() === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p>No {placeholderType}s available yet.</p>
+                  <p className="text-sm mt-2">Create your first one using the "Create New" tab.</p>
+                </div>
+              )}
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="create" className="flex-1 overflow-hidden mt-4">
+            <ScrollArea className="h-full">
+              {renderCreateForm()}
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
+
         <div className="flex justify-between items-center pt-4 border-t">
           <div className="text-sm text-muted-foreground">
             {selectedAssetId ? (

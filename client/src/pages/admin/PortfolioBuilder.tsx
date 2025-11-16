@@ -175,6 +175,12 @@ export default function PortfolioBuilder() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  // Fetch content assets for asset mapper
+  const { data: contentAssets } = useQuery<any[]>({
+    queryKey: ["/api/content-assets"],
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
+
   // Fetch scenes separately for the selected project
   const { data: existingProjectScenes, isLoading: isLoadingScenes, error: scenesError } = useQuery<any[]>({
     queryKey: ["/api/projects", selectedProjectId, "scenes"],
@@ -1773,9 +1779,21 @@ export default function PortfolioBuilder() {
           placeholderId={selectedPlaceholder}
           currentMapping={assetMap[selectedPlaceholder]}
           availableAssets={{
-            images: [], // TODO: Load from content library
-            videos: [], // TODO: Load from content library
-            quotes: [], // TODO: Load from content library
+            images: contentAssets?.filter((a: any) => a.assetType === 'image').map((a: any) => ({
+              id: a.id,
+              url: a.imageUrl,
+              alt: a.altText
+            })) || [],
+            videos: contentAssets?.filter((a: any) => a.assetType === 'video').map((a: any) => ({
+              id: a.id,
+              url: a.videoUrl,
+              caption: a.videoCaption
+            })) || [],
+            quotes: contentAssets?.filter((a: any) => a.assetType === 'quote').map((a: any) => ({
+              id: a.id,
+              quote: a.quoteText,
+              author: a.quoteAuthor || 'Anonymous'
+            })) || [],
           }}
           onSave={handleSaveAssetMapping}
         />

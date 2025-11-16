@@ -26,10 +26,11 @@ import {
   type PromptTemplate, type InsertPromptTemplate,
   users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens,
   assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants, leads, featureFlags, insertLeadSchema,
-  projects, projectScenes, promptTemplates, portfolioConversations, portfolioVersions
+  projects, projectScenes, promptTemplates, portfolioConversations, portfolioVersions, contentAssets
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, ilike, sql } from "drizzle-orm";
+import crypto from 'crypto';
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -136,6 +137,7 @@ export interface IStorage {
   updateFeatureFlag(tenantId: string, flagKey: string, updates: Partial<InsertFeatureFlag>): Promise<FeatureFlag>;
   createFeatureFlag(tenantId: string, flag: InsertFeatureFlag): Promise<FeatureFlag>;
 
+  // Project methods
   getAllProjects(tenantId: string): Promise<Project[]>;
   getProjectById(tenantId: string, id: string): Promise<Project | undefined>;
   getProjectBySlug(tenantId: string, slug: string): Promise<Project | undefined>;
@@ -155,6 +157,30 @@ export interface IStorage {
   createPromptTemplate(tenantId: string, userId: string, template: InsertPromptTemplate): Promise<PromptTemplate>;
   updatePromptTemplate(tenantId: string, id: string, userId: string, template: Partial<InsertPromptTemplate>): Promise<PromptTemplate>;
   deletePromptTemplate(tenantId: string, id: string): Promise<void>;
+
+  // Content Assets API
+  createContentAsset(tenantId: string, data: {
+    assetType: 'image' | 'video' | 'quote';
+    title?: string;
+    tags?: string[];
+    imageUrl?: string;
+    altText?: string;
+    videoUrl?: string;
+    videoCaption?: string;
+    duration?: number;
+    quoteText?: string;
+    quoteAuthor?: string;
+    quoteRole?: string;
+  }): Promise<any>;
+  getContentAssetsByType(tenantId: string, assetType: 'image' | 'video' | 'quote'): Promise<any[]>;
+  getAllContentAssets(tenantId: string): Promise<any[]>;
+  deleteContentAsset(tenantId: string, assetId: string): Promise<void>;
+
+  // Asset Mapping API
+  getAssetMap(projectId: string): Promise<Record<string, string>>;
+  saveAssetMap(projectId: string, assetMap: Record<string, string>);
+  updateAssetMapping(projectId: string, placeholderId: string, assetId: string);
+  removeAssetMapping(projectId: string, placeholderId: string);
 }
 
 export class DbStorage implements IStorage {
@@ -652,29 +678,6 @@ export class DbStorage implements IStorage {
       .where(and(eq(campaigns.tenantId, tenantId), eq(campaigns.id, id)));
   }
 
-  async createEvent(tenantId: string, insertEvent: { eventType: string; campaignId?: string; payload?: string }): Promise<any> {
-    const [event] = await db.insert(events)
-      .values({ tenantId, ...insertEvent })
-      .returning();
-    return event;
-  }
-
-  async getAllEvents(tenantId: string, filters?: { campaignId?: string; eventType?: string }): Promise<any[]> {
-    const conditions = [eq(events.tenantId, tenantId)];
-
-    if (filters?.campaignId) {
-      conditions.push(eq(events.campaignId, filters.campaignId));
-    }
-
-    if (filters?.eventType) {
-      conditions.push(eq(events.eventType, filters.eventType));
-    }
-
-    return await db.select().from(events)
-      .where(and(...conditions))
-      .orderBy(desc(events.createdAt));
-  }
-
   async createEvent(tenantId: string, insertEvent: InsertEvent): Promise<Event> {
     const [event] = await db.insert(events)
       .values({ tenantId, ...insertEvent })
@@ -854,12 +857,12 @@ export class DbStorage implements IStorage {
     if (!project) {
       return null;
     }
-    
+
     const scenes = await db.select()
       .from(projectScenes)
       .where(eq(projectScenes.projectId, projectId))
       .orderBy(asc(projectScenes.order));
-    
+
     // JSONB column auto-parses, no manual parsing needed
     return scenes;
   }
@@ -869,7 +872,7 @@ export class DbStorage implements IStorage {
     if (!project) {
       throw new Error('Project not found or access denied');
     }
-    
+
     const [newScene] = await db.insert(projectScenes).values({ ...scene, projectId }).returning();
     // JSONB column auto-parses, no manual parsing needed
     return newScene;
@@ -880,12 +883,12 @@ export class DbStorage implements IStorage {
     if (!project) {
       return null;
     }
-    
+
     const [updatedScene] = await db.update(projectScenes)
       .set(scene)
       .where(and(eq(projectScenes.id, id), eq(projectScenes.projectId, projectId)))
       .returning();
-    
+
     // JSONB column auto-parses, no manual parsing needed
     return updatedScene || null;
   }
@@ -895,7 +898,7 @@ export class DbStorage implements IStorage {
     if (!project) {
       return false;
     }
-    
+
     const result = await db.delete(projectScenes)
       .where(and(eq(projectScenes.id, id), eq(projectScenes.projectId, projectId)))
       .returning();
@@ -905,11 +908,11 @@ export class DbStorage implements IStorage {
   // Prompt Templates CRUD methods
   async getAllPromptTemplates(tenantId: string, activeOnly?: boolean): Promise<PromptTemplate[]> {
     const conditions = [eq(promptTemplates.tenantId, tenantId)];
-    
+
     if (activeOnly) {
       conditions.push(eq(promptTemplates.isActive, true));
     }
-    
+
     return db.select()
       .from(promptTemplates)
       .where(and(...conditions))
@@ -924,8 +927,8 @@ export class DbStorage implements IStorage {
   }
 
   async getDefaultPromptTemplate(
-    tenantId: string, 
-    sceneType?: string | null, 
+    tenantId: string,
+    sceneType?: string | null,
     scope: string = 'global'
   ): Promise<PromptTemplate | undefined> {
     const conditions = [
@@ -946,13 +949,13 @@ export class DbStorage implements IStorage {
       .from(promptTemplates)
       .where(and(...conditions))
       .limit(1);
-    
+
     return template;
   }
 
   async createPromptTemplate(
-    tenantId: string, 
-    userId: string, 
+    tenantId: string,
+    userId: string,
     template: InsertPromptTemplate
   ): Promise<PromptTemplate> {
     const [newTemplate] = await db.insert(promptTemplates)
@@ -963,14 +966,14 @@ export class DbStorage implements IStorage {
         updatedBy: userId,
       })
       .returning();
-    
+
     return newTemplate;
   }
 
   async updatePromptTemplate(
-    tenantId: string, 
-    id: string, 
-    userId: string, 
+    tenantId: string,
+    id: string,
+    userId: string,
     template: Partial<InsertPromptTemplate>
   ): Promise<PromptTemplate> {
     const [updatedTemplate] = await db.update(promptTemplates)
@@ -981,11 +984,11 @@ export class DbStorage implements IStorage {
       })
       .where(and(eq(promptTemplates.tenantId, tenantId), eq(promptTemplates.id, id)))
       .returning();
-    
+
     if (!updatedTemplate) {
       throw new Error('Prompt template not found or access denied');
     }
-    
+
     return updatedTemplate;
   }
 
@@ -993,7 +996,7 @@ export class DbStorage implements IStorage {
     const result = await db.delete(promptTemplates)
       .where(and(eq(promptTemplates.tenantId, tenantId), eq(promptTemplates.id, id)))
       .returning();
-    
+
     if (result.length === 0) {
       throw new Error('Prompt template not found or access denied');
     }
@@ -1076,53 +1079,104 @@ export class DbStorage implements IStorage {
     return versions[0] || null;
   }
 
-  // Asset Map Management
-  async saveAssetMap(projectId: string, assetMap: Record<string, string>) {
-    // Save to the latest version, or create new version if none exists
-    const latestVersion = await this.getLatestPortfolioVersion(projectId);
-    
-    if (latestVersion) {
-      // Update existing version
-      const [updated] = await db
-        .update(portfolioVersions)
-        .set({ assetMap })
-        .where(eq(portfolioVersions.id, latestVersion.id))
-        .returning();
-      return updated;
-    } else {
-      // Create initial version with asset map only (no scenes yet)
-      const [newVersion] = await db
-        .insert(portfolioVersions)
-        .values({
-          projectId,
-          versionNumber: 1,
-          scenesJson: [],
-          assetMap,
-          changeDescription: "Initial asset mapping"
-        })
-        .returning();
-      return newVersion;
-    }
+  // Content Assets API
+  async createContentAsset(tenantId: string, data: {
+    assetType: 'image' | 'video' | 'quote';
+    title?: string;
+    tags?: string[];
+    imageUrl?: string;
+    altText?: string;
+    videoUrl?: string;
+    videoCaption?: string;
+    duration?: number;
+    quoteText?: string;
+    quoteAuthor?: string;
+    quoteRole?: string;
+  }) {
+    const [asset] = await db
+      .insert(contentAssets)
+      .values({
+        id: crypto.randomUUID(),
+        tenantId,
+        ...data,
+      })
+      .returning();
+    return asset;
   }
 
+  async getContentAssetsByType(tenantId: string, assetType: 'image' | 'video' | 'quote') {
+    return db
+      .select()
+      .from(contentAssets)
+      .where(and(
+        eq(contentAssets.tenantId, tenantId),
+        eq(contentAssets.assetType, assetType)
+      ))
+      .orderBy(desc(contentAssets.createdAt));
+  }
+
+  async getAllContentAssets(tenantId: string) {
+    return db
+      .select()
+      .from(contentAssets)
+      .where(eq(contentAssets.tenantId, tenantId))
+      .orderBy(desc(contentAssets.createdAt));
+  }
+
+  async deleteContentAsset(tenantId: string, assetId: string) {
+    await db
+      .delete(contentAssets)
+      .where(and(
+        eq(contentAssets.tenantId, tenantId),
+        eq(contentAssets.id, assetId)
+      ));
+  }
+
+  // Asset Mapping API
   async getAssetMap(projectId: string): Promise<Record<string, string>> {
-    const latestVersion = await this.getLatestPortfolioVersion(projectId);
-    return latestVersion?.assetMap || {};
+    const [version] = await db
+      .select({ assetMap: portfolioVersions.assetMap })
+      .from(portfolioVersions)
+      .where(eq(portfolioVersions.projectId, projectId))
+      .orderBy(desc(portfolioVersions.createdAt))
+      .limit(1);
+
+    return version?.assetMap || {};
+  }
+
+  async saveAssetMap(projectId: string, assetMap: Record<string, string>) {
+    // Get latest version
+    const [latestVersion] = await db
+      .select()
+      .from(portfolioVersions)
+      .where(eq(portfolioVersions.projectId, projectId))
+      .orderBy(desc(portfolioVersions.createdAt))
+      .limit(1);
+
+    if (!latestVersion) {
+      throw new Error('No portfolio version found');
+    }
+
+    // Update the latest version's asset map
+    const [updated] = await db
+      .update(portfolioVersions)
+      .set({ assetMap })
+      .where(eq(portfolioVersions.id, latestVersion.id))
+      .returning();
+
+    return updated;
   }
 
   async updateAssetMapping(projectId: string, placeholderId: string, assetId: string) {
     const currentMap = await this.getAssetMap(projectId);
-    const updatedMap = {
-      ...currentMap,
-      [placeholderId]: assetId
-    };
-    return this.saveAssetMap(projectId, updatedMap);
+    const newMap = { ...currentMap, [placeholderId]: assetId };
+    return this.saveAssetMap(projectId, newMap);
   }
 
   async removeAssetMapping(projectId: string, placeholderId: string) {
     const currentMap = await this.getAssetMap(projectId);
-    const { [placeholderId]: _, ...updatedMap } = currentMap;
-    return this.saveAssetMap(projectId, updatedMap);
+    const { [placeholderId]: _, ...newMap } = currentMap;
+    return this.saveAssetMap(projectId, newMap);
   }
 }
 

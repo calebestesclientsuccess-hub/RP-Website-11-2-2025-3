@@ -252,13 +252,44 @@ export const portfolioVersions = pgTable("portfolio_versions", {
 
 export const portfolioConversations = pgTable("portfolio_conversations", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
-  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: 'cascade' }),
-  role: text("role").notNull(),
+  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  role: text("role").notNull(), // 'user' or 'assistant'
   content: text("content").notNull(),
-  timestamp: bigint("timestamp", { mode: "number" }).notNull(),
-  versionId: text("version_id").references(() => portfolioVersions.id, { onDelete: 'set null' }),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export type PortfolioConversation = typeof portfolioConversations.$inferSelect;
+export type InsertPortfolioConversation = typeof portfolioConversations.$inferInsert;
+
+// Content Assets table for inline asset creation
+export const contentAssets = pgTable("content_assets", {
+  id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  assetType: text("asset_type").notNull(), // 'image', 'video', 'quote'
+
+  // Common fields
+  title: text("title"),
+  tags: text("tags").array(),
+
+  // Image-specific
+  imageUrl: text("image_url"),
+  altText: text("alt_text"),
+
+  // Video-specific
+  videoUrl: text("video_url"),
+  videoCaption: text("video_caption"),
+  duration: integer("duration"),
+
+  // Quote-specific
+  quoteText: text("quote_text"),
+  quoteAuthor: text("quote_author"),
+  quoteRole: text("quote_role"),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ContentAsset = typeof contentAssets.$inferSelect;
+export type InsertContentAsset = typeof contentAssets.$inferInsert;
 
 export const assessmentResultBuckets = pgTable("assessment_result_buckets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
