@@ -27,9 +27,38 @@ export default function AIPromptSettings() {
     "--sidebar-width": "16rem",
   } as React.CSSProperties;
 
-  const { data: templates = [], isLoading } = useQuery<AiPromptTemplate[]>({
+  const { data: templates = [], isLoading, error } = useQuery<AiPromptTemplate[]>({
     queryKey: ["/api/ai-prompt-templates"],
+    retry: 1,
   });
+
+  // If there's an error loading templates, show error state
+  if (error) {
+    return (
+      <ProtectedRoute>
+        <Helmet>
+          <title>Error Loading Prompts | Admin Dashboard</title>
+        </Helmet>
+        <SidebarProvider style={style}>
+          <div className="flex h-screen w-full">
+            <AdminSidebar />
+            <div className="flex flex-col flex-1">
+              <header className="flex items-center gap-4 p-4 border-b">
+                <SidebarTrigger data-testid="button-sidebar-toggle" />
+                <h1 className="text-xl font-semibold">AI Prompt Settings</h1>
+              </header>
+              <main className="flex-1 overflow-auto p-6">
+                <div className="flex flex-col items-center justify-center py-12">
+                  <p className="text-destructive mb-4">Error loading prompt templates</p>
+                  <Button onClick={() => window.location.reload()}>Reload Page</Button>
+                </div>
+              </main>
+            </div>
+          </div>
+        </SidebarProvider>
+      </ProtectedRoute>
+    );
+  }
 
   const updatePromptMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<AiPromptTemplate> }) => {

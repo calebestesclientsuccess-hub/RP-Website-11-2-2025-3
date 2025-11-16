@@ -64,6 +64,8 @@ import sitemapRouter from './routes/sitemap';
 import internalLinkingRouter from './routes/internal-linking';
 import relatedContentRouter from './routes/related-content';
 import analyticsRouter from './routes/analytics';
+import { aiPromptTemplates } from "@db/schema";
+
 
 // Define default director configuration for new scenes
 const DEFAULT_DIRECTOR_CONFIG = {
@@ -1887,7 +1889,7 @@ Your explanation should be conversational and reference specific scene numbers.`
   app.get("/api/ai-prompt-templates", requireAuth, async (req, res) => {
     try {
       const activeOnly = req.query.activeOnly === 'true';
-      const templates = await storage.getAllPromptTemplates(activeOnly);
+      const templates = await storage.getAllPromptTemplates(req.tenantId, activeOnly);
       return res.json(templates);
     } catch (error) {
       console.error("Error fetching prompt templates:", error);
@@ -4228,6 +4230,45 @@ RESPONSE FORMAT:
   });
 
   const httpServer = createServer(app);
+
+  // Health check endpoint
+  app.get("/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
+  // AI Prompt Templates - GET all templates
+  app.get("/api/ai-prompt-templates", async (req, res, next) => {
+    try {
+      const templates = await db.query.aiPromptTemplates.findMany({
+        orderBy: (templates, { asc }) => [asc(templates.promptKey)],
+      });
+      res.json(templates);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // AI Prompt Templates - UPDATE template
+  app.put("/api/ai-prompt-templates/:id", async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+
+      const [updated] = await db
+        .update(aiPromptTemplates)
+        .set({
+          ...updates,
+          updatedAt: new Date(),
+        })
+        .where(eq(aiPromptTemplates.id, id))
+        .returning();
+
+      res.json(updated);
+    } catch (error) {
+      next(error);
+    }
+  });
+
 
   // SEO health check
   app.use(seoHealthRouter);
