@@ -1,22 +1,20 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save, RotateCcw, Edit2, Eye } from "lucide-react";
+import { Loader2, Save, Edit2 } from "lucide-react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import type { AiPromptTemplate } from "@shared/schema";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Helmet } from "react-helmet-async";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 
 export default function AIPromptSettings() {
@@ -121,8 +119,7 @@ export default function AIPromptSettings() {
                     Manage system prompts used for AI-generated portfolios
                   </p>
                 </div>
-                <ErrorBoundary>
-                  <Tabs defaultValue="core" className="w-full">
+                <Tabs defaultValue="core" className="w-full">
                     <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="core">Core Chain (4)</TabsTrigger>
                       <TabsTrigger value="specialists">Scene Specialists (4)</TabsTrigger>
@@ -186,7 +183,6 @@ export default function AIPromptSettings() {
                       ))}
                     </TabsContent>
                   </Tabs>
-                </ErrorBoundary>
               </div>
             </main>
           </div>
