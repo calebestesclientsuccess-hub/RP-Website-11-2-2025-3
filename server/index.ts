@@ -20,6 +20,8 @@ app.use(securityHeaders);
 
 // Session configuration
 const PgSession = connectPgSimple(session);
+const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes of inactivity
+
 app.use(
   session({
     store: new PgSession({
@@ -30,10 +32,11 @@ app.use(
     secret: process.env.SESSION_SECRET || "your-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
+    rolling: true, // Reset expiration on each request
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      maxAge: SESSION_TIMEOUT,
       // Tenant-specific cookies (if using subdomains)
       domain: process.env.NODE_ENV === "production" ? ".revenueparty.com" : undefined,
       sameSite: "lax",
@@ -45,6 +48,33 @@ app.use(
     },
   })
 );
+
+// Session timeout middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.session && req.session.userId) {
+    const now = Date.now();
+    const lastActivity = (req.session as any).lastActivity || now;
+    
+    if (now - lastActivity > SESSION_TIMEOUT) {
+      // Session expired due to inactivity
+      req.session.destroy((err) => {
+        if (err) console.error('Session destruction error:', err);
+      });
+      res.clearCookie('connect.sid');
+      
+      // Return 401 for API requests
+      if (req.path.startsWith('/api')) {
+        return res.status(401).json({ error: 'Session expired due to inactivity' });
+      }
+      
+      return res.redirect('/admin/login?timeout=1');
+    }
+    
+    // Update last activity timestamp
+    (req.session as any).lastActivity = now;
+  }
+  next();
+});
 
 // Comprehensive security headers middleware
 app.use((req, res, next) => {

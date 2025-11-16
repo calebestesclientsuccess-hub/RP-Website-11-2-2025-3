@@ -50,6 +50,15 @@ import { sendGmailEmail } from "./utils/gmail-client";
 import { sendLeadNotificationEmail } from "./utils/lead-notifications";
 import { db } from "./db";
 import { leadLimiter } from "./middleware/rate-limit";
+import { sanitizeInput } from "./middleware/input-sanitization";
+import { pdfUpload, imageUpload, validateUploadedFile } from "./middleware/file-validation";
+import { validatePasswordStrength } from "./utils/password-validator";
+import { 
+  checkAccountLockout, 
+  recordFailedAttempt, 
+  clearLoginAttempts,
+  getRemainingAttempts 
+} from "./middleware/account-lockout";
 import seoHealthRouter from "./routes/seo-health";
 
 // Define default director configuration for new scenes
@@ -213,6 +222,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { username, email, password } = result.data;
 
+      // Validate password strength
+      const passwordValidation = validatePasswordStrength(password);
+      if (!passwordValidation.valid) {
+        return res.status(400).json({
+          error: "Password does not meet security requirements",
+          details: passwordValidation.errors,
+          suggestions: passwordValidation.suggestions,
+        });
+      }
+
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
@@ -248,7 +267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/login", async (req, res) => {
+  app.post("/api/auth/login", checkAccountLockout, async (req, res) => {
     try {
       const result = loginSchema.safeParse(req.body);
       if (!result.success) {
@@ -270,14 +289,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (!user) {
-        return res.status(401).json({ error: "Invalid credentials" });
+        recordFailedAttempt(req);
+        const remaining = getRemainingAttempts(req);
+        return res.status(401).json({ 
+          error: "Invalid credentials",
+          remainingAttempts: remaining > 0 ? remaining : undefined,
+        });
       }
 
       // Verify password
       const valid = await bcrypt.compare(password, user.password);
       if (!valid) {
-        return res.status(401).json({ error: "Invalid credentials" });
+        recordFailedAttempt(req);
+        const remaining = getRemainingAttempts(req);
+        return res.status(401).json({ 
+          error: "Invalid credentials",
+          remainingAttempts: remaining > 0 ? remaining : undefined,
+        });
       }
+
+      // Clear failed attempts on successful login
+      clearLoginAttempts(req);
 
       // Set session
       req.session.userId = user.id;
@@ -520,6 +552,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No PDF file uploaded" });
       }
 
+      // Validate file content
+      const validation = await validateUploadedFile(req.file, 'application/pdf');
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
+
       // Upload to Cloudinary using buffer
       const uploadResult = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -550,6 +588,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No image file uploaded" });
+      }
+
+      // Validate file content
+      const validation = await validateUploadedFile(req.file, req.file.mimetype);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
       }
 
       // Upload to Cloudinary using buffer with automatic optimization
@@ -1101,7 +1145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/blog-posts", async (req, res) => {
+  app.post("/api/blog-posts", sanitizeInput(['content', 'excerpt']), async (req, res) => {
     try {
       const result = insertBlogPostSchema.safeParse(req.body);
       if (!result.success) {
