@@ -1,0 +1,122 @@
+Here is the descriptive, 6-part mini-report outlining the "what" for each phase of the implementation plan, based on the 57-task list you provided.
+
+This report is purely descriptive, focusing on the desired outcomes for each task as requested.
+
+## 1. Immediate Task: Critical Database Migration
+
+This initial, critical task stands alone and must be completed before any other phase can begin, as it blocks all user authentication.
+
+* **Task #1: Critical Database Migration:** The objective is to apply the existing but un-applied migration file (`0008_add_users_tenant_id.sql`). This will add the `tenant_id` column to the `users` table, resolving the "column does not exist" error and unblocking the authentication system.
+
+---
+
+## 2. Phase 1: Critical A11Y & Security
+
+This phase focuses on establishing the fundamental, non-negotiable foundations for accessibility (A11Y) and security to ensure the application is usable and safe at a baseline level.
+
+### Accessibility (A11Y) Tasks
+
+* **Task #31 (ARIA):** Add ARIA labels to all non-text interactive elements (e.g., icon-only buttons, custom widgets).
+* **Task #32 (ARIA):** Implement ARIA live regions for dynamically changing content, such as form validation errors, loading states, and success notifications.
+* **Task #33 (ARIA):** Add ARIA landmarks (e.g., `main`, `nav`, `search`) to define the page structure for screen readers.
+* **Task #34 (ARIA):** Implement proper ARIA roles for all custom components (e.g., accordions, modals, tabs).
+* **Task #35 (Keyboard):** Ensure comprehensive keyboard navigation, including optimizing the tab order and adding "skip navigation" links.
+* **Task #36 (Keyboard):** Add highly visible focus indicators to all interactive elements.
+* **Task #37 (Keyboard):** Implement and document keyboard shortcuts for power users.
+* **Task #38 (Screen Reader):** Add descriptive alt text for all meaningful images and mark decorative images as such.
+* **Task #39 (Screen Reader):** Implement a proper, logical heading hierarchy (H1, H2, H3) with no skipped levels.
+* **Task #40 (Screen Reader):** Add screen reader-only announcements for important state changes (e.g., form submitted, page loaded).
+* **Task #41 (Contrast):** Ensure all text and UI components meet WCAG AA color contrast ratios (4.5:1 for text, 3:1 for large text/UI).
+* **Task #42 (Contrast):** Add support for high-contrast modes.
+* **Task #43 (Contrast):** Ensure information is not conveyed by color alone (e.g., use icons or text labels alongside color).
+
+### Security Tasks
+
+* **Task #21 (Input Validation):** Implement server-side sanitization for all user inputs, especially rich text, to prevent XSS and SQL injection.
+* **Task #22 (Input Validation):** Add robust file upload validation, including file type verification (not just extension), size limits, and malware scanning.
+* **Task #23 (Auth):** Implement an automatic session timeout mechanism after a period of inactivity.
+* **Task #24 (Auth):** Enforce password strength requirements (complexity rules, common password blacklist, strength meter).
+* **Task #25 (Auth):** Implement an account lockout mechanism after a configurable number of
+    failed login attempts.
+
+---
+
+## 3. Phase 2: Testing Infrastructure
+
+This phase is dedicated to building the complete testing and quality assurance framework. The goal is to establish the automated processes needed to verify all current and future work.
+
+* **Task #5 (Unit Tests):** Create unit tests for core utility functions (e.g., `seo-utils.ts`, `decisionTreeUtils.ts`, `assessment-scoring.ts`).
+* **Task #6 (Unit Tests):** Create unit tests for all data transformation logic (e.g., campaign filtering, portfolio processing).
+* **Task #7 (Integration Tests):** Create integration tests for all primary API endpoints (e.g., lead submission, auth flows, admin CRUD).
+* **Task #8 (Integration Tests):** Create integration tests specifically for database operations, verifying multi-tenant data isolation and complex transactions.
+* **Task #9 (E2E Tests):** Create end-to-end (E2E) tests for critical user journeys (e.g., completing an assessment, submitting a lead, publishing a blog post).
+* **Task #10 (E2E Tests):** Create E2E tests specifically for multi-tenant scenarios to verify tenant isolation and prevent cross-tenant data access.
+* **Task #11 (Infrastructure):** Set up the complete testing framework (Vitest, Playwright), configure a dedicated test database, and automate this entire suite in a CI/CD pipeline.
+
+---
+
+## 4. Phase 3: UI/UX Polish
+
+With the foundations for stability and A11Y in place, this phase focuses on refining the user experience (UX) and user interface (UI) for better usability, mobile optimization, and user feedback.
+
+* **Task #12 (Mobile):** Optimize all touch targets to be a minimum of 44x44px with proper spacing.
+* **Task #13 (Mobile):** Improve the mobile navigation experience with better menu animations and clearer active state indicators.
+* **Task #14 (Mobile):** Optimize mobile form interactions, including better keyboard handling and auto-advancing fields where appropriate.
+* **Task #15 (Loading):** Add skeleton loaders for all primary content areas (e.g., blog posts, assessment, portfolio).
+* **Task #16 (Errors):** Improve error state messaging to be more contextual, offer recovery suggestions, and have a clearer visual hierarchy.
+* **Task #17 (Performance):** Implement progressive image loading (e.g., blur-up effect, LQIP) to improve perceived load time.
+* **Task #18 (Performance):** Optimize font loading strategy (e.g., subsetting, preloading) to prevent layout shifts and invisible text.
+* **Task #19 (Feedback):** Add clear success confirmations (e.g., visual feedback, animations) for all user actions and form submissions.
+* **Task #20 (Feedback):** Improve form validation with real-time, inline validation and clear, field-level error messaging.
+
+---
+
+## 5. Phase 4: Advanced A11Y & Security
+
+This phase builds on the foundations from Phase 1, implementing more advanced and comprehensive features for accessibility and security hardening.
+
+### Accessibility (A11Y) Tasks
+
+* **Task #44 (Forms):** Ensure all form inputs have properly associated labels, descriptions (using `aria-describedby`), and required field indicators.
+* **Task #45 (Forms):** Implement correct `autocomplete` attributes for all forms to support browser autofill (e.g., addresses, payment info).
+* **Task #46 (Forms):** Add error prevention and recovery mechanisms, such as confirmation dialogs for destructive actions and "undo" functionality.
+* **Task #47 (Media):** Add captions or subtitles (e.g., WebVTT files) for all video content.
+* **Task #48 (Media):** Provide full, searchable transcripts for all audio and video content.
+* **Task #49 (Media):** Implement audio descriptions for video content where visual information is not conveyed by audio.
+* **Task #50 (Testing):** Implement automated accessibility testing (e.g., Axe-core, Lighthouse CI) into the pipeline.
+* **Task #51 (Testing):** Conduct manual testing using actual screen readers (NVDA, JAWS, VoiceOver).
+* **Task #52 (Docs):** Create and publish accessibility documentation, such as a VPAT (Voluntary Product Accessibility Template) and a keyboard shortcuts guide.
+
+### Security Tasks
+
+* **Task #26 (API):** Implement a mechanism for API key rotation, including automated rotation and key usage tracking.
+* **Task #27 (API):** Implement request signing (e.g., HMAC signatures) for highly sensitive API operations to prevent replay attacks.
+* **Task #28 (Monitoring):** Add comprehensive security event logging (e.g., failed logins, privilege escalation attempts).
+* **Task #29 (Monitoring):** Implement an intrusion detection system (e.g., rate limiting per IP, automated blocking of suspicious IPs).
+* **Task #30 (Monitoring):** Create and document a formal security incident response plan.
+
+---
+
+## 6. Phase 5: Performance Monitoring
+
+The final phase focuses on implementing systems to monitor, measure, and enforce application performance and SEO health on an ongoing basis.
+
+* **Task #53 (SEO):** Implement contextual internal linking within blog posts, using automated suggestions and manual insertion.
+* **Task #54 (SEO):** Add related content recommendation sections to pages based on content similarity algorithms.
+* **Task #55 (Monitoring):** Integrate Lighthouse CI into the pipeline for automated performance testing and regression alerts.
+* **Task #56 (Monitoring):** Implement Core Web Vitals (CWV) tracking using Real User Monitoring (RUM) to measure LCP, FID, and CLS.
+* **Task #57 (Monitoring):** Define and enforce performance budgets (e.g., bundle size limits, load time thresholds) in the CI/CD pipeline.
+
+### Note on Unassigned Tasks
+
+Based on the "Recommended Implementation Order" you provided, I have mapped all 54 items assigned to the 6 phases. Please note that the following 3 tasks from the original 57-item list were not assigned to any of these specific phases:
+
+* **(Category 6) Add database indexes for performance**
+* **(Category 6) Database connection pooling optimization**
+* **(Category 6) Add database backup automation**
+
+These are important database enhancements that you may want to assign to one of the existing phases or address separately.
+
+---
+
+Would you like to review a more detailed plan for the **Phase 1: Critical A11Y & Security** tasks next?
