@@ -184,6 +184,7 @@ interface GeneratedScene {
     alignment: string;
     // Optional fields
     animationDuration?: number;
+    entryDelay?: number; // Added entryDelay
     fadeOnScroll?: boolean;
     scaleOnScroll?: boolean;
     blurOnScroll?: boolean;
@@ -238,6 +239,7 @@ export async function generatePortfolioWithAI(
                     entryDuration: { type: Type.NUMBER, description: "Entry animation duration in seconds (0.1-5)" },
                     exitDuration: { type: Type.NUMBER, description: "Exit animation duration in seconds (0.1-5)" },
                     animationDuration: { type: Type.NUMBER, description: "Main animation duration in seconds (0.1-10)" },
+                    entryDelay: { type: Type.NUMBER, description: "Entry delay in seconds (0-2)" }, // Added entryDelay
                     backgroundColor: { type: Type.STRING, description: "Hex color code" },
                     textColor: { type: Type.STRING, description: "Hex color code" },
                     parallaxIntensity: { type: Type.NUMBER, description: "0-1, default 0.3" },
@@ -269,15 +271,66 @@ export async function generatePortfolioWithAI(
 
   const result = JSON.parse(responseText) as PortfolioGenerateResponse;
 
-  // Validate that all referenced asset IDs exist
+  // Validate that all referenced asset IDs exist and log potential issues
   const validAssetIds = buildAssetWhitelist(catalog);
+  const warnings: string[] = [];
+
   for (const scene of result.scenes) {
     for (const assetId of scene.assetIds) {
       if (!validAssetIds.includes(assetId)) {
-        throw new Error(`AI referenced non-existent asset ID: ${assetId}. Valid IDs: ${validAssetIds.join(', ')}`);
+        const errorMsg = `AI referenced non-existent asset ID: ${assetId}. Valid IDs: ${validAssetIds.join(', ')}`;
+        console.error(`❌ [Portfolio Director] ${errorMsg}`);
+        // Instead of throwing, we'll just log and continue, as Gemini might hallucinate an ID
+        // but still produce a valid structure. The frontend will handle missing assets gracefully.
       }
     }
+
+    // Basic validation for required director fields and potential conflicts
+    const director = scene.director;
+    if (director.parallaxIntensity > 0 && director.scaleOnScroll) {
+      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ parallax + scaleOnScroll conflict detected. Auto-fixing scaleOnScroll to false.`);
+      scene.director.scaleOnScroll = false; // Auto-fix
+    }
+
+    if (director.entryDuration !== undefined && director.entryDuration < 0.5) {
+      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Entry duration ${director.entryDuration}s may be too subtle.`);
+    }
+
+    if (!director.exitEffect) {
+      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ No exit effect specified.`);
+    }
+
+    // Ensure minimum durations if not provided
+    if (director.entryDuration === undefined || director.entryDuration === null) {
+      scene.director.entryDuration = 1.2; // Default to standard
+    }
+    if (director.exitDuration === undefined || director.exitDuration === null) {
+      scene.director.exitDuration = 1.0; // Default to standard
+    }
+    if (director.entryDelay === undefined || director.entryDelay === null) {
+        scene.director.entryDelay = 0; // Default to no delay
+    }
+    if (director.parallaxIntensity === undefined || director.parallaxIntensity === null) {
+        scene.director.parallaxIntensity = 0.3; // Default to moderate
+    }
+
   }
+
+  console.log('[Portfolio Director] Generated scenes with potential warnings:', {
+    scenes: result.scenes.map(s => ({
+      sceneType: s.sceneType,
+      assetIds: s.assetIds,
+      director: {
+        entryDuration: s.director.entryDuration,
+        exitDuration: s.director.exitDuration,
+        entryDelay: s.director.entryDelay,
+        parallaxIntensity: s.director.parallaxIntensity,
+        scaleOnScroll: s.director.scaleOnScroll,
+      }
+    })),
+    warnings: warnings.length > 0 ? warnings : 'none',
+  });
+
 
   return result;
 }
@@ -349,14 +402,14 @@ export function convertToSceneConfigs(
         // Expects 1 image asset
         const imageId = aiScene.assetIds.find((id) => imageMap.has(id));
         const image = imageId ? imageMap.get(imageId) : null;
-        
+
         if (!image) {
           console.error(`❌ [Portfolio Director] Image scene failed - no matching image found for assetIds:`, aiScene.assetIds);
           console.error(`   Available image IDs:`, Array.from(imageMap.keys()));
         } else {
           console.log(`✅ [Portfolio Director] Image scene matched:`, { imageId, url: image.url });
         }
-        
+
         sceneConfig.content = image ? {
           url: image.url,
           alt: image.alt || "",
