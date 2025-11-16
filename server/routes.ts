@@ -1867,13 +1867,17 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
 
     // Basic validation of required fields
-    const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt } = req.body;
+    const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt, currentPrompt, conversationHistory } = req.body;
     
-    if (!portfolioAiPrompt || !portfolioAiPrompt.trim()) {
-      console.error('[Portfolio Enhanced] Missing portfolioAiPrompt');
+    // In refinement mode (existing conversation), use currentPrompt; otherwise use portfolioAiPrompt
+    const isRefinementMode = (conversationHistory && conversationHistory.length > 0) || currentPrompt;
+    const promptToValidate = isRefinementMode ? currentPrompt : portfolioAiPrompt;
+    
+    if (!promptToValidate || !promptToValidate.trim()) {
+      console.error('[Portfolio Enhanced] Missing prompt:', { isRefinementMode, hasCurrentPrompt: !!currentPrompt, hasPortfolioPrompt: !!portfolioAiPrompt });
       return res.status(400).json({
         error: "Validation failed",
-        details: "Portfolio AI prompt is required"
+        details: isRefinementMode ? "Please enter a message to refine your scenes" : "Portfolio AI prompt is required"
       });
     }
     
