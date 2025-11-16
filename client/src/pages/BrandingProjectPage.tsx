@@ -439,7 +439,7 @@ export default function BrandingProjectPage() {
         // Optional: Fade on scroll effect ONLY on section background (never content wrapper)
         if (director.fadeOnScroll) {
           gsap.to(element, {
-            opacity: 0.85,
+            autoAlpha: 0.85,
             scrollTrigger: {
               trigger: element,
               start: "top top",

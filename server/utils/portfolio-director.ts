@@ -67,6 +67,28 @@ Create a scene sequence by FILLING OUT A COMPLETE FORM for each scene. You MUST 
 
 Think of this as filling out a structured form where blank fields are not allowed. Each scene requires all these decisions:
 
+MANDATORY FIELD CHECKLIST - YOU MUST PROVIDE ALL OF THESE FOR EACH SCENE:
+☐ sceneType (text, image, video, quote, split, gallery, or fullscreen)
+☐ assetIds (array of valid IDs from the catalog - MUST reference existing IDs only)
+☐ entryEffect (fade, slide-up, slide-down, slide-left, slide-right, zoom-in, zoom-out, sudden, cross-fade, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus)
+☐ entryDuration (number in seconds, minimum 0.8s recommended, 1.2s+ for noticeable effects)
+☐ entryDelay (number in seconds, 0-2, use 0 if unsure)
+☐ exitEffect (fade, slide-up, slide-down, slide-left, slide-right, zoom-out, dissolve, cross-fade, rotate-out, flip-out, scale-blur)
+☐ exitDuration (number in seconds, minimum 0.6s recommended)
+☐ backgroundColor (exact hex code like #0a0a0a or #1e293b)
+☐ textColor (exact hex code like #ffffff or #f1f5f9)
+☐ parallaxIntensity (number 0.0-1.0, use 0 if scaleOnScroll is true)
+☐ headingSize (4xl, 5xl, 6xl, 7xl, or 8xl)
+☐ bodySize (base, lg, xl, or 2xl)
+☐ alignment (left, center, or right)
+☐ fadeOnScroll (boolean: true or false)
+☐ scaleOnScroll (boolean: true or false - MUST be false if parallaxIntensity > 0)
+☐ blurOnScroll (boolean: true or false - recommended false for performance)
+
+IF YOU SKIP ANY FIELD, THE SCENE WILL FAIL VALIDATION.
+IF YOU USE AN INVALID VALUE, THE SCENE WILL FAIL VALIDATION.
+IF YOU REFERENCE A NON-EXISTENT ASSET ID, THE SCENE WILL FAIL VALIDATION.
+
 SCENE TYPES (choose based on content):
 - "text": Headlines and body copy (use for hero sections, chapter openers)
 - "image": Single image with caption (use for visual showcases)
@@ -341,22 +363,63 @@ export async function generatePortfolioWithAI(
   // CRITICAL: Validate ALL scenes have required fields before proceeding
   const validAssetIds = buildAssetWhitelist(catalog);
   let validationErrors: string[] = [];
+  
+  // Track which fields are missing per scene for targeted regeneration
+  const missingFieldsByScene: Map<number, string[]> = new Map();
 
   result.scenes.forEach((scene, idx) => {
     const d = scene.director;
+    const missingFields: string[] = [];
 
-    // Check required fields
-    if (typeof d.entryDuration !== 'number') validationErrors.push(`Scene ${idx}: Missing entryDuration`);
-    if (typeof d.exitDuration !== 'number') validationErrors.push(`Scene ${idx}: Missing exitDuration`);
-    if (typeof d.entryDelay !== 'number') validationErrors.push(`Scene ${idx}: Missing entryDelay`);
-    if (!d.backgroundColor) validationErrors.push(`Scene ${idx}: Missing backgroundColor`);
-    if (!d.textColor) validationErrors.push(`Scene ${idx}: Missing textColor`);
-    if (typeof d.parallaxIntensity !== 'number') validationErrors.push(`Scene ${idx}: Missing parallaxIntensity`);
-    if (!d.entryEffect) validationErrors.push(`Scene ${idx}: Missing entryEffect`);
-    if (!d.exitEffect) validationErrors.push(`Scene ${idx}: Missing exitEffect`);
-    if (!d.headingSize) validationErrors.push(`Scene ${idx}: Missing headingSize`);
-    if (!d.bodySize) validationErrors.push(`Scene ${idx}: Missing bodySize`);
-    if (!d.alignment) validationErrors.push(`Scene ${idx}: Missing alignment`);
+    // Check required fields and track what's missing
+    if (typeof d.entryDuration !== 'number') {
+      validationErrors.push(`Scene ${idx}: Missing entryDuration`);
+      missingFields.push('entryDuration');
+    }
+    if (typeof d.exitDuration !== 'number') {
+      validationErrors.push(`Scene ${idx}: Missing exitDuration`);
+      missingFields.push('exitDuration');
+    }
+    if (typeof d.entryDelay !== 'number') {
+      validationErrors.push(`Scene ${idx}: Missing entryDelay`);
+      missingFields.push('entryDelay');
+    }
+    if (!d.backgroundColor) {
+      validationErrors.push(`Scene ${idx}: Missing backgroundColor`);
+      missingFields.push('backgroundColor');
+    }
+    if (!d.textColor) {
+      validationErrors.push(`Scene ${idx}: Missing textColor`);
+      missingFields.push('textColor');
+    }
+    if (typeof d.parallaxIntensity !== 'number') {
+      validationErrors.push(`Scene ${idx}: Missing parallaxIntensity`);
+      missingFields.push('parallaxIntensity');
+    }
+    if (!d.entryEffect) {
+      validationErrors.push(`Scene ${idx}: Missing entryEffect`);
+      missingFields.push('entryEffect');
+    }
+    if (!d.exitEffect) {
+      validationErrors.push(`Scene ${idx}: Missing exitEffect`);
+      missingFields.push('exitEffect');
+    }
+    if (!d.headingSize) {
+      validationErrors.push(`Scene ${idx}: Missing headingSize`);
+      missingFields.push('headingSize');
+    }
+    if (!d.bodySize) {
+      validationErrors.push(`Scene ${idx}: Missing bodySize`);
+      missingFields.push('bodySize');
+    }
+    if (!d.alignment) {
+      validationErrors.push(`Scene ${idx}: Missing alignment`);
+      missingFields.push('alignment');
+    }
+    
+    if (missingFields.length > 0) {
+      missingFieldsByScene.set(idx, missingFields);
+    }
 
     // Check asset IDs exist
     scene.assetIds.forEach(assetId => {
@@ -366,8 +429,72 @@ export async function generatePortfolioWithAI(
     });
   });
 
+  // If fields are missing, attempt targeted regeneration (Stage 1.5: Field Recovery)
+  if (missingFieldsByScene.size > 0) {
+    console.warn('[Portfolio Director] ⚠️ Stage 1 validation found missing fields, attempting recovery...');
+    
+    for (const [sceneIdx, missingFields] of missingFieldsByScene.entries()) {
+      const scene = result.scenes[sceneIdx];
+      const recoveryPrompt = `You previously generated this scene but forgot to fill in some required fields:
+
+Scene Type: ${scene.sceneType}
+Asset IDs: ${scene.assetIds.join(', ')}
+
+MISSING FIELDS (you MUST provide these):
+${missingFields.map(field => `- ${field}`).join('\n')}
+
+Please provide ONLY the missing field values in JSON format:
+{
+  ${missingFields.map(field => `"${field}": <value>`).join(',\n  ')}
+}
+
+Remember:
+- entryDuration/exitDuration/entryDelay must be numbers in seconds (e.g., 1.2, not "1.2s")
+- backgroundColor/textColor must be hex codes (e.g., "#0a0a0a")
+- parallaxIntensity must be 0-1 (e.g., 0.3)
+- Use the interpretation matrix from the original prompt for guidance`;
+
+      try {
+        const recoveryResponse = await aiClient.models.generateContent({
+          model: "gemini-2.5-pro",
+          contents: [{ role: "user", parts: [{ text: recoveryPrompt }] }],
+          config: { responseMimeType: "application/json" }
+        });
+
+        const recoveredFields = JSON.parse(recoveryResponse.text || '{}');
+        
+        // Merge recovered fields back into the scene
+        for (const field of missingFields) {
+          if (recoveredFields[field] !== undefined) {
+            (scene.director as any)[field] = recoveredFields[field];
+            console.log(`[Portfolio Director] ✅ Recovered ${field} for scene ${sceneIdx}: ${recoveredFields[field]}`);
+          }
+        }
+      } catch (error) {
+        console.error(`[Portfolio Director] ❌ Failed to recover fields for scene ${sceneIdx}:`, error);
+      }
+    }
+    
+    // Re-validate after recovery
+    validationErrors = [];
+    result.scenes.forEach((scene, idx) => {
+      const d = scene.director;
+      if (typeof d.entryDuration !== 'number') validationErrors.push(`Scene ${idx}: Missing entryDuration`);
+      if (typeof d.exitDuration !== 'number') validationErrors.push(`Scene ${idx}: Missing exitDuration`);
+      if (typeof d.entryDelay !== 'number') validationErrors.push(`Scene ${idx}: Missing entryDelay`);
+      if (!d.backgroundColor) validationErrors.push(`Scene ${idx}: Missing backgroundColor`);
+      if (!d.textColor) validationErrors.push(`Scene ${idx}: Missing textColor`);
+      if (typeof d.parallaxIntensity !== 'number') validationErrors.push(`Scene ${idx}: Missing parallaxIntensity`);
+      if (!d.entryEffect) validationErrors.push(`Scene ${idx}: Missing entryEffect`);
+      if (!d.exitEffect) validationErrors.push(`Scene ${idx}: Missing exitEffect`);
+      if (!d.headingSize) validationErrors.push(`Scene ${idx}: Missing headingSize`);
+      if (!d.bodySize) validationErrors.push(`Scene ${idx}: Missing bodySize`);
+      if (!d.alignment) validationErrors.push(`Scene ${idx}: Missing alignment`);
+    });
+  }
+
   if (validationErrors.length > 0) {
-    console.error('[Portfolio Director] ❌ Stage 1 validation failed:', validationErrors);
+    console.error('[Portfolio Director] ❌ Stage 1 validation failed after recovery:', validationErrors);
     throw new Error(`Gemini output validation failed:\n${validationErrors.join('\n')}`);
   }
 
