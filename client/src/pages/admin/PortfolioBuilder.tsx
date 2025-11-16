@@ -396,9 +396,13 @@ export default function PortfolioBuilder() {
     }
 
     // Validation for AI prompt (essential for generation/refinement)
-    const promptToSend = conversationHistory.length === 0 ? portfolioAiPrompt : currentPrompt;
+    // In refinement mode, use currentPrompt; otherwise use portfolioAiPrompt
+    const promptToSend = isRefinementMode ? currentPrompt : portfolioAiPrompt;
     if (!promptToSend.trim()) {
-      toast({ title: "Error", description: "Please provide guidance for AI generation or refinement", variant: "destructive" });
+      const errorMsg = isRefinementMode 
+        ? "Please enter a message to refine your scenes" 
+        : "Please provide guidance for AI generation or refinement";
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
       return;
     }
 
