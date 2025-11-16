@@ -102,6 +102,15 @@ export default function PortfolioBuilder() {
   } | null>(null);
   const [isSavingScenes, setIsSavingScenes] = useState(false);
 
+  // State for quick prompts
+  const [quickPrompts, setQuickPrompts] = useState<string[]>([
+    "Make it more dramatic",
+    "Add smooth transitions",
+    "Increase pacing",
+    "More cinematic feel",
+    "Simplify the flow"
+  ]);
+
   // --- Form State for Scene Editor ---
   const form = useForm({
     defaultValues: {
@@ -983,27 +992,43 @@ export default function PortfolioBuilder() {
                         </div>
                       </div>
 
-                      {/* Quick Actions */}
-                      <div className="flex flex-wrap gap-2 pt-2 border-t">
-                        <div className="text-xs text-muted-foreground w-full mb-1">Quick refinements:</div>
-                        {[
-                          "Make it more dramatic",
-                          "Add smooth transitions",
-                          "Increase pacing",
-                          "More cinematic feel",
-                          "Simplify the flow"
-                        ].map((suggestion) => (
+                      {/* Smart Quick Prompts */}
+                      <div className="space-y-2 pt-2 border-t">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs text-muted-foreground">Quick prompts:</Label>
                           <Button
-                            key={suggestion}
                             variant="ghost"
                             size="sm"
-                            onClick={() => setCurrentPrompt(suggestion)}
-                            disabled={isRefining}
-                            className="text-xs"
+                            onClick={() => {
+                              // Rotate to different prompt suggestions
+                              const alternativePrompts = [
+                                "Faster entry animations",
+                                "Stronger color contrast",
+                                "Better flow between scenes",
+                                "More impactful hero section",
+                                "Smoother exit transitions"
+                              ];
+                              setQuickPrompts(alternativePrompts);
+                            }}
+                            className="h-6 text-xs"
                           >
-                            {suggestion}
+                            Refresh
                           </Button>
-                        ))}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {quickPrompts.map((prompt) => (
+                            <Button
+                              key={prompt}
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setCurrentPrompt(prompt)}
+                              disabled={isRefining}
+                              className="text-xs h-7"
+                            >
+                              {prompt}
+                            </Button>
+                          ))}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
