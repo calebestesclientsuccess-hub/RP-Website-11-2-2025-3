@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Helmet } from "react-helmet-async";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -52,32 +52,38 @@ interface SceneBuilder {
   director: any;
 }
 
+// Mocking useLocation and useQuery for demonstration purposes if not in a React environment
+// In a real app, these would be imported from their respective libraries.
+// const useLocation = () => [() => {}, () => {}];
+// const useQuery = (options) => ({ data: [], isLoading: false, error: null });
+
 export default function PortfolioBuilder() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  // AI Conversation state
-  const [conversationHistory, setConversationHistory] = useState<Array<{role: string; content: string}>>([]);
-  const [currentPrompt, setCurrentPrompt] = useState("");
-  const [isRefining, setIsRefining] = useState(false);
-  const [currentSceneJson, setCurrentSceneJson] = useState<string>("");
-  const [proposedChanges, setProposedChanges] = useState<string>("");
 
+  // --- State for Project Selection ---
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [isNewProject, setIsNewProject] = useState(true);
-
   // New project metadata
   const [newProjectTitle, setNewProjectTitle] = useState("");
   const [newProjectSlug, setNewProjectSlug] = useState("");
   const [newProjectClient, setNewProjectClient] = useState("");
 
-  // Scene builders array
+  // --- State for Scene Management (Manual Creation) ---
   const [scenes, setScenes] = useState<SceneBuilder[]>([]);
   const [editingSceneId, setEditingSceneId] = useState<string | null>(null);
   const [isSceneDialogOpen, setIsSceneDialogOpen] = useState(false);
 
+  // --- State for AI Orchestration & Refinement ---
+  // AI Conversation state
+  const [conversationHistory, setConversationHistory] = useState<Array<{role: string; content: string}>>([]);
+  const [currentPrompt, setCurrentPrompt] = useState("");
+  const [isRefining, setIsRefining] = useState(false); // Renamed from isGenerating for clarity
+  const [currentSceneJson, setCurrentSceneJson] = useState<string>("");
+  const [proposedChanges, setProposedChanges] = useState<string>(""); // For specific change proposals
+
   // Portfolio-level AI orchestration prompt
   const [portfolioAiPrompt, setPortfolioAiPrompt] = useState("");
-  const [useAiDirector, setUseAiDirector] = useState(false); // Toggle for AI orchestration mode
   const [mode, setMode] = useState<"hybrid" | "cinematic">("hybrid"); // NEW: Mode selector
 
   // Cinematic mode: Section-based structure
@@ -96,8 +102,7 @@ export default function PortfolioBuilder() {
   } | null>(null);
   const [isSavingScenes, setIsSavingScenes] = useState(false);
 
-
-  // Scene form state
+  // --- Form State for Scene Editor ---
   const form = useForm({
     defaultValues: {
       sceneType: "text" as const,
@@ -114,20 +119,69 @@ export default function PortfolioBuilder() {
       director: DEFAULT_DIRECTOR_CONFIG,
     },
   });
-
   const sceneType = form.watch("sceneType");
 
+  // --- Styling ---
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
 
+  // --- Data Fetching ---
   // Fetch all projects for selection
   const { data: projects } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
-  // Add or update scene
+  // Fetch existing project data when a project is selected
+  const { data: existingProjectData } = useQuery<any>({
+    queryKey: ["/api/projects", selectedProjectId],
+    enabled: !isNewProject && !!selectedProjectId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const existingProjectScenes = existingProjectData?.scenes; // Assuming 'scenes' is an array of scene objects
+
+  // --- Effects ---
+
+  // Load existing project scenes into the refinement interface when project is selected
+  useEffect(() => {
+    if (!isNewProject && selectedProjectId && existingProjectScenes && existingProjectScenes.length > 0) {
+      // Convert scenes to the format we need for display
+      const scenesJson = JSON.stringify(existingProjectScenes.map((scene: any) => scene.sceneConfig), null, 2);
+      setCurrentSceneJson(scenesJson);
+
+      // Initialize conversation if it's empty, indicating the start of refinement for an existing project
+      if (conversationHistory.length === 0) {
+        setConversationHistory([
+          {
+            role: "assistant",
+            content: `Loaded ${existingProjectScenes.length} existing scenes from this project. You can now refine them by describing what changes you'd like to make.`
+          }
+        ]);
+      }
+    } else if (!isNewProject && selectedProjectId && (!existingProjectScenes || existingProjectScenes.length === 0)) {
+      // If project is selected but has no scenes, clear relevant states
+      setCurrentSceneJson("");
+      setConversationHistory([]);
+      setGeneratedScenes(null);
+    }
+  }, [selectedProjectId, existingProjectScenes, isNewProject, conversationHistory.length]);
+
+  // Effect to potentially populate form data if editing an existing project (this part might need more context from actual project structure)
+  // NOTE: This useEffect is a placeholder. The logic here depends on how `isEdit` and `project` are defined and used.
+  // For the purpose of this change, we are focusing on loading scenes into the refinement UI, not editing individual scenes via the dialog.
+  const isEdit = false; // Placeholder: Assume not in edit mode for this specific logic.
+  const project = null; // Placeholder: Assume no project data for this specific logic.
+  useEffect(() => {
+    if (isEdit && project) {
+      // Existing logic to populate form when editing a project, if applicable.
+      // This is not directly related to the core request of loading scenes for refinement.
+    }
+  }, [isEdit, project]);
+
+
+  // --- Scene Management Handlers ---
   const handleSaveScene = () => {
     const formData = form.getValues();
 
@@ -207,27 +261,29 @@ export default function PortfolioBuilder() {
     setScenes(newScenes);
   };
 
-  // Function to save generated scenes to the database
+  // --- AI Generation and Refinement Handlers ---
   const handleSaveGeneratedScenes = async () => {
-    if (!generatedScenes || (Array.isArray(generatedScenes) ? generatedScenes.length : generatedScenes.scenes?.length) === 0) {
+    const scenesToSave = Array.isArray(generatedScenes) ? generatedScenes : generatedScenes?.scenes;
+    if (!scenesToSave || scenesToSave.length === 0) {
       toast({ title: "Error", description: "No scenes to save", variant: "destructive" });
       return;
     }
 
     setIsSavingScenes(true);
     try {
-      const scenesToSave = Array.isArray(generatedScenes) ? generatedScenes : generatedScenes.scenes;
       const requestPayload = {
         projectId: isNewProject ? null : selectedProjectId,
         newProjectTitle: isNewProject ? newProjectTitle : undefined,
         newProjectSlug: isNewProject ? newProjectSlug : undefined,
         newProjectClient: isNewProject ? newProjectClient : undefined,
-        scenes: scenesToSave,
+        scenes: scenesToSave.map((scene: any) => ({ // Map to expected format if needed
+          sceneConfig: scene,
+          // Add other fields if the backend expects them, e.g., order, etc.
+        })),
       };
 
       console.log('[Portfolio Builder] Saving generated scenes:', requestPayload);
 
-      // Assuming you have an endpoint like /api/portfolio/save-generated-scenes
       const response = await apiRequest("POST", "/api/portfolio/save-generated-scenes", requestPayload);
 
       if (!response.ok) {
@@ -240,11 +296,13 @@ export default function PortfolioBuilder() {
 
       toast({
         title: "Success!",
-        description: `Saved ${scenesToSave?.length} scenes successfully`,
+        description: `Saved ${scenesToSave.length} scenes successfully`,
       });
 
       // Clear generated scenes after saving
       setGeneratedScenes(null);
+      setCurrentSceneJson(""); // Clear current JSON as well
+      setConversationHistory([]); // Clear conversation history
 
       // Navigate to project edit page if projectId is returned
       if (result.projectId) {
@@ -263,60 +321,56 @@ export default function PortfolioBuilder() {
   };
 
 
-  // Generate portfolio with AI
+  // Generate portfolio with AI (this function handles both initial generation and refinement)
   const handleGeneratePortfolio = async () => {
-    // Validation
+    // Validation for new project
     if (isNewProject) {
-      if (!newProjectTitle.trim()) {
-        toast({ title: "Error", description: "Please enter a project title", variant: "destructive" });
-        return;
-      }
-      if (!newProjectSlug.trim()) {
-        toast({ title: "Error", description: "Please enter a project slug", variant: "destructive" });
-        return;
-      }
-      if (!newProjectClient.trim()) {
-        toast({ title: "Error", description: "Please enter a client name", variant: "destructive" });
-        return;
-      }
-    } else if (!selectedProjectId || selectedProjectId.trim() === "") {
-      toast({ title: "Error", description: "Please select a project", variant: "destructive" });
+      if (!newProjectTitle.trim()) { toast({ title: "Error", description: "Please enter a project title", variant: "destructive" }); return; }
+      if (!newProjectSlug.trim()) { toast({ title: "Error", description: "Please enter a project slug", variant: "destructive" }); return; }
+      if (!newProjectClient.trim()) { toast({ title: "Error", description: "Please enter a client name", variant: "destructive" }); return; }
+    }
+    // Validation for existing project
+    else if (!selectedProjectId || selectedProjectId.trim() === "") {
+      toast({ title: "Error", description: "Please select an existing project", variant: "destructive" }); return;
+    }
+
+    // Validation for AI prompt (essential for generation/refinement)
+    const promptToSend = conversationHistory.length === 0 ? portfolioAiPrompt : currentPrompt;
+    if (!promptToSend.trim()) {
+      toast({ title: "Error", description: "Please provide guidance for AI generation or refinement", variant: "destructive" });
       return;
     }
 
-    if (!portfolioAiPrompt.trim()) {
-      toast({ title: "Error", description: "Please provide portfolio-level AI orchestration guidance", variant: "destructive" });
+    // Hybrid mode validation (requires manually added scenes)
+    if (mode === "hybrid" && scenes.length === 0) {
+      toast({ title: "Error", description: "In Hybrid mode, please add at least one scene manually first.", variant: "destructive" });
       return;
     }
 
-    // Hybrid mode validation (scenes required)
-    if (scenes.length === 0) {
-      toast({ title: "Error", description: "Please add at least one scene", variant: "destructive" });
+    // Cinematic mode requires sections
+    if (mode === "cinematic" && sections.length === 0) {
+      toast({ title: "Error", description: "In Cinematic mode, please define at least one story section.", variant: "destructive" });
       return;
     }
 
-    setIsRefining(true); // Changed from setIsGenerating to setIsRefining
+    setIsRefining(true);
     try {
       const requestPayload = {
         projectId: isNewProject ? null : selectedProjectId,
         newProjectTitle: isNewProject ? newProjectTitle : undefined,
         newProjectSlug: isNewProject ? newProjectSlug : undefined,
         newProjectClient: isNewProject ? newProjectClient : undefined,
-        scenes: scenes,
-        portfolioAiPrompt: portfolioAiPrompt,
-        // Pass conversation history for context
-        conversationHistory: conversationHistory,
-        // Pass current prompt for refinement
-        currentPrompt: currentPrompt,
-        // Pass currentSceneJson for section-based editing
-        currentSceneJson: currentSceneJson,
-        // Pass proposedChanges to Gemini
-        proposedChanges: proposedChanges,
+        mode: mode, // Pass the selected mode
+        scenes: mode === "hybrid" ? scenes : undefined, // Use manually added scenes in hybrid mode
+        sections: mode === "cinematic" ? sections : undefined, // Use defined sections in cinematic mode
+        portfolioAiPrompt: portfolioAiPrompt, // Global guidance
+        conversationHistory: conversationHistory, // For iterative refinement
+        currentPrompt: currentPrompt, // The user's latest input in the chat
+        currentSceneJson: currentSceneJson, // The current state of the generated/refined JSON
+        proposedChanges: proposedChanges, // If specific changes are being proposed (e.g., from UI controls)
       };
 
-      console.log('[Portfolio Builder] Generating with scene-by-scene config:', requestPayload);
-      console.log('[Portfolio Builder] Scenes count:', scenes.length);
-      console.log('[Portfolio Builder] Portfolio prompt:', portfolioAiPrompt);
+      console.log('[Portfolio Builder] Generating/Refining:', requestPayload);
 
       const response = await apiRequest("POST", "/api/portfolio/generate-enhanced", requestPayload);
 
@@ -327,16 +381,16 @@ export default function PortfolioBuilder() {
       }
 
       const result = await response.json();
-      console.log('[Portfolio Builder] Generation successful:', result);
+      console.log('[Portfolio Builder] Generation/Refinement successful:', result);
 
       // Update conversation history
       setConversationHistory(prev => [
         ...prev,
-        { role: "user", content: currentPrompt || portfolioAiPrompt },
-        { role: "assistant", content: result.explanation || `Generated ${result.scenes?.length || 0} scenes` }
+        { role: "user", content: currentPrompt || portfolioAiPrompt }, // Use currentPrompt for chat, fallback to portfolioAiPrompt if it's the first interaction
+        { role: "assistant", content: result.explanation || `Generated ${result.scenes?.length || 0} scenes.` }
       ]);
 
-      // Store current scene JSON for reference
+      // Store the latest scene JSON for reference and editing
       setCurrentSceneJson(JSON.stringify(result.scenes, null, 2));
 
       setGeneratedScenes({
@@ -345,23 +399,24 @@ export default function PortfolioBuilder() {
         confidenceFactors: result.confidenceFactors,
       });
 
-      // Clear current prompt for next refinement
+      // Clear current prompt after sending it for refinement
       setCurrentPrompt("");
+      setProposedChanges(""); // Clear proposed changes as well
 
       toast({
         title: "Success!",
-        description: `Generated ${result.scenes?.length || 0} scenes with ${result.confidenceScore || 0}% confidence`,
+        description: `Generated ${result.scenes?.length || 0} scenes with ${result.confidenceScore !== undefined ? result.confidenceScore + '%' : 'N/A'} confidence.`,
       });
 
     } catch (error) {
-      console.error('[Portfolio Builder] Generation error:', error);
+      console.error('[Portfolio Builder] Generation/Refinement error:', error);
       toast({
-        title: "Generation failed",
-        description: error instanceof Error ? error.message : "Failed to generate scenes. Please check the console for details.",
+        title: "Operation failed",
+        description: error instanceof Error ? error.message : "Please check the console for details.",
         variant: "destructive",
       });
     } finally {
-      setIsRefining(false); // Changed from setIsGenerating to setIsRefining
+      setIsRefining(false);
     }
   };
 
@@ -396,7 +451,13 @@ export default function PortfolioBuilder() {
                     <div className="flex items-center gap-4">
                       <Button
                         variant={isNewProject ? "default" : "outline"}
-                        onClick={() => setIsNewProject(true)}
+                        onClick={() => {
+                          setIsNewProject(true);
+                          setSelectedProjectId(""); // Clear selection when switching to new project
+                          setCurrentSceneJson(""); // Clear previous JSON
+                          setConversationHistory([]); // Clear conversation
+                          setGeneratedScenes(null); // Clear generated scenes
+                        }}
                         data-testid="button-new-project"
                       >
                         New Project
@@ -446,7 +507,14 @@ export default function PortfolioBuilder() {
                     ) : (
                       <div className="space-y-2">
                         <Label>Select Project</Label>
-                        <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                        <Select value={selectedProjectId} onValueChange={(value) => {
+                          setSelectedProjectId(value);
+                          // Reset states when a new project is selected
+                          setScenes([]);
+                          setConversationHistory([]);
+                          setCurrentSceneJson("");
+                          setGeneratedScenes(null);
+                        }}>
                           <SelectTrigger data-testid="select-project">
                             <SelectValue placeholder="Choose a project..." />
                           </SelectTrigger>
@@ -492,7 +560,11 @@ export default function PortfolioBuilder() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      {scenes.length === 0 ? (
+                      {scenes.length === 0 && !isNewProject && selectedProjectId && existingProjectScenes && existingProjectScenes.length > 0 ? (
+                        <div className="text-center text-muted-foreground py-8">
+                          Existing scenes loaded. You can edit them below or add new ones.
+                        </div>
+                      ) : scenes.length === 0 ? (
                         <div className="text-center text-muted-foreground py-8">
                           No scenes yet. Click "Add Scene" to get started.
                         </div>
@@ -818,7 +890,7 @@ export default function PortfolioBuilder() {
                   </CardContent>
                 </Card>
 
-                {/* Generate Button - Show when no conversation exists */}
+                {/* Generate Button - Show when no conversation exists or when starting a new project */}
                 {conversationHistory.length === 0 && (
                   <Card>
                     <CardHeader>
@@ -832,7 +904,7 @@ export default function PortfolioBuilder() {
                     <CardContent>
                       <Button
                         onClick={handleGeneratePortfolio}
-                        disabled={isRefining}
+                        disabled={isRefining || (isNewProject && (!newProjectTitle.trim() || !newProjectSlug.trim() || !newProjectClient.trim())) || (!isNewProject && !selectedProjectId)}
                         size="lg"
                         className="w-full"
                         data-testid="button-generate-portfolio"
@@ -853,7 +925,7 @@ export default function PortfolioBuilder() {
                   </Card>
                 )}
 
-                {/* Conversational Refinement Interface - Only show after first generation */}
+                {/* Conversational Refinement Interface - Only show after first generation or when loading existing project */}
                 {conversationHistory.length > 0 && (
                   <Card className="border-2 border-primary/20">
                     <CardHeader>
@@ -862,7 +934,7 @@ export default function PortfolioBuilder() {
                           <CardTitle className="flex items-center gap-2">
                             💬 Refinement Conversation
                             <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
-                              {conversationHistory.length / 2} iterations
+                              {Math.floor(conversationHistory.length / 2)} iterations
                             </span>
                           </CardTitle>
                           <CardDescription>
@@ -877,6 +949,8 @@ export default function PortfolioBuilder() {
                             setCurrentSceneJson("");
                             setGeneratedScenes(null);
                             setCurrentPrompt("");
+                            // Resetting scenes if we decide to start over completely
+                            // setScenes([]);
                           }}
                         >
                           Start Over
@@ -884,8 +958,55 @@ export default function PortfolioBuilder() {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                      {/* Current Scene JSON - Always visible and prominent */}
+                      {currentSceneJson && (
+                        <Card className="border-2">
+                          <CardHeader>
+                            <CardTitle className="text-base">Current Scene JSON</CardTitle>
+                            <CardDescription>
+                              This is what Gemini will use as the foundation for refinements
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <Textarea
+                              value={currentSceneJson}
+                              onChange={(e) => setCurrentSceneJson(e.target.value)}
+                              className="font-mono text-xs min-h-[300px] resize-none"
+                              placeholder="Scene JSON will appear here..."
+                            />
+                            <div className="flex gap-2 mt-3">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(currentSceneJson);
+                                  toast({ title: "Copied to clipboard" });
+                                }}
+                              >
+                                Copy JSON
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  try {
+                                    const formatted = JSON.stringify(JSON.parse(currentSceneJson), null, 2);
+                                    setCurrentSceneJson(formatted);
+                                    toast({ title: "JSON formatted" });
+                                  } catch {
+                                    toast({ title: "Invalid JSON", variant: "destructive" });
+                                  }
+                                }}
+                              >
+                                Format JSON
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
                       {/* Conversation History */}
-                      <div className="space-y-3 max-h-[500px] overflow-y-auto border rounded-lg p-4 bg-muted/30">
+                      <div className="space-y-3 max-h-[400px] overflow-y-auto border rounded-lg p-4 bg-muted/30">
                         {conversationHistory.map((msg, idx) => (
                           <div
                             key={idx}
@@ -990,15 +1111,15 @@ export default function PortfolioBuilder() {
                         <div className="space-y-1">
                           <CardTitle className="flex items-center gap-2">
                             📋 Generated Scenes
-                            {conversationHistory.length > 2 && (
+                            {conversationHistory.length > 2 && ( // Check if refinement has occurred
                               <span className="text-xs px-2 py-1 bg-green-500/10 text-green-600 rounded">
                                 Updated
                               </span>
                             )}
                           </CardTitle>
                           <CardDescription>
-                            {conversationHistory.length > 2 
-                              ? "Scenes refined based on your feedback" 
+                            {conversationHistory.length > 2
+                              ? "Scenes refined based on your feedback"
                               : "AI-generated scenes based on your prompts"}
                           </CardDescription>
                           {generatedScenes.confidenceScore !== undefined && (
@@ -1072,7 +1193,7 @@ export default function PortfolioBuilder() {
                             </CollapsibleContent>
                           </Collapsible>
                         )}
-                        
+
                         {currentSceneJson && (
                           <Collapsible>
                             <CollapsibleTrigger asChild>
