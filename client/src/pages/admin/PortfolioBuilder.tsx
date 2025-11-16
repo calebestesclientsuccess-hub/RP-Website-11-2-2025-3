@@ -151,22 +151,20 @@ export default function PortfolioBuilder() {
       const scenesJson = JSON.stringify(existingProjectScenes.map((scene: any) => scene.sceneConfig), null, 2);
       setCurrentSceneJson(scenesJson);
 
-      // Initialize conversation if it's empty, indicating the start of refinement for an existing project
-      if (conversationHistory.length === 0) {
-        setConversationHistory([
-          {
-            role: "assistant",
-            content: `Loaded ${existingProjectScenes.length} existing scenes from this project. You can now refine them by describing what changes you'd like to make.`
-          }
-        ]);
-      }
+      // Initialize conversation to show we loaded existing scenes
+      setConversationHistory([
+        {
+          role: "assistant",
+          content: `✅ Loaded ${existingProjectScenes.length} existing scenes from this project.\n\nYou can now refine them by describing what you'd like to change. For example:\n• "Make Scene 3 more dramatic"\n• "Add smoother transitions between all scenes"\n• "The hero section needs more impact"`
+        }
+      ]);
     } else if (!isNewProject && selectedProjectId && (!existingProjectScenes || existingProjectScenes.length === 0)) {
       // If project is selected but has no scenes, clear relevant states
       setCurrentSceneJson("");
       setConversationHistory([]);
       setGeneratedScenes(null);
     }
-  }, [selectedProjectId, existingProjectScenes, isNewProject, conversationHistory.length]);
+  }, [selectedProjectId, existingProjectScenes, isNewProject]);
 
   // Effect to potentially populate form data if editing an existing project (this part might need more context from actual project structure)
   // NOTE: This useEffect is a placeholder. The logic here depends on how `isEdit` and `project` are defined and used.
@@ -789,37 +787,258 @@ export default function PortfolioBuilder() {
                   </Card>
                 )}
 
-                {/* Portfolio-Level AI Orchestration */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>3. AI Orchestration & Generation</CardTitle>
-                        <CardDescription>
-                          Configure AI behavior and generate your portfolio
-                        </CardDescription>
-                      </div>
-                      <div className="flex items-center gap-2">
+                {/* Show refinement mode if we have existing scenes OR generated scenes */}
+                {(currentSceneJson || (existingProjectScenes && existingProjectScenes.length > 0)) ? (
+                  // REFINEMENT MODE
+                  <Card className="border-2 border-primary/20">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="flex items-center gap-2">
+                            💬 Iterative Refinement Mode
+                            {conversationHistory.length > 0 && (
+                              <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
+                                {Math.floor(conversationHistory.length / 2)} iterations
+                              </span>
+                            )}
+                          </CardTitle>
+                          <CardDescription>
+                            Refine your scenes by chatting with Gemini. Reference specific scenes by number (e.g., "Make Scene 3 more dramatic")
+                          </CardDescription>
+                        </div>
                         <Button
-                          variant={mode === "hybrid" ? "default" : "outline"}
+                          variant="outline"
                           size="sm"
-                          onClick={() => setMode("hybrid")}
-                          data-testid="toggle-hybrid-mode"
+                          onClick={() => {
+                            if (confirm("Start over? This will clear all generated scenes and conversation history.")) {
+                              setConversationHistory([]);
+                              setCurrentSceneJson("");
+                              setGeneratedScenes(null);
+                              setCurrentPrompt("");
+                            }
+                          }}
                         >
-                          ✏️ Hybrid
-                        </Button>
-                        <Button
-                          variant={mode === "cinematic" ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setMode("cinematic")}
-                          data-testid="toggle-cinematic-mode"
-                        >
-                          🎬 Cinematic
+                          Start Over
                         </Button>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Scene Overview - Quick Reference */}
+                      {currentSceneJson && (() => {
+                        try {
+                          const scenes = JSON.parse(currentSceneJson);
+                          return (
+                            <div className="space-y-2">
+                              <Label className="text-base font-semibold">Scene Overview</Label>
+                              <div className="grid gap-2">
+                                {scenes.map((scene: any, idx: number) => (
+                                  <div key={idx} className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm">
+                                      {idx + 1}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="text-sm font-medium">{scene.sceneType}</div>
+                                      <div className="text-xs text-muted-foreground truncate">
+                                        Entry: {scene.director?.entryEffect} ({scene.director?.entryDuration}s) | 
+                                        Exit: {scene.director?.exitEffect} ({scene.director?.exitDuration}s)
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                💡 Reference scenes by number in your prompts (e.g., "Make Scene {scenes.length > 2 ? '3' : '1'} more dramatic")
+                              </p>
+                            </div>
+                          );
+                        } catch {
+                          return null;
+                        }
+                      })()}
+
+                      {/* Current Scene JSON - ALWAYS VISIBLE AND EDITABLE */}
+                      <Collapsible>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" className="w-full justify-between">
+                            <span className="text-base font-semibold">View/Edit Complete Scene JSON</span>
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-2 pt-2">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                navigator.clipboard.writeText(currentSceneJson);
+                                toast({ title: "Copied to clipboard" });
+                              }}
+                            >
+                              Copy JSON
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                try {
+                                  const formatted = JSON.stringify(JSON.parse(currentSceneJson), null, 2);
+                                  setCurrentSceneJson(formatted);
+                                  toast({ title: "JSON formatted" });
+                                } catch {
+                                  toast({ title: "Invalid JSON", variant: "destructive" });
+                                }
+                              }}
+                            >
+                              Format
+                            </Button>
+                          </div>
+                          <Textarea
+                            value={currentSceneJson}
+                            onChange={(e) => setCurrentSceneJson(e.target.value)}
+                            className="font-mono text-xs min-h-[400px] resize-y"
+                            placeholder="Scene JSON will appear here after generation..."
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            💡 This JSON is the foundation for all refinements. Gemini uses this as context.
+                          </p>
+                        </CollapsibleContent>
+                      </Collapsible>
+
+                      {/* Conversation History */}
+                      {conversationHistory.length > 0 && (
+                        <div className="space-y-2">
+                          <Label className="text-base font-semibold">Conversation History</Label>
+                          <div className="space-y-3 max-h-[300px] overflow-y-auto border rounded-lg p-4 bg-muted/30">
+                            {conversationHistory.map((msg, idx) => (
+                              <div
+                                key={idx}
+                                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                              >
+                                <div
+                                  className={`max-w-[80%] rounded-lg p-3 ${
+                                    msg.role === 'user'
+                                      ? 'bg-primary text-primary-foreground'
+                                      : 'bg-background border'
+                                  }`}
+                                >
+                                  <div className="text-xs font-medium mb-1 opacity-70">
+                                    {msg.role === 'user' ? '👤 You' : '🤖 Gemini'}
+                                  </div>
+                                  <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
+                                </div>
+                              </div>
+                            ))}
+                            {isRefining && (
+                              <div className="flex justify-start">
+                                <div className="bg-background border rounded-lg p-3">
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Gemini is thinking...
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Refinement Input */}
+                      <div className="space-y-2">
+                        <Label htmlFor="refinement-prompt" className="text-base font-semibold">
+                          {conversationHistory.length === 0 ? "Start the conversation:" : "Continue refining:"}
+                        </Label>
+                        <Textarea
+                          id="refinement-prompt"
+                          value={currentPrompt}
+                          onChange={(e) => setCurrentPrompt(e.target.value)}
+                          placeholder="Examples:&#10;• Make Scene 3 more dramatic with faster pacing&#10;• Add a fade transition between Scene 1 and 2&#10;• The hero section needs more impact&#10;• Slow down the exit animation on Scene 5"
+                          rows={4}
+                          className="resize-none"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={handleGeneratePortfolio}
+                            disabled={isRefining || !currentPrompt.trim()}
+                            className="flex-1"
+                          >
+                            {isRefining ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Refining...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-4 h-4 mr-2" />
+                                {conversationHistory.length === 0 ? "Start Conversation" : "Refine Scenes"}
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => setCurrentPrompt("")}
+                            disabled={!currentPrompt.trim()}
+                          >
+                            Clear
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Quick Actions */}
+                      <div className="flex flex-wrap gap-2 pt-2 border-t">
+                        <div className="text-xs text-muted-foreground w-full mb-1">Quick refinements:</div>
+                        {[
+                          "Make it more dramatic",
+                          "Add smooth transitions",
+                          "Increase pacing",
+                          "More cinematic feel",
+                          "Simplify the flow"
+                        ].map((suggestion) => (
+                          <Button
+                            key={suggestion}
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setCurrentPrompt(suggestion)}
+                            disabled={isRefining}
+                            className="text-xs"
+                          >
+                            {suggestion}
+                          </Button>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  // INITIAL GENERATION MODE
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle>3. AI Orchestration & Generation</CardTitle>
+                          <CardDescription>
+                            Configure AI behavior and generate your portfolio
+                          </CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant={mode === "hybrid" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setMode("hybrid")}
+                            data-testid="toggle-hybrid-mode"
+                          >
+                            ✏️ Hybrid
+                          </Button>
+                          <Button
+                            variant={mode === "cinematic" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setMode("cinematic")}
+                            data-testid="toggle-cinematic-mode"
+                          >
+                            🎬 Cinematic
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
                     {mode === "cinematic" ? (
                       <div className="space-y-3">
                         <div className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
@@ -887,46 +1106,32 @@ export default function PortfolioBuilder() {
                         </div>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-
-                {/* Generate Button - Show when no conversation exists or when starting a new project */}
-                {conversationHistory.length === 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>
-                        {mode === "cinematic" ? "🎬 Generate Cinematic Portfolio" : "✨ Generate Enhanced Portfolio"}
-                      </CardTitle>
-                      <CardDescription>
-                        AI will {mode === "cinematic" ? "orchestrate your story sections into scenes" : "enhance each scene and orchestrate the overall flow"}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Button
-                        onClick={handleGeneratePortfolio}
-                        disabled={isRefining || (isNewProject && (!newProjectTitle.trim() || !newProjectSlug.trim() || !newProjectClient.trim())) || (!isNewProject && !selectedProjectId)}
-                        size="lg"
-                        className="w-full"
-                        data-testid="button-generate-portfolio"
-                      >
-                        {isRefining ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Generating Portfolio...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="w-4 h-4 mr-2" />
-                            Generate Portfolio with AI
-                          </>
-                        )}
-                      </Button>
+                  <Button
+                          onClick={handleGeneratePortfolio}
+                          disabled={isRefining || (isNewProject && (!newProjectTitle.trim() || !newProjectSlug.trim() || !newProjectClient.trim())) || (!isNewProject && !selectedProjectId)}
+                          size="lg"
+                          className="w-full"
+                          data-testid="button-generate-portfolio"
+                        >
+                          {isRefining ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Generating Portfolio...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4 mr-2" />
+                              Generate Portfolio with AI
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 )}
 
-                {/* Conversational Refinement Interface - Only show after first generation or when loading existing project */}
-                {conversationHistory.length > 0 && (
+                {/* OLD REFINEMENT UI - REMOVED, NOW INTEGRATED ABOVE */}
+                {false && conversationHistory.length > 0 && (
                   <Card className="border-2 border-primary/20">
                     <CardHeader>
                       <div className="flex items-center justify-between">
