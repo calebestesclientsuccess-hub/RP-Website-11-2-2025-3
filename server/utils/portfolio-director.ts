@@ -252,7 +252,7 @@ export async function generatePortfolioWithAI(
                     entryDuration: { type: Type.NUMBER, description: "Entry animation duration in seconds (0.1-5)" },
                     exitDuration: { type: Type.NUMBER, description: "Exit animation duration in seconds (0.1-5)" },
                     animationDuration: { type: Type.NUMBER, description: "Main animation duration in seconds (0.1-10)" },
-                    entryDelay: { type: Type.NUMBER, description: "Entry delay in seconds (0-2)" }, // Added entryDelay
+                    entryDelay: { type: Type.NUMBER, description: "Entry delay in seconds (0-2)" },
                     backgroundColor: { type: Type.STRING, description: "Hex color code" },
                     textColor: { type: Type.STRING, description: "Hex color code" },
                     parallaxIntensity: { type: Type.NUMBER, description: "0-1, default 0.3" },
@@ -265,7 +265,7 @@ export async function generatePortfolioWithAI(
                     bodySize: { type: Type.STRING, description: "base, lg, xl, or 2xl" },
                     alignment: { type: Type.STRING, description: "left, center, or right" },
                   },
-                  required: ["entryDuration", "exitDuration", "backgroundColor", "textColor", "parallaxIntensity", "entryEffect", "exitEffect", "headingSize", "bodySize", "alignment"]
+                  required: ["entryDuration", "exitDuration", "entryDelay", "backgroundColor", "textColor", "parallaxIntensity", "entryEffect", "exitEffect", "headingSize", "bodySize", "alignment"]
                 }
               },
               required: ["sceneType", "assetIds", "director"]
@@ -313,18 +313,21 @@ export async function generatePortfolioWithAI(
       warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ No exit effect specified.`);
     }
 
-    // Ensure minimum durations if not provided
-    if (director.entryDuration === undefined || director.entryDuration === null) {
+    // Ensure valid durations with type and range checks
+    if (typeof director.entryDuration !== 'number' || director.entryDuration < 0.1) {
       scene.director.entryDuration = 1.2; // Default to standard
+      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Invalid entryDuration, defaulting to 1.2s`);
     }
-    if (director.exitDuration === undefined || director.exitDuration === null) {
+    if (typeof director.exitDuration !== 'number' || director.exitDuration < 0.1) {
       scene.director.exitDuration = 1.0; // Default to standard
+      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Invalid exitDuration, defaulting to 1.0s`);
     }
-    if (director.entryDelay === undefined || director.entryDelay === null) {
-        scene.director.entryDelay = 0; // Default to no delay
+    if (typeof director.entryDelay !== 'number' || director.entryDelay < 0) {
+      scene.director.entryDelay = 0; // Default to no delay
     }
-    if (director.parallaxIntensity === undefined || director.parallaxIntensity === null) {
-        scene.director.parallaxIntensity = 0.3; // Default to moderate
+    if (typeof director.parallaxIntensity !== 'number' || director.parallaxIntensity < 0 || director.parallaxIntensity > 1) {
+      scene.director.parallaxIntensity = 0.3; // Default to moderate
+      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Invalid parallaxIntensity (must be 0-1), defaulting to 0.3`);
     }
 
   }

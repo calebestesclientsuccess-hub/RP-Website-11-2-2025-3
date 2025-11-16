@@ -262,18 +262,20 @@ export default function BrandingProjectPage() {
       // Merge director config with defaults
       const director = { ...DEFAULT_DIRECTOR_CONFIG, ...(scene.sceneConfig.director || {}) };
       
-      // Debug logging for director config
-      console.log(`[Scene ${index}] Director config:`, {
-        entryEffect: director.entryEffect,
-        entryDuration: director.entryDuration,
-        entryDelay: director.entryDelay,
-        exitEffect: director.exitEffect,
-        exitDuration: director.exitDuration,
-        scrollSpeed: director.scrollSpeed,
-        parallaxIntensity: director.parallaxIntensity,
-        fadeOnScroll: director.fadeOnScroll,
-        scaleOnScroll: director.scaleOnScroll,
-      });
+      // Debug logging for director config (dev only)
+      if (import.meta.env.DEV) {
+        console.log(`[Scene ${index}] Director config:`, {
+          entryEffect: director.entryEffect,
+          entryDuration: director.entryDuration,
+          entryDelay: director.entryDelay,
+          exitEffect: director.exitEffect,
+          exitDuration: director.exitDuration,
+          scrollSpeed: director.scrollSpeed,
+          parallaxIntensity: director.parallaxIntensity,
+          fadeOnScroll: director.fadeOnScroll,
+          scaleOnScroll: director.scaleOnScroll,
+        });
+      }
       
       // Get scrub speed based on director config
       const scrubSpeed = scrollSpeedMap[director.scrollSpeed] || 1.5;
@@ -321,22 +323,32 @@ export default function BrandingProjectPage() {
         const contentWrapper = element.querySelector('[data-scene-content]');
         const mediaElements = element.querySelectorAll('[data-media-opacity]');
         
-        // Entry animation - BUILD STATE WITHOUT autoAlpha (prevents flash)
-        const fromState = { ...entryEffect.from, opacity: 0 };
-        const toState = { ...entryEffect.to, opacity: 1 };
+        // Entry animation - Use autoAlpha for safer visibility control
+        const fromState = { ...entryEffect.from };
+        const toState = { ...entryEffect.to };
         
-        // Remove opacity if it exists (we set it explicitly above)
-        if ('opacity' in entryEffect.from) delete fromState.opacity;
-        if ('opacity' in entryEffect.to) delete toState.opacity;
+        // Replace opacity with autoAlpha (controls both opacity and visibility)
+        if ('opacity' in fromState) {
+          fromState.autoAlpha = fromState.opacity;
+          delete fromState.opacity;
+        } else {
+          fromState.autoAlpha = 0;
+        }
         
-        // Re-add it
-        fromState.opacity = 0;
-        toState.opacity = 1;
+        if ('opacity' in toState) {
+          toState.autoAlpha = toState.opacity;
+          delete toState.opacity;
+        } else {
+          toState.autoAlpha = 1;
+        }
         
         // Animate the CONTENT WRAPPER (not the section background)
         const targetElement = contentWrapper || element;
         
         // Main entry/exit animation with FULL REVERSIBILITY
+        // Use elastic ease for bounce effect, otherwise power3
+        const entryEase = director.entryEffect === 'elastic-bounce' ? "elastic.out(1, 0.5)" : "power3.out";
+        
         gsap.fromTo(
           targetElement,
           fromState,
@@ -344,7 +356,7 @@ export default function BrandingProjectPage() {
             ...toState,
             duration: entryDuration,
             delay: director.entryDelay || 0,
-            ease: "power3.out",
+            ease: entryEase,
             scrollTrigger: {
               trigger: element,
               start: "top 80%",
@@ -354,8 +366,14 @@ export default function BrandingProjectPage() {
               onLeave: () => {
                 // When scrolling DOWN past this scene, apply exit effect
                 if (exitEffect) {
+                  const exitState = { ...exitEffect };
+                  // Convert opacity to autoAlpha for cleaner visibility handling
+                  if ('opacity' in exitState) {
+                    exitState.autoAlpha = exitState.opacity;
+                    delete exitState.opacity;
+                  }
                   gsap.to(targetElement, {
-                    ...exitEffect,
+                    ...exitState,
                     duration: exitDuration,
                     ease: "power2.in",
                   });
@@ -363,18 +381,26 @@ export default function BrandingProjectPage() {
               },
               onEnterBack: () => {
                 // When scrolling UP back into this scene, reverse exit and restore entry
+                // Preserve blur-focus effect if it's the entry animation
+                const restoreState = { ...toState };
+                if (director.entryEffect !== 'blur-focus') {
+                  restoreState.filter = 'blur(0px)';
+                }
                 gsap.to(targetElement, {
-                  ...toState,
-                  filter: 'blur(0px)', // Explicitly clear any blur
+                  ...restoreState,
                   duration: entryDuration * 0.7, // Slightly faster on return
                   ease: "power2.out",
                 });
               },
               onLeaveBack: () => {
                 // When scrolling UP past this scene, reverse to initial hidden state
+                // Keep entry blur if it's a blur-focus effect
+                const exitState = { ...fromState };
+                if (director.entryEffect !== 'blur-focus') {
+                  exitState.filter = 'blur(0px)';
+                }
                 gsap.to(targetElement, {
-                  ...fromState,
-                  filter: 'blur(0px)', // Explicitly clear any blur
+                  ...exitState,
                   duration: entryDuration * 0.7,
                   ease: "power2.in",
                 });
