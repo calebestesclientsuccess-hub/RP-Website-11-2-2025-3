@@ -429,49 +429,114 @@ export async function generatePortfolioWithAI(
     });
   });
 
-  // If fields are missing, attempt targeted regeneration (Stage 1.5: Field Recovery)
+  // If fields are missing, attempt targeted regeneration (Stage 1.5: Field Recovery with Retry)
   if (missingFieldsByScene.size > 0) {
     console.warn('[Portfolio Director] ⚠️ Stage 1 validation found missing fields, attempting recovery...');
     
+    const MAX_RETRY_ATTEMPTS = 2;
+    
     for (const [sceneIdx, missingFields] of missingFieldsByScene.entries()) {
       const scene = result.scenes[sceneIdx];
-      const recoveryPrompt = `You previously generated this scene but forgot to fill in some required fields:
+      let retryCount = 0;
+      let fieldsStillMissing = [...missingFields];
+      
+      while (fieldsStillMissing.length > 0 && retryCount < MAX_RETRY_ATTEMPTS) {
+        retryCount++;
+        console.log(`[Portfolio Director] 🔄 Retry ${retryCount}/${MAX_RETRY_ATTEMPTS} for scene ${sceneIdx}, missing: ${fieldsStillMissing.join(', ')}`);
+        
+        const recoveryPrompt = `You previously generated this scene but forgot to fill in some required fields:
 
 Scene Type: ${scene.sceneType}
 Asset IDs: ${scene.assetIds.join(', ')}
 
 MISSING FIELDS (you MUST provide these):
-${missingFields.map(field => `- ${field}`).join('\n')}
+${fieldsStillMissing.map(field => `- ${field}`).join('\n')}
 
 Please provide ONLY the missing field values in JSON format:
 {
-  ${missingFields.map(field => `"${field}": <value>`).join(',\n  ')}
+  ${fieldsStillMissing.map(field => `"${field}": <value>`).join(',\n  ')}
 }
 
-Remember:
-- entryDuration/exitDuration/entryDelay must be numbers in seconds (e.g., 1.2, not "1.2s")
-- backgroundColor/textColor must be hex codes (e.g., "#0a0a0a")
-- parallaxIntensity must be 0-1 (e.g., 0.3)
-- Use the interpretation matrix from the original prompt for guidance`;
+FIELD REQUIREMENTS:
+- entryDuration/exitDuration: numbers in seconds (0.8-5.0, e.g., 1.2)
+- entryDelay: number in seconds (0-2, e.g., 0.3)
+- backgroundColor/textColor: hex codes (e.g., "#0a0a0a")
+- parallaxIntensity: number 0-1 (e.g., 0.3)
+- entryEffect: fade, slide-up, slide-down, zoom-in, etc.
+- exitEffect: fade, slide-up, zoom-out, dissolve, etc.
+- headingSize: 4xl, 5xl, 6xl, 7xl, or 8xl
+- bodySize: base, lg, xl, or 2xl
+- alignment: left, center, or right
 
-      try {
-        const recoveryResponse = await aiClient.models.generateContent({
-          model: "gemini-2.5-pro",
-          contents: [{ role: "user", parts: [{ text: recoveryPrompt }] }],
-          config: { responseMimeType: "application/json" }
-        });
+Use the interpretation matrix from the original prompt for guidance.`;
 
-        const recoveredFields = JSON.parse(recoveryResponse.text || '{}');
-        
-        // Merge recovered fields back into the scene
-        for (const field of missingFields) {
-          if (recoveredFields[field] !== undefined) {
-            (scene.director as any)[field] = recoveredFields[field];
-            console.log(`[Portfolio Director] ✅ Recovered ${field} for scene ${sceneIdx}: ${recoveredFields[field]}`);
+        try {
+          const recoveryResponse = await aiClient.models.generateContent({
+            model: "gemini-2.5-pro",
+            contents: [{ role: "user", parts: [{ text: recoveryPrompt }] }],
+            config: { responseMimeType: "application/json" }
+          });
+
+          const recoveredFields = JSON.parse(recoveryResponse.text || '{}');
+          
+          // Merge recovered fields back into the scene
+          const successfullyRecovered: string[] = [];
+          for (const field of fieldsStillMissing) {
+            if (recoveredFields[field] !== undefined && recoveredFields[field] !== null) {
+              (scene.director as any)[field] = recoveredFields[field];
+              successfullyRecovered.push(field);
+              console.log(`[Portfolio Director] ✅ Recovered ${field} for scene ${sceneIdx}: ${JSON.stringify(recoveredFields[field])}`);
+            }
+          }
+          
+          // Update list of fields still missing
+          fieldsStillMissing = fieldsStillMissing.filter(f => !successfullyRecovered.includes(f));
+          
+        } catch (error) {
+          console.error(`[Portfolio Director] ❌ Failed recovery attempt ${retryCount} for scene ${sceneIdx}:`, error);
+        }
+      }
+      
+      // If fields are still missing after all retries, apply intelligent defaults
+      if (fieldsStillMissing.length > 0) {
+        console.warn(`[Portfolio Director] ⚠️ Applying defaults for scene ${sceneIdx} fields: ${fieldsStillMissing.join(', ')}`);
+        for (const field of fieldsStillMissing) {
+          switch (field) {
+            case 'entryDuration':
+              scene.director.entryDuration = 1.2;
+              break;
+            case 'exitDuration':
+              scene.director.exitDuration = 1.0;
+              break;
+            case 'entryDelay':
+              scene.director.entryDelay = 0;
+              break;
+            case 'backgroundColor':
+              scene.director.backgroundColor = '#0a0a0a';
+              break;
+            case 'textColor':
+              scene.director.textColor = '#ffffff';
+              break;
+            case 'parallaxIntensity':
+              scene.director.parallaxIntensity = 0.3;
+              break;
+            case 'entryEffect':
+              scene.director.entryEffect = 'fade';
+              break;
+            case 'exitEffect':
+              scene.director.exitEffect = 'fade';
+              break;
+            case 'headingSize':
+              scene.director.headingSize = '5xl';
+              break;
+            case 'bodySize':
+              scene.director.bodySize = 'lg';
+              break;
+            case 'alignment':
+              scene.director.alignment = 'center';
+              break;
           }
         }
-      } catch (error) {
-        console.error(`[Portfolio Director] ❌ Failed to recover fields for scene ${sceneIdx}:`, error);
       }
     }
     
