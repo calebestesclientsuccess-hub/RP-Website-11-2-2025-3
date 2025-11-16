@@ -16,7 +16,7 @@ router.post('/api/analytics/web-vitals', async (req, res) => {
     // Store in database
     await db.execute(sql`
       INSERT INTO web_vitals_metrics (name, value, rating, delta, metric_id, navigation_type, created_at)
-      VALUES (${name}, ${value}, ${rating}, ${delta}, ${id}, ${navType}, NOW())
+      VALUES (${name}, ${value}, ${rating}, ${delta}, ${id}, ${navType}, CURRENT_TIMESTAMP)
       ON CONFLICT (metric_id) DO NOTHING
     `);
 
