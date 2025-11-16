@@ -124,21 +124,67 @@ export async function generateSceneWithGemini(
           },
           director: {
             type: Type.OBJECT,
-            description: "Director config for scroll animations",
+            description: "Complete director config with all 37 cinematic controls",
             properties: {
-              entryDuration: { type: Type.NUMBER, description: "Entry animation duration in seconds (0.1-5)" },
-              exitDuration: { type: Type.NUMBER, description: "Exit animation duration in seconds (0.1-5)" },
-              animationDuration: { type: Type.NUMBER, description: "Main animation duration in seconds (0.1-10)" },
-              parallaxIntensity: { type: Type.NUMBER, description: "0-1, default 0.3" },
-              entryEffect: { type: Type.STRING, description: "fade, slide-up, slide-down, zoom-in, sudden" },
-              exitEffect: { type: Type.STRING, description: "fade, slide-up, slide-down, dissolve" },
-              headingSize: { type: Type.STRING, description: "4xl, 5xl, 6xl, 7xl, or 8xl" },
-              bodySize: { type: Type.STRING, description: "base, lg, xl, or 2xl" },
-              alignment: { type: Type.STRING, description: "left, center, or right" },
+              // Animation & Timing (10 controls)
+              entryEffect: { type: Type.STRING, description: "fade, slide-up, zoom-in, etc." },
+              exitEffect: { type: Type.STRING, description: "fade, slide-down, dissolve, etc." },
+              entryDuration: { type: Type.NUMBER, description: "0.1-5 seconds" },
+              exitDuration: { type: Type.NUMBER, description: "0.1-5 seconds" },
+              entryDelay: { type: Type.NUMBER, description: "0-10 seconds" },
+              exitDelay: { type: Type.NUMBER, description: "0-2 seconds" },
+              animationDuration: { type: Type.NUMBER, description: "0.5-10 seconds" },
+              entryEasing: { type: Type.STRING, description: "linear, ease, power1-4, elastic, etc." },
+              exitEasing: { type: Type.STRING, description: "linear, ease, power1-4, elastic, etc." },
+              staggerChildren: { type: Type.NUMBER, description: "0-1 seconds" },
+              
+              // Visual Style (11 controls)
+              backgroundColor: { type: Type.STRING, description: "Hex color" },
+              textColor: { type: Type.STRING, description: "Hex color" },
+              gradientColors: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Array of hex colors or null" },
+              gradientDirection: { type: Type.STRING, description: "to-r, to-l, to-t, to-b, etc. or null" },
+              alignment: { type: Type.STRING, description: "left, center, right" },
+              headingSize: { type: Type.STRING, description: "4xl, 5xl, 6xl, 7xl, 8xl" },
+              bodySize: { type: Type.STRING, description: "base, lg, xl, 2xl" },
+              fontWeight: { type: Type.STRING, description: "normal, medium, semibold, bold" },
+              textShadow: { type: Type.BOOLEAN, description: "Drop shadow on text" },
+              textGlow: { type: Type.BOOLEAN, description: "Luminous text effect" },
+              paddingTop: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
+              paddingBottom: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
+              
+              // Scroll Effects (5 controls)
+              parallaxIntensity: { type: Type.NUMBER, description: "0-1" },
               fadeOnScroll: { type: Type.BOOLEAN, description: "Enable fade during scroll" },
               scaleOnScroll: { type: Type.BOOLEAN, description: "Enable scale during scroll" },
-              blurOnScroll: { type: Type.BOOLEAN, description: "Enable blur during scroll" }
-            }
+              blurOnScroll: { type: Type.BOOLEAN, description: "Enable blur during scroll" },
+              scrollSpeed: { type: Type.STRING, description: "slow, normal, fast" },
+              
+              // Cinematic Controls (7 controls)
+              transformOrigin: { type: Type.STRING, description: "center center, top left, etc." },
+              overflowBehavior: { type: Type.STRING, description: "visible, hidden, auto" },
+              backdropBlur: { type: Type.STRING, description: "none, sm, md, lg, xl" },
+              mixBlendMode: { type: Type.STRING, description: "normal, multiply, screen, overlay, etc." },
+              enablePerspective: { type: Type.BOOLEAN, description: "Enable 3D transforms" },
+              customCSSClasses: { type: Type.STRING, description: "Custom Tailwind classes" },
+              layerDepth: { type: Type.NUMBER, description: "0-10 z-index" },
+              
+              // Media Controls (3 controls)
+              mediaPosition: { type: Type.STRING, description: "center, top, bottom, left, right or null" },
+              mediaScale: { type: Type.STRING, description: "cover, contain, fill or null" },
+              mediaOpacity: { type: Type.NUMBER, description: "0-1" }
+            },
+            required: [
+              "entryEffect", "exitEffect", "entryDuration", "exitDuration",
+              "entryDelay", "exitDelay", "animationDuration", "entryEasing",
+              "exitEasing", "staggerChildren", "backgroundColor", "textColor",
+              "alignment", "headingSize", "bodySize", "fontWeight",
+              "textShadow", "textGlow", "paddingTop", "paddingBottom",
+              "parallaxIntensity", "fadeOnScroll", "scaleOnScroll",
+              "blurOnScroll", "scrollSpeed", "transformOrigin",
+              "overflowBehavior", "backdropBlur", "mixBlendMode",
+              "enablePerspective", "customCSSClasses", "layerDepth",
+              "mediaOpacity"
+            ]
           }
         },
         required: ["sceneType"]
