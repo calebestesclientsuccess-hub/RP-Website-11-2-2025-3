@@ -682,6 +682,7 @@ interface GeneratedScene {
     headingSize: string;
     bodySize: string;
     alignment: string;
+    scrollSpeed: "slow" | "normal" | "fast"; // Added scrollSpeed
     // Optional fields
     animationDuration?: number;
     entryDelay?: number; // Added entryDelay
@@ -689,7 +690,6 @@ interface GeneratedScene {
     fadeOnScroll?: boolean;
     scaleOnScroll?: boolean;
     blurOnScroll?: boolean;
-    scrollSpeed: "slow" | "normal" | "fast"; // Added scrollSpeed
     entryEasing?: string;
     exitEasing?: string;
     fontWeight?: string;
@@ -2317,85 +2317,133 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
  */
 
 export function buildSplitScenePrompt(scene: GeneratedScene, catalog: ContentCatalog, sceneIndex: number, previousSceneLayout: string | null): string {
-  return `System Prompt: Stage 3 (The Scene Specialist - Split Scene)
+  const totalTextProvided = catalog.texts?.length ?? 0;
+  const totalImagesProvided = catalog.images?.length ?? 0;
+  const totalVideosProvided = catalog.videos?.length ?? 0;
+
+  return `System Prompt: Stage 3 (The Scene Specialist - Split Scene - v3)
+
 You are the Scene Specialist, the "Second Unit Director" for this film production.
 
 The 'Artistic Director' (your previous self from Stage 1) has done the main work, and the 'Technical Director' (Stage 2) has confirmed it's technically functional.
 
-Now, this single split scene has been flagged for your expert refinement. This is your "close-up." Your job is to take this good scene and make it great. You must elevate its artistic impact.
+Now, this single split scene has been flagged for your expert refinement. This is your "close-up." Your job is to take this good scene and make it great. You must elevate its artistic impact, but you must obey the new "Content-First" rules.
 
 The "Specialist's Mandate" (Your Rules)
+
 Your refinements are creative, but they must not violate the core production rules.
 
-Obey the Director's Vision: Your primary guide is the original ${catalog.directorNotes}. Your changes must amplify this vision, not contradict it.
-
-Obey the Narrative Arc: Your refinement must be consistent with the scene's place in the "Principle of Narrative Arc" (e.g., an "Act 2" content block should feel different from an "Act 1" hook).
-
-Use the "Source of Truth": You must use the Director's Lexicon and Advanced Artistic Combinations (Recipes) from the top of the Stage 1 prompt. You MUST IGNORE the older, redundant guides at the bottom of that prompt.
-
-Maintain 37 Controls: Your final output must still be a valid scene object with all 37 controls present and correct.
+1. Obey the "Content-First" Mandate: This is your primary rule. You will be told the total number of assets provided. A split scene uses one (1) text asset and one (1) media asset (image or video). Your refinement must not violate the "Do Not Overdraw" rule for either asset.
+2. Obey the "Dual-Track" Architecture: This is a "Cinematic Scene," so it MUST use the 37 director controls. Your output must be a valid 37-control object.
+3. Obey the Director's Vision: Your primary creative guide is the original ${catalog.directorNotes}.
+4. Use the "Source of Truth": You must use the Director's Lexicon and Advanced Artistic Combinations (Recipes) from the top of the Stage 1 prompt. You MUST IGNORE the older, redundant guides at the bottom of that prompt.
+5. Maintain 37 Controls: Your final output must still be a valid scene object with all 37 controls present and correct (with nulls where appropriate).
 
 The "Mandatory Creative Rationale" (Your Monologue)
+
 Before you return the refined JSON, you MUST first provide your "Creative Rationale" in prose, following this exact format:
 
-CREATIVE RATIONALE: "This split scene is Scene ${sceneIndex}, a core content block in 'Act 2.' The original generation was functional but lacked rhythm.
+CREATIVE RATIONALE:
+"This split scene is Scene ${sceneIndex}.
 
-Refinement 1 (Layout): The previousSceneLayout was '${previousSceneLayout || 'null'}'. To create the intended 'zig-zag' flow and prevent visual monotony, I am setting this scene's layout: '${previousSceneLayout === 'default' ? 'reverse' : 'default'}'.
+1. Asset Check (MANDATORY): I am validating all assets against the 'Do Not Overdraw' mandate.
+   - The user provided ${totalTextProvided} text assets. The scene uses assetIds containing a text placeholder. I will verify this is a valid index.
+   - The user provided ${totalImagesProvided} images and ${totalVideosProvided} videos. The scene uses assetIds containing a media placeholder. I will verify this is also a valid index.
+   - All assets are valid. I am clear to proceed.
 
-Refinement 2 (Stagger): To make the scene feel more alive, I am adding a subtle staggerChildren: 0.15s. This will animate the text in just before the media, guiding the user's eye.
+2. Refinement 1 (Layout): This is an 'Act 2' content block. My primary creative goal is to create a 'zig-zag' flow. The previousSceneLayout was '${previousSceneLayout || 'null'}', so I am setting this scene's layout: '${previousSceneLayout === 'default' ? 'reverse' : 'default'}' to prevent monotony.
 
-Refinement 3 (Pacing): I am slightly increasing the entryDuration to 1.4s to give the user time to register both elements, enhancing its 'elegant'-themed Director's Note.
+3. Refinement 2 (Stagger): To make the scene feel more alive, I am adding a subtle staggerChildren: 0.15s. This will animate the text in just before the media, guiding the user's eye.
+
+4. Refinement 3 (Pacing): I am slightly increasing the entryDuration to 1.4s to give the user time to register both elements, enhancing the 'elegant'-themed Director's Note.
 
 My refinements are complete."
 
 (You will then provide the single refined JSON scene object immediately after this monologue.)
 
 Scene to Refine
+
 You are refining only the single scene object provided below, using the critical context provided.
 
 Critical Context:
 
-Current Scene Index: ${sceneIndex}
-
-Previous Scene Layout: ${previousSceneLayout || 'null'} (This is the layout value of scene ${sceneIndex - 1}. null means this is the first scene.)
-
-Director's Vision (for context): ${catalog.directorNotes}
+- Current Scene Index: ${sceneIndex}
+- Previous Scene Layout: ${previousSceneLayout || 'null'} (This is the layout value of scene ${sceneIndex - 1}.)
+- User-Provided Asset Counts:
+  - Text Assets Available: ${totalTextProvided}
+  - Image Assets Available: ${totalImagesProvided}
+  - Video Assets Available: ${totalVideosProvided}
+- Director's Vision (for context):
+  ${catalog.directorNotes}
 
 Original Scene JSON:
 ${JSON.JSON.stringify(scene, null, 2)}
 
-AVAILABLE CONTENT CATALOG:
-${JSON.JSON.stringify(catalog, null, 2)}
+Key Refinement Goals for Split Scenes
 
-REFINEMENT GOALS:
-1. **Layout Balance**: Ensure left/right content creates visual harmony
-2. **Transition Design**: Entry/exit effects should work in tandem (staggered reveals)
-3. **Typography Hierarchy**: Heading size must dominate, body size supports
-4. **Media Presentation**: If using image/video, ensure mediaPosition/mediaScale/mediaOpacity are optimal
+Your task is to refine the scene above, focusing on these specific goals for a split layout:
 
-SPECIFIC IMPROVEMENTS TO MAKE:
+1. Asset Validation (Your #1 Goal): Before you do anything, check the scene's assetIds (which contains two placeholders: one text, one media).
+   - Check the placeholder-text-X asset. Does its index X exceed the totalTextProvided?
+   - Check the placeholder-image-X or placeholder-video-X asset. Does its index X exceed the totalImagesProvided or totalVideosProvided?
+   - If either asset is invalid, you must not proceed (this should have been caught by the TD, but you must verify).
+2. Layout Variation (Your #2 Goal): To prevent monotony, you must use the previousSceneLayout context. If previousSceneLayout was "default", you should set this scene's layout: "reverse" to create a "zig-zag" flow.
+3. Internal Rhythm (Stagger): A split scene has two main elements (text and media). They should not appear at the exact same millisecond. Your refinement MUST set staggerChildren to a subtle, non-zero value (e.g., 0.1s to 0.3s) to create a more sophisticated, "one-two" reveal.
 
-**ANIMATION CHOREOGRAPHY:**
-- Use staggerChildren (0.2-0.4s) to reveal left → right or vice versa
-- Entry effects should be directional (slide-left for left content, slide-right for right)
-- Exit effects should mirror entry (maintain visual flow)
+Required Output Format (Monologue, then JSON)
 
-**VISUAL COMPOSITION:**
-- If one side has media, ensure mediaOpacity complements text contrast
-- Background color should not compete with media (use darker bg if media is bright)
-- Text alignment: "left" for left content, "right" for right content (or both "center")
+First, provide the Mandatory Creative Rationale.
+Then, return only the single, refined JSON scene object.
 
-**SCROLL EFFECTS:**
-- Avoid scaleOnScroll on split scenes (creates imbalance)
-- Use subtle parallaxIntensity (0.2-0.3) for depth, not drama
-- fadeOnScroll can work if both sides fade symmetrically
-
-**MANDATORY VALIDATION:**
-- All 37 director controls must have values
-- Ensure no conflicts (parallax + scale, blur + parallax)
-- Durations must be ≥ 1.2s for noticeable choreography
-
-Return the refined scene JSON with complete director config.`;
+Example output:
+{
+  "sceneType": "split",
+  "assetIds": [
+    "placeholder-text-2",
+    "placeholder-image-2"
+  ],
+  "layout": "reverse",
+  "director": {
+    "entryEffect": "fade",
+    "entryDuration": 1.4,
+    "entryDelay": 0,
+    "entryEasing": "power2.out",
+    "exitEffect": "fade",
+    "exitDuration": 1.0,
+    "exitDelay": 0,
+    "exitEasing": "power2.in",
+    "backgroundColor": "#111111",
+    "textColor": "#F0F0F0",
+    "parallaxIntensity": 0,
+    "scrollSpeed": "normal",
+    "animationDuration": 1.4,
+    "headingSize": "6xl",
+    "bodySize": "xl",
+    "fontWeight": "normal",
+    "alignment": "left",
+    "fadeOnScroll": false,
+    "scaleOnScroll": false,
+    "blurOnScroll": false,
+    "staggerChildren": 0.15,
+    "layerDepth": 5,
+    "transformOrigin": "center center",
+    "overflowBehavior": "hidden",
+    "backdropBlur": "none",
+    "mixBlendMode": "normal",
+    "enablePerspective": false,
+    "customCSSClasses": "",
+    "textShadow": false,
+    "textGlow": false,
+    "paddingTop": "xl",
+    "paddingBottom": "xl",
+    "mediaPosition": "center",
+    "mediaScale": "cover",
+    "mediaOpacity": 1.0,
+    "gradientColors": null,
+    "gradientDirection": null
+  }
+}
+`;
 }
 
 export function buildGalleryScenePrompt(scene: GeneratedScene, catalog: ContentCatalog): string {
