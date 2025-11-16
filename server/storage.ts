@@ -26,7 +26,7 @@ import {
   type PromptTemplate, type InsertPromptTemplate,
   users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens,
   assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants, leads, featureFlags, insertLeadSchema,
-  projects, projectScenes, promptTemplates
+  projects, projectScenes, promptTemplates, portfolioConversations, portfolioVersions
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, ilike, sql } from "drizzle-orm";
@@ -1000,10 +1000,7 @@ export class DbStorage implements IStorage {
   }
 }
 
-export const storage = new DbStorage();
-
-
-  // Portfolio Conversations
+// Portfolio Conversations
   async createConversationMessage(
     projectId: string,
     role: 'user' | 'assistant',
@@ -1077,3 +1074,6 @@ export const storage = new DbStorage();
       .limit(1);
     return versions[0] || null;
   }
+}
+
+export const storage = new DbStorage();
