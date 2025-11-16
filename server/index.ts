@@ -8,10 +8,31 @@ import { sessionPool } from "./db";
 import { securityHeaders } from "./middleware/security-headers";
 import { tenantMiddleware } from "./middleware/tenant";
 import { sessionTimeoutMiddleware } from './middleware/session-timeout'; // Import session timeout middleware
+import { compressionMiddleware, cacheControl } from "./middleware/compression";
+import { queryMonitoring } from "./middleware/query-monitoring";
+import { errorHandler } from "./middleware/error-handler";
+import healthRouter from "./routes/health";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// Security headers (must be first)
+app.use(securityHeaders);
+
+// Compression
+app.use(compressionMiddleware);
+
+// Body parsing with size limits
+app.use(express.json({ limit: process.env.MAX_REQUEST_SIZE || '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: process.env.MAX_REQUEST_SIZE || '10mb' }));
+
+// Cache control
+app.use(cacheControl);
+
+// Query monitoring
+app.use(queryMonitoring);
+
+// Health checks (before logging)
+app.use('/health', healthRouter);
 
 // Apply tenant middleware (must be early in the chain)
 app.use(tenantMiddleware);
@@ -169,6 +190,9 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
+  // Global error handler (must be last)
+  app.use(errorHandler);
+
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
@@ -180,5 +204,7 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    log(`Health checks available at /health`);
   });
 })();
