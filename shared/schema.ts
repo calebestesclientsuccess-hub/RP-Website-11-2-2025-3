@@ -238,6 +238,27 @@ export const assessmentAnswers = pgTable("assessment_answers", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const portfolioVersions = pgTable("portfolio_versions", {
+  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
+  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  versionNumber: integer("version_number").notNull(),
+  scenesJson: jsonb("scenes_json").notNull(),
+  confidenceScore: integer("confidence_score"),
+  confidenceFactors: jsonb("confidence_factors"),
+  changeDescription: text("change_description"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const portfolioConversations = pgTable("portfolio_conversations", {
+  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
+  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  role: text("role").notNull(),
+  content: text("content").notNull(),
+  timestamp: bigint("timestamp", { mode: "number" }).notNull(),
+  versionId: text("version_id").references(() => portfolioVersions.id, { onDelete: 'set null' }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const assessmentResultBuckets = pgTable("assessment_result_buckets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   assessmentId: varchar("assessment_id").notNull().references(() => assessmentConfigs.id, { onDelete: "cascade" }),

@@ -1001,3 +1001,79 @@ export class DbStorage implements IStorage {
 }
 
 export const storage = new DbStorage();
+
+
+  // Portfolio Conversations
+  async createConversationMessage(
+    projectId: string,
+    role: 'user' | 'assistant',
+    content: string,
+    versionId?: string
+  ) {
+    const [message] = await db
+      .insert(portfolioConversations)
+      .values({
+        projectId,
+        role,
+        content,
+        timestamp: Date.now(),
+        versionId: versionId || null,
+      })
+      .returning();
+    return message;
+  }
+
+  async getConversationHistory(projectId: string) {
+    return db
+      .select()
+      .from(portfolioConversations)
+      .where(eq(portfolioConversations.projectId, projectId))
+      .orderBy(asc(portfolioConversations.timestamp));
+  }
+
+  async deleteConversationHistory(projectId: string) {
+    await db
+      .delete(portfolioConversations)
+      .where(eq(portfolioConversations.projectId, projectId));
+  }
+
+  // Portfolio Versions
+  async createPortfolioVersion(
+    projectId: string,
+    versionNumber: number,
+    scenesJson: any,
+    confidenceScore?: number,
+    confidenceFactors?: string[],
+    changeDescription?: string
+  ) {
+    const [version] = await db
+      .insert(portfolioVersions)
+      .values({
+        projectId,
+        versionNumber,
+        scenesJson,
+        confidenceScore: confidenceScore || null,
+        confidenceFactors: confidenceFactors || null,
+        changeDescription: changeDescription || null,
+      })
+      .returning();
+    return version;
+  }
+
+  async getPortfolioVersions(projectId: string) {
+    return db
+      .select()
+      .from(portfolioVersions)
+      .where(eq(portfolioVersions.projectId, projectId))
+      .orderBy(asc(portfolioVersions.versionNumber));
+  }
+
+  async getLatestPortfolioVersion(projectId: string) {
+    const versions = await db
+      .select()
+      .from(portfolioVersions)
+      .where(eq(portfolioVersions.projectId, projectId))
+      .orderBy(desc(portfolioVersions.versionNumber))
+      .limit(1);
+    return versions[0] || null;
+  }

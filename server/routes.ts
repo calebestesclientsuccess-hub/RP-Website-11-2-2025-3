@@ -1907,9 +1907,20 @@ Your explanation should be conversational and reference specific scene numbers.`
       scenes,
       portfolioAiPrompt,
       currentPrompt,
-      conversationHistory = [],
+      conversationHistory: clientConversationHistory = [],
       currentSceneJson
     } = req.body;
+
+    // Load conversation history from database if projectId exists
+    let conversationHistory = clientConversationHistory;
+    if (projectId) {
+      const dbHistory = await storage.getConversationHistory(projectId);
+      conversationHistory = dbHistory.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+      console.log('[Portfolio Enhanced] Loaded conversation history from DB:', conversationHistory.length, 'messages');
+    }
 
     // Determine if this is refinement mode
     const isRefinementMode = !!(conversationHistory.length > 0 || currentSceneJson);
@@ -1986,6 +1997,39 @@ Your explanation should be conversational and reference specific scene numbers.`
 
       // Parse current scenes
       if (currentSceneJson) {
+
+
+  // Portfolio version history endpoints
+  app.get("/api/projects/:projectId/versions", requireAuth, async (req, res) => {
+    try {
+      const versions = await storage.getPortfolioVersions(req.params.projectId);
+      return res.json(versions);
+    } catch (error) {
+      console.error("Error fetching portfolio versions:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/projects/:projectId/conversation", requireAuth, async (req, res) => {
+    try {
+      const history = await storage.getConversationHistory(req.params.projectId);
+      return res.json(history);
+    } catch (error) {
+      console.error("Error fetching conversation history:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/projects/:projectId/conversation", requireAuth, async (req, res) => {
+    try {
+      await storage.deleteConversationHistory(req.params.projectId);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error clearing conversation history:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
         try {
           currentScenes = JSON.parse(currentSceneJson);
           console.log(`[Portfolio Enhanced] Parsed ${currentScenes.length} scenes from JSON`);
@@ -2176,18 +2220,103 @@ RESPONSE FORMAT:
       }
     }
 
-    // Return response with conversation context
+    // Persist conversation to database
+    if (finalProjectId) {
+      try {
+        // Save user message
+        await storage.createConversationMessage(
+          finalProjectId,
+          'user',
+          isRefinementMode ? currentPrompt : portfolioAiPrompt
+        );
+
+        // Save assistant response
+        await storage.createConversationMessage(
+          finalProjectId,
+          'assistant',
+          aiExplanation
+        );
+
+        // Get current version number
+        const latestVersion = await storage.getLatestPortfolioVersion(finalProjectId);
+        const nextVersionNumber = latestVersion ? latestVersion.versionNumber + 1 : 1;
+
+        // Save version
+        const savedVersion = await storage.createPortfolioVersion(
+          finalProjectId,
+          nextVersionNumber,
+          enhancedScenes,
+          undefined, // confidenceScore - calculate if needed
+          undefined, // confidenceFactors
+          isRefinementMode ? currentPrompt : portfolioAiPrompt
+        );
+
+        console.log('[Portfolio Enhanced] Persisted conversation and version to DB');
+
+        // Return response with conversation context
+        const responseData = {
+          success: true,
+          scenes: enhancedScenes,
+          explanation: aiExplanation,
+          projectId: finalProjectId,
+          // Include conversation data for frontend to update state
+          conversationUpdate: {
+            userMessage: isRefinementMode ? currentPrompt : portfolioAiPrompt,
+            assistantMessage: aiExplanation
+          },
+          // Version data for frontend
+          versionData: {
+            id: savedVersion.id,
+            timestamp: Date.now(),
+            label: isRefinementMode ? `Iteration ${nextVersionNumber}` : "Initial Generation",
+            json: JSON.stringify(enhancedScenes, null, 2),
+            changeDescription: isRefinementMode ? currentPrompt : portfolioAiPrompt,
+            versionNumber: nextVersionNumber
+          }
+        };
+
+        console.log('[Portfolio Enhanced] Returning response:', {
+          sceneCount: enhancedScenes.length,
+          hasProjectId: !!finalProjectId,
+          isRefinement: isRefinementMode,
+          versionNumber: nextVersionNumber
+        });
+
+        return res.json(responseData);
+      } catch (dbError) {
+        console.error('[Portfolio Enhanced] Failed to persist to DB:', dbError);
+        // Continue with response even if DB save fails
+        const responseData = {
+          success: true,
+          scenes: enhancedScenes,
+          explanation: aiExplanation,
+          projectId: finalProjectId,
+          conversationUpdate: {
+            userMessage: isRefinementMode ? currentPrompt : portfolioAiPrompt,
+            assistantMessage: aiExplanation
+          },
+          versionData: {
+            id: `v-${Date.now()}`,
+            timestamp: Date.now(),
+            label: isRefinementMode ? `Iteration ${conversationHistory.length / 2 + 1}` : "Initial Generation",
+            json: JSON.stringify(enhancedScenes, null, 2),
+            changeDescription: isRefinementMode ? currentPrompt : portfolioAiPrompt
+          },
+          warning: 'Changes saved but history persistence failed'
+        };
+        return res.json(responseData);
+      }
+    }
+
+    // Fallback if no projectId (shouldn't happen but handle gracefully)
     const responseData = {
       success: true,
       scenes: enhancedScenes,
       explanation: aiExplanation,
-      projectId: finalProjectId,
-      // Include conversation data for frontend to update state
       conversationUpdate: {
         userMessage: isRefinementMode ? currentPrompt : portfolioAiPrompt,
         assistantMessage: aiExplanation
       },
-      // Version data for frontend
       versionData: {
         id: `v-${Date.now()}`,
         timestamp: Date.now(),
@@ -2196,13 +2325,6 @@ RESPONSE FORMAT:
         changeDescription: isRefinementMode ? currentPrompt : portfolioAiPrompt
       }
     };
-
-    console.log('[Portfolio Enhanced] Returning response:', {
-      sceneCount: enhancedScenes.length,
-      hasProjectId: !!finalProjectId,
-      isRefinement: isRefinementMode
-    });
-
     return res.json(responseData);
   });
 

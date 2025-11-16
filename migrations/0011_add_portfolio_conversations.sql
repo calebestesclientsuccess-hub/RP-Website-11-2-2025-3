@@ -6,9 +6,11 @@ CREATE TABLE IF NOT EXISTS portfolio_conversations (
   role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
   content TEXT NOT NULL,
   timestamp BIGINT NOT NULL,
-  version_id TEXT REFERENCES portfolio_versions(id),
-  created_at TIMESTAMP DEFAULT NOW()
+  version_id TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  CONSTRAINT fk_version FOREIGN KEY (version_id) REFERENCES portfolio_versions(id) ON DELETE SET NULL
 );
 
-CREATE INDEX idx_portfolio_conversations_project ON portfolio_conversations(project_id);
-CREATE INDEX idx_portfolio_conversations_timestamp ON portfolio_conversations(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_portfolio_conversations_project ON portfolio_conversations(project_id);
+CREATE INDEX IF NOT EXISTS idx_portfolio_conversations_timestamp ON portfolio_conversations(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_portfolio_conversations_version ON portfolio_conversations(version_id);

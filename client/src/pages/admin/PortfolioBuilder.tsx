@@ -212,6 +212,7 @@ export default function PortfolioBuilder() {
       setConversationHistory([]);
       setGeneratedScenes(null);
       setVersions([]);
+      setActiveVersionId(null);
       return;
     }
 
@@ -220,7 +221,49 @@ export default function PortfolioBuilder() {
       return;
     }
 
-    // Existing project selected
+    // Load conversation history and versions from database
+    const loadProjectData = async () => {
+      try {
+        // Load conversation history
+        const conversationResponse = await apiRequest("GET", `/api/projects/${selectedProjectId}/conversation`);
+        if (conversationResponse.ok) {
+          const dbHistory = await conversationResponse.json();
+          if (dbHistory && dbHistory.length > 0) {
+            setConversationHistory(dbHistory.map((msg: any) => ({
+              role: msg.role,
+              content: msg.content
+            })));
+            console.log('[Portfolio Builder] Loaded conversation history from DB:', dbHistory.length, 'messages');
+          }
+        }
+
+        // Load version history
+        const versionsResponse = await apiRequest("GET", `/api/projects/${selectedProjectId}/versions`);
+        if (versionsResponse.ok) {
+          const dbVersions = await versionsResponse.json();
+          if (dbVersions && dbVersions.length > 0) {
+            setVersions(dbVersions.map((v: any) => ({
+              id: v.id,
+              timestamp: new Date(v.createdAt).getTime(),
+              label: `Version ${v.versionNumber}`,
+              json: JSON.stringify(v.scenesJson, null, 2),
+              confidenceScore: v.confidenceScore,
+              changeDescription: v.changeDescription,
+              versionNumber: v.versionNumber
+            })));
+            // Set the latest version as active
+            setActiveVersionId(dbVersions[dbVersions.length - 1].id);
+            console.log('[Portfolio Builder] Loaded version history from DB:', dbVersions.length, 'versions');
+          }
+        }
+      } catch (error) {
+        console.error('[Portfolio Builder] Failed to load project data from DB:', error);
+      }
+    };
+
+    loadProjectData();
+
+    // Existing project selected - load scenes
     if (existingProjectScenes && existingProjectScenes.length > 0) {
       const scenesJson = JSON.stringify(
         existingProjectScenes.map((scene: any) => scene.sceneConfig), 
@@ -229,18 +272,24 @@ export default function PortfolioBuilder() {
       );
       
       setCurrentSceneJson(scenesJson);
-      setConversationHistory([
-        {
-          role: "assistant",
-          content: `✅ Loaded ${existingProjectScenes.length} existing scenes.\n\nRefine them by describing changes:\n• "Make Scene 3 more dramatic"\n• "Add smoother transitions"\n• "Increase hero section impact"`
-        }
-      ]);
+      
+      // Only add welcome message if no conversation history loaded
+      if (conversationHistory.length === 0) {
+        setConversationHistory([
+          {
+            role: "assistant",
+            content: `✅ Loaded ${existingProjectScenes.length} existing scenes.\n\nRefine them by describing changes:\n• "Make Scene 3 more dramatic"\n• "Add smoother transitions"\n• "Increase hero section impact"`
+          }
+        ]);
+      }
       
       console.log('[Portfolio Builder] Loaded existing project scenes');
     } else {
       // Project exists but has no scenes
       setCurrentSceneJson("");
-      setConversationHistory([]);
+      if (conversationHistory.length === 0) {
+        setConversationHistory([]);
+      }
       setGeneratedScenes(null);
     }
   }, [selectedProjectId, existingProjectScenes, isNewProject]);
