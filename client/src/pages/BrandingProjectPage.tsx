@@ -755,7 +755,6 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               controls
               className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
               style={{ opacity: director.mediaOpacity }}
-              data-media-opacity={director.mediaOpacity}
             />
           </div>
           {content.caption && (
@@ -797,7 +796,6 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 controls
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                 style={{ opacity: director.mediaOpacity }}
-                data-media-opacity={director.mediaOpacity}
               />
             ) : (
               <img
@@ -864,7 +862,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
           {content.author && (
             <cite 
               className={`block ${bodySizeMap[director.bodySize]} not-italic`}
-              style={{ color: director.textColor, opacity: 0.8 }}
+              style={{ color: director.textColor, opacity: 0.6 }}
             >
               — {content.author}
               {content.role && (
@@ -887,7 +885,6 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 controls
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                 style={{ opacity: director.mediaOpacity }}
-                data-media-opacity={director.mediaOpacity}
               />
             ) : (
               <img
