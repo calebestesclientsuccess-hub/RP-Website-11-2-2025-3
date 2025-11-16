@@ -2722,10 +2722,14 @@ Be ruthlessly thorough. Check EVERY scene for EVERY control.`;
 
 /**
  * Convert AI-generated scenes to database scene configs
+ * @param aiScenes - AI-generated scenes with placeholder IDs
+ * @param catalog - User's content catalog
+ * @param assetMap - Optional mapping of placeholder IDs to real asset URLs (for user overrides)
  */
 export function convertToSceneConfigs(
   aiScenes: GeneratedScene[],
-  catalog: ContentCatalog
+  catalog: ContentCatalog,
+  assetMap?: Record<string, string>
 ): any[] {
   const sceneConfigs: any[] = [];
 
@@ -2798,6 +2802,11 @@ export function convertToSceneConfigs(
             body: "",
           };
         }
+        
+        // Text scenes MUST set nullable media controls to undefined (not null)
+        sceneConfig.director.mediaPosition = undefined;
+        sceneConfig.director.mediaScale = undefined;
+        sceneConfig.director.mediaOpacity = undefined;
         break;
       }
 
@@ -2813,13 +2822,13 @@ export function convertToSceneConfigs(
           console.log(`✅ [Portfolio Director] Image scene matched:`, { imageId, url: image.url });
         }
 
-        sceneConfig.content = image ? {
-          url: image.url,
-          alt: image.alt || "",
-          caption: image.caption,
-        } : {
-          url: "https://via.placeholder.com/800x600",
-          alt: "Placeholder image (NO MATCH FOUND)",
+        // Check if user has provided a custom asset mapping for this placeholder
+        const resolvedUrl = (imageId && assetMap?.[imageId]) || image?.url || "https://via.placeholder.com/800x600";
+
+        sceneConfig.content = {
+          url: resolvedUrl,
+          alt: image?.alt || "",
+          caption: image?.caption,
         };
         break;
       }
