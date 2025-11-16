@@ -122,6 +122,8 @@ const TestimonialForm = withLazyLoading(TestimonialFormLazy);
 const ProjectForm = withLazyLoading(ProjectFormLazy);
 const JobPostingForm = withLazyLoading(JobPostingFormLazy);
 const PortfolioBuilder = withLazyLoading(PortfolioBuilderLazy);
+const AIPromptSettingsLazy = lazy(() => import("@/pages/admin/AIPromptSettings"));
+const AIPromptSettings = withLazyLoading(AIPromptSettingsLazy);
 
 
 function ScrollToTop() {
@@ -191,7 +193,7 @@ function Router() {
       <Route path="/admin/projects/new" component={ProjectForm} />
       <Route path="/admin/projects/:id/edit" component={ProjectForm} />
       <Route path="/admin/portfolio-builder" component={PortfolioBuilder} />
-          <Route path="/admin/ai-prompt-settings" component={() => import("./pages/admin/AIPromptSettings").then(m => m.default)} />
+      <Route path="/admin/ai-prompt-settings" component={AIPromptSettings} />
       <Route path="/admin/job-postings/new" component={JobPostingForm} />
       <Route path="/admin/job-postings/:id/edit" component={JobPostingForm} />
       <Route path="/admin/widget-config" component={WidgetConfigPage} />
