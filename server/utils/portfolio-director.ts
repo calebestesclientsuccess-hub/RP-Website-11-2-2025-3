@@ -1633,7 +1633,7 @@ CRITICAL REQUIREMENTS:
 4. Color progression creates visual journey
 5. Pacing has musical rhythm (varied scrollSpeed and durations)
 6. Asset selection tells compelling story
-7. ALL placeholder IDs must be valid and AVAILABLE IN THE USER'S CATALOG - ONLY use these exact IDs:
+7. ALL placeholder IDs must be valid and AVAILABLE IN THE USER'S CATALOG - ONLY use these exact IDs from the available list above:
    - Images: ${(catalog.images?.length ?? 0) > 0 ? catalog.images.map(a => a.id).join(', ') : '(none)'}
    - Videos: ${(catalog.videos?.length ?? 0) > 0 ? catalog.videos.map(a => a.id).join(', ') : '(none)'}
    - Quotes: ${(catalog.quotes?.length ?? 0) > 0 ? catalog.quotes.map(a => a.id).join(', ') : '(none)'}
@@ -2701,7 +2701,7 @@ For each adjacent scene pair, verify:
   * Dark (#0a0a0a) → Mid-tone (#1e293b) → Lighter (#334155) → Back to dark
 - Text color must ALWAYS contrast with background
   * Light text (#ffffff, #f1f5f9) on dark backgrounds
-  * Dark text (#0a0a0a, #1a1a1a) on light backgrounds
+  * Dark text (#0a0a0a, #111111) on light backgrounds
 
 **4. SCROLL EFFECTS DISTRIBUTION:**
 - parallaxIntensity: Use on 40% of scenes max (avoid overuse)
