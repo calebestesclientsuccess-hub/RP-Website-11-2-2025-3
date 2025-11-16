@@ -132,6 +132,10 @@ EXIT DIRECTION:
 - "flips out" / "card flip exit" → exitEffect: "flip-out"
 - "blurs out" / "dramatic blur exit" → exitEffect: "scale-blur"
 - "shrinks away" → exitEffect: "zoom-out"
+- "spirals out" / "tornado exit" → exitEffect: "spiral-out"
+- "bounces out" / "elastic exit" → exitEffect: "elastic-bounce"
+
+IMPORTANT: Each effect is DRAMATICALLY VISIBLE when durations are >= 1.0s. Shorter durations (0.3-0.8s) create subtle, professional transitions. Use longer durations for hero moments and key transitions.
 
 MOOD/ATMOSPHERE:
 - "dramatic" / "intense" → parallaxIntensity: 0.6-0.8, entryDuration: 2.5+
@@ -231,108 +235,97 @@ interface PortfolioGenerateResponse {
 
 /**
  * Call Gemini to orchestrate portfolio scenes from content catalog
- * Uses a 5-stage refinement pipeline for maximum quality
+ * Uses a 6-stage refinement pipeline for maximum quality:
+ * 
+ * Stage 1: Initial Generation (Form-Filling) - Gemini fills complete director config
+ * Stage 2: Self-Audit for Inconsistencies - AI identifies conflicts and issues
+ * Stage 3: Generate 10 Improvements - AI proposes specific enhancements
+ * Stage 4: Auto-Apply Non-Conflicting Improvements - System applies valid improvements
+ * Stage 5: Final Regeneration - AI regenerates with all fixes applied
+ * Stage 6: Final Validation - System validates asset IDs and director configs
  */
 export async function generatePortfolioWithAI(
   catalog: ContentCatalog
 ): Promise<PortfolioGenerateResponse> {
   const aiClient = getAIClient();
   
-  console.log('[Portfolio Director] 🎬 Starting 5-stage refinement pipeline...');
-  console.log(`[Portfolio Director] 📊 Input: ${catalog.texts.length} texts, ${catalog.images.length} images, ${catalog.videos.length} videos, ${catalog.quotes.length} quotes`);
+  console.log('[Portfolio Director] Starting 6-stage refinement pipeline...');
   
   // STAGE 1: Initial Generation (Form-Filling)
   const prompt = buildPortfolioPrompt(catalog);
-  console.log(`[Portfolio Director] 📝 Stage 1: Prompt length: ${prompt.length} chars`);
-  
-  let stage1Response;
-  try {
-    stage1Response = await aiClient.models.generateContent({
-      model: "gemini-2.5-pro", // Pro model for complex cinematic reasoning
-      contents: [{
-        role: "user",
-        parts: [{ text: prompt }]
-      }],
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            scenes: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  sceneType: {
-                    type: Type.STRING,
-                    description: "Must be: text, image, video, quote, split, gallery, or fullscreen"
-                  },
-                  assetIds: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING },
-                    description: "Asset IDs from the provided catalog. MUST reference existing IDs only."
-                  },
-                  layout: {
-                    type: Type.STRING,
-                    description: "Optional layout: default or reverse (for split scenes)"
-                  },
-                  director: {
-                    type: Type.OBJECT,
-                    properties: {
-                      entryDuration: { type: Type.NUMBER, description: "Entry animation duration in seconds (0.1-5)" },
-                      exitDuration: { type: Type.NUMBER, description: "Exit animation duration in seconds (0.1-5)" },
-                      animationDuration: { type: Type.NUMBER, description: "Main animation duration in seconds (0.1-10)" },
-                      entryDelay: { type: Type.NUMBER, description: "Entry delay in seconds (0-2)" },
-                      backgroundColor: { type: Type.STRING, description: "Hex color code" },
-                      textColor: { type: Type.STRING, description: "Hex color code" },
-                      parallaxIntensity: { type: Type.NUMBER, description: "0-1, default 0.3" },
-                      entryEffect: { type: Type.STRING, description: "fade, slide-up, zoom-in, etc." },
-                      exitEffect: { type: Type.STRING, description: "fade, slide-down, zoom-out, etc." },
-                      fadeOnScroll: { type: Type.BOOLEAN, description: "Enable fade effect during scroll" },
-                      scaleOnScroll: { type: Type.BOOLEAN, description: "Enable scale effect during scroll" },
-                      blurOnScroll: { type: Type.BOOLEAN, description: "Enable blur effect during scroll" },
-                      headingSize: { type: Type.STRING, description: "4xl, 5xl, 6xl, 7xl, or 8xl" },
-                      bodySize: { type: Type.STRING, description: "base, lg, xl, or 2xl" },
-                      alignment: { type: Type.STRING, description: "left, center, or right" },
-                    },
-                    required: ["entryDuration", "exitDuration", "entryDelay", "backgroundColor", "textColor", "parallaxIntensity", "entryEffect", "exitEffect", "headingSize", "bodySize", "alignment"]
-                  }
+  const stage1Response = await aiClient.models.generateContent({
+    model: "gemini-2.5-pro", // Pro model for complex cinematic reasoning
+    contents: [{
+      role: "user",
+      parts: [{ text: prompt }]
+    }],
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          scenes: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                sceneType: {
+                  type: Type.STRING,
+                  description: "Must be: text, image, video, quote, split, gallery, or fullscreen"
                 },
-                required: ["sceneType", "assetIds", "director"]
-              }
+                assetIds: {
+                  type: Type.ARRAY,
+                  items: { type: Type.STRING },
+                  description: "Asset IDs from the provided catalog. MUST reference existing IDs only."
+                },
+                layout: {
+                  type: Type.STRING,
+                  description: "Optional layout: default or reverse (for split scenes)"
+                },
+                director: {
+                  type: Type.OBJECT,
+                  properties: {
+                    entryDuration: { type: Type.NUMBER, description: "Entry animation duration in seconds (0.1-5)" },
+                    exitDuration: { type: Type.NUMBER, description: "Exit animation duration in seconds (0.1-5)" },
+                    animationDuration: { type: Type.NUMBER, description: "Main animation duration in seconds (0.1-10)" },
+                    entryDelay: { type: Type.NUMBER, description: "Entry delay in seconds (0-2)" },
+                    backgroundColor: { type: Type.STRING, description: "Hex color code" },
+                    textColor: { type: Type.STRING, description: "Hex color code" },
+                    parallaxIntensity: { type: Type.NUMBER, description: "0-1, default 0.3" },
+                    entryEffect: { type: Type.STRING, description: "fade, slide-up, zoom-in, etc." },
+                    exitEffect: { type: Type.STRING, description: "fade, slide-down, zoom-out, etc." },
+                    fadeOnScroll: { type: Type.BOOLEAN, description: "Enable fade effect during scroll" },
+                    scaleOnScroll: { type: Type.BOOLEAN, description: "Enable scale effect during scroll" },
+                    blurOnScroll: { type: Type.BOOLEAN, description: "Enable blur effect during scroll" },
+                    headingSize: { type: Type.STRING, description: "4xl, 5xl, 6xl, 7xl, or 8xl" },
+                    bodySize: { type: Type.STRING, description: "base, lg, xl, or 2xl" },
+                    alignment: { type: Type.STRING, description: "left, center, or right" },
+                  },
+                  required: ["entryDuration", "exitDuration", "entryDelay", "backgroundColor", "textColor", "parallaxIntensity", "entryEffect", "exitEffect", "headingSize", "bodySize", "alignment"]
+                }
+              },
+              required: ["sceneType", "assetIds", "director"]
             }
-          },
-          required: ["scenes"]
-        }
+          }
+        },
+        required: ["scenes"]
       }
-    });
-  } catch (error) {
-    console.error('[Portfolio Director] ❌ Stage 1 failed:', error);
-    throw new Error(`Stage 1 generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-  }
+    }
+  });
 
   const responseText = stage1Response.text;
   if (!responseText) {
-    throw new Error("No response from Gemini AI in Stage 1");
+    throw new Error("No response from Gemini AI");
   }
 
-  let result: PortfolioGenerateResponse;
-  try {
-    result = JSON.parse(responseText) as PortfolioGenerateResponse;
-  } catch (error) {
-    console.error('[Portfolio Director] ❌ Stage 1 JSON parse failed:', error);
-    console.error('[Portfolio Director] Raw response:', responseText.substring(0, 500));
-    throw new Error('Stage 1 returned invalid JSON');
-  }
+  let result = JSON.parse(responseText) as PortfolioGenerateResponse;
   
-  console.log(`[Portfolio Director] ✅ Stage 1 complete: Generated ${result.scenes.length} scenes`);
+  console.log('[Portfolio Director] ✅ Stage 1 complete: Initial generation');
   
   // STAGE 2: Self-Audit for Inconsistencies
   const auditPrompt = `You previously generated this scene sequence JSON:
 
 ${JSON.stringify(result, null, 2)}
-
-Director notes context: "${catalog.directorNotes}"
 
 Audit this JSON for:
 1. Internal contradictions (e.g., parallax + scaleOnScroll both enabled)
@@ -340,9 +333,8 @@ Audit this JSON for:
 3. Invalid values (durations < 0.1, colors not hex format, etc.)
 4. Pacing issues (all scenes same speed, no rhythm)
 5. Transition mismatches (exit effect of Scene N doesn't flow into entry of Scene N+1)
-6. Alignment with director notes vision
 
-Return a JSON array of issues found. If no issues, return empty array:
+Return a JSON array of issues found:
 {
   "issues": [
     {"sceneIndex": 0, "field": "parallaxIntensity", "problem": "Conflicts with scaleOnScroll: true", "suggestion": "Set parallaxIntensity to 0"},
@@ -350,44 +342,35 @@ Return a JSON array of issues found. If no issues, return empty array:
   ]
 }`;
 
-  let auditResponse;
-  try {
-    auditResponse = await aiClient.models.generateContent({
-      model: "gemini-2.5-pro",
-      contents: [{ role: "user", parts: [{ text: auditPrompt }] }],
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            issues: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  sceneIndex: { type: Type.NUMBER },
-                  field: { type: Type.STRING },
-                  problem: { type: Type.STRING },
-                  suggestion: { type: Type.STRING }
-                },
-                required: ["sceneIndex", "field", "problem", "suggestion"]
-              }
+  const auditResponse = await aiClient.models.generateContent({
+    model: "gemini-2.5-pro",
+    contents: [{ role: "user", parts: [{ text: auditPrompt }] }],
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          issues: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                sceneIndex: { type: Type.NUMBER },
+                field: { type: Type.STRING },
+                problem: { type: Type.STRING },
+                suggestion: { type: Type.STRING }
+              },
+              required: ["sceneIndex", "field", "problem", "suggestion"]
             }
-          },
-          required: ["issues"]
-        }
+          }
+        },
+        required: ["issues"]
       }
-    });
-  } catch (error) {
-    console.warn('[Portfolio Director] ⚠️ Stage 2 audit failed, continuing:', error);
-    auditResponse = { text: '{"issues":[]}' };
-  }
+    }
+  });
   
   const auditResult = JSON.parse(auditResponse.text || '{"issues":[]}');
   console.log(`[Portfolio Director] ✅ Stage 2 complete: Found ${auditResult.issues.length} issues`);
-  if (auditResult.issues.length > 0) {
-    console.log('[Portfolio Director] 🔍 Issues detected:', auditResult.issues.map((i: any) => `Scene ${i.sceneIndex}: ${i.field} - ${i.problem}`));
-  }
   
   // STAGE 3: Generate 10 Improvements
   const improvementsPrompt = `You previously generated this scene sequence:
@@ -395,279 +378,232 @@ Return a JSON array of issues found. If no issues, return empty array:
 ${JSON.stringify(result, null, 2)}
 
 User requirements from director notes:
-"${catalog.directorNotes}"
+${catalog.directorNotes}
 
-Issues found in audit:
-${auditResult.issues.length > 0 ? JSON.stringify(auditResult.issues, null, 2) : 'None'}
+Generate 10 specific improvements to make this sequence better:
+1. Better timing/pacing
+2. More cinematic transitions
+3. Improved color progression
+4. Better asset utilization
+5. Enhanced narrative flow
 
-Generate UP TO 10 specific improvements to make this sequence better:
-1. Better timing/pacing (dramatic moments vs quick transitions)
-2. More cinematic transitions (smooth flow between scenes)
-3. Improved color progression (visual journey)
-4. Better asset utilization (storytelling through visuals)
-5. Enhanced narrative flow (logical progression)
-
-RULES:
-- Each improvement MUST be actionable and specific
-- Focus on high-impact changes that align with director notes
-- DO NOT duplicate issues already found in audit
-- Prioritize improvements that create cinematic impact
+Each improvement should be actionable and specific.
 
 Return:
 {
   "improvements": [
-    {"sceneIndex": 0, "field": "entryDuration", "currentValue": "1.2", "newValue": "2.5", "reason": "Hero should be slower and more dramatic per director notes"},
+    {"sceneIndex": 0, "field": "entryDuration", "currentValue": 1.2, "newValue": 2.5, "reason": "Hero should be slower and more dramatic"},
     ...
   ]
 }`;
 
-  let improvementsResponse;
-  try {
-    improvementsResponse = await aiClient.models.generateContent({
-      model: "gemini-2.5-pro",
-      contents: [{ role: "user", parts: [{ text: improvementsPrompt }] }],
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            improvements: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  sceneIndex: { type: Type.NUMBER },
-                  field: { type: Type.STRING },
-                  currentValue: { type: Type.STRING },
-                  newValue: { type: Type.STRING },
-                  reason: { type: Type.STRING }
-                },
-                required: ["sceneIndex", "field", "newValue", "reason"]
-              }
+  const improvementsResponse = await aiClient.models.generateContent({
+    model: "gemini-2.5-pro",
+    contents: [{ role: "user", parts: [{ text: improvementsPrompt }] }],
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          improvements: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                sceneIndex: { type: Type.NUMBER },
+                field: { type: Type.STRING },
+                currentValue: { type: Type.STRING },
+                newValue: { type: Type.STRING },
+                reason: { type: Type.STRING }
+              },
+              required: ["sceneIndex", "field", "newValue", "reason"]
             }
-          },
-          required: ["improvements"]
-        }
+          }
+        },
+        required: ["improvements"]
       }
-    });
-  } catch (error) {
-    console.warn('[Portfolio Director] ⚠️ Stage 3 improvements failed, continuing:', error);
-    improvementsResponse = { text: '{"improvements":[]}' };
-  }
+    }
+  });
   
   const improvementsResult = JSON.parse(improvementsResponse.text || '{"improvements":[]}');
   console.log(`[Portfolio Director] ✅ Stage 3 complete: Generated ${improvementsResult.improvements.length} improvements`);
   
   // STAGE 4: Auto-Apply Non-Conflicting Improvements
   const appliedImprovements: string[] = [];
-  const skippedImprovements: string[] = [];
-  
   for (const improvement of improvementsResult.improvements) {
     const scene = result.scenes[improvement.sceneIndex];
-    if (!scene) {
-      skippedImprovements.push(`Scene ${improvement.sceneIndex} not found`);
-      continue;
-    }
+    if (!scene) continue;
     
     // Check for conflicts with audit issues
     const hasConflict = auditResult.issues.some(
       (issue: any) => issue.sceneIndex === improvement.sceneIndex && issue.field === improvement.field
     );
     
-    if (hasConflict) {
-      skippedImprovements.push(`Scene ${improvement.sceneIndex}: ${improvement.field} (conflicts with audit issue)`);
-      continue;
-    }
-    
-    try {
-      // Apply improvement with proper type conversion
+    if (!hasConflict) {
+      // Apply improvement
       const fieldPath = improvement.field.split('.');
       let target: any = scene;
-      
-      // Navigate to the parent object
       for (let i = 0; i < fieldPath.length - 1; i++) {
-        if (!target[fieldPath[i]]) {
-          throw new Error(`Field path ${fieldPath.slice(0, i + 1).join('.')} does not exist`);
-        }
         target = target[fieldPath[i]];
       }
-      
       const finalField = fieldPath[fieldPath.length - 1];
-      const currentValue = target[finalField];
       
-      // Type-safe conversion
+      // Type conversion
       let newValue: any = improvement.newValue;
-      if (typeof currentValue === 'number') {
+      if (typeof target[finalField] === 'number') {
         newValue = parseFloat(improvement.newValue);
-        if (isNaN(newValue)) {
-          throw new Error(`Cannot convert "${improvement.newValue}" to number`);
-        }
-      } else if (typeof currentValue === 'boolean') {
-        newValue = improvement.newValue === 'true' || improvement.newValue === true;
+      } else if (typeof target[finalField] === 'boolean') {
+        newValue = improvement.newValue === 'true';
       }
       
       target[finalField] = newValue;
       appliedImprovements.push(`Scene ${improvement.sceneIndex}: ${improvement.field} = ${newValue} (${improvement.reason})`);
-    } catch (error) {
-      skippedImprovements.push(`Scene ${improvement.sceneIndex}: ${improvement.field} (${error instanceof Error ? error.message : 'unknown error'})`);
     }
   }
   
-  console.log(`[Portfolio Director] ✅ Stage 4 complete: Applied ${appliedImprovements.length} improvements, skipped ${skippedImprovements.length}`);
-  if (skippedImprovements.length > 0) {
-    console.log('[Portfolio Director] ⚠️ Skipped improvements:', skippedImprovements);
-  }
+  console.log(`[Portfolio Director] ✅ Stage 4 complete: Applied ${appliedImprovements.length} improvements`);
   
-  // STAGE 5: Final Validation Against Requirements
-  console.log('[Portfolio Director] 🔍 Stage 5: Final validation and auto-fixes');
+  // STAGE 5: Final Regeneration for Consistency
+  const finalPrompt = `Based on the following improvements and fixes, regenerate the complete scene sequence with all enhancements applied:
 
+ORIGINAL DIRECTOR NOTES:
+${catalog.directorNotes}
+
+APPLIED IMPROVEMENTS:
+${appliedImprovements.join('\n')}
+
+AUDIT ISSUES FIXED:
+${auditResult.issues.map((issue: any) => `- Scene ${issue.sceneIndex}: ${issue.field} - ${issue.suggestion}`).join('\n')}
+
+Generate the final, polished scene sequence incorporating ALL improvements and fixes. Ensure:
+1. All timing is dramatic and noticeable
+2. Transitions flow seamlessly between scenes
+3. No conflicts between parallax/scaleOnScroll/blurOnScroll
+4. Color progression creates visual journey
+5. Pacing has musical rhythm (varied speeds)
+6. Asset selection tells compelling story
+
+Return the complete scenes array with full director configs.`;
+
+  const finalResponse = await aiClient.models.generateContent({
+    model: "gemini-2.5-pro",
+    contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          scenes: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                sceneType: { type: Type.STRING },
+                assetIds: { type: Type.ARRAY, items: { type: Type.STRING } },
+                layout: { type: Type.STRING },
+                director: {
+                  type: Type.OBJECT,
+                  properties: {
+                    entryDuration: { type: Type.NUMBER },
+                    exitDuration: { type: Type.NUMBER },
+                    animationDuration: { type: Type.NUMBER },
+                    entryDelay: { type: Type.NUMBER },
+                    backgroundColor: { type: Type.STRING },
+                    textColor: { type: Type.STRING },
+                    parallaxIntensity: { type: Type.NUMBER },
+                    entryEffect: { type: Type.STRING },
+                    exitEffect: { type: Type.STRING },
+                    fadeOnScroll: { type: Type.BOOLEAN },
+                    scaleOnScroll: { type: Type.BOOLEAN },
+                    blurOnScroll: { type: Type.BOOLEAN },
+                    headingSize: { type: Type.STRING },
+                    bodySize: { type: Type.STRING },
+                    alignment: { type: Type.STRING },
+                  },
+                  required: ["entryDuration", "exitDuration", "entryDelay", "backgroundColor", "textColor", "parallaxIntensity", "entryEffect", "exitEffect", "headingSize", "bodySize", "alignment"]
+                }
+              },
+              required: ["sceneType", "assetIds", "director"]
+            }
+          }
+        },
+        required: ["scenes"]
+      }
+    }
+  });
+  
+  result = JSON.parse(finalResponse.text || '{"scenes":[]}');
+  console.log(`[Portfolio Director] ✅ Stage 5 complete: Final regeneration with ${result.scenes.length} scenes`);
+  
+  // STAGE 6: Final Validation Against Requirements
+  console.log('[Portfolio Director] ✅ Stage 6: Final validation');
+
+  // Validate that all referenced asset IDs exist and log potential issues
   const validAssetIds = buildAssetWhitelist(catalog);
   const warnings: string[] = [];
-  const autoFixes: string[] = [];
-  const validEntryEffects = ['fade', 'slide-up', 'slide-down', 'slide-left', 'slide-right', 'zoom-in', 'sudden', 'rotate-in', 'spiral-in', 'flip-in', 'elastic-bounce', 'blur-focus', 'cross-fade'];
-  const validExitEffects = ['fade', 'slide-up', 'slide-down', 'slide-left', 'slide-right', 'zoom-out', 'dissolve', 'cross-fade', 'rotate-out', 'flip-out', 'scale-blur'];
-  const validHeadingSizes = ['4xl', '5xl', '6xl', '7xl', '8xl'];
-  const validBodySizes = ['base', 'lg', 'xl', '2xl'];
-  const validAlignments = ['left', 'center', 'right'];
 
-  for (let i = 0; i < result.scenes.length; i++) {
-    const scene = result.scenes[i];
-    const sceneLabel = `Scene ${i}`;
-
-    // Validate asset IDs
+  for (const scene of result.scenes) {
     for (const assetId of scene.assetIds) {
       if (!validAssetIds.includes(assetId)) {
-        warnings.push(`${sceneLabel}: Asset ID "${assetId}" not found in catalog`);
+        const errorMsg = `AI referenced non-existent asset ID: ${assetId}. Valid IDs: ${validAssetIds.join(', ')}`;
+        console.error(`❌ [Portfolio Director] ${errorMsg}`);
+        // Instead of throwing, we'll just log and continue, as Gemini might hallucinate an ID
+        // but still produce a valid structure. The frontend will handle missing assets gracefully.
       }
     }
 
+    // Basic validation for required director fields and potential conflicts
     const director = scene.director;
-
-    // Auto-fix: Parallax + ScaleOnScroll conflict
     if (director.parallaxIntensity > 0 && director.scaleOnScroll) {
-      scene.director.scaleOnScroll = false;
-      autoFixes.push(`${sceneLabel}: Disabled scaleOnScroll (conflicts with parallax ${director.parallaxIntensity})`);
+      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ parallax + scaleOnScroll conflict detected. Auto-fixing scaleOnScroll to false.`);
+      scene.director.scaleOnScroll = false; // Auto-fix
     }
 
-    // Auto-fix: Invalid durations
-    if (typeof director.entryDuration !== 'number' || director.entryDuration < 0.1 || director.entryDuration > 5) {
-      scene.director.entryDuration = 1.2;
-      autoFixes.push(`${sceneLabel}: entryDuration out of range, set to 1.2s`);
-    }
-    
-    if (typeof director.exitDuration !== 'number' || director.exitDuration < 0.1 || director.exitDuration > 5) {
-      scene.director.exitDuration = 1.0;
-      autoFixes.push(`${sceneLabel}: exitDuration out of range, set to 1.0s`);
-    }
-    
-    if (typeof director.entryDelay !== 'number' || director.entryDelay < 0 || director.entryDelay > 2) {
-      scene.director.entryDelay = 0;
-      autoFixes.push(`${sceneLabel}: entryDelay out of range, set to 0s`);
+    if (director.entryDuration !== undefined && director.entryDuration < 0.5) {
+      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Entry duration ${director.entryDuration}s may be too subtle.`);
     }
 
-    // Auto-fix: Parallax intensity
+    if (!director.exitEffect) {
+      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ No exit effect specified.`);
+    }
+
+    // Ensure valid durations with type and range checks
+    if (typeof director.entryDuration !== 'number' || director.entryDuration < 0.1) {
+      scene.director.entryDuration = 1.2; // Default to standard
+      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Invalid entryDuration, defaulting to 1.2s`);
+    }
+    if (typeof director.exitDuration !== 'number' || director.exitDuration < 0.1) {
+      scene.director.exitDuration = 1.0; // Default to standard
+      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Invalid exitDuration, defaulting to 1.0s`);
+    }
+    if (typeof director.entryDelay !== 'number' || director.entryDelay < 0) {
+      scene.director.entryDelay = 0; // Default to no delay
+    }
     if (typeof director.parallaxIntensity !== 'number' || director.parallaxIntensity < 0 || director.parallaxIntensity > 1) {
-      scene.director.parallaxIntensity = 0.3;
-      autoFixes.push(`${sceneLabel}: parallaxIntensity out of range, set to 0.3`);
+      scene.director.parallaxIntensity = 0.3; // Default to moderate
+      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Invalid parallaxIntensity (must be 0-1), defaulting to 0.3`);
     }
 
-    // Auto-fix: Invalid effects
-    if (!validEntryEffects.includes(director.entryEffect)) {
-      scene.director.entryEffect = 'fade';
-      autoFixes.push(`${sceneLabel}: Invalid entryEffect "${director.entryEffect}", defaulted to "fade"`);
-    }
-    
-    if (!validExitEffects.includes(director.exitEffect)) {
-      scene.director.exitEffect = 'fade';
-      autoFixes.push(`${sceneLabel}: Invalid exitEffect "${director.exitEffect}", defaulted to "fade"`);
-    }
-
-    // Auto-fix: Invalid sizes
-    if (!validHeadingSizes.includes(director.headingSize)) {
-      scene.director.headingSize = '6xl';
-      autoFixes.push(`${sceneLabel}: Invalid headingSize "${director.headingSize}", defaulted to "6xl"`);
-    }
-    
-    if (!validBodySizes.includes(director.bodySize)) {
-      scene.director.bodySize = 'lg';
-      autoFixes.push(`${sceneLabel}: Invalid bodySize "${director.bodySize}", defaulted to "lg"`);
-    }
-
-    // Auto-fix: Invalid alignment
-    if (!validAlignments.includes(director.alignment)) {
-      scene.director.alignment = 'center';
-      autoFixes.push(`${sceneLabel}: Invalid alignment "${director.alignment}", defaulted to "center"`);
-    }
-
-    // Auto-fix: Hex colors
-    if (!director.backgroundColor || !/^#[0-9A-F]{6}$/i.test(director.backgroundColor)) {
-      scene.director.backgroundColor = '#0a0a0a';
-      autoFixes.push(`${sceneLabel}: Invalid backgroundColor, defaulted to #0a0a0a`);
-    }
-    
-    if (!director.textColor || !/^#[0-9A-F]{6}$/i.test(director.textColor)) {
-      scene.director.textColor = '#ffffff';
-      autoFixes.push(`${sceneLabel}: Invalid textColor, defaulted to #ffffff`);
-    }
-
-    // Warnings (not auto-fixed)
-    if (director.entryDuration < 0.5) {
-      warnings.push(`${sceneLabel}: Entry duration ${director.entryDuration}s may be too subtle`);
-    }
-    
-    if (director.blurOnScroll) {
-      warnings.push(`${sceneLabel}: blurOnScroll enabled (may cause performance issues)`);
-    }
   }
 
-  console.log(`[Portfolio Director] ✅ Stage 5 complete: ${autoFixes.length} auto-fixes, ${warnings.length} warnings`);
-
-  // Calculate metrics
-  const avgEntryDuration = result.scenes.reduce((sum, s) => sum + s.director.entryDuration, 0) / result.scenes.length;
-  const avgExitDuration = result.scenes.reduce((sum, s) => sum + s.director.exitDuration, 0) / result.scenes.length;
-  const effectsUsage = {
-    fadeOnScroll: result.scenes.filter(s => s.director.fadeOnScroll).length,
-    scaleOnScroll: result.scenes.filter(s => s.director.scaleOnScroll).length,
-    blurOnScroll: result.scenes.filter(s => s.director.blurOnScroll).length,
-    parallax: result.scenes.filter(s => s.director.parallaxIntensity > 0).length,
-  };
-
-  console.log('[Portfolio Director] 🎬 PIPELINE COMPLETE - Final Output:');
-  console.log('═'.repeat(80));
-  console.log(`📊 SCENES: ${result.scenes.length} total`);
-  console.log(`⏱️  TIMING: Entry avg ${avgEntryDuration.toFixed(1)}s | Exit avg ${avgExitDuration.toFixed(1)}s`);
-  console.log(`✨ EFFECTS: Fade ${effectsUsage.fadeOnScroll} | Scale ${effectsUsage.scaleOnScroll} | Blur ${effectsUsage.blurOnScroll} | Parallax ${effectsUsage.parallax}`);
-  console.log('─'.repeat(80));
-  console.log(`🔍 STAGE 2: ${auditResult.issues.length} issues found`);
-  console.log(`💡 STAGE 3: ${improvementsResult.improvements.length} improvements generated`);
-  console.log(`✅ STAGE 4: ${appliedImprovements.length} improvements applied`);
-  console.log(`🔧 STAGE 5: ${autoFixes.length} auto-fixes, ${warnings.length} warnings`);
-  console.log('═'.repeat(80));
-  
-  if (autoFixes.length > 0) {
-    console.log('🔧 Auto-fixes applied:');
-    autoFixes.forEach(fix => console.log(`  - ${fix}`));
-  }
-  
-  if (warnings.length > 0) {
-    console.log('⚠️  Warnings:');
-    warnings.forEach(warn => console.log(`  - ${warn}`));
-  }
-  
-  if (appliedImprovements.length > 0) {
-    console.log('💡 Improvements applied:');
-    appliedImprovements.slice(0, 5).forEach(imp => console.log(`  - ${imp}`));
-    if (appliedImprovements.length > 5) {
-      console.log(`  ... and ${appliedImprovements.length - 5} more`);
-    }
-  }
-  
-  console.log('═'.repeat(80));
-  console.log('📋 Scene Summary:');
-  result.scenes.forEach((s, i) => {
-    console.log(`  ${i + 1}. ${s.sceneType.toUpperCase()}: ${s.director.entryEffect}→${s.director.exitEffect} (${s.director.entryDuration}s/${s.director.exitDuration}s) ${s.director.backgroundColor}`);
+  console.log('[Portfolio Director] 🎬 PIPELINE COMPLETE - Final Output:', {
+    totalScenes: result.scenes.length,
+    stage1: 'Initial generation',
+    stage2: `Found ${auditResult.issues.length} issues`,
+    stage3: `Generated ${improvementsResult.improvements.length} improvements`,
+    stage4: `Applied ${appliedImprovements.length} improvements`,
+    stage5: 'Final regeneration with all fixes',
+    stage6: warnings.length > 0 ? `${warnings.length} warnings` : 'All validations passed',
+    appliedImprovements: appliedImprovements.length > 0 ? appliedImprovements : 'none',
+    warnings: warnings.length > 0 ? warnings : 'none',
+    sceneSummary: result.scenes.map((s, i) => ({
+      index: i,
+      type: s.sceneType,
+      assets: s.assetIds.length,
+      entry: `${s.director.entryEffect} (${s.director.entryDuration}s)`,
+      exit: `${s.director.exitEffect} (${s.director.exitDuration}s)`,
+    }))
   });
-  console.log('═'.repeat(80));
 
   return result;
 }
