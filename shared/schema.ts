@@ -263,7 +263,7 @@ export type InsertPortfolioConversation = typeof portfolioConversations.$inferIn
 
 // Content Assets table for inline asset creation
 export const contentAssets = pgTable("content_assets", {
-  id: text("id").primaryKey(),
+  id: text("id").notNull().primaryKey(),
   tenantId: text("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
   assetType: text("asset_type").notNull(), // 'image', 'video', 'quote'
 
@@ -885,6 +885,34 @@ const fullscreenSceneWithDirectorSchema = fullscreenSceneSchema.extend({
   director: directorConfigSchema,
 });
 
+// New: Component-based scene type for rich SaaS UI elements
+const componentSceneSchema = z.object({
+  type: z.literal("component"),
+  content: z.object({
+    componentType: z.enum([
+      "metric-card",
+      "timeline",
+      "comparison-table",
+      "testimonial-carousel",
+      "badge-grid",
+      "icon-grid",
+      "chart",
+      "calculator",
+      "feature-showcase",
+      "stat-counter",
+      "pricing-table",
+      "cta-block"
+    ]),
+    props: z.record(z.any()), // Component-specific props
+    heading: z.string().optional(),
+    description: z.string().optional(),
+  }).passthrough(),
+});
+
+const componentSceneWithDirectorSchema = componentSceneSchema.extend({
+  director: directorConfigSchema,
+});
+
 // Discriminated union of all scene types
 export const sceneConfigSchema = z.discriminatedUnion("type", [
   textSceneWithDirectorSchema,
@@ -894,6 +922,7 @@ export const sceneConfigSchema = z.discriminatedUnion("type", [
   gallerySceneWithDirectorSchema,
   quoteSceneWithDirectorSchema,
   fullscreenSceneWithDirectorSchema,
+  componentSceneWithDirectorSchema, // Added component scene type
 ]);
 
 export const insertProjectSceneSchema = createInsertSchema(projectScenes).omit({

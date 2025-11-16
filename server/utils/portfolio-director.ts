@@ -457,6 +457,7 @@ SCENE TYPES (choose based on content):
 - "split": Side-by-side text + media (use for feature explanations)
 - "gallery": Multiple images (use for before/after, process steps)
 - "fullscreen": Immersive media (use for wow moments, transitions)
+- "component": Rich SaaS UI components (metrics, timelines, calculators, comparison tables, badge grids, icon showcases, stat counters, CTA blocks)
 
 FOR EACH SCENE, YOU MUST DECIDE:
 1. Which assets to use (from the placeholder list available in the catalog)

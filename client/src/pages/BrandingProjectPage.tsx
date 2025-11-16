@@ -412,7 +412,7 @@ export default function BrandingProjectPage() {
                 const restoreState = { ...getCleanState(), ...toState };
                 // Always clear blur filter on restore unless blur is part of the target state
                 // Handles: blur-focus, dissolve, scale-blur exit effects
-                if (director.entryEffect !== 'blur-focus' && 
+                if (director.entryEffect !== 'blur-focus' &&
                     (!director.exitEffect || ['dissolve', 'scale-blur'].includes(director.exitEffect))) {
                   restoreState.filter = 'blur(0px)';
                 }
@@ -427,8 +427,8 @@ export default function BrandingProjectPage() {
                 const exitBackState = { ...getCleanState(), ...fromState };
                 // Always clear blur filter when leaving back unless blur is part of the from state
                 // Handles: blur-focus entry, dissolve/scale-blur exits
-                if (!fromState.filter && 
-                    director.entryEffect !== 'blur-focus' && 
+                if (!fromState.filter &&
+                    director.entryEffect !== 'blur-focus' &&
                     (!director.exitEffect || ['dissolve', 'scale-blur'].includes(director.exitEffect))) {
                   exitBackState.filter = 'blur(0px)';
                 }
@@ -970,7 +970,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
             {content.quote}
           </blockquote>
           {content.author && (
-            <cite 
+            <cite
               className={`block ${bodySizeMap[director.bodySize]} not-italic opacity-60`}
               style={{ color: director.textColor }}
             >
@@ -1033,11 +1033,23 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
         </div>
       );
 
+    case "component":
+      const { ComponentScene } = await import("@/components/branding/ComponentScene");
+      return (
+        <ComponentScene
+          componentType={content.componentType}
+          props={content.props}
+          heading={content.heading}
+          description={content.description}
+          director={director}
+        />
+      );
+
     default:
       return (
         <div className="text-center p-12 border border-dashed border-border rounded-xl" style={{ color: director.textColor }}>
           <p className="text-lg">Unknown scene type: {type}</p>
-          <p className="text-sm mt-2">Available types: text, image, video, split, gallery, quote, fullscreen</p>
+          <p className="text-sm mt-2">Available types: text, image, video, split, gallery, quote, fullscreen, component</p>
         </div>
       );
   }
