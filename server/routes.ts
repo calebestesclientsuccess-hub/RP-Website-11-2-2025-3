@@ -1985,14 +1985,20 @@ Your job is to:
 2. Explain what changes you're making in plain English
 3. Return the COMPLETE refined scenes array with improvements
 
+CRITICAL REQUIREMENT:
+YOU MUST RETURN ALL ${currentScenes.length} SCENES IN YOUR RESPONSE.
+Even if the user only asks to modify "Scene 3", you must return ALL scenes with Scene 3 modified and the rest unchanged.
+NEVER return a partial array - always return the complete scene array.
+
 SCENE REFERENCE:
 - Users can say "Scene 1", "Scene 2", etc. to reference specific scenes
 - "all scenes" means apply changes globally
 - Be specific about which scenes you're modifying
+- When modifying a single scene, keep all other scenes EXACTLY as they are
 
 RESPONSE FORMAT:
-- explanation: Plain English description of changes
-- scenes: Complete refined scenes array`;
+- explanation: Plain English description of changes (which scenes were modified)
+- scenes: COMPLETE array of ALL ${currentScenes.length} scenes (modified + unmodified)`;
 
       // Build conversation messages
       const messages = [
@@ -2038,6 +2044,17 @@ RESPONSE FORMAT:
         aiExplanation = result.explanation || "Scenes refined successfully";
 
         console.log(`[Portfolio Enhanced] Gemini refined ${enhancedScenes.length} scenes`);
+        
+        // VALIDATION: Ensure Gemini returned ALL scenes
+        if (enhancedScenes.length !== currentScenes.length) {
+          console.error(`[Portfolio Enhanced] ❌ VALIDATION ERROR: Expected ${currentScenes.length} scenes, got ${enhancedScenes.length}`);
+          console.error('[Portfolio Enhanced] This is a critical error - Gemini did not return the complete scene array');
+          
+          return res.status(500).json({
+            error: "AI refinement error",
+            details: `Expected ${currentScenes.length} scenes but received ${enhancedScenes.length}. Please try again with a more specific request.`
+          });
+        }
       } catch (error) {
         console.error('[Portfolio Enhanced] Gemini refinement failed:', error);
         return res.status(500).json({
