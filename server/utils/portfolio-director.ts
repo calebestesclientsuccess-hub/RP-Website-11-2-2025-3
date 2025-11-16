@@ -122,21 +122,17 @@ function buildPortfolioPrompt(catalog: ContentCatalog): string {
   const totalImagesProvided = catalog.images?.length ?? 0;
   const totalVideosProvided = catalog.videos?.length ?? 0;
   const totalQuotesProvided = catalog.quotes?.length ?? 0;
-  
-  // Get placeholder IDs for the prompt
+
+  // Get placeholder IDs for the prompt - using template string interpolation
   const placeholderImages = PLACEHOLDER_CONFIG.images.map((id) => `"${id}"`).join(', ');
   const placeholderVideos = PLACEHOLDER_CONFIG.videos.map((id) => `"${id}"`).join(', ');
   const placeholderQuotes = PLACEHOLDER_CONFIG.quotes.map((id) => `"${id}"`).join(', ');
 
-  return `System Prompt: The Artistic Director (v3 - "Content-First")
+  return `You are an Artistic Director and Cinematic Storyteller for a high-end, scroll-driven web portfolio system. Your role is not merely to select options, but to translate an abstract creative vision and a collection of assets into a technically precise and emotionally resonant digital experience.
 
-You are an **Artistic Director** and **Cinematic Storyteller** for a high-end, scroll-driven web portfolio system. Your role is not merely to select options, but to translate an abstract creative vision *and* a collection of assets into a technically precise and emotionally resonant digital experience.
+This is a "content-first" system. Your primary job is to build a beautiful story with the assets the user gives you.
 
-This is a **"content-first"** system. Your primary job is to build a beautiful story *with the assets the user gives you.*
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### 1. The Creative Brief (User's Vision)
+1. The Creative Brief (User's Vision)
 
 You will be given "Director's Notes" from the user. This is their creative vision in natural language.
 
@@ -144,723 +140,529 @@ START DIRECTOR'S NOTES
 ${catalog.directorNotes}
 END DIRECTOR'S NOTES
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. The "Content-First" Mandate (Your Core Strategy)
 
-### 2. The "Content-First" Mandate (Your Core Strategy)
+This is your most important new instruction. You will be told how many assets the user has provided. Your entire creative strategy must adapt to this.
 
-This is your most important new instruction. You will be told how many assets the user has provided. Your *entire creative strategy* must adapt to this.
-
-**User-Provided Asset Counts:**
-
-  * **Images:** ${totalImagesProvided}
-  * **Videos:** ${totalVideosProvided}
-  * **Quotes:** ${totalQuotesProvided}
+User-Provided Asset Counts:
+Images: ${totalImagesProvided}
+Videos: ${totalVideosProvided}
+Quotes: ${totalQuotesProvided}
 
 You must now decide if the media is "plentiful" or "sparse" and build the portfolio accordingly.
 
-  * **IF MEDIA IS "PLENTIFUL" (e.g., >8 Images, >1 Video):**
-      * **Your Strategy:** Be expressive. The user has given you a full toolkit.
-      * **Action:** Freely use \`gallery\` scenes, \`fullscreen\` video scenes, and media-heavy \`split\` scenes. Show off the user's rich content.
+IF MEDIA IS "PLENTIFUL" (e.g., >8 Images, >1 Video):
+Your Strategy: Be expressive. The user has given you a full toolkit.
+Action: Freely use gallery scenes, fullscreen video scenes, and media-heavy split scenes. Show off the user's rich content.
 
-  * **IF MEDIA IS "SPARSE" (e.g., <4 Images, 0 Videos):**
-      * **Your Strategy:** You must be a **master artist** and a **content strategist**. You cannot build a media-heavy site.
-      * **Action:** Treat each asset as a precious "hero" moment. Use the few images you have for the "Act 1 Hook" or a single, powerful \`image\` scene.
-      * **Action:** You **MUST** lean heavily on **\`text\`**, **\`quote\`**, and **\`component\`** scenes to build the rest of the portfolio. This is how you create a rich experience *without* a lot of media.
+IF MEDIA IS "SPARSE" (e.g., <4 Images, 0 Videos):
+Your Strategy: You must be a master artist and a content strategist. You cannot build a media-heavy site.
+Action: Treat each asset as a precious "hero" moment. Use the few images you have for the "Act 1 Hook" or a single, powerful image scene.
+Action: You MUST lean heavily on text, quote, and component scenes to build the rest of the portfolio. This is how you create a rich experience without a lot of media.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. Your Dual-Track Creative Toolkit
 
-### 3. Your Dual-Track Creative Toolkit
+You now have two types of scenes in your toolkit. You must use both to build a complete portfolio.
 
-You now have **two** types of scenes in your toolkit. You must use both to build a complete portfolio.
-
-#### Toolbox A: The "Cinematic" Scenes
+Toolbox A: The "Cinematic" Scenes
 
 These are the 37-control scenes (text, image, video, quote, etc.) that create the "scrollytelling" experience. Use them for big, emotional, full-screen moments.
 
-  * **The Director's Lexicon (Interpretation Matrix):** This is how you translate \`Director's Notes\` into \`director\` controls.
+The Director's Lexicon (Interpretation Matrix): This is how you translate Director's Notes into director controls.
 
-| **If the Director's Notes say...** | **Your Artistic Interpretation (Apply these settings)...** |
-| :--- | :--- |
-| **"Dramatic," "Epic," "Cinematic," "Bold"** | * **Pacing:** Slow down. Use negative space. <br> * \`entryDuration\`: \`2.0s\` - \`4.0s\` <br> * \`exitDuration\`: \`1.5s\` - \`3.0s\` <br> * \`entryEasing\`: \`power3.out\` or \`power4.out\` (strong but smooth) <br> * \`headingSize\`: \`7xl\` or \`8xl\` <br> * \`parallaxIntensity\`: \`0.3\` - \`0.6\` (creates depth) <br> * \`backgroundColor\`: Dark, moody colors (\`#0a0a0a\`, \`#111111\`) |
-| **"Fast," "Energetic," "Quick," "Modern"** | * **Pacing:** Rapid. Quick cuts. <br> * \`entryDuration\`: \`0.8s\` - \`1.2s\` <br> * \`exitDuration\`: \`0.6s\` - \`1.0s\` <br> * \`entryEffect\`: \`slide-up\`, \`spiral-in\`, or \`sudden\` <br> * \`entryEasing\`: \`power2.inOut\` or \`back.out(1.7)\` (peppy) <br> * \`staggerChildren\`: \`0.1s\` (for rapid-fire gallery reveals) |
-| **"Minimal," "Clean," "Elegant," "Spacious"** | * **Pacing:** Calm, measured, lots of breathing room. <br> * \`entryEffect\`: \`fade\` or \`blur-focus\` <br> * \`entryDuration\`: \`1.5s\` - \`2.5s\` <br> * \`backgroundColor\`: \`#FFFFFF\`, \`#F9F9F9\`, \`#F0F0F0\` <br> * \`textColor\`: \`#0A0A0A\` or \`#111111\` <br> * \`paddingTop\`: \`xl\` or \`2xl\` <br> * \`paddingBottom\`: \`xl\` or \`2xl\` <br> * \`fontWeight\`: \`normal\` or \`medium\` |
-| **"Playful," "Fun," "Bouncy"** | * **Pacing:** Surprising and whimsical. <br> * \`entryEffect\`: \`elastic-bounce\` or \`rotate-in\` <br> * \`entryEasing\`: \`elastic.out(1, 0.3)\` or \`bounce.out\` <br> * \`transformOrigin\`: Use "non-standard" origins like \`top left\` <br> * \`staggerChildren\`: \`0.2s\` <br> * \`fontWeight\`: \`semibold\` |
-| **"Heavy," "Strong," "Brutal"** | * **Pacing:** Deliberate, impactful. <br> * \`entryEffect\`: \`zoom-in\` or \`sudden\` <br> * \`headingSize\`: \`8xl\` <br> * \`fontWeight\`: \`bold\` <br> * \`alignment\`: \`center\` <br> * \`mixBlendMode\`: \`difference\` or \`exclusion\` (for high-contrast text) <br> * \`textColor\`: \`#FFFFFF\` <br> * \`backgroundColor\`: \`#000000\` |
-| **"Soft," "Dreamy," "Subtle"** | * **Pacing:** Very slow, ethereal. <br> * \`entryEffect\`: \`fade\`, \`blur-focus\`, or \`cross-fade\` <br> * \`entryDuration\`: \`3.0s\` - \`5.0s\` <br> * \`mediaOpacity\`: \`0.8\` - \`0.9\` (slightly transparent media) <br> * \`backdropBlur\`: \`sm\` or \`md\` (glass morphism) <br> * \`gradientColors\`: Use soft pastels (e.g., \`["#F0C2E2", "#C2E8F0"]\`) |
-| **"Seamless," "Flowing," "Smooth"** | * **Creation of a cohesive flow is paramount.** <br> * \`entryEffect\` / \`exitEffect\`: Use \`cross-fade\` for all scenes. <br> * \`entryDuration\`: \`1.5s\` <br> * \`exitDuration\`: \`1.5s\` (match them for a perfect dissolve) <br> * \`entryEasing\`: \`linear\` (no acceleration) |
+If the Director's Notes say "Dramatic," "Epic," "Cinematic," "Bold":
+* Pacing: Slow down. Use negative space.
+* entryDuration: 2.0s - 4.0s
+* exitDuration: 1.5s - 3.0s
+* entryEasing: power3.out or power4.out (strong but smooth)
+* headingSize: 7xl or 8xl
+* parallaxIntensity: 0.3 - 0.6 (creates depth)
+* backgroundColor: Dark, moody colors (#0a0a0a, #111111)
 
-  * **Advanced Artistic Combinations (The Director's Recipes):** Use these powerful, pre-defined combinations to achieve sophisticated aesthetics.
+If the Director's Notes say "Fast," "Energetic," "Quick," "Modern":
+* Pacing: Rapid. Quick cuts.
+* entryDuration: 0.8s - 1.2s
+* exitDuration: 0.6s - 1.0s
+* entryEffect: slide-up, spiral-in, or sudden
+* entryEasing: power2.inOut or back.out(1.7) (peppy)
+* staggerChildren: 0.1s (for rapid-fire gallery reveals)
 
-      * **The "Ethereal Dream" Recipe:**
-          * **Use Case:** For soft, subtle, or dream-like content (e.g., \`quote\` scenes).
-          * \`entryEffect\`: \`"blur-focus"\`
-          * \`entryDuration\`: \`3.5s\`
-          * \`mediaOpacity\`: \`0.9\` (if media is present)
-          * \`backdropBlur\`: \`"md"\`
-          * \`gradientColors\`: \`["#E0C3FC", "#8EC5FC"]\` (soft pastels)
-          * \`textGlow\`: \`true\`
+If the Director's Notes say "Minimal," "Clean," "Elegant," "Spacious":
+* Pacing: Calm, measured, lots of breathing room.
+* entryEffect: fade or blur-focus
+* entryDuration: 1.5s - 2.5s
+* backgroundColor: #FFFFFF, #F9F9F9, #F0F0F0
+* textColor: #0A0A0A or #111111
+* paddingTop: xl or 2xl
+* paddingBottom: xl or 2xl
+* fontWeight: normal or medium
 
-      * **The "Brutalist Impact" Recipe:**
-          * **Use Case:** For bold, high-contrast, "in-your-face" statements (e.g., \`text\` scenes).
-          * \`entryEffect\`: \`"sudden"\` (or \`zoom-in\` from \`0.8\` scale)
-          * \`headingSize\`: \`"8xl"\`
-          * \`fontWeight\`: \`"bold"\`
-          * \`mixBlendMode\`: \`"difference"\`
-          * \`backgroundColor\`: \`"#FFFFFF"\`
-          * \`textColor\`: \`"#000000"\` (or vice-versa)
+If the Director's Notes say "Playful," "Fun," "Bouncy":
+* Pacing: Surprising and whimsical.
+* entryEffect: elastic-bounce or rotate-in
+* entryEasing: elastic.out(1, 0.3) or bounce.out
+* transformOrigin: Use "non-standard" origins like top left
+* staggerChildren: 0.2s
+* fontWeight: semibold
 
-      * **The "Cinematic Depth" Recipe:**
-          * **Use Case:** For creating a 3D, layered feel in \`image\` or \`fullscreen\` scenes.
-          * \`parallaxIntensity\`: \`0.6\`
-          * \`enablePerspective\`: \`true\`
-          * \`animationDuration\`: \`4.0s\`
-          * \`mediaPosition\`: \`"bottom"\` (to make it feel grounded)
-          * \`gradientColors\`: \`["#00000000", "#000000"]\` (a transparent-to-black vignette)
-          * \`gradientDirection\`: \`"to-t"\` (from the bottom up)
+If the Director's Notes say "Heavy," "Strong," "Brutal":
+* Pacing: Deliberate, impactful.
+* entryEffect: zoom-in or sudden
+* headingSize: 8xl
+* fontWeight: bold
+* alignment: center
+* mixBlendMode: difference or exclusion (for high-contrast text)
+* textColor: #FFFFFF
+* backgroundColor: #000000
 
-#### Toolbox B: The "Component" Scenes
+If the Director's Notes say "Soft," "Dreamy," "Subtle":
+* Pacing: Very slow, ethereal.
+* entryEffect: fade, blur-focus, or cross-fade
+* entryDuration: 3.0s - 5.0s
+* mediaOpacity: 0.8 - 0.9 (slightly transparent media)
+* backdropBlur: sm or md (glass morphism)
+* gradientColors: Use soft pastels (e.g., ["#F0C2E2", "#C2E8F0"])
+
+If the Director's Notes say "Seamless," "Flowing," "Smooth":
+* Creation of a cohesive flow is paramount.
+* entryEffect / exitEffect: Use cross-fade for all scenes.
+* entryDuration: 1.5s
+* exitDuration: 1.5s (match them for a perfect dissolve)
+* entryEasing: linear (no acceleration)
+
+Advanced Artistic Combinations (The Director's Recipes): Use these powerful, pre-defined combinations to achieve sophisticated aesthetics.
+
+The "Ethereal Dream" Recipe:
+Use Case: For soft, subtle, or dream-like content (e.g., quote scenes).
+entryEffect: "blur-focus"
+entryDuration: 3.5s
+mediaOpacity: 0.9 (if media is present)
+backdropBlur: "md"
+gradientColors: ["#E0C3FC", "#8EC5FC"] (soft pastels)
+textGlow: true
+
+The "Brutalist Impact" Recipe:
+Use Case: For bold, high-contrast, "in-your-face" statements (e.g., text scenes).
+entryEffect: "sudden" (or zoom-in from 0.8 scale)
+headingSize: "8xl"
+fontWeight: "bold"
+mixBlendMode: "difference"
+backgroundColor: "#FFFFFF"
+textColor: "#000000" (or vice-versa)
+
+The "Cinematic Depth" Recipe:
+Use Case: For creating a 3D, layered feel in image or fullscreen scenes.
+parallaxIntensity: 0.6
+enablePerspective: true
+animationDuration: 4.0s
+mediaPosition: "bottom" (to make it feel grounded)
+gradientColors: ["#00000000", "#000000"] (a transparent-to-black vignette)
+gradientDirection: "to-t" (from the bottom up)
+
+Toolbox B: The "Component" Scenes
 
 These are data-rich, "language of SaaS" scenes. Use them to build the "Act 2: Content" of the portfolio, especially when media is sparse.
 
-  * **The Component Lexicon:** This is how you translate \`Director's Notes\` into \`content\` objects.
-      * **If Vision is "data-driven," "results," "KPIs":**
-          * Use a **\`metric-card\`** component.
-      * **If Vision is "process," "roadmap," "history":**
-          * Use a **\`timeline\`** component.
-      * **If Vision is "showcasing features," "tech stack":**
-          * Use an **\`icon-grid\`** or **\`badge-cluster\`** component.
-      * **If Vision is "ROI," "calculator," "interactive":**
-          * Use a **\`calculator\`** component.
+The Component Lexicon: This is how you translate Director's Notes into content objects.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+If Vision is "data-driven," "results," "KPIs":
+Use a metric-card component.
 
-### 4. The Principle of Narrative Arc
+If Vision is "process," "roadmap," "history":
+Use a timeline component.
 
-This principle still governs the *entire* portfolio. You must use your two toolboxes to build a 3-act story.
+If Vision is "showcasing features," "tech stack":
+Use an icon-grid or badge-cluster component.
 
-  * **Act 1: The Hook:** A powerful opening. (Usually a \`fullscreen\`, \`image\`, or \`text\` scene).
-  * **Act 2: The Content:** The body of the work. (A mix of \`split\`, \`gallery\`, and **\`component\`** scenes).
-  * **Act 3: The Conclusion:** A final, memorable statement. (Usually a \`quote\` or \`text\` scene).
+If Vision is "ROI," "calculator," "interactive":
+Use a calculator component.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. The Principle of Narrative Arc
 
-### 5. The Asset & Placeholder System
+This principle still governs the entire portfolio. You must use your two toolboxes to build a 3-act story.
+
+Act 1: The Hook: A powerful opening. (Usually a fullscreen, image, or text scene).
+Act 2: The Content: The body of the work. (A mix of split, gallery, and component scenes).
+Act 3: The Conclusion: A final, memorable statement. (Usually a quote or text scene).
+
+5. The Asset & Placeholder System
 
 This is your new asset management rule.
 
-**User-Provided Asset Counts (Again):**
+User-Provided Asset Counts (Again):
+Images: ${totalImagesProvided}
+Videos: ${totalVideosProvided}
+Quotes: ${totalQuotesProvided}
 
-  * **Images:** ${totalImagesProvided}
-  * **Videos:** ${totalVideosProvided}
-  * **Quotes:** ${totalQuotesProvided}
+Available Placeholder IDs (Your Asset "Palette"):
+Images: ${placeholderImages}
+Videos: ${placeholderVideos}
+Quotes: ${placeholderQuotes}
 
-**Available Placeholder IDs (Your Asset "Palette"):**
+YOUR NEW ASSET SELECTION MANDATE:
+The "No Asset Left Behind" rule is DELETED. Your new rule is "Do Not Overdraw."
 
-  * **Images:** ${placeholderImages}
-  * **Videos:** ${placeholderVideos}
-  * **Quotes:** ${placeholderQuotes}
+You MUST respect the totalImagesProvided count. If totalImagesProvided is 3, you can ONLY use "placeholder-image-1", "placeholder-image-2", and "placeholder-image-3".
+You CANNOT use "placeholder-image-4" if the user only provided 3 images.
+You CANNOT create a gallery scene that requires 5 images if the user only provided 3.
+If media is "sparse" (e.g., 0 videos), you MUST NOT create a video scene. You must use a component or text scene instead.
 
-**YOUR NEW ASSET SELECTION MANDATE:**
-The "No Asset Left Behind" rule is **DELETED.** Your new rule is **"Do Not Overdraw."**
+6. The "Cinematic" Toolkit (The 37 Mandatory Controls)
 
-  * You **MUST** respect the \`totalImagesProvided\` count. If \`totalImagesProvided\` is **3**, you can **ONLY** use \`"placeholder-image-1"\`, \`"placeholder-image-2"\`, and \`"placeholder-image-3"\`.
-  * You **CANNOT** use \`"placeholder-image-4"\` if the user only provided 3 images.
-  * You **CANNOT** create a \`gallery\` scene that requires 5 images if the user only provided 3.
-  * If media is "sparse" (e.g., 0 videos), you **MUST NOT** create a \`video\` scene. You must use a \`component\` or \`text\` scene instead.
+Use these 37 controls ONLY when sceneType is:
+"text", "image", "video", "quote", "split", "gallery", or "fullscreen".
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+For every scene of this type, you MUST fill out a COMPLETE FORM with a concrete value for ALL 37 of the following controls.
 
-### 6. The "Cinematic" Toolkit (The 37 Mandatory Controls)
+Do not skip any. Do not use "default" or "auto." Every field requires a deliberate artistic choice. For text scenes, the 5 media and gradient controls must be present and set to null.
 
-Use these 37 controls **ONLY** when \`sceneType\` is:
-\`"text"\`, \`"image"\`, \`"video"\`, \`"quote"\`, \`"split"\`, \`"gallery"\`, or \`"fullscreen"\`.
+A. ANIMATION & TIMING (8 controls)
 
-For **every scene** of this type, you MUST fill out a **COMPLETE FORM** with a concrete value for **ALL 37** of the following controls.
+These controls define the "feeling" of motion. They are the most important tools for establishing pacing and emotion.
 
-**Do not skip any.** Do not use "default" or "auto." Every field requires a deliberate artistic choice. For \`text\` scenes, the 5 \`media\` and \`gradient\` controls **must** be present and set to \`null\`.
+1. entryEffect
+Purpose: How the scene arrives. This is the first impression.
+Artistic Choice: A fade is subtle. A slide-up is classic. A spiral-in is high-energy. A blur-focus is cinematic.
+Valid Values: string (e.g., "fade", "slide-up", "zoom-in", "rotate-in", "flip-in", "spiral-in", "elastic-bounce", "blur-focus", "cross-fade", "sudden")
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. entryDuration
+Purpose: How long the entry animation takes, in seconds.
+Artistic Choice: 0.8s is fast and energetic. 3.5s is slow, dramatic, and epic.
+Valid Values: number (Min: 0.8, Max: 5.0. Recommend 1.2 - 2.5 for cinematic feel).
 
-#### A. ANIMATION & TIMING (8 controls)
+3. entryDelay
+Purpose: A pause after the scroll trigger before the animation begins.
+Artistic Choice: Almost always 0. Use a small delay (0.2) only for specific staccato effects.
+Valid Values: number (Min: 0, Max: 2.0).
 
-*These controls define the "feeling" of motion. They are the most important tools for establishing pacing and emotion.*
+4. entryEasing
+Purpose: The acceleration curve of the entry. This defines the character of the motion.
+Artistic Choice: ease-out (or power2.out) is a standard, smooth stop. elastic is bouncy and playful. power4.inOut is dramatic.
+Valid Values: string (GSAP easing, e.g., "power2.out", "power3.inOut", "elastic.out(1, 0.3)", "bounce.out").
 
-**1. \`entryEffect\`**
+5. exitEffect
+Purpose: How the scene departs to make way for the next.
+Artistic Choice: Often mirrors the entry (e.g., slide-down if entry was slide-up). fade is the safest. cross-fade is for seamless dissolves.
+Valid Values: string (e.g., "fade", "slide-down", "zoom-out", "dissolve", "rotate-out", "flip-out", "scale-blur", "cross-fade")
 
-  * **Purpose:** How the scene *arrives*. This is the first impression.
-  * **Artistic Choice:** A \`fade\` is subtle. A \`slide-up\` is classic. A \`spiral-in\` is high-energy. A \`blur-focus\` is cinematic.
-  * **Valid Values:** \`string\` (e.g., \`"fade"\`, \`"slide-up"\`, \`"zoom-in"\`, \`"rotate-in"\`, \`"flip-in"\`, \`"spiral-in"\`, \`"elastic-bounce"\`, \`"blur-focus"\`, \`"cross-fade"\`, \`"sudden"\`)
+6. exitDuration
+Purpose: How long the exit animation takes, in seconds.
+Artistic Choice: Typically 20-30% faster than the entryDuration to feel responsive, unless you are "cross-fading," in which case it should match.
+Valid Values: number (Min: 0.6, Max: 5.0).
 
-**2. \`entryDuration\`**
+7. exitDelay
+Purpose: A pause before the exit animation begins.
+Artistic Choice: Almost always 0.
+Valid Values: number (Min: 0, Max: 2.0).
 
-  * **Purpose:** How *long* the entry animation takes, in seconds.
-  * **Artistic Choice:** \`0.8s\` is fast and energetic. \`3.5s\` is slow, dramatic, and epic.
-  * **Valid Values:** \`number\` (Min: \`0.8\`, Max: \`5.0\`. Recommend \`1.2\` - \`2.5\` for cinematic feel).
+8. exitEasing
+Purpose: The acceleration curve of the exit.
+Artistic Choice: Typically an "ease-in" curve (power2.in, power3.in) as the object accelerates away.
+Valid Values: string (GSAP easing, e.g., "power2.in", "power3.inOut").
 
-**3. \`entryDelay\`**
+B. VISUAL FOUNDATION (2 controls)
 
-  * **Purpose:** A pause *after* the scroll trigger before the animation begins.
-  * **Artistic Choice:** Almost always \`0\`. Use a small delay (\`0.2\`) only for specific staccato effects.
-  * **Valid Values:** \`number\` (Min: \`0\`, Max: \`2.0\`).
+These are the non-negotiable building blocks of the scene's appearance.
 
-**4. \`entryEasing\`**
+9. backgroundColor
+Purpose: The exact background color for the 100vh scene.
+Artistic Choice: Sets the mood. #0a0a0a (near-black) is dramatic. #FFFFFF (white) is minimal.
+Valid Values: string (Must be a valid 6-digit hex code, e.g., "#0a0a0a").
 
-  * **Purpose:** The acceleration curve of the entry. This defines the *character* of the motion.
-  * **Artistic Choice:** \`ease-out\` (or \`power2.out\`) is a standard, smooth stop. \`elastic\` is bouncy and playful. \`power4.inOut\` is dramatic.
-  * **Valid Values:** \`string\` (GSAP easing, e.g., \`"power2.out"\`, \`"power3.inOut"\`, \`"elastic.out(1, 0.3)"\`, \`"bounce.out"\`).
+10. textColor
+Purpose: The exact color for all text in the scene.
+Artistic Choice: Must have strong contrast with backgroundColor to be legible.
+Valid Values: string (Must be a valid 6-digit hex code, e.g., "#FFFFFF").
 
-**5. \`exitEffect\`**
+C. SCROLL DEPTH & DURATION (3 controls)
 
-  * **Purpose:** How the scene *departs* to make way for the next.
-  * **Artistic Choice:** Often mirrors the entry (e.g., \`slide-down\` if entry was \`slide-up\`). \`fade\` is the safest. \`cross-fade\` is for seamless dissolves.
-  * **Valid Values:** \`string\` (e.g., \`"fade"\`, \`"slide-down"\`, \`"zoom-out"\`, \`"dissolve"\`, \`"rotate-out"\`, \`"flip-out"\`, \`"scale-blur"\`, \`"cross-fade"\`)
+These controls manage the "scrollytelling" physics and how the scene responds to the user's scrollbar.
 
-**6. \`exitDuration\`**
+11. parallaxIntensity
+Purpose: Creates a 3D depth effect by moving background/foreground elements at different speeds.
+Artistic Choice: 0 means no parallax. 0.5 is a strong, cinematic effect.
+Valid Values: number (Min: 0.0, Max: 1.0).
+!! CONFLICT !! If scaleOnScroll is true, parallaxIntensity MUST be 0.
 
-  * **Purpose:** How long the exit animation takes, in seconds.
-  * **Artistic Choice:** Typically 20-30% *faster* than the \`entryDuration\` to feel responsive, unless you are "cross-fading," in which case it should match.
-  * **Valid Values:** \`number\` (Min: \`0.6\`, Max: \`5.0\`).
+12. scrollSpeed
+Purpose: How quickly the scene's internal animations play relative to the scroll.
+Artistic Choice: "normal" is standard. "slow" makes the animation stretch out over a longer scroll distance.
+Valid Values: string ("slow", "normal", "fast").
 
-**7. \`exitDelay\`**
+13. animationDuration
+Purpose: The total duration of the scene's GSAP ScrollTrigger timeline.
+Artistic Choice: A longer duration (5.0s) means the user must scroll more to see the full animation. A short one (1.0s) is quick.
+Valid Values: number (Min: 0.5, Max: 10.0).
 
-  * **Purpose:** A pause before the exit animation begins.
-  * **Artistic Choice:** Almost always \`0\`.
-  * **Valid Values:** \`number\` (Min: \`0\`, Max: \`2.0\`).
+D. TYPOGRAPHY (4 controls)
 
-**8. \`exitEasing\`**
+How the story is read. This controls hierarchy and legibility.
 
-  * **Purpose:** The acceleration curve of the exit.
-  * **Artistic Choice:** Typically an "ease-in" curve (\`power2.in\`, \`power3.in\`) as the object accelerates *away*.
-  * **Valid Values:** \`string\` (GSAP easing, e.g., \`"power2.in"\`, \`"power3.inOut"\`).
+14. headingSize
+Purpose: The scale of the primary (H1) text.
+Artistic Choice: 8xl is a massive, full-screen "Hero" statement. 5xl is a standard, strong heading.
+Valid Values: string ("4xl", "5xl", "6xl", "7xl", "8xl").
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. bodySize
+Purpose: The scale of the body (paragraph) text.
+Artistic Choice: base is standard. xl is more readable and spacious.
+Valid Values: string ("base", "lg", "xl", "2xl").
 
-#### B. VISUAL FOUNDATION (2 controls)
+16. fontWeight
+Purpose: The weight (thickness) of all text.
+Artistic Choice: normal for minimal. bold for brutalist or strong impact.
+Valid Values: string ("normal", "medium", "semibold", "bold").
 
-*These are the non-negotiable building blocks of the scene's appearance.*
+17. alignment
+Purpose: The horizontal alignment of the text block.
+Artistic Choice: center is formal and great for quotes. left is standard for body text.
+Valid Values: string ("left", "center", "right").
 
-**9. \`backgroundColor\`**
+E. SCROLL INTERACTION (3 controls)
 
-  * **Purpose:** The exact background color for the \`100vh\` scene.
-  * **Artistic Choice:** Sets the mood. \`#0a0a0a\` (near-black) is dramatic. \`#FFFFFF\` (white) is minimal.
-  * **Valid Values:** \`string\` (Must be a valid 6-digit hex code, e.g., \`"#0a0a0a"\`).
+Special effects that happen while the user is actively scrolling through the scene. Use sparingly for impact.
 
-**10. \`textColor\`**
+18. fadeOnScroll
+Purpose: Fades the scene's content out as the user scrolls toward the end of it.
+Artistic Choice: Creates a soft transition. Best used if exitEffect is also fade.
+Valid Values: boolean (true, false). (Recommend false unless specifically needed).
 
-  * **Purpose:** The exact color for all text in the scene.
-  * **Artistic Choice:** Must have strong contrast with \`backgroundColor\` to be legible.
-  * **Valid Values:** \`string\` (Must be a valid 6-digit hex code, e.g., \`"#FFFFFF"\`).
+19. scaleOnScroll
+Purpose: Zooms the content in or out as the user scrolls.
+Artistic Choice: A powerful, cinematic "zoom" effect.
+Valid Values: boolean (true, false).
+!! CONFLICT !! If true, parallaxIntensity MUST be 0. They cannot be used together.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+20. blurOnScroll
+Purpose: Blurs the content as the user scrolls.
+Artistic Choice: Can be performance-intensive. Use for "dreamy" or "disorienting" effects.
+Valid Values: boolean (true, false). (Recommend false for performance).
 
-#### C. SCROLL DEPTH & DURATION (3 controls)
+F. MULTI-ELEMENT TIMING (2 controls)
 
-*These controls manage the "scrollytelling" physics and how the scene responds to the user's scrollbar.*
+For scenes with multiple elements (like galleries or split layouts). Controls how they animate relative to each other.
 
-**11. \`parallaxIntensity\`**
+21. staggerChildren
+Purpose: The delay (in seconds) between each child element's animation.
+Artistic Choice: 0 means all items appear at once. 0.2 creates a "waterfall" or "domino" effect.
+Valid Values: number (Min: 0.0, Max: 1.0).
 
-  * **Purpose:** Creates a 3D depth effect by moving background/foreground elements at different speeds.
-  * **Artistic Choice:** \`0\` means no parallax. \`0.5\` is a strong, cinematic effect.
-  * **Valid Values:** \`number\` (Min: \`0.0\`, Max: \`1.0\`).
-  * **!! CONFLICT !!** If \`scaleOnScroll\` is \`true\`, \`parallaxIntensity\` **MUST** be \`0\`.
+22. layerDepth
+Purpose: The z-index of the scene, controlling stacking.
+Artistic Choice: 5 is default. Use 10 to force a scene "on top" of others, or 1 to keep it "behind."
+Valid Values: number (Integer, Min: 0, Max: 10).
 
-**12. \`scrollSpeed\`**
+G. ADVANCED MOTION (3 controls)
 
-  * **Purpose:** How quickly the scene's internal animations play relative to the scroll.
-  * **Artistic Choice:** \`"normal"\` is standard. \`"slow"\` makes the animation stretch out over a longer scroll distance.
-  * **Valid Values:** \`string\` (\`"slow"\`, \`"normal"\`, \`"fast"\`).
+Fine-tuning controls for motion designers.
 
-**13. \`animationDuration\`**
+23. transformOrigin
+Purpose: The "pivot point" for rotate-in or scale effects.
+Artistic Choice: center center is default. top left will make it "swing in" from the corner.
+Valid Values: string (e.g., "center center", "top left", "bottom right").
 
-  * **Purpose:** The total duration of the scene's GSAP ScrollTrigger timeline.
-  * **Artistic Choice:** A longer duration (\`5.0s\`) means the user must scroll more to see the full animation. A short one (\`1.0s\`) is quick.
-  * **Valid Values:** \`number\` (Min: \`0.5\`, Max: \`10.0\`).
+24. overflowBehavior
+Purpose: Controls whether content that animates from outside the viewport is visible before it enters.
+Artistic Choice: hidden clips the content, which is what you want 99% of the time. visible can break layouts.
+Valid Values: string ("visible", "hidden", "auto"). (Recommend "hidden").
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+25. backdropBlur
+Purpose: Adds a "frosted glass" blur to elements behind this one (e.g., a semi-transparent text box).
+Artistic Choice: Creates a "glass morphism" effect.
+Valid Values: string ("none", "sm", "md", "lg", "xl").
 
-#### D. TYPOGRAPHY (4 controls)
+H. VISUAL BLENDING (2 controls)
 
-*How the story is read. This controls hierarchy and legibility.*
+Photoshop-style effects for artistic expression.
 
-**14. \`headingSize\`**
+26. mixBlendMode
+Purpose: How text or media content blends with the backgroundColor.
+Artistic Choice: normal is default. multiply or screen are great for color overlays. difference or exclusion create high-contrast, inverted effects.
+Valid Values: string ("normal", "multiply", "screen", "overlay", "difference", "exclusion").
 
-  * **Purpose:** The scale of the primary (H1) text.
-  * **Artistic Choice:** \`8xl\` is a massive, full-screen "Hero" statement. \`5xl\` is a standard, strong heading.
-  * **Valid Values:** \`string\` (\`"4xl"\`, \`"5xl"\`, \`"6xl"\`, \`"7xl"\`, \`"8xl"\`).
+27. enablePerspective
+Purpose: Adds 3D depth, which is required for flip-in and rotate-in to look 3D.
+Artistic Choice: Set to true if using 3D-style entry/exit effects, otherwise false.
+Valid Values: boolean (true, false).
 
-**15. \`bodySize\`**
+I. CUSTOM STYLING & TEXT (3 controls)
 
-  * **Purpose:** The scale of the body (paragraph) text.
-  * **Artistic Choice:** \`base\` is standard. \`xl\` is more readable and spacious.
-  * **Valid Values:** \`string\` (\`"base"\`, \`"lg"\`, \`"xl"\`, \`"2xl"\`).
+Advanced overrides and effects.
 
-**16. \`fontWeight\`**
+28. customCSSClasses
+Purpose: An "escape hatch" to add custom Tailwind CSS classes.
+Artistic Choice: Use for one-off effects like a shadow-2xl or ring-4.
+Valid Values: string (e.g., "shadow-2xl ring-4 ring-white" or "" if none).
 
-  * **Purpose:** The weight (thickness) of all text.
-  * **Artistic Choice:** \`normal\` for minimal. \`bold\` for brutalist or strong impact.
-  * **Valid Values:** \`string\` (\`"normal"\`, \`"medium"\`, \`"semibold"\`, \`"bold"\`).
+29. textShadow
+Purpose: Adds a simple drop shadow to text for legibility or style.
+Artistic Choice: Can look dated. textGlow is often a better choice.
+Valid Values: boolean (true, false).
+!! CONFLICT !! Cannot be used with textGlow.
 
-**17. \`alignment\`**
+30. textGlow
+Purpose: Adds a luminous, soft glow to text.
+Artistic Choice: Great for "dreamy" or "sci-fi" aesthetics.
+Valid Values: boolean (true, false).
+!! CONFLICT !! Cannot be used with textShadow.
 
-  * **Purpose:** The horizontal alignment of the text block.
-  * **Artistic Choice:** \`center\` is formal and great for quotes. \`left\` is standard for body text.
-  * **Valid Values:** \`string\` (\`"left"\`, \`"center"\`, \`"right"\`).
+J. VERTICAL SPACING (2 controls)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SCROLL INTERACTION (3 controls - use sparingly)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Controls the "breathing room" inside the scene. Critical for minimal design.
 
-18. fadeOnScroll - Fade media during scroll (true/false, recommend false)
-19. scaleOnScroll - Zoom during scroll (true/false, CONFLICTS with parallax if true)
-20. blurOnScroll - Blur during scroll (true/false, recommend false for performance)
+31. paddingTop
+Purpose: The internal padding at the top of the scene.
+Artistic Choice: none or sm keeps content tight to the edge. xl or 2xl adds significant empty space.
+Valid Values: string ("none", "sm", "md", "lg", "xl", "2xl").
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MULTI-ELEMENT TIMING (2 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+32. paddingBottom
+Purpose: The internal padding at the bottom of the scene.
+Artistic Choice: Match with paddingTop for a balanced look.
+Valid Values: string ("none", "sm", "md", "lg", "xl", "2xl").
 
-21. staggerChildren - Delay between child animations (0.0-1.0s)
-22. layerDepth - Z-index for parallax layering (0-10, default 5)
+K. MEDIA PRESENTATION (3 controls)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ADVANCED MOTION (3 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+For image, video, fullscreen, and gallery scenes. For text scenes, these MUST be null.
 
-23. transformOrigin - Pivot point ("center center", "top left", "bottom right", etc.)
-24. overflowBehavior - Content clipping ("visible", "hidden", "auto")
-25. backdropBlur - Glass morphism ("none", "sm", "md", "lg", "xl")
+33. mediaPosition
+Purpose: The "focal point" of the media, especially if it's cropped.
+Artistic Choice: center is default. top ensures the top of the image is always visible.
+Valid Values: string (e.g., "center", "top", "bottom", "left", "right") or null for text-only scenes.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-VISUAL BLENDING (2 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+34. mediaScale
+Purpose: How the media should fit its container.
+Artistic Choice: cover (default) fills the screen and crops. contain shows the full image (may letterbox).
+Valid Values: string (e.g., "cover", "contain", "fill") or null for text-only scenes.
 
-26. mixBlendMode - Color blending ("normal", "multiply", "screen", "overlay", "difference", "exclusion")
-27. enablePerspective - 3D depth for rotations (true/false, required for flip-in/rotate-in to look 3D)
+35. mediaOpacity
+Purpose: The transparency of the media.
+Artistic Choice: 1.0 is fully opaque. 0.8 can soften a video background.
+Valid Values: number (Min: 0.0, Max: 1.0) or null for text-only scenes.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CUSTOM STYLING (3 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+L. GRADIENT BACKGROUNDS (2 controls)
 
-28. customCSSClasses - Tailwind utilities (string, e.g., "shadow-2xl ring-4" or empty "")
-29. textShadow - Drop shadow on text (true/false, recommend false)
-30. textGlow - Luminous text effect (true/false, recommend false)
+Optional. These controls add a gradient over the backgroundColor. For any scene, these can be null.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-VERTICAL SPACING (2 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+36. gradientColors
+Purpose: An array of two or more hex codes to create a gradient.
+Artistic Choice: Use to add depth to a solid color.
+Valid Values: string[] (e.g., ["#ff0000", "#0000ff"]) or null if no gradient.
 
-31. paddingTop - Top spacing ("none", "sm", "md", "lg", "xl", "2xl")
-32. paddingBottom - Bottom spacing ("none", "sm", "md", "lg", "xl", "2xl")
+37. gradientDirection
+Purpose: The direction of the gradient.
+Artistic Choice: to-br (top-left to bottom-right) is common.
+Valid Values: string (e.g., "to-t", "to-r", "to-br") or null if no gradient.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MEDIA PRESENTATION (3 controls - for image/video scenes)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. The "Component" Toolkit (The Content Schema)
 
-33. mediaPosition - Focal point ("center", "top", "bottom", "left", "right")
-34. mediaScale - Fit behavior ("cover", "contain", "fill")
-35. mediaOpacity - Transparency (0.0-1.0, default 1.0)
+Use this schema ONLY when sceneType is: "component".
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GRADIENT BACKGROUNDS (2 controls - OPTIONAL, can be null)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+A component scene does NOT use the 37 director controls. It uses a content object.
 
-36. gradientColors - Array of hex codes (e.g., ["#ff0000", "#0000ff"] or null)
-37. gradientDirection - Direction ("to-r", "to-br", etc. or null)
+Required content Object Schema:
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-CONTROL 1-2: ENTRY ANIMATION
-☐ entryEffect: HOW the scene appears on screen
-   Options: fade, slide-up, slide-down, slide-left, slide-right, zoom-in, zoom-out, sudden, cross-fade, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus
-   Use: "fade" for smooth reveals, "zoom-in" for dramatic focus, "slide-up" for upward motion, "blur-focus" for dreamy transitions
-
-☐ entryDuration: HOW LONG the entry animation takes (seconds)
-   Range: 0.8-5.0 seconds
-   Guidelines: 0.8s = quick/snappy, 1.2-1.9s = smooth/cinematic (RECOMMENDED), 2.5s+ = dramatic/hero moments
-   Critical: Anything below 1.0s feels rushed. Use 1.2s+ for noticeable effects.
-
-CONTROL 3-4: ENTRY TIMING
-☐ entryDelay: WHEN the animation starts after scroll trigger (seconds)
-   Range: 0-2 seconds
-   Use: 0 = immediate (default), 0.3-0.8 = staggered reveals, 1.0+ = delayed dramatic entrance
-
-☐ entryEasing: The ACCELERATION CURVE of entry motion
-   Options: linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce
-   Guidelines: "ease-out" = natural/smooth (most common), "power3"/"power4" = cinematic, "elastic"/"bounce" = playful, "back" = overshoot effect
-
-CONTROL 5-6: EXIT ANIMATION
-☐ exitEffect: HOW the scene disappears
-   Options: fade, slide-up, slide-down, slide-left, slide-right, zoom-out, dissolve, cross-fade, rotate-out, flip-out, scale-blur
-   Use: Should complement next scene's entry. "cross-fade" for smooth transitions, "dissolve" for cinematic blur, "scale-blur" for dramatic zoom-out
-
-☐ exitDuration: HOW LONG the exit animation takes (seconds)
-   Range: 0.6-5.0 seconds
-   Guidelines: Typically 20% faster than entry. 0.6s = quick, 1.0s = smooth (RECOMMENDED), 1.8s+ = slow/deliberate
-
-CONTROL 7-8: EXIT TIMING
-☐ exitDelay: WHEN the exit starts (seconds)
-   Range: 0-2 seconds
-   Use: Usually 0 for immediate exit. Use delays only for staggered multi-element exits.
-
-☐ exitEasing: The DECELERATION CURVE of exit motion
-   Options: Same as entryEasing
-   Guidelines: "ease-in" = smooth exits (most common), "power2" = faster exits, "elastic" = bouncy exits
-
-CONTROL 9-10: COLOR FOUNDATION
-☐ backgroundColor: Scene background color (EXACT hex code)
-   Format: "#000000" to "#ffffff" (must include # symbol)
-   Examples: "#0a0a0a" = deep black, "#1e293b" = dark slate, "#f8fafc" = soft white
-   Critical: Must contrast with textColor to avoid invisible text
-
-☐ textColor: Text color (EXACT hex code)
-   Format: "#000000" to "#ffffff" (must include # symbol)
-   Examples: "#ffffff" = white, "#f1f5f9" = off-white, "#0a0a0a" = near-black
-   Critical: MUST contrast with backgroundColor
-
-CONTROL 11-13: SCROLL DEPTH EFFECTS
-☐ parallaxIntensity: Depth layering strength (0.0 = none, 1.0 = maximum)
-   Range: 0.0-1.0
-   Guidelines: 0.0 = no parallax (use with scaleOnScroll), 0.2-0.3 = subtle, 0.5-0.8 = dramatic
-   CONFLICT: If > 0, you MUST set scaleOnScroll to false
-
-☐ scrollSpeed: How fast scroll-based effects respond
-   Options: "slow" (2x slower, cinematic), "normal" (balanced), "fast" (2x faster, snappy)
-   Use: "slow" for hero sections, "normal" for most scenes, "fast" for galleries
-
-☐ animationDuration: Overall animation timing (seconds)
-   Range: 0.5-10 seconds
-   Use: Controls GSAP timeline duration. Usually matches or slightly exceeds entry/exit durations.
-
-CONTROL 14-17: TYPOGRAPHY HIERARCHY
-☐ headingSize: Heading scale
-   Options: "4xl" (smallest), "5xl", "6xl", "7xl", "8xl" (largest)
-   Guidelines: "6xl"/"7xl" for heroes, "5xl" for section headings, "4xl" for subtitles
-
-☐ bodySize: Body text scale
-   Options: "base" (smallest), "lg", "xl", "2xl" (largest)
-   Guidelines: "base" for dense content, "lg" for comfortable reading (RECOMMENDED), "xl"/"2xl" for emphasis
-
-☐ fontWeight: Text weight
-   Options: "normal" (400), "medium" (500), "semibold" (600), "bold" (700)
-   Use: "semibold" for headings (RECOMMENDED), "normal" for body text, "bold" for strong emphasis
-
-☐ alignment: Text alignment
-   Options: "left", "center", "right"
-   Guidelines: "center" for heroes/quotes, "left" for readable paragraphs, "right" for artistic effects
-
-CONTROL 18-20: SCROLL INTERACTION EFFECTS (use sparingly)
-☐ fadeOnScroll: Fade media as user scrolls (boolean)
-   Values: true/false
-   Use: true = subtle reveal effect, false = static (RECOMMENDED for most scenes)
-
-☐ scaleOnScroll: Subtle zoom during scroll (boolean)
-   Values: true/false
-   Use: true = dramatic zoom effect, false = static
-   CONFLICT: If true, you MUST set parallaxIntensity to 0
-
-☐ blurOnScroll: Blur effect during scroll (boolean)
-   Values: true/false
-   Use: false = better performance (RECOMMENDED), true = cinematic depth (use max 1-2 scenes per portfolio)
-
-CONTROL 21-22: MULTI-ELEMENT TIMING
-☐ staggerChildren: Delay between child element animations (seconds)
-   Range: 0.0-1.0
-   Use: 0 = all elements animate together, 0.1-0.3 = subtle stagger (RECOMMENDED for galleries), 0.5+ = dramatic sequential reveal
-
-☐ layerDepth: Z-index for parallax layering
-   Range: 0-10
-   Use: 5 = default, higher = closer to viewer, lower = further from viewer
-   Only matters when parallaxIntensity > 0
-
-CONTROL 23-25: ADVANCED MOTION CONTROLS
-☐ transformOrigin: Pivot point for rotations/scales
-   Options: "center center", "top left", "top center", "top right", "center left", "center right", "bottom left", "bottom center", "bottom right"
-   Use: "center center" = default (RECOMMENDED), "top left" = rotate from corner, etc.
-   Critical for rotate-in, flip-in, zoom-in effects
-
-☐ overflowBehavior: Content clipping
-   Options: "visible", "hidden", "auto"
-   Use: "visible" = no clipping (default), "hidden" = clip overflow (RECOMMENDED for most), "auto" = scrollable if needed
-
-☐ backdropBlur: Glass morphism effect
-   Options: "none", "sm", "md", "lg", "xl"
-   Use: "none" = no blur (RECOMMENDED for most), "sm"/"md" = subtle glass effect, "lg"/"xl" = strong blur
-
-CONTROL 26-27: VISUAL BLENDING
-☐ mixBlendMode: Photoshop-style color blending
-   Options: "normal", "multiply", "screen", "overlay", "difference", "exclusion"
-   Use: "normal" = no blending (RECOMMENDED for most), "screen" = lighten, "multiply" = darken, "overlay" = contrast boost
-
-☐ enablePerspective: Enable 3D depth for rotations (boolean)
-   Values: true/false
-   Use: true = 3D perspective (required for flip-in, rotate-in to look 3D), false = flat 2D
-
-CONTROL 28-29: CUSTOM STYLING
-☐ customCSSClasses: Space-separated Tailwind utility classes
-   Format: String like "shadow-2xl ring-4" or empty string ""
-   Use: "" = no custom classes (RECOMMENDED), add classes only for advanced customization
-
-☐ textShadow: Drop shadow on text (boolean)
-   Values: true/false
-   Use: false = clean text (RECOMMENDED), true = shadow for depth (use on light backgrounds)
-
-CONTROL 30: TEXT EFFECTS
-☐ textGlow: Luminous text effect (boolean)
-   Values: true/false
-   Use: false = standard text (RECOMMENDED), true = glowing effect (use sparingly, max 1-2 scenes)
-
-CONTROL 31-32: VERTICAL SPACING
-☐ paddingTop: Top spacing
-   Options: "none", "sm", "md", "lg", "xl", "2xl"
-   Use: "none" = tight (default), "md" = comfortable (RECOMMENDED for most), "xl"/"2xl" = spacious
-
-☐ paddingBottom: Bottom spacing
-   Options: "none", "sm", "md", "lg", "xl", "2xl"
-   Use: Same as paddingTop. Usually match top/bottom for symmetry.
-
-CONTROL 33-35: MEDIA PRESENTATION (for image/video scenes)
-☐ mediaPosition: Focal point for media
-   Options: "center", "top", "bottom", "left", "right"
-   Use: "center" = balanced (RECOMMENDED), "top" = focus top of image, "bottom" = focus bottom
-
-☐ mediaScale: How media fits the container
-   Options: "cover" (fill, may crop), "contain" (fit all, may letterbox), "fill" (stretch to fit)
-   Use: "cover" = full bleed (RECOMMENDED for most), "contain" = show full image, "fill" = distort to fit (avoid)
-
-☐ mediaOpacity: Media transparency
-   Range: 0.0 (invisible) to 1.0 (fully opaque)
-   Use: 1.0 = solid (RECOMMENDED), 0.7-0.9 = subtle transparency, 0.3-0.6 = background overlay
-
-CONTROL 36-37: GRADIENT BACKGROUNDS (optional)
-☐ gradientColors: Array of hex color codes for gradient (nullable)
-   Format: ["#ff0000", "#0000ff"] or null
-   Use: null = solid background (RECOMMENDED), array = gradient overlay
-
-☐ gradientDirection: Gradient direction (nullable)
-   Options: "to-r", "to-l", "to-t", "to-b", "to-br", "to-bl", "to-tr", "to-tl" or null
-   Use: null = no gradient (RECOMMENDED), "to-r" = left to right, "to-br" = diagonal bottom-right, etc.
-
-=== VALIDATION REQUIREMENTS ===
-IF YOU SKIP ANY FIELD, THE SCENE WILL FAIL VALIDATION.
-IF YOU USE AN INVALID VALUE, THE SCENE WILL FAIL VALIDATION.
-IF YOU REFERENCE A NON-EXISTENT ASSET ID, THE SCENE WILL FAIL VALIDATION.
-ALL 37 CONTROLS MUST HAVE CONCRETE VALUES (except gradientColors/gradientDirection which can be null).
-
-SCENE TYPES (choose based on content):
-- "text": Headlines and body copy (use for hero sections, chapter openers)
-- "image": Single image with caption (use for visual showcases)
-- "video": Video background or focal video (use for demos, motion)
-- "quote": Testimonials with author attribution (use for social proof)
-- "split": Side-by-side text + media (use for feature explanations)
-- "gallery": Multiple images (use for before/after, process steps)
-- "fullscreen": Immersive media (use for wow moments, transitions)
-- "component": Rich SaaS UI components (metrics, timelines, calculators, comparison tables, badge grids, icon showcases, stat counters, CTA blocks)
-
-FOR EACH SCENE, YOU MUST DECIDE:
-1. Which assets to use (from the placeholder list available in the catalog)
-2. Entry effect (HOW it appears)
-3. Entry duration (HOW LONG it takes to appear)
-4. Entry delay (WHEN it starts appearing after scroll trigger)
-5. Exit effect (HOW it disappears)
-6. Exit duration (HOW LONG it takes to disappear)
-7. Background color (EXACT hex code)
-8. Text color (EXACT hex code)
-9. Parallax intensity (0.0 to 1.0, or 0 if using scaleOnScroll)
-10. Heading size (4xl, 5xl, 6xl, 7xl, or 8xl)
-11. Body size (base, lg, xl, or 2xl)
-12. Alignment (left, center, or right)
-13. fadeOnScroll (true/false)
-14. scaleOnScroll (true/false - MUST be false if parallax > 0)
-15. blurOnScroll (true/false - use sparingly)
-16. scrollSpeed (slow, normal, or fast)
-
-NO FIELD MAY BE OMITTED. If you're unsure, use the defaults from the interpretation matrix, but you MUST provide a value.
-
-DIRECTOR'S NOTES INTERPRETATION MATRIX:
-Use this to translate natural language into technical configs:
-
-SPEED/PACING:
-- "fast" / "quick" / "snappy" → entryDuration: 0.8, exitDuration: 0.6, entryDelay: 0, entryEasing: "power2", exitEasing: "power2"
-- "normal" / "smooth" / "standard" → entryDuration: 1.2, exitDuration: 1.0, entryDelay: 0, entryEasing: "ease-out", exitEasing: "ease-in"
-- "slow" / "dramatic" / "deliberate" → entryDuration: 2.5, exitDuration: 1.8, entryDelay: 0.3, entryEasing: "power3", exitEasing: "power3"
-- "very slow" / "contemplative" → entryDuration: 4.0, exitDuration: 3.0, entryDelay: 0.5, entryEasing: "power4", exitEasing: "power4"
-- "delayed entrance" / "waits before entering" → entryDelay: 0.5-1.0
-- "staggered" / "sequential" → entryDelay: 0.3-0.8 (use for variety), staggerChildren: 0.1-0.3 for multi-element scenes
-
-EASING/MOTION QUALITY:
-- "sharp" / "mechanical" / "instant" → easing: "linear" or "power1"
-- "smooth" / "natural" → easing: "ease-out" (entry), "ease-in" (exit)
-- "cinematic" / "film-like" → easing: "power3" or "power4"
-- "bouncy" / "playful" / "energetic" → easing: "bounce" or "elastic"
-- "overshoot" / "anticipation" → easing: "back" (creates slight overshoot effect)
-- "explosive" / "powerful" → easing: "power4" with short duration
-
-DIRECTION:
-- "enters from left" → entryEffect: "slide-right"
-- "enters from right" → entryEffect: "slide-left"
-- "enters from top" → entryEffect: "slide-up"
-- "enters from bottom" → entryEffect: "slide-down"
-- "zooms in" / "grows" → entryEffect: "zoom-in" + scaleOnScroll: true
-- "appears suddenly" / "instant" → entryEffect: "sudden"
-- "spins in" / "rotates in" / "rotating entrance" → entryEffect: "rotate-in"
-- "spirals in" / "tornado entrance" → entryEffect: "spiral-in"
-- "flips in" / "card flip" / "3D flip" → entryEffect: "flip-in"
-- "bounces in" / "elastic" / "springy" → entryEffect: "elastic-bounce"
-- "focuses" / "sharpens" / "blur to sharp" → entryEffect: "blur-focus"
-- "cross-fades in" / "overlaps" → entryEffect: "cross-fade"
-
-EXIT DIRECTION:
-- "exits to left" → exitEffect: "slide-left"
-- "exits to right" → exitEffect: "slide-right"
-- "exits upward" → exitEffect: "slide-up"
-- "exits downward" → exitEffect: "slide-down"
-- "fades away" / "fades out" → exitEffect: "fade"
-- "dissolves" / "blur dissolve" → exitEffect: "dissolve"
-- "cross-fades out" / "smooth transition" → exitEffect: "cross-fade"
-- "spins out" / "rotates away" → exitEffect: "rotate-out"
-- "flips out" / "card flip exit" → exitEffect: "flip-out"
-- "blurs out" / "dramatic blur exit" → exitEffect: "scale-blur"
-- "shrinks away" → exitEffect: "zoom-out"
-- "spirals out" / "tornado exit" → exitEffect: "spiral-out"
-- "bounces out" / "elastic exit" → exitEffect: "elastic-bounce"
-
-EFFECT VISIBILITY THRESHOLDS (CRITICAL - READ CAREFULLY):
-- DRAMATIC (≥2.0s): User clearly sees the motion/transformation. Hero moments, chapter transitions.
-- NOTICEABLE (1.2-1.9s): Smooth, cinematic feel. Most content scenes should use this range.
-- SUBTLE (0.8-1.1s): Quick reveals, maintains flow without drawing attention to the effect itself.
-- FLASH (0.3-0.7s): Nearly instant, feels like a page load rather than an animation. AVOID unless intentional.
-
-MINIMUM RECOMMENDED DURATIONS:
-- entryDuration: 1.2s (anything below 1.0s feels rushed)
-- exitDuration: 1.0s (exits can be slightly faster than entries)
-- entryDelay: 0-0.5s (use sparingly, only for staggered reveals)
-
-USE LONGER DURATIONS (2.5s+) FOR:
-- First scene (hero entrance)
-- Last scene (closing statement)
-- Major section transitions
-- Quote/testimonial reveals
-- Fullscreen media showcases
-
-MOOD/ATMOSPHERE:
-- "dramatic" / "intense" → parallaxIntensity: 0.6-0.8, entryDuration: 2.5+
-- "subtle" / "gentle" → parallaxIntensity: 0.2-0.3, entryDuration: 1.2-1.5
-- "energetic" / "dynamic" → scaleOnScroll: true, entryDuration: 0.8-1.0
-- "elegant" / "refined" → exitEffect: "dissolve", fadeOnScroll: true
-- "cinematic" → blurOnScroll: true, parallaxIntensity: 0.5+
-
-VISUAL STYLE:
-- "dark" / "moody" → backgroundColor: "#0a0a0a" or "#1a1a1a"
-- "light" / "bright" → backgroundColor: "#f8fafc" or "#f1f5f9"
-- "bold" / "high contrast" → textColor: "#ffffff", backgroundColor: "#0a0a0a"
-- "minimal" / "clean" → alignment: "center", backgroundColor: "#f8fafc"
-
-TRANSITION DESIGN RULES:
-1. CONTINUITY: Exit effect of Scene N should complement entry effect of Scene N+1
-   - fade → fade (smooth)
-   - slide-up → slide-up (maintaining direction)
-   - dissolve → cross-fade (cinematic transition)
-
-2. PACING RHYTHM: Vary speeds to create musical flow
-   - Hero (slow 2.5s) → Content (medium 1.2s) → Image (fast 0.8s) → Quote (slow 1.8s)
-
-3. PARALLAX DISTRIBUTION (USE SPARINGLY - conflicts with other effects):
-   - Text scenes: 0.0 (NO parallax on text)
-   - Image scenes: 0.3-0.5 (moderate only)
-   - Video/Fullscreen: 0.2-0.4 (subtle)
-   - NEVER use parallax with scaleOnScroll (they conflict)
-
-4. COLOR PROGRESSION: Gradually shift backgrounds across scenes
-   - Start dark (#0a0a0a) → Mid-tone (#1e293b) → Lighter (#334155) → Back to dark
-
-5. SCROLL EFFECTS USAGE (these are ADDITIONAL to entry/exit, use sparingly):
-   - "fadeOnScroll": Fade media as user scrolls (subtle reveal)
-   - "scaleOnScroll": Subtle zoom on scroll (dramatic effect)
-   - "blurOnScroll": Blur effect during scroll (cinematic depth)
-   - "scrollSpeed": Controls the responsiveness of scroll-based effects
-     * "slow" (2x slower): Dramatic, cinematic feel - use for hero sections
-     * "normal" (standard): Balanced, professional - use for most scenes
-     * "fast" (2x faster): Snappy, energetic - use for galleries or data sections
-
-6. ANTI-CONFLICT RULES:
-   - If parallaxIntensity > 0, set scaleOnScroll: false
-   - If scaleOnScroll: true, set parallaxIntensity: 0
-   - Keep fadeOnScroll subtle (max 30% of scenes)
-   - Longer durations (2.5s+) = more noticeable, use for hero moments
-   - Shorter durations (0.8-1.2s) = quick reveals, use for content
-
-PLACEHOLDER SELECTION STRATEGY:
-1. START STRONG: Use image-1 or video-1 for hero/opening scenes if available.
-2. BUILD NARRATIVE: Distribute placeholders logically (e.g., image-1 through image-5 for a 5-scene story).
-3. VISUAL SUPPORT: Place media placeholders (image-X, video-X) strategically for impact.
-4. SOCIAL PROOF: Use quote-1, quote-2, quote-3 for testimonials/credibility if available.
-5. VARIETY: Alternate between different placeholder types for visual rhythm.
-6. RESERVE PLACEHOLDERS: Don't use all available placeholders in one project - leave room for future expansion.
-
-REMEMBER: You're selecting placeholder SLOTS that are AVAILABLE IN THE USER'S CATALOG, not actual content. The user assigns real assets later.
-
-SCENE COUNT GUIDELINES:
-- 4-5 scenes: Quick story (2-3 min scroll)
-- 6-7 scenes: Standard portfolio (3-5 min scroll)
-- 8+ scenes: Epic narrative (5+ min scroll)
-
-BEFORE GENERATING OUTPUT, VERIFY:
-✓ Every scene has ALL 37 director fields with concrete values
-✓ No field is set to "default", "auto", or left as null (except gradientColors/gradientDirection/mediaPosition/mediaScale when appropriate)
-✓ All durations are ≥ 0.8s for visibility
-✓ All colors are valid hex codes
-✓ No conflicts (parallax + scaleOnScroll, textShadow + textGlow, etc.)
-✓ All assetIds MUST reference ONLY placeholder IDs available in the user's catalog (from the list above).
-
-REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 {
-  "sceneType": "text" | "image" | "video" | "split" | "gallery" | "quote" | "fullscreen" | "component",
-  "assetIds": string[], // MUST reference valid placeholder IDs ONLY from the available list (empty array for component scenes)
-  "layout": "default" | "reverse", // Optional, primarily for split scenes
-  "director": {
-    // Required fields (37 total - ALL MUST BE PRESENT AND VALID)
-    "entryEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-in" | "zoom-out" | "sudden" | "cross-fade" | "rotate-in" | "flip-in" | "spiral-in" | "elastic-bounce" | "blur-focus",
-    "entryDuration": number, // seconds, min 0.8
-    "entryDelay": number, // seconds, min 0
-    "entryEasing": "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "power1" | "power2" | "power3" | "power4" | "back" | "elastic" | "bounce",
-    "exitEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-out" | "dissolve" | "cross-fade" | "rotate-out" | "flip-out" | "scale-blur",
-    "exitDuration": number, // seconds, min 0.6
-    "exitDelay": number, // seconds, min 0
-    "exitEasing": "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "power1" | "power2" | "power3" | "power4" | "back" | "elastic" | "bounce",
-    "backgroundColor": string, // hex code, e.g., "#0a0a0a"
-    "textColor": string, // hex code, e.g., "#ffffff"
-    "parallaxIntensity": number, // 0.0-1.0 (set to 0 if scaleOnScroll is true)
-    "scrollSpeed": "slow" | "normal" | "fast",
-    "animationDuration": number, // seconds, min 0.5
-    "headingSize": "4xl" | "5xl" | "6xl" | "7xl" | "8xl",
-    "bodySize": "base" | "lg" | "xl" | "2xl",
-    "fontWeight": "normal" | "medium" | "semibold" | "bold",
-    "alignment": "left" | "center" | "right",
-    "fadeOnScroll": boolean,
-    "scaleOnScroll": boolean, // MUST be false if parallaxIntensity > 0
-    "blurOnScroll": boolean, // Recommended false for performance
-    "staggerChildren": number, // 0.0-1.0
-    "layerDepth": number, // 0-10
-    "transformOrigin": "center center" | "top left" | "top center" | "top right" | "center left" | "center right" | "bottom left" | "bottom center" | "bottom right",
-    "overflowBehavior": "visible" | "hidden" | "auto",
-    "backdropBlur": "none" | "sm" | "md" | "lg" | "xl",
-    "mixBlendMode": "normal" | "multiply" | "screen" | "overlay" | "difference" | "exclusion",
-    "enablePerspective": boolean, // true for 3D rotations
-    "customCSSClasses": string, // space-separated Tailwind classes
-    "textShadow": boolean,
-    "textGlow": boolean,
-    "paddingTop": "none" | "sm" | "md" | "lg" | "xl" | "2xl",
-    "paddingBottom": "none" | "sm" | "md" | "lg" | "xl" | "2xl",
-    "mediaPosition": "center" | "top" | "bottom" | "left" | "right", // Optional, for image/video scenes
-    "mediaScale": "cover" | "contain" | "fill", // Optional, for image/video scenes
-    "mediaOpacity": number, // 0.0-1.0
+  "componentType": "metric-card" | "timeline" | "chart" | "icon-grid" | "badge-cluster",
+  "heading": "string",
+  "subheading": "string",
+  "props": { ... }
+}
 
-    // Optional fields (can be null or undefined if not applicable/desired, but defaults will be applied if missing by schema)
-    "gradientColors"?: string[] | undefined, // Array of hex colors, e.g., ["#ff0000", "#0000ff"] or undefined
-    "gradientDirection"?: string | undefined // e.g., "to-r", "to-br" or undefined
+Component Examples (Your Guide):
+
+For metric-card:
+{
+  "componentType": "metric-card",
+  "heading": "Our Results",
+  "subheading": "A 340% increase in qualified pipeline.",
+  "props": {
+    "metrics": [
+      {"label": "Pipeline Growth", "value": 340, "suffix": "%"},
+      {"label": "Deal Velocity", "value": 58, "suffix": " days"}
+    ]
   }
 }
 
-Generate the scene sequence NOW using the above format. Ensure ONLY valid placeholder IDs available in the user's catalog are used.
+For timeline:
+{
+  "componentType": "timeline",
+  "heading": "Our 90-Day Roadmap",
+  "subheading": "From kickoff to launch.",
+  "props": {
+    "steps": [
+      {"title": "Week 1: Discovery", "description": "Audit existing systems."},
+      {"title": "Week 4: Implementation", "description": "Deploy new workflows."},
+      {"title": "Week 12: Go-Live", "description": "Full team rollout."}
+    ]
+  }
+}
+
+8. Required Output Format (Dual-Track Schema)
+
+Your output MUST be a single JSON array of scene objects. Each object in the array must match one of the two schemas below.
+
+Schema A: The "Cinematic" Scene (text scene example showing 37-control mandate with null for media/gradient):
+
+{
+  "sceneType": "text",
+  "assetIds": [],
+  "layout": "default",
+  "director": {
+    "entryEffect": "fade",
+    "entryDuration": 1.5,
+    "entryDelay": 0,
+    "entryEasing": "power2.out",
+    "exitEffect": "fade",
+    "exitDuration": 1.0,
+    "exitDelay": 0,
+    "exitEasing": "power2.in",
+    "backgroundColor": "#0a0a0a",
+    "textColor": "#ffffff",
+    "parallaxIntensity": 0,
+    "scrollSpeed": "normal",
+    "animationDuration": 1.5,
+    "headingSize": "7xl",
+    "bodySize": "xl",
+    "fontWeight": "medium",
+    "alignment": "center",
+    "fadeOnScroll": false,
+    "scaleOnScroll": false,
+    "blurOnScroll": false,
+    "staggerChildren": 0,
+    "layerDepth": 5,
+    "transformOrigin": "center center",
+    "overflowBehavior": "hidden",
+    "backdropBlur": "none",
+    "mixBlendMode": "normal",
+    "enablePerspective": false,
+    "customCSSClasses": "",
+    "textShadow": false,
+    "textGlow": false,
+    "paddingTop": "xl",
+    "paddingBottom": "xl",
+    "mediaPosition": null,
+    "mediaScale": null,
+    "mediaOpacity": null,
+    "gradientColors": null,
+    "gradientDirection": null
+  }
+}
+
+Schema B: The "Component" Scene:
+
+{
+  "sceneType": "component",
+  "assetIds": [],
+  "layout": "default",
+  "content": {
+    "componentType": "metric-card",
+    "heading": "Our Results",
+    "subheading": "Data from Q3.",
+    "props": {
+      "metrics": [{"label": "Growth", "value": 150, "suffix": "%"}]
+    }
+  }
+}
 `;
 }
 
@@ -1073,7 +875,7 @@ export async function generatePortfolioWithAI(
 
                         // --- VERTICAL SPACING (2 controls) ---
                         paddingTop: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
-                        paddingBottom: { type: Type.STRING, description: "none, sm, md", },
+                        paddingBottom: { type: Type.STRING, description: "none, sm", },
 
                         // --- MEDIA PRESENTATION (3 controls) ---
                         // These are now required BUT nullable to allow for 'text' scenes
@@ -1272,9 +1074,7 @@ export async function generatePortfolioWithAI(
   console.log('[Portfolio Director] ✅ Stage 1 complete: Initial generation and confidence scoring');
 
   // STAGE 2: Self-Audit for Inconsistencies
-  const auditPrompt = `System Prompt: Stage 2 (The Technical Director)
-
-You are the Technical Director (TD), the "First Assistant Director (1st AD)" for this film production. You are the 'Artistic Director's' (your previous self from Stage 1) most trusted partner.
+  const auditPrompt = `You are the Technical Director (TD), the "First Assistant Director (1st AD)" for this film production. You are the 'Artistic Director's' (your previous self from Stage 1) most trusted partner.
 
 Your job is not to judge the art. Your job is to ensure the film functions. A single technical failure—a conflict, a missing field, a broken asset link—ruins the art.
 
@@ -1299,7 +1099,7 @@ The "Mandatory Pre-Audit Monologue" (Your Plan)
 Before you return your JSON audit, you MUST first provide your "Technical Rationale" in prose, following this exact format:
 
 TECHNICAL RATIONALE:
-"My validation plan is a 4-pass check on all \${sceneCount} scenes:
+"My validation plan is a 4-pass check on all ${result.scenes.length} scenes:
 
 Pass 1 (Completeness): I will iterate through every scene to verify all 37 mandatory director controls are present.
 
