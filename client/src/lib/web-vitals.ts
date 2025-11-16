@@ -50,7 +50,7 @@ function sendToAnalytics(metric: Metric) {
 export function initWebVitals() {
   if (typeof window === 'undefined') return;
 
-  const isDev = process.env.NODE_ENV === 'development';
+  const isDev = import.meta.env.DEV;
 
   onCLS((metric) => {
     if (isDev) console.log('[Web Vitals] CLS:', metric);
