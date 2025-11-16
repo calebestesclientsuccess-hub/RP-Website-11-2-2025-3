@@ -1,0 +1,46 @@
+Based on the "v3" architecture we have just designed and perfected, you have a total of 8 distinct, system-generated prompts and schemas.
+
+We have created a "prompt chain" where each part has a unique, "cinematic" persona and a single, focused job.
+
+Here is the complete inventory of the 8 prompts we have perfected:
+
+1. The Core Chain (4 Prompts)
+These are the main prompts that manage the end-to-end generation and review of the entire portfolio.
+
+Prompt 1: The "Artistic Director" (buildPortfolioPrompt)
+
+This is the "v3" master prompt that is "Content-First" and "Dual-Track." It generates the initial portfolio based on the "plentiful vs. sparse" media rules.
+
+Prompt 2: The "Technical Director" (auditPrompt)
+
+This is the "v3" technical linter. It validates the "Dual-Track" output (both Cinematic and Component scenes) and enforces the "Do Not Overdraw" mandate.
+
+Prompt 4: The "Executive Producer" (buildPortfolioCoherencePrompt)
+
+This is the "v3" holistic artistic review. It judges the entire portfolio (including component scenes) for Narrative Arc, Pacing, and Media Strategy.
+
+Prompt 5: The "Technical Enforcer" (responseSchema)
+
+This is the perfected JSON schema that makes the whole system work. It mandates all 37 controls but makes the 5 optional (media/gradient) controls nullable, perfectly solving the "text scene paradox."
+
+2. The "Scene Specialist" Set (4 Prompts)
+This is the "Prompt 3" set. These are the specialized "Second Unit Directors" that refine one specific, complex scene type. We have perfected four of them:
+
+buildSplitScenePrompt (v3)
+
+Specialty: Manages "zig-zag" layouts and validates both text and media assets.
+
+buildGalleryScenePrompt (v3)
+
+Specialty: Manages "Do Not Overdraw" by checking the highest index in the asset array and forces the use of staggerChildren.
+
+buildQuoteScenePrompt (v3)
+
+Specialty: Mandates a slow, "contemplative" pace and forces the use of an "Artistic Recipe" (like "Ethereal Dream").
+
+buildFullscreenScenePrompt (v3)
+
+Specialty: Forces the use of "Artistic Recipes" (like "Cinematic Depth") and correctly validates conditional assets (image vs. video).
+
+The "Missing" Prompt
+We have one logical prompt remaining to write to complete our "v3" system: the buildComponentScenePrompt. This would be the 5th "Scene Specialist" and the 9th prompt overall, which would be responsible for artistically refining the props of a component scene.
