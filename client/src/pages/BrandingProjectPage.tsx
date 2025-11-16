@@ -406,7 +406,9 @@ export default function BrandingProjectPage() {
                 // When scrolling UP back into this scene, restore to fully visible state
                 const restoreState = { ...getCleanState(), ...toState };
                 // Always clear blur filter on restore unless blur is part of the target state
-                if ('filter' in restoreState && !toState.filter) {
+                // Handles: blur-focus, dissolve, scale-blur exit effects
+                if (director.entryEffect !== 'blur-focus' && 
+                    (!director.exitEffect || ['dissolve', 'scale-blur'].includes(director.exitEffect))) {
                   restoreState.filter = 'blur(0px)';
                 }
                 gsap.to(targetElement, {
@@ -419,7 +421,10 @@ export default function BrandingProjectPage() {
                 // When scrolling UP past this scene, reverse to initial hidden state
                 const exitBackState = { ...getCleanState(), ...fromState };
                 // Always clear blur filter when leaving back unless blur is part of the from state
-                if ('filter' in exitBackState && !fromState.filter) {
+                // Handles: blur-focus entry, dissolve/scale-blur exits
+                if (!fromState.filter && 
+                    director.entryEffect !== 'blur-focus' && 
+                    (!director.exitEffect || ['dissolve', 'scale-blur'].includes(director.exitEffect))) {
                   exitBackState.filter = 'blur(0px)';
                 }
                 gsap.to(targetElement, {
@@ -721,7 +726,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               alt={content.alt || "Scene image"}
               className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
               style={{ opacity: director.mediaOpacity }}
-              data-media-opacity={director.mediaOpacity}
+              data-media-opacity="true"
               loading="lazy"
             />
           </div>
@@ -753,7 +758,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               controls
               className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
               style={{ opacity: director.mediaOpacity }}
-              data-media-opacity={director.mediaOpacity}
+              data-media-opacity="true"
             />
           </div>
           {content.caption && (
@@ -795,7 +800,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 controls
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                 style={{ opacity: director.mediaOpacity }}
-                data-media-opacity={director.mediaOpacity}
+                data-media-opacity="true"
               />
             ) : (
               <img
@@ -803,7 +808,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 alt={content.alt || "Scene media"}
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                 style={{ opacity: director.mediaOpacity }}
-                data-media-opacity={director.mediaOpacity}
+                data-media-opacity="true"
                 loading="lazy"
               />
             )}
@@ -831,7 +836,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                     alt={img.alt || `Gallery image ${idx + 1}`}
                     className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                     style={{ opacity: director.mediaOpacity }}
-                    data-media-opacity={director.mediaOpacity}
+                    data-media-opacity="true"
                     loading="lazy"
                   />
                 </div>
