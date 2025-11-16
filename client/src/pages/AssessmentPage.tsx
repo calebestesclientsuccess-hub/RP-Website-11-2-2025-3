@@ -626,7 +626,8 @@ export default function AssessmentPage() {
                                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                                   <Input 
                                     placeholder="John Smith" 
-                                    className="pl-10"
+                                    className="pl-10 touch-target"
+                                    autoComplete="name"
                                     {...field} 
                                     data-testid="input-name"
                                   />
@@ -670,7 +671,9 @@ export default function AssessmentPage() {
                                 <Input 
                                   type="email" 
                                   placeholder="john@acme.com" 
-                                  className="pl-10"
+                                  className="pl-10 touch-target"
+                                  autoComplete="email"
+                                  inputMode="email"
                                   {...field}
                                   data-testid="input-email"
                                 />

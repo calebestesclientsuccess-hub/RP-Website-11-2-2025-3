@@ -196,22 +196,24 @@ export function Navbar() {
         {/* Mobile Menu */}
         <div
           id="mobile-navigation"
-          className={`lg:hidden absolute top-16 left-0 right-0 bg-background border-b border-border shadow-lg transition-all duration-300 ease-in-out ${
+          className={`lg:hidden absolute top-16 left-0 right-0 bg-background border-b border-border shadow-lg transition-all duration-500 ease-out backdrop-blur-lg ${
             mobileMenuOpen 
               ? 'opacity-100 translate-y-0 pointer-events-auto' 
-              : 'opacity-0 -translate-y-4 pointer-events-none'
+              : 'opacity-0 -translate-y-8 pointer-events-none'
           }`}
           role="navigation"
           aria-label="Mobile navigation menu"
           aria-hidden={!mobileMenuOpen}
         >
-          <div className="px-4 py-4 space-y-2">
+          <div className="px-4 py-4 space-y-2" style={{ 
+            animation: mobileMenuOpen ? 'slideDown 0.4s ease-out' : 'none' 
+          }}>
             <Link
               href="/problem"
-              className={`block px-4 py-3 rounded-md text-base font-medium transition-all touch-target-button ${
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-all duration-200 touch-target-button ${
                 isActivePath("/problem")
-                  ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
-                  : "hover-elevate hover:bg-accent"
+                  ? "bg-primary/10 text-primary border-l-4 border-primary pl-3 shadow-sm"
+                  : "hover-elevate hover:bg-accent hover:translate-x-1"
               }`}
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-link-problem"
