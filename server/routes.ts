@@ -816,7 +816,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       <div class="highlight">
         <div class="metric-label" style="color: rgba(255,255,255,0.9);">Your Monthly ROI</div>
-        <div class="highlight-value">${monthlyROI > 0 ? `${formatNumber(monthlyROI, 0)}x` : '0x'}</div>
+        <div class="highlight-value">${monthlyROI > 0 ? `${formatNumber(monthlyROI, 1)}x` : '0x'}</div>
         <p style="margin: 10px 0 0 0; font-size: 14px;">Return on Investment Multiplier</p>
       </div>
 
@@ -1822,7 +1822,7 @@ Your explanation should be conversational and reference specific scene numbers.`
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              explanation: { 
+              explanation: {
                 type: Type.STRING,
                 description: "Plain English explanation of what changes you made and why"
               },
@@ -1868,11 +1868,11 @@ Your explanation should be conversational and reference specific scene numbers.`
 
     // Basic validation of required fields
     const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt, currentPrompt, conversationHistory, currentSceneJson } = req.body;
-    
+
     // In refinement mode (existing conversation), use currentPrompt; otherwise use portfolioAiPrompt
     const isRefinementMode = (conversationHistory && conversationHistory.length > 0) || currentPrompt || currentSceneJson;
     const promptToValidate = isRefinementMode ? currentPrompt : portfolioAiPrompt;
-    
+
     if (!promptToValidate || !promptToValidate.trim()) {
       console.error('[Portfolio Enhanced] Missing prompt:', { isRefinementMode, hasCurrentPrompt: !!currentPrompt, hasPortfolioPrompt: !!portfolioAiPrompt });
       return res.status(400).json({
@@ -1880,7 +1880,7 @@ Your explanation should be conversational and reference specific scene numbers.`
         details: isRefinementMode ? "Please enter a message to refine your scenes" : "Portfolio AI prompt is required"
       });
     }
-    
+
     // In refinement mode, we don't need new project details or scenes array
     // We're working with existing scenes via currentSceneJson
     if (!isRefinementMode) {
@@ -2266,7 +2266,7 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
-  // IMPORTANT: /default route MUST come before /:id route
+  // IMPORTANT: /default route MUST come before /:id to avoid conflicts
   app.get("/api/prompt-templates/default", requireAuth, async (req, res) => {
     try {
       const sceneType = req.query.sceneType as string | undefined;
