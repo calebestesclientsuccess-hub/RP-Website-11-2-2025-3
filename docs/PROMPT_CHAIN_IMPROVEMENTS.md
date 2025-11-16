@@ -1,4 +1,3 @@
-
 # Portfolio Director Prompt Chain Improvements
 
 ## Overview
@@ -158,3 +157,411 @@ All prompts now pass these tests:
 - **Prompt Versioning**: Tag each prompt update with date + change summary
 - **Regression Testing**: Run test suite after any prompt modifications
 - **AI Model Updates**: If Gemini API changes, re-validate all 6 stages
+
+---
+
+## Scene Type-Specific Enhancements (Stage 3 Details)
+
+### Why Scene-Specific Refinement?
+
+Each scene type has unique requirements that generic prompts miss:
+
+- **Split scenes** need balanced left/right choreography
+- **Gallery scenes** require wave-effect staggering across multiple images
+- **Quote scenes** demand contemplative pacing with zero distractions
+- **Fullscreen scenes** need immersive depth and dramatic timing
+
+### Implementation Strategy
+
+After Stage 3 (Generate Improvements), the system should:
+
+1. **Identify scene type** from `sceneType` field
+2. **Load type-specific prompt** (buildSplitScenePrompt, buildGalleryScenePrompt, etc.)
+3. **Run targeted refinement** with AI focusing on that scene's unique needs
+4. **Merge improvements** back into main scene sequence
+
+### Split Scene Refinement Rules
+
+```typescript
+// Example improvement from split scene refinement:
+{
+  "sceneIndex": 2,
+  "field": "director.staggerChildren",
+  "currentValue": "0",
+  "newValue": "0.3",
+  "reason": "Split scenes need staggered reveals (left → right). 0.3s delay creates visual wave effect."
+}
+```
+
+**Key Controls for Split Scenes:**
+- staggerChildren: 0.2-0.4s (left/right reveal timing)
+- entryEffect: Directional (slide-left for left content, slide-right for right)
+- alignment: "left" for left content, "right" for right content
+- parallaxIntensity: 0.2-0.3 (subtle depth only)
+
+### Gallery Scene Refinement Rules
+
+```typescript
+// Example improvement from gallery scene refinement:
+{
+  "sceneIndex": 4,
+  "field": "director.entryDuration",
+  "currentValue": "1.2",
+  "newValue": "1.8",
+  "reason": "Gallery scenes need slower entry (1.5-2.0s) for dramatic grid reveal. Fast entries feel rushed with 4+ images."
+}
+```
+
+**Key Controls for Gallery Scenes:**
+- entryDuration: 1.5-2.0s (slower than single images)
+- staggerChildren: 0.15-0.25s (creates wave across grid)
+- scaleOnScroll: true (subtle zoom for depth)
+- parallaxIntensity: 0 (conflicts with scale)
+- exitEffect: "fade" (unified, quick exit)
+
+### Quote Scene Refinement Rules
+
+```typescript
+// Example improvement from quote scene refinement:
+{
+  "sceneIndex": 6,
+  "field": "director.fadeOnScroll",
+  "currentValue": "true",
+  "newValue": "false",
+  "reason": "Quote scenes are contemplative pauses. All scroll effects must be disabled for focus on words."
+}
+```
+
+**Key Controls for Quote Scenes:**
+- entryDuration: 2.5-3.0s (very slow, contemplative)
+- headingSize: "7xl" or "8xl" (quote text dominates)
+- ALL scroll effects: false (fadeOnScroll, scaleOnScroll, blurOnScroll, parallaxIntensity: 0)
+- alignment: "center" (quotes are inherently centered)
+- textShadow: false, textGlow: false (clean, minimalist)
+
+### Fullscreen Scene Refinement Rules
+
+```typescript
+// Example improvement from fullscreen scene refinement:
+{
+  "sceneIndex": 8,
+  "field": "director.blurOnScroll",
+  "currentValue": "false",
+  "newValue": "true",
+  "reason": "Fullscreen scenes are hero moments. blurOnScroll creates cinematic depth (use max 1-2 per portfolio for performance)."
+}
+```
+
+**Key Controls for Fullscreen Scenes:**
+- entryDuration: 2.5-3.5s (hero-level timing)
+- parallaxIntensity: 0.4-0.6 (moderate depth for immersion)
+- scaleOnScroll: false (conflicts with parallax)
+- blurOnScroll: true (optional, for 1-2 scenes max)
+- mediaOpacity: 1.0 (fullscreen media is 100% opaque)
+- enablePerspective: true (if using rotate-in/flip-in)
+
+---
+
+## Portfolio-Level Coherence (Stage 5 Details)
+
+### The 8-Point Coherence Checklist
+
+#### 1. Transition Flow Analysis
+
+**What we check:**
+- Exit effect of Scene N → Entry effect of Scene N+1
+- Compatible pairs: fade→fade, dissolve→cross-fade, slide-up→slide-up
+- Jarring pairs: zoom-out→sudden (avoid)
+
+**Example issue:**
+```json
+{
+  "sceneIndex": 3,
+  "issue": "Scene 3 exits with 'zoom-out' but Scene 4 enters with 'sudden'. Jarring transition.",
+  "suggestion": "Change Scene 4 entryEffect to 'zoom-in' for dramatic reversal continuity."
+}
+```
+
+#### 2. Pacing Rhythm Validation
+
+**What we check:**
+- Duration variation creates musical flow
+- Avoid monotony (all scenes same speed)
+- Pattern example: Slow (2.5s) → Medium (1.2s) → Fast (0.8s) → Slow (2.0s)
+
+**Example issue:**
+```json
+{
+  "sceneIndex": 2,
+  "issue": "Scenes 1-4 all have entryDuration: 1.2s. No pacing variation.",
+  "suggestion": "Vary durations: Scene 1 (hero) = 2.5s, Scene 2 = 1.2s, Scene 3 = 0.8s, Scene 4 = 1.8s."
+}
+```
+
+#### 3. Color Progression Check
+
+**What we check:**
+- Gradual background color shifts
+- Contrast validation (text vs background)
+- Example progression: #0a0a0a → #1e293b → #334155 → #0a0a0a
+
+**Example issue:**
+```json
+{
+  "sceneIndex": 2,
+  "issue": "backgroundColor jumps from #0a0a0a (dark) to #f8fafc (light) too abruptly.",
+  "suggestion": "Add mid-tone transition: #0a0a0a → #1e293b → #334155 → #f8fafc."
+}
+```
+
+#### 4. Scroll Effects Distribution
+
+**What we check:**
+- parallaxIntensity: Max 40% of scenes (avoid overuse)
+- scaleOnScroll: Max 20% of scenes
+- blurOnScroll: Max 10% of scenes (1-2 max)
+- fadeOnScroll: Max 30% of scenes
+
+**Example issue:**
+```json
+{
+  "sceneIndex": 5,
+  "issue": "60% of scenes (6/10) use parallaxIntensity > 0. Overused.",
+  "suggestion": "Reduce parallax usage to 40% (4/10 scenes). Set parallaxIntensity: 0 for text scenes."
+}
+```
+
+#### 5. Conflict Detection
+
+**What we check:**
+- parallaxIntensity > 0 + scaleOnScroll: true (FORBIDDEN)
+- blurOnScroll: true + parallax/scale (performance warning)
+- backgroundColor === textColor (invisible text)
+
+**Example issue:**
+```json
+{
+  "sceneIndex": 3,
+  "issue": "parallaxIntensity: 0.5 AND scaleOnScroll: true. CONFLICT.",
+  "suggestion": "Set parallaxIntensity: 0 if scaleOnScroll is true."
+}
+```
+
+#### 6. Duration Thresholds
+
+**What we check:**
+- Hero scene (first): entryDuration ≥ 2.5s
+- Content scenes: entryDuration ≥ 1.2s
+- Closing scene (last): exitDuration ≥ 2.0s
+
+**Example issue:**
+```json
+{
+  "sceneIndex": 0,
+  "issue": "Hero scene entryDuration: 1.2s. Too fast for opening.",
+  "suggestion": "Increase to 2.5s for dramatic hero entrance."
+}
+```
+
+#### 7. Typography Hierarchy
+
+**What we check:**
+- Hero scenes: headingSize 7xl-8xl
+- Content scenes: headingSize 5xl-6xl
+- Supporting scenes: headingSize 4xl-5xl
+
+**Example issue:**
+```json
+{
+  "sceneIndex": 0,
+  "issue": "Hero scene uses headingSize: '5xl'. Too small for opening impact.",
+  "suggestion": "Use '7xl' or '8xl' for hero scenes."
+}
+```
+
+#### 8. Mandatory Field Completeness
+
+**What we check:**
+- All 37 controls present for every scene
+- No undefined/null values (except gradientColors/gradientDirection)
+
+**Example issue:**
+```json
+{
+  "sceneIndex": 2,
+  "issue": "Missing director.scrollSpeed field.",
+  "suggestion": "Add scrollSpeed: 'normal' to director config."
+}
+```
+
+---
+
+## Final Validation Auto-Fixes (Stage 6 Details)
+
+### Auto-Fix Logic
+
+Stage 6 doesn't just validate - it **auto-fixes** common issues:
+
+#### 1. Missing Fields → Apply Defaults
+
+```typescript
+if (scene.director.scrollSpeed === undefined) {
+  scene.director.scrollSpeed = 'normal';
+  warnings.push('Missing scrollSpeed - applied default: normal');
+  confidenceScore -= 3;
+}
+```
+
+#### 2. Conflict Resolution → Force Correction
+
+```typescript
+if (scene.director.parallaxIntensity > 0 && scene.director.scaleOnScroll) {
+  scene.director.scaleOnScroll = false;
+  warnings.push('parallax + scale conflict - auto-fixed scaleOnScroll to false');
+}
+```
+
+#### 3. Gradient Validation → Null → Undefined
+
+```typescript
+if (scene.director.gradientColors === null) {
+  scene.director.gradientColors = undefined;
+}
+if (scene.director.gradientDirection === null) {
+  scene.director.gradientDirection = undefined;
+}
+```
+
+#### 4. Color Contrast → Auto-Correct
+
+```typescript
+if (scene.director.backgroundColor === scene.director.textColor) {
+  const isDarkBg = scene.director.backgroundColor.includes('#0');
+  scene.director.textColor = isDarkBg ? '#ffffff' : '#0a0a0a';
+  warnings.push('Identical bg/text colors - auto-corrected for contrast');
+}
+```
+
+### Confidence Scoring System
+
+**Starting score: 100**
+
+**Deductions:**
+- Missing required field: -3 points
+- Invalid enum value: -3 points
+- Range violation: -2 points
+- Pattern mismatch (hex codes): -3 points
+- Conflict detected: -5 points
+- Invalid placeholder ID: -3 points
+
+**Bonuses:**
+- Good asset utilization (avg 1.5+ assets/scene): +5 points
+
+**Score interpretation:**
+- 85-100: EXCELLENT ✓✓
+- 70-84: GOOD ✓
+- Below 70: LOW ⚠️ (requires review)
+
+---
+
+## Testing & Validation
+
+### End-to-End Test Scenarios
+
+1. **Happy Path**: User provides valid catalog + director notes
+   - Expected: All 6 stages complete, confidence score ≥ 85%
+
+2. **Missing Fields**: AI omits scrollSpeed in Stage 1
+   - Expected: Stage 6 auto-fixes, adds warning, deducts 3 points
+
+3. **Conflict Scenario**: AI sets parallax + scale simultaneously
+   - Expected: Stage 2 detects, Stage 4 rejects improvement, Stage 6 auto-fixes
+
+4. **Invalid Placeholder**: AI invents "user-image-1"
+   - Expected: Stage 4 rejects improvement, Stage 6 logs error, deducts 3 points
+
+### Regression Tests
+
+Run after any prompt changes:
+
+```bash
+npm run test:portfolio-director
+```
+
+**Test coverage:**
+- ✅ All 37 controls validated
+- ✅ Placeholder ID whitelist enforced
+- ✅ Conflict detection working
+- ✅ Auto-fix logic applied correctly
+- ✅ Confidence scoring accurate
+
+---
+
+## Appendix: Complete 37-Control Reference
+
+### ANIMATION & TIMING (8 controls)
+1. entryEffect
+2. entryDuration
+3. entryDelay
+4. entryEasing
+5. exitEffect
+6. exitDuration
+7. exitDelay
+8. exitEasing
+
+### VISUAL FOUNDATION (2 controls)
+9. backgroundColor
+10. textColor
+
+### SCROLL DEPTH EFFECTS (3 controls)
+11. parallaxIntensity
+12. scrollSpeed
+13. animationDuration
+
+### TYPOGRAPHY (4 controls)
+14. headingSize
+15. bodySize
+16. fontWeight
+17. alignment
+
+### SCROLL INTERACTION (3 controls)
+18. fadeOnScroll
+19. scaleOnScroll
+20. blurOnScroll
+
+### MULTI-ELEMENT TIMING (2 controls)
+21. staggerChildren
+22. layerDepth
+
+### ADVANCED MOTION (3 controls)
+23. transformOrigin
+24. overflowBehavior
+25. backdropBlur
+
+### VISUAL BLENDING (2 controls)
+26. mixBlendMode
+27. enablePerspective
+
+### CUSTOM STYLING (3 controls)
+28. customCSSClasses
+29. textShadow
+30. textGlow
+
+### VERTICAL SPACING (2 controls)
+31. paddingTop
+32. paddingBottom
+
+### MEDIA PRESENTATION (3 controls)
+33. mediaPosition
+34. mediaScale
+35. mediaOpacity
+
+### GRADIENT BACKGROUNDS (2 controls - nullable)
+36. gradientColors
+37. gradientDirection
+
+---
+
+**Document Version**: 2.0
+**Last Updated**: January 2025
+**Status**: ✅ Production Ready
