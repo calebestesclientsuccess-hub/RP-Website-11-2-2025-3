@@ -162,13 +162,27 @@ export default function PortfolioBuilder() {
   });
 
   // Fetch existing project data when a project is selected
-  const { data: existingProjectData } = useQuery<any>({
+  const { data: existingProjectData, isLoading: isLoadingProject, error: projectError } = useQuery<any>({
     queryKey: ["/api/projects", selectedProjectId],
     enabled: !isNewProject && !!selectedProjectId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const existingProjectScenes = existingProjectData?.scenes; // Assuming 'scenes' is an array of scene objects
+
+  // Debug: Log the raw project data
+  useEffect(() => {
+    if (!isNewProject && selectedProjectId) {
+      console.log('[Portfolio Builder] Project Query Status:', {
+        isLoadingProject,
+        hasError: !!projectError,
+        error: projectError,
+        existingProjectData: existingProjectData,
+        scenesArray: existingProjectScenes,
+        scenesLength: existingProjectScenes?.length
+      });
+    }
+  }, [existingProjectData, isLoadingProject, projectError, selectedProjectId, isNewProject, existingProjectScenes]);
 
   // --- Effects ---
 
