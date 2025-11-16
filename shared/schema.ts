@@ -798,7 +798,6 @@ export const directorConfigSchema = z.object({
   parallaxIntensity: z.number().min(0).max(1).optional(),
   animationDuration: z.number().min(0.5).max(10.0).optional(),
   animationEasing: z.enum(["linear", "ease", "ease-in", "ease-out", "ease-in-out", "power1", "power2", "power3", "power4", "back", "elastic", "bounce"]).optional(),
-  blurOnScroll: z.boolean().optional(),
   fadeOnScroll: z.boolean().default(false),
   scaleOnScroll: z.boolean().default(false),
   blurOnScroll: z.boolean().default(false),
