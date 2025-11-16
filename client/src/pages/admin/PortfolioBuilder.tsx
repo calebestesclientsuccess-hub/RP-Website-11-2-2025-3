@@ -40,6 +40,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssetMapperModal } from "@/components/admin/AssetMapperModal";
 import type { PlaceholderId } from "@shared/placeholder-config";
+import { SceneRenderer } from "@/components/admin/SceneRenderer"; // Assuming SceneRenderer is in this path
 
 interface SceneBuilder {
   id: string;
@@ -292,9 +293,9 @@ export default function PortfolioBuilder() {
         null, 
         2
       );
-      
+
       setCurrentSceneJson(scenesJson);
-      
+
       // Only add welcome message if no conversation history loaded
       if (conversationHistory.length === 0) {
         setConversationHistory([
@@ -304,7 +305,7 @@ export default function PortfolioBuilder() {
           }
         ]);
       }
-      
+
       console.log('[Portfolio Builder] Loaded existing project scenes');
     } else {
       // Project exists but has no scenes
@@ -608,13 +609,13 @@ export default function PortfolioBuilder() {
       // Update conversation history from backend response
       if (result.conversationUpdate) {
         const { userMessage, assistantMessage } = result.conversationUpdate;
-        
+
         setConversationHistory(prev => [
           ...prev,
           { role: "user", content: userMessage },
           { role: "assistant", content: assistantMessage }
         ]);
-        
+
         console.log('[Portfolio Builder] Updated conversation history, new length:', conversationHistory.length + 2);
       }
 
@@ -630,7 +631,7 @@ export default function PortfolioBuilder() {
           ...result.versionData,
           confidenceScore: result.confidenceScore
         };
-        
+
         setVersions(prev => {
           const updated = [...prev, newVersion];
           console.log('[Portfolio Builder] Added version, total versions:', updated.length);
@@ -1289,7 +1290,7 @@ export default function PortfolioBuilder() {
                                       // Handle both old and new scene formats
                                       const sceneType = scene.type || scene.sceneType || 'unknown';
                                       const heading = scene.content?.heading || scene.content?.quote || scene.headline || 'Scene ' + (idx + 1);
-                                      
+
                                       return (
                                         <div key={idx} className="flex items-start gap-3 p-3 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                                           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm">

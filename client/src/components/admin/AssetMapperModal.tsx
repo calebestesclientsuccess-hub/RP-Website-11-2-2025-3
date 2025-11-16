@@ -95,10 +95,31 @@ export function AssetMapperModal({
     },
   });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (selectedAssetId) {
-      onSave(placeholderId, selectedAssetId);
-      onClose();
+      // Extract projectId from current URL or pass it as prop
+      const projectId = window.location.pathname.split('/').pop();
+      
+      try {
+        // Save to database
+        const response = await apiRequest(
+          "PUT",
+          `/api/projects/${projectId}/asset-map/${placeholderId}`,
+          { assetId: selectedAssetId }
+        );
+        
+        if (!response.ok) throw new Error("Failed to save asset mapping");
+        
+        toast({ title: "Asset mapping saved successfully" });
+        onSave(placeholderId, selectedAssetId);
+        onClose();
+      } catch (error) {
+        toast({
+          title: "Failed to save asset mapping",
+          description: error instanceof Error ? error.message : "Unknown error",
+          variant: "destructive",
+        });
+      }
     }
   };
 

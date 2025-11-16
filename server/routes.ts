@@ -1575,13 +1575,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/projects/:id", requireAuth, async (req, res) => {
+  app.get("/api/projects/:projectId", requireAuth, async (req, res) => {
     try {
-      const project = await storage.getProjectById(req.tenantId, req.params.id);
+      const project = await storage.getProject(req.params.projectId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
-      return res.json(project);
+      const scenes = await storage.getProjectScenes(req.params.projectId);
+      const assetMap = await storage.getAssetMap(req.params.projectId);
+      return res.json({ ...project, scenes, assetMap });
     } catch (error) {
       console.error("Error fetching project:", error);
       return res.status(500).json({ error: "Internal server error" });
@@ -1780,7 +1782,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       });
 
-      // Build conversation context
+      // Build conversation context for Gemini
       const systemPrompt = `You are a cinematic director helping refine a scrollytelling portfolio.
 
 CURRENT PROJECT:
@@ -1997,153 +1999,6 @@ Your explanation should be conversational and reference specific scene numbers.`
 
       // Parse current scenes
       if (currentSceneJson) {
-
-
-  // Portfolio version history endpoints
-  app.get("/api/projects/:projectId/versions", requireAuth, async (req, res) => {
-    try {
-      const versions = await storage.getPortfolioVersions(req.params.projectId);
-      return res.json(versions);
-    } catch (error) {
-      console.error("Error fetching portfolio versions:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.get("/api/projects/:projectId/conversation", requireAuth, async (req, res) => {
-    try {
-      const history = await storage.getConversationHistory(req.params.projectId);
-      return res.json(history);
-    } catch (error) {
-      console.error("Error fetching conversation history:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.delete("/api/projects/:projectId/conversation", requireAuth, async (req, res) => {
-    try {
-      await storage.deleteConversationHistory(req.params.projectId);
-      return res.json({ success: true });
-    } catch (error) {
-      console.error("Error clearing conversation history:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  // Content Assets API
-  app.post("/api/content-assets", requireAuth, async (req, res) => {
-    try {
-      const { assetType, title, tags, imageUrl, altText, videoUrl, videoCaption, duration, quoteText, quoteAuthor, quoteRole } = req.body;
-
-      if (!assetType || !['image', 'video', 'quote'].includes(assetType)) {
-        return res.status(400).json({ error: "Invalid asset type" });
-      }
-
-      const asset = await storage.createContentAsset(req.tenantId, {
-        assetType,
-        title,
-        tags,
-        imageUrl,
-        altText,
-        videoUrl,
-        videoCaption,
-        duration,
-        quoteText,
-        quoteAuthor,
-        quoteRole,
-      });
-
-      return res.status(201).json(asset);
-    } catch (error) {
-      console.error("Error creating content asset:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.get("/api/content-assets", requireAuth, async (req, res) => {
-    try {
-      const { type } = req.query;
-      
-      let assets;
-      if (type && ['image', 'video', 'quote'].includes(type as string)) {
-        assets = await storage.getContentAssetsByType(req.tenantId, type as 'image' | 'video' | 'quote');
-      } else {
-        assets = await storage.getAllContentAssets(req.tenantId);
-      }
-
-      return res.json(assets);
-    } catch (error) {
-      console.error("Error fetching content assets:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.delete("/api/content-assets/:id", requireAuth, async (req, res) => {
-    try {
-      await storage.deleteContentAsset(req.tenantId, req.params.id);
-      return res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting content asset:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  // Asset Mapping API
-  app.get("/api/projects/:projectId/asset-map", requireAuth, async (req, res) => {
-    try {
-      const assetMap = await storage.getAssetMap(req.params.projectId);
-      return res.json(assetMap);
-    } catch (error) {
-      console.error("Error fetching asset map:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.post("/api/projects/:projectId/asset-map", requireAuth, async (req, res) => {
-    try {
-      const { assetMap } = req.body;
-      if (!assetMap || typeof assetMap !== 'object') {
-        return res.status(400).json({ error: "Invalid asset map format" });
-      }
-      const updated = await storage.saveAssetMap(req.params.projectId, assetMap);
-      return res.json({ success: true, assetMap: updated.assetMap });
-    } catch (error) {
-      console.error("Error saving asset map:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.put("/api/projects/:projectId/asset-map/:placeholderId", requireAuth, async (req, res) => {
-    try {
-      const { assetId } = req.body;
-      if (!assetId) {
-        return res.status(400).json({ error: "assetId is required" });
-      }
-      const updated = await storage.updateAssetMapping(
-        req.params.projectId,
-        req.params.placeholderId,
-        assetId
-      );
-      return res.json({ success: true, assetMap: updated.assetMap });
-    } catch (error) {
-      console.error("Error updating asset mapping:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  app.delete("/api/projects/:projectId/asset-map/:placeholderId", requireAuth, async (req, res) => {
-    try {
-      const updated = await storage.removeAssetMapping(
-        req.params.projectId,
-        req.params.placeholderId
-      );
-      return res.json({ success: true, assetMap: updated.assetMap });
-    } catch (error) {
-      console.error("Error removing asset mapping:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
         try {
           currentScenes = JSON.parse(currentSceneJson);
           console.log(`[Portfolio Enhanced] Parsed ${currentScenes.length} scenes from JSON`);
@@ -2179,7 +2034,7 @@ SCENE REFERENCE:
 - When modifying a single scene, keep all other scenes EXACTLY as they are
 
 RESPONSE FORMAT:
-- explanation: Plain English explanation of changes (which scenes were modified)
+- explanation: Plain English explanation of changes made (which scenes were modified)
 - scenes: COMPLETE array of ALL ${currentScenes.length} scenes (modified + unmodified)`;
 
       // Build conversation messages
@@ -3863,12 +3718,6 @@ RESPONSE FORMAT:
       }
 
       const campaignData = result.data;
-
-      // TENANT ISOLATION: Verify campaign exists and belongs to user's tenant before updating
-      const existingCampaign = await storage.getCampaignById(req.tenantId, req.params.id);
-      if (!existingCampaign) {
-        return res.status(404).json({ error: "Campaign not found or access denied" });
-      }
 
       // Zone conflict validation for inline campaigns
       // TENANT ISOLATION: Only check conflicts within same tenant

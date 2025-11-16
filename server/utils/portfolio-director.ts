@@ -2803,10 +2803,12 @@ export function convertToSceneConfigs(
           };
         }
         
-        // Text scenes MUST set nullable media controls to undefined (not null)
+        // Text scenes MUST set all 5 nullable media/gradient controls to undefined
         sceneConfig.director.mediaPosition = undefined;
         sceneConfig.director.mediaScale = undefined;
         sceneConfig.director.mediaOpacity = undefined;
+        sceneConfig.director.gradientColors = undefined;
+        sceneConfig.director.gradientDirection = undefined;
         break;
       }
 
