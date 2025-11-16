@@ -6,7 +6,7 @@ import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -30,12 +30,14 @@ import {
 import { Plus, Edit, Trash2, Copy, Sparkles, Loader2 as LoaderIcon } from "lucide-react";
 import { DirectorConfigForm } from "@/components/DirectorConfigForm";
 import { DEFAULT_DIRECTOR_CONFIG, type ProjectScene } from "@shared/schema";
+import { PortfolioPromptsManager } from "@/components/admin/PortfolioPromptsManager";
 
 // Extract SceneConfig type from ProjectScene
 type SceneConfig = ProjectScene['sceneConfig'];
 
 interface SceneEditorProps {
   projectId: string;
+  id: string; // Assuming 'id' is also available and needed for PortfolioPromptsManager
 }
 
 const SCENE_TEMPLATES = {
@@ -115,14 +117,14 @@ const quickModeSchema = z.object({
   director: z.any().optional(),
 });
 
-export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
+export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) {
   const { toast } = useToast();
   const [editingScene, setEditingScene] = useState<ProjectScene | null>(null);
   const [sceneJson, setSceneJson] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("quick");
-  
+  const [activeTab, setActiveTab] = useState("details"); // Default to details tab
+
   // AI Generation state
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiSceneType, setAiSceneType] = useState<string>("");
@@ -177,10 +179,10 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
       console.error("Scene creation error:", error.message);
       try {
         const errorData = JSON.parse(error.message);
-        toast({ 
-          title: "Failed to create scene", 
+        toast({
+          title: "Failed to create scene",
           description: errorData.details || errorData.error || "Unknown validation error",
-          variant: "destructive" 
+          variant: "destructive"
         });
       } catch {
         toast({ title: "Failed to create scene", variant: "destructive" });
@@ -230,32 +232,32 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
   const validateJson = (json: string): boolean => {
     try {
       const parsed = JSON.parse(json);
-      
+
       if (!parsed.type) {
         setJsonError("Scene must have a 'type' property");
         return false;
       }
-      
+
       if (!ALLOWED_SCENE_TYPES.includes(parsed.type)) {
         setJsonError(`Scene type must be one of: ${ALLOWED_SCENE_TYPES.join(", ")}`);
         return false;
       }
-      
+
       if (!parsed.content) {
         setJsonError("Scene must have a 'content' property");
         return false;
       }
-      
+
       if (typeof parsed.content !== "object" || parsed.content === null) {
         setJsonError("Scene 'content' must be an object");
         return false;
       }
-      
+
       if (Object.keys(parsed.content).length === 0) {
         setJsonError("Scene 'content' must contain at least one property");
         return false;
       }
-      
+
       setJsonError(null);
       return true;
     } catch (e) {
@@ -332,7 +334,7 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
   const handleQuickModeSave = () => {
     form.handleSubmit((data) => {
       const sceneConfig = buildSceneConfigFromForm(data);
-      
+
       if (editingScene) {
         updateMutation.mutate({ sceneId: editingScene.id, sceneConfig });
       } else {
@@ -358,11 +360,11 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
     const formatted = JSON.stringify(scene.sceneConfig, null, 2);
     setSceneJson(formatted);
     validateJson(formatted);
-    
+
     // Populate form for Quick Mode
     const config = scene.sceneConfig as any;
     form.setValue("type", config.type);
-    
+
     if (config.content) {
       if (config.content.heading) form.setValue("heading", config.content.heading);
       if (config.content.body) form.setValue("body", config.content.body);
@@ -424,23 +426,25 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
     try {
       const response = await apiRequest("POST", "/api/scenes/generate-with-ai", {
         prompt: aiPrompt,
+        // Pass projectId for context-aware prompt generation
+        projectId: projectId,
         sceneType: (aiSceneType && aiSceneType !== "auto") ? aiSceneType : undefined,
       });
 
       const data = await response.json();
-      
+
       // Normalize and convert Gemini output to scene config format with proper defaults
       const normalizedType = normalizeSceneType(data.sceneType || "text");
-      
+
       // Build content with schema requirements
       const content: any = {};
-      
+
       if (data.headline) content.heading = data.headline;
       if (data.bodyText) content.body = data.bodyText;
       if (data.subheadline) content.subheading = data.subheadline;
       if (data.mediaUrl) content.url = data.mediaUrl;
       if (data.mediaType) content.mediaType = data.mediaType;
-      
+
       // Ensure required fields for text scenes (heading + body both required)
       if (normalizedType === "text") {
         if (!content.heading) content.heading = "Untitled Scene";
@@ -449,7 +453,7 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
           content.body = content.subheading || "Add your scene content here.";
         }
       }
-      
+
       // Clamp director timing values to schema constraints (in seconds)
       const clampDuration = (value: number | undefined, max: number): number | undefined => {
         if (value === undefined) return undefined;
@@ -459,7 +463,7 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
         // Clamp to valid range (0.1s to max)
         return Math.min(Math.max(seconds, 0.1), max);
       };
-      
+
       const sceneConfig = {
         type: normalizedType,
         content,
@@ -479,10 +483,10 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
       toast({ title: "Scene generated successfully!" });
     } catch (error) {
       console.error("AI generation error:", error);
-      toast({ 
-        title: "Failed to generate scene", 
+      toast({
+        title: "Failed to generate scene",
         description: error instanceof Error ? error.message : "Unknown error",
-        variant: "destructive" 
+        variant: "destructive"
       });
     } finally {
       setIsGenerating(false);
@@ -519,10 +523,10 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
         createMutation.mutate(parsedConfig);
       }
     } catch (error) {
-      toast({ 
-        title: "Invalid JSON", 
+      toast({
+        title: "Invalid JSON",
         description: "The AI-generated JSON is not valid. Please fix it before saving.",
-        variant: "destructive" 
+        variant: "destructive"
       });
     }
   };
@@ -531,9 +535,9 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Scrollytelling Scenes</h3>
+          <h3 className="text-lg font-semibold">Project Settings</h3>
           <p className="text-sm text-muted-foreground">
-            Manage scenes for the /branding/:slug scrollytelling page
+            Configure your project details, scenes, and AI prompts.
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -547,7 +551,7 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
                 });
                 setSceneJson("");
                 setJsonError(null);
-                setActiveTab("quick");
+                setActiveTab("details"); // Reset to details tab
               }}
               data-testid="button-add-scene"
             >
@@ -559,21 +563,46 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
             <DialogHeader>
               <DialogTitle>{editingScene ? "Edit Scene" : "Add New Scene"}</DialogTitle>
               <DialogDescription>
-                Configure your scene using the form-based Quick Mode or edit raw JSON in Advanced mode.
+                Configure your scene using the form-based Quick Mode, edit raw JSON in Advanced mode, or generate with AI.
               </DialogDescription>
             </DialogHeader>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
               <TabsList className="grid w-full grid-cols-3" data-testid="tabs-scene-editor">
-                <TabsTrigger value="quick" data-testid="tab-quick-mode">Quick Mode</TabsTrigger>
-                <TabsTrigger value="ai" data-testid="tab-ai-generate">
-                  <Sparkles className="w-4 h-4 mr-1" />
-                  AI Generate
-                </TabsTrigger>
-                <TabsTrigger value="advanced" data-testid="tab-advanced-json">Advanced JSON</TabsTrigger>
+                <TabsTrigger value="details">Details</TabsTrigger>
+                <TabsTrigger value="prompts">AI Prompts</TabsTrigger>
+                <TabsTrigger value="scenes">Scenes</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="quick" className="space-y-6 mt-6">
+              <TabsContent value="details" className="space-y-6 mt-6">
+                {/* Placeholder for project details form if it exists or will be added */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Project Details</CardTitle>
+                    <CardDescription>Basic information about the project.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Project details form components would go here */}
+                    <p>Project Details Form - Coming Soon</p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="prompts" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Custom AI Prompts</CardTitle>
+                    <CardDescription>
+                      Override default system prompts for AI-powered scene generation
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <PortfolioPromptsManager projectId={projectId} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="scenes" className="space-y-6 mt-6">
                 <Form {...form}>
                   <div className="space-y-6">
                     {/* Scene Type Selector */}
@@ -607,7 +636,7 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
                     {/* Content Fields (vary by scene type) */}
                     <Card className="p-4 space-y-4">
                       <h4 className="font-medium">Content</h4>
-                      
+
                       {sceneType === "text" && (
                         <>
                           <FormField
@@ -1003,57 +1032,94 @@ export default function ProjectSceneEditor({ projectId }: SceneEditorProps) {
         </Dialog>
       </div>
 
-      {isLoading ? (
-        <Card className="p-8 text-center text-muted-foreground">Loading scenes...</Card>
-      ) : scenes.length === 0 ? (
-        <Card className="p-8 text-center text-muted-foreground">
-          No scenes yet. Add your first scene to create the scrollytelling experience.
-        </Card>
-      ) : (
-        <div className="space-y-2">
-          {scenes.map((scene, index) => (
-            <Card key={scene.id} className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm font-medium">Scene {index + 1}</span>
-                    <Badge variant="secondary">{getSceneType(scene.sceneConfig)}</Badge>
-                  </div>
-                  <pre className="text-xs text-muted-foreground bg-muted p-2 rounded overflow-x-auto max-h-20">
-                    {JSON.stringify(scene.sceneConfig, null, 2)}
-                  </pre>
-                </div>
-                <div className="flex gap-1 ml-4">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleEdit(scene)}
-                    data-testid={`button-edit-scene-${scene.id}`}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleDuplicate(scene)}
-                    data-testid={`button-duplicate-scene-${scene.id}`}
-                  >
-                    <Copy className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleDelete(scene.id)}
-                    data-testid={`button-delete-scene-${scene.id}`}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
+        <TabsList className="grid w-full grid-cols-3" data-testid="tabs-project-editor">
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="prompts">AI Prompts</TabsTrigger>
+          <TabsTrigger value="scenes">Scenes</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="details" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Project Details</CardTitle>
+              <CardDescription>Basic information about the project.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Project details form components would go here */}
+              <p>Project Details Form - Coming Soon</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="prompts" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Custom AI Prompts</CardTitle>
+              <CardDescription>
+                Override default system prompts for AI-powered scene generation
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PortfolioPromptsManager projectId={projectId} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="scenes" className="space-y-6 mt-6">
+          {isLoading ? (
+            <Card className="p-8 text-center text-muted-foreground">Loading scenes...</Card>
+          ) : scenes.length === 0 ? (
+            <Card className="p-8 text-center text-muted-foreground">
+              No scenes yet. Add your first scene to create the scrollytelling experience.
             </Card>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className="space-y-2">
+              {scenes.map((scene, index) => (
+                <Card key={scene.id} className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium">Scene {index + 1}</span>
+                        <Badge variant="secondary">{getSceneType(scene.sceneConfig)}</Badge>
+                      </div>
+                      <pre className="text-xs text-muted-foreground bg-muted p-2 rounded overflow-x-auto max-h-20">
+                        {JSON.stringify(scene.sceneConfig, null, 2)}
+                      </pre>
+                    </div>
+                    <div className="flex gap-1 ml-4">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleEdit(scene)}
+                        data-testid={`button-edit-scene-${scene.id}`}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleDuplicate(scene)}
+                        data-testid={`button-duplicate-scene-${scene.id}`}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleDelete(scene.id)}
+                        data-testid={`button-delete-scene-${scene.id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -783,13 +783,37 @@ export async function generatePortfolioWithAI(
   const aiClient = getAIClient();
 
   console.log('[Portfolio Director] Starting 6-stage refinement pipeline...');
+  
+  // Load custom prompts from database if projectId is provided
+  let activePrompts = customPrompts || {};
+  if (projectId && !customPrompts) {
+    try {
+      const { storage } = await import('../storage');
+      const dbPrompts = await storage.getPortfolioPrompts(projectId);
+      
+      // Convert array to record, only including active prompts
+      activePrompts = dbPrompts
+        .filter(p => p.isActive && p.customPrompt)
+        .reduce((acc, p) => {
+          acc[p.promptType] = p.customPrompt!;
+          return acc;
+        }, {} as Record<string, string>);
+        
+      if (Object.keys(activePrompts).length > 0) {
+        console.log('[Portfolio Director] Loaded', Object.keys(activePrompts).length, 'custom prompts from database');
+      }
+    } catch (error) {
+      console.error('[Portfolio Director] Failed to load custom prompts:', error);
+      // Continue with defaults
+    }
+  }
 
   // STAGE 1: Initial Generation (Form-Filling) with retry logic
   // Check for custom prompt override
   const defaultPrompt = buildPortfolioPrompt(catalog);
-  const prompt = customPrompts?.['artistic_director'] || defaultPrompt;
+  const prompt = activePrompts['artistic_director'] || defaultPrompt;
   
-  if (customPrompts?.['artistic_director']) {
+  if (activePrompts['artistic_director']) {
     console.log('[Portfolio Director] Using CUSTOM prompt for Stage 1 (Artistic Director)');
   }
 
@@ -1082,7 +1106,7 @@ export async function generatePortfolioWithAI(
   console.log('[Portfolio Director] ✅ Stage 1 complete: Initial generation and confidence scoring');
 
   // STAGE 2: Self-Audit for Inconsistencies
-  const auditPrompt = `You are the Technical Director (TD), the "First Assistant Director (1st AD)" for this film production. You are the 'Artistic Director's' (your previous self from Stage 1) most trusted partner.
+  const defaultAuditPrompt = `You are the Technical Director (TD), the "First Assistant Director (1st AD)" for this film production. You are the 'Artistic Director's' (your previous self from Stage 1) most trusted partner.
 
 Your job is not to judge the art. Your job is to ensure the film functions. A single technical failure—a conflict, a missing field, a broken asset link—ruins the art.
 
@@ -1194,6 +1218,13 @@ You must also find these specific technical failures:
 
 Valid IDs: ${getAllPlaceholderIds().join(', ')}
 `;
+
+  // Use custom prompt if available
+  const auditPrompt = activePrompts['technical_director'] || defaultAuditPrompt;
+  
+  if (activePrompts['technical_director']) {
+    console.log('[Portfolio Director] Using CUSTOM prompt for Stage 2 (Technical Director)');
+  }
 
   const auditResponse = await aiClient.models.generateContent({
     model: "gemini-2.5-pro",

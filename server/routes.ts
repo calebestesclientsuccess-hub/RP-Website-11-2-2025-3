@@ -2547,6 +2547,7 @@ RESPONSE FORMAT:
           contentCatalog: catalog,
           directorConfig: {}, // Placeholder for director config if needed
           briefingNotes: req.body.briefingNotes, // Pass briefing notes if provided
+          projectId: projectId || undefined, // Pass projectId for custom prompt loading
         });
 
         console.log(`[Portfolio AI] Generated ${portfolioResult.scenes.length} scenes`);
@@ -3140,7 +3141,7 @@ RESPONSE FORMAT:
           }
 
           // Calculate points-based bucket
-          bucket = await calculatePointsBasedBucket(submittedData, answers, buckets);
+          bucket = calculatePointsBasedBucket(submittedData, answers, buckets);
 
           // Handle case where no bucket matches
           if (!bucket) {

@@ -702,8 +702,17 @@ export default function PortfolioBuilder() {
                   size="sm"
                   onClick={() => setLocation('/admin/ai-prompt-settings')}
                 >
-                  Manage AI Prompts
+                  Global AI Prompts
                 </Button>
+                {!isNewProject && selectedProjectId && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setLocation(`/admin/projects/${selectedProjectId}/edit`)}
+                  >
+                    Custom Prompts for This Project
+                  </Button>
+                )}
               </div>
             </header>
 
