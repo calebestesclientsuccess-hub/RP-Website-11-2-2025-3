@@ -118,7 +118,7 @@ export default function PortfolioBuilder() {
 
   // Fetch all projects for selection
   const { data: projects } = useQuery<Project[]>({
-    queryKey: ["/api/branding/projects"],
+    queryKey: ["/api/projects"],
   });
 
   // Add or update scene
