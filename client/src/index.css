@@ -731,6 +731,150 @@
   border: 1px solid rgba(220, 20, 60, 0.5);
 }
 
+/* ================================================
+   ENHANCED FOCUS INDICATORS - WCAG 2.1 AA Compliant
+   ================================================ */
+
+/* High-visibility focus ring for all interactive elements */
+*:focus-visible {
+  outline: 3px solid hsl(var(--primary));
+  outline-offset: 2px;
+  transition: outline-offset 0.2s ease;
+}
+
+/* Enhanced focus for buttons */
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid hsl(var(--primary));
+  outline-offset: 3px;
+  box-shadow: 
+    0 0 0 3px hsl(var(--background)),
+    0 0 0 6px hsl(var(--primary));
+}
+
+/* Focus for form inputs */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid hsl(var(--primary));
+  outline-offset: 2px;
+  border-color: hsl(var(--primary));
+}
+
+/* Focus for custom checkboxes and radios */
+[role="checkbox"]:focus-visible,
+[role="radio"]:focus-visible,
+[role="switch"]:focus-visible {
+  outline: 3px solid hsl(var(--primary));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px hsla(var(--primary), 0.2);
+}
+
+/* Focus for sliders */
+[role="slider"]:focus-visible {
+  outline: 3px solid hsl(var(--primary));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px hsla(var(--primary), 0.3);
+}
+
+/* Focus for tabs */
+[role="tab"]:focus-visible {
+  outline: 3px solid hsl(var(--primary));
+  outline-offset: -2px;
+}
+
+/* Focus for accordion triggers */
+[data-radix-collection-item]:focus-visible {
+  outline: 3px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* ================================================
+   HIGH-CONTRAST MODE - WCAG 2.1 AAA Support
+   ================================================ */
+
+@media (prefers-contrast: high), (prefers-contrast: more) {
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --primary: 0 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 100%;
+    --accent: 0 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --border: 0 0% 100%;
+    --input: 0 0% 100%;
+    --ring: 0 100% 50%;
+  }
+
+  /* Increase all border widths */
+  * {
+    border-width: 2px;
+  }
+
+  /* Remove subtle effects that reduce contrast */
+  .glass-morphism,
+  .backdrop-blur,
+  [class*="shadow"] {
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Stronger focus indicators */
+  *:focus-visible {
+    outline-width: 4px !important;
+    outline-offset: 3px !important;
+  }
+
+  /* High contrast text */
+  p, span, div, a, button, input, textarea {
+    text-shadow: none !important;
+  }
+
+  /* Remove transparency */
+  * {
+    opacity: 1 !important;
+  }
+}
+
+/* User-activated high contrast mode */
+[data-high-contrast="true"] {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --primary: 0 100% 60%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 25%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 20%;
+  --muted-foreground: 0 0% 100%;
+  --accent: 280 100% 70%;
+  --accent-foreground: 0 0% 0%;
+  --border: 0 0% 100%;
+  --input: 0 0% 100%;
+  --ring: 0 100% 60%;
+}
+
+[data-high-contrast="true"] * {
+  border-width: 2px;
+  opacity: 1 !important;
+}
+
+[data-high-contrast="true"] .glass-morphism,
+[data-high-contrast="true"] .backdrop-blur,
+[data-high-contrast="true"] [class*="shadow"] {
+  backdrop-filter: none !important;
+  box-shadow: 0 0 0 2px hsl(var(--border)) !important;
+}
+
+[data-high-contrast="true"] *:focus-visible {
+  outline-width: 4px !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 4px hsl(var(--background)), 0 0 0 8px hsl(var(--ring)) !important;
+}
+
 
 
   /* ================================================

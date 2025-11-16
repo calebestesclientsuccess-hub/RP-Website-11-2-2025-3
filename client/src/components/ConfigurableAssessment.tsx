@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { AssessmentConfig, AssessmentQuestion, AssessmentAnswer } from "@shared/schema";
+import { useAnnouncer } from './AccessibilityAnnouncer';
 
 interface ConfigurableAssessmentProps {
   configSlug: string;
@@ -49,16 +50,16 @@ const isQuestionVisible = (
   allQuestions: AssessmentQuestion[]
 ): boolean => {
   const condition = parseConditionalLogic(question.conditionalLogic);
-  
+
   if (!condition) {
     return true;
   }
-  
+
   const referencedQuestion = allQuestions.find(q => q.id === condition.questionId);
   if (!referencedQuestion) {
     return false;
   }
-  
+
   return userAnswers[condition.questionId] === condition.answerId;
 };
 
@@ -67,6 +68,7 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
   const { toast } = useToast();
   const [currentQuestionId, setCurrentQuestionId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const { announce } = useAnnouncer();
   const [sessionId] = useState(() => {
     const existing = localStorage.getItem(`assessment_session_${configSlug}`);
     if (existing) return existing;
@@ -107,14 +109,14 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
   useEffect(() => {
     if (currentQuestionId === null && sortedQuestions.length > 0 && config) {
       let initialQuestionId: string | null = null;
-      
+
       if (config.entryQuestionId) {
         const entryQuestion = sortedQuestions.find(q => q.id === config.entryQuestionId);
         if (entryQuestion && isQuestionVisible(entryQuestion, answers, sortedQuestions)) {
           initialQuestionId = config.entryQuestionId;
         }
       }
-      
+
       if (!initialQuestionId) {
         for (const question of sortedQuestions) {
           if (isQuestionVisible(question, answers, sortedQuestions)) {
@@ -123,7 +125,7 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
           }
         }
       }
-      
+
       if (initialQuestionId) {
         setCurrentQuestionId(initialQuestionId);
       }
@@ -136,20 +138,20 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
       if (current && !isQuestionVisible(current, answers, sortedQuestions)) {
         const currentIndex = sortedQuestions.findIndex(q => q.id === currentQuestionId);
         let nextVisibleId: string | null = null;
-        
+
         for (let i = currentIndex + 1; i < sortedQuestions.length; i++) {
           if (isQuestionVisible(sortedQuestions[i], answers, sortedQuestions)) {
             nextVisibleId = sortedQuestions[i].id;
             break;
           }
         }
-        
+
         if (nextVisibleId) {
           setCurrentQuestionId(nextVisibleId);
         } else {
           // Current question became hidden and no subsequent visible questions found
           // Finalize the assessment to prevent user from being stuck
-          
+
           if (config.scoringMethod === 'points') {
             // Submit the assessment for points calculation
             // The backend will calculate the score and route to the appropriate bucket
@@ -164,7 +166,7 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
               description: "Your previous answer changed which questions are visible. Restarting assessment.",
               variant: "default",
             });
-            
+
             // Reset to entry question to prevent user from being stuck
             setAnswers({});
             const initialQuestionId = config.entryQuestionId || sortedQuestions[0]?.id;
@@ -198,12 +200,12 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
   }
 
   const currentQuestion = sortedQuestions.find(q => q.id === currentQuestionId);
-  
+
   if (!currentQuestion) {
     return null;
   }
 
-  const questionData: QuestionData = currentQuestion.questionText 
+  const questionData: QuestionData = currentQuestion.questionText
     ? { text: currentQuestion.questionText, description: currentQuestion.description || undefined }
     : { text: "Question" };
 
@@ -219,7 +221,7 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
     if (!selectedAnswer) return;
 
     let answerData: AnswerData = { text: selectedAnswer.answerText };
-    
+
     try {
       const parsedValue = JSON.parse(selectedAnswer.answerValue);
       if (parsedValue.nextQuestionId) {
@@ -231,7 +233,7 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
     } catch {
       // answerValue is just a string, not JSON
     }
-    
+
     if (answerData.resultBucketKey) {
       if (config?.scoringMethod === 'points') {
         submitMutation.mutate({
@@ -247,10 +249,10 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
       }
       return;
     }
-    
+
     let nextQuestionId: string | null = null;
     let startIndex = 0;
-    
+
     if (answerData.nextQuestionId) {
       const targetIndex = sortedQuestions.findIndex(q => q.id === answerData.nextQuestionId);
       if (targetIndex !== -1) {
@@ -264,7 +266,7 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
       const currentIndex = sortedQuestions.findIndex(q => q.id === questionId);
       startIndex = currentIndex !== -1 ? currentIndex + 1 : 0;
     }
-    
+
     const visitedIndices = new Set<number>();
     for (let i = startIndex; i < sortedQuestions.length; i++) {
       if (visitedIndices.has(i)) {
@@ -272,24 +274,25 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
         break;
       }
       visitedIndices.add(i);
-      
+
       const question = sortedQuestions[i];
       if (isQuestionVisible(question, newAnswers, sortedQuestions)) {
         nextQuestionId = question.id;
+        announce(`Navigating to question: ${question.questionText}`);
         break;
       }
-      
+
       if (visitedIndices.size > sortedQuestions.length) {
         console.warn('Loop guard: exceeded maximum iterations');
         break;
       }
     }
-    
+
     if (nextQuestionId) {
       setCurrentQuestionId(nextQuestionId);
     } else {
       // No more visible questions found after answering current question
-      
+
       if (config?.scoringMethod === 'points') {
         // Submit the assessment for points calculation
         // The backend will calculate the score and route to the appropriate bucket
@@ -300,14 +303,14 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
       } else {
         // Decision tree is incomplete - no result bucket configured for this path
         console.error('Assessment decision tree is incomplete - no result bucket configured for this path');
-        
+
         // Show user-friendly message
         toast({
           title: "Assessment Complete",
           description: "Assessment complete, but no result was configured for this path. Restarting assessment.",
           variant: "default",
         });
-        
+
         // Reset to entry question to prevent user from being stuck
         setAnswers({});
         const initialQuestionId = config?.entryQuestionId || sortedQuestions[0]?.id;
@@ -319,9 +322,9 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
   };
 
   return (
-    <Card className="border-2 hover-elevate overflow-visible" data-testid="card-assessment-widget">
+    <Card className="border-2 hover-elevate overflow-visible" data-testid="card-assessment-widget" role="region" aria-label="Assessment questions">
       <CardHeader>
-        <CardTitle className="text-2xl" data-testid="text-question-title">
+        <CardTitle className="text-2xl" data-testid="text-question-title" role="heading" aria-level="1">
           {questionData.text}
         </CardTitle>
         {questionData.description && (
@@ -334,7 +337,7 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
         {questionAnswers.map((answer) => {
           let answerText = answer.answerText;
           let answerDescription: string | undefined;
-          
+
           try {
             const parsed = JSON.parse(answer.answerValue);
             if (parsed.text) answerText = parsed.text;
@@ -349,8 +352,14 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
               variant="outline"
               size="lg"
               className="w-full justify-between text-left h-auto py-4 px-6"
-              onClick={() => handleAnswerClick(currentQuestion.id, answer.id)}
+              onClick={() => {
+                handleAnswerClick(currentQuestion.id, answer.id);
+                announce(`Selected answer: ${answerText}.`);
+              }}
               data-testid={`button-answer-${answer.id}`}
+              role="radio"
+              aria-checked={answers[currentQuestion.id] === answer.id}
+              aria-label={answerText}
             >
               <div className="flex-1">
                 <div className="font-semibold mb-1">{answerText}</div>

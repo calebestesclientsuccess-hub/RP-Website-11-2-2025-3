@@ -1,75 +1,83 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "dark" | "light";
+type Theme = "dark" | "light" | "system";
 
 type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: Theme;
+  storageKey?: string;
 };
 
 type ThemeProviderState = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  highContrast: boolean;
+  setHighContrast: (enabled: boolean) => void;
 };
 
 const initialState: ThemeProviderState = {
-  theme: "dark",
+  theme: "system",
   setTheme: () => null,
+  highContrast: false,
+  setHighContrast: () => null,
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "dark",
+  defaultTheme = "system",
+  storageKey = "vite-ui-theme",
+  ...props
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    // Initialize from localStorage or use default
-    const stored = localStorage.getItem("theme") as Theme;
-    const initialTheme = stored || defaultTheme;
-    
-    // Apply theme immediately during initialization (before first render)
-    const root = document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(initialTheme);
-    
-    return initialTheme;
+    const storedTheme = localStorage.getItem(storageKey) as Theme;
+    return storedTheme || defaultTheme;
   });
 
-  // Enhanced theme toggle with smooth transitions
-  const setTheme = (newTheme: Theme) => {
+  const [highContrast, setHighContrastState] = useState<boolean>(() => {
+    return localStorage.getItem("high-contrast-mode") === "true";
+  });
+
+  // Update document class and localStorage when theme or highContrast changes
+  useEffect(() => {
     const root = document.documentElement;
-    
-    // If it's the same theme, do nothing
-    if (newTheme === theme) return;
-    
-    // Add transition class
-    root.classList.add('theme-transitioning');
-    
-    // After transition, switch theme
-    setTimeout(() => {
-      root.classList.remove("light", "dark");
-      root.classList.add(newTheme);
-      localStorage.setItem("theme", newTheme);
-      setThemeState(newTheme);
-      
-      // Remove transition class after animation completes
-      setTimeout(() => {
-        root.classList.remove('theme-transitioning');
-      }, 400);
-    }, 200);
+
+    root.classList.remove("light", "dark");
+
+    if (theme === "system") {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+        .matches
+        ? "dark"
+        : "light";
+      root.classList.add(systemTheme);
+    } else {
+      root.classList.add(theme);
+    }
+
+    // Apply high-contrast mode attribute
+    if (highContrast) {
+      root.setAttribute("data-high-contrast", "true");
+    } else {
+      root.removeAttribute("data-high-contrast");
+    }
+
+    localStorage.setItem(storageKey, theme);
+    localStorage.setItem("high-contrast-mode", String(highContrast));
+  }, [theme, highContrast, storageKey]);
+
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
   };
 
-  // Persist theme to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem("theme", theme);
-  }, [theme]);
+  const setHighContrast = (enabled: boolean) => {
+    setHighContrastState(enabled);
+  };
 
-  // Memoize the context value to prevent unnecessary re-renders
-  const value = { theme, setTheme };
+  const value = { theme, setTheme, highContrast, setHighContrast };
 
   return (
-    <ThemeProviderContext.Provider value={value}>
+    <ThemeProviderContext.Provider value={value} {...props}>
       {children}
     </ThemeProviderContext.Provider>
   );
@@ -79,7 +87,6 @@ export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
 
   if (context === undefined) {
-    console.error("ThemeProvider context is undefined. Provider may not be wrapping component tree properly.");
     throw new Error("useTheme must be used within a ThemeProvider");
   }
 

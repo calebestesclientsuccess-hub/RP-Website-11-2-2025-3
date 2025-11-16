@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from "wouter";
-import { Moon, Sun, Menu, X } from "lucide-react";
+import { Moon, Sun, Menu, X, Contrast } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
@@ -12,6 +12,8 @@ export function Navbar() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isEnabled: themeToggleEnabled, isLoading: themeToggleLoading, isError: themeToggleError } = useFeatureFlag('theme-toggle');
+  const { isEnabled: highContrastEnabled, isLoading: highContrastLoading, isError: highContrastError } = useFeatureFlag('high-contrast-mode');
+  const [highContrast, setHighContrast] = useState(false);
 
   // Debug logging
   console.log('🎨 Theme Toggle Debug:', {
@@ -136,23 +138,40 @@ export function Navbar() {
               </Button>
             </Link>
 
-            {/* Theme toggle - show when feature flag is enabled */}
-            {!themeToggleLoading && themeToggleEnabled && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="hover-elevate"
-                data-testid="button-theme-toggle"
-                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              >
-                {theme === "dark" ? (
-                  <Sun className="h-5 w-5" aria-hidden="true" />
-                ) : (
-                  <Moon className="h-5 w-5" aria-hidden="true" />
+            {/* Theme Toggle and High Contrast Toggle */}
+            {(!themeToggleLoading && themeToggleEnabled) || (!highContrastLoading && highContrastEnabled) ? (
+              <>
+                {(!themeToggleLoading && themeToggleEnabled) && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    className="hover-elevate"
+                    data-testid="button-theme-toggle"
+                    aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                  >
+                    {theme === "dark" ? (
+                      <Sun className="h-5 w-5" aria-hidden="true" />
+                    ) : (
+                      <Moon className="h-5 w-5" aria-hidden="true" />
+                    )}
+                  </Button>
                 )}
-              </Button>
-            )}
+                {(!highContrastLoading && highContrastEnabled) && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setHighContrast(!highContrast)}
+                    aria-label={`${highContrast ? 'Disable' : 'Enable'} high contrast mode`}
+                    aria-pressed={highContrast}
+                    className="hover-elevate"
+                    data-testid="button-high-contrast-toggle"
+                  >
+                    <Contrast className="h-5 w-5" aria-hidden="true" />
+                  </Button>
+                )}
+              </>
+            ) : null}
 
             {/* Mobile Menu Toggle */}
             <Button

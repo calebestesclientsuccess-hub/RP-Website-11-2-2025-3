@@ -115,14 +115,27 @@ export default function TestimonialCarousel({ className, theme, size }: Testimon
   }
 
   return (
-    <div className={className} data-testid="testimonial-carousel">
-      <div className="overflow-hidden" ref={emblaRef}>
+    <div 
+      className={className} 
+      data-testid="testimonial-carousel"
+      role="region"
+      aria-label="Customer testimonials carousel"
+    >
+      <div 
+        className="overflow-hidden" 
+        ref={emblaRef}
+        role="group"
+        aria-roledescription="carousel"
+      >
         <div className="flex">
           {testimonials.map((testimonial, index) => (
             <div
               key={testimonial.id}
               className="flex-[0_0_100%] min-w-0"
               data-testid={`testimonial-slide-${index}`}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`Testimonial ${index + 1} of ${testimonials.length}`}
             >
               <Card className={cn(widgetVariants({ theme, size }))}>
                 <CardContent className="p-8 md:p-12">
@@ -194,7 +207,11 @@ export default function TestimonialCarousel({ className, theme, size }: Testimon
       </div>
 
       {testimonials.length > 1 && (
-        <div className="flex justify-center gap-2 mt-4">
+        <div 
+          className="flex justify-center gap-2 mt-4"
+          role="group"
+          aria-label="Carousel navigation"
+        >
           {testimonials.map((_, index) => (
             <button
               key={index}
@@ -205,6 +222,7 @@ export default function TestimonialCarousel({ className, theme, size }: Testimon
                   : 'w-2 bg-muted-foreground/30 hover-elevate'
               }`}
               aria-label={`Go to testimonial ${index + 1}`}
+              aria-current={index === selectedIndex ? 'true' : 'false'}
               data-testid={`dot-${index}`}
             />
           ))}

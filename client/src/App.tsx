@@ -45,9 +45,11 @@ import AssessmentResult from "@/pages/AssessmentResult";
 import NotFound from "@/pages/not-found";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, lazy, Suspense, useState } from "react";
 import { CampaignBootstrap } from "@/lib/campaignCache";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useKeyboardShortcuts, GLOBAL_SHORTCUTS } from "@/hooks/use-keyboard-shortcuts";
+import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 
 // Lazy load admin pages (reduces initial bundle by ~300KB)
 const LoginPageLazy = lazy(() => import("@/pages/admin/LoginPage"));
@@ -222,6 +224,17 @@ function Router() {
 }
 
 function App() {
+  const [showShortcuts, setShowShortcuts] = useState(false);
+
+  // Set up global keyboard shortcuts
+  useKeyboardShortcuts([
+    ...GLOBAL_SHORTCUTS.map(shortcut => 
+      shortcut.key === '?' 
+        ? { ...shortcut, action: () => setShowShortcuts(true) }
+        : shortcut
+    ),
+  ]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
@@ -250,6 +263,11 @@ function App() {
                   </div>
                   <Toaster />
                   <ServiceWorker />
+                  {/* Keyboard Shortcuts Modal */}
+                  <KeyboardShortcutsModal 
+                    open={showShortcuts} 
+                    onOpenChange={setShowShortcuts}
+                  />
                 </ErrorBoundary>
               </CampaignBootstrap>
             </TooltipProvider>
