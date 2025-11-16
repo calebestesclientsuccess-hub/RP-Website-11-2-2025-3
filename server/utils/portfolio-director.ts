@@ -19,13 +19,106 @@ function getAIClient(): GoogleGenAI {
 import { getAllPlaceholderIds, PLACEHOLDER_CONFIG } from "@shared/placeholder-config";
 
 // Build asset ID whitelist from static placeholders (NOT user's catalog)
-function buildAssetWhitelist(): string[] {
-  return getAllPlaceholderIds();
+function buildAssetWhitelist(catalog?: ContentCatalog): string[] { // Added catalog parameter for context
+  // If catalog is provided, filter placeholder IDs to those actually available in the catalog.
+  // This is crucial for ensuring AI only references IDs it can actually use.
+  const availablePlaceholderIds = getAllPlaceholderIds();
+  if (!catalog) {
+    return availablePlaceholderIds; // Return all if no catalog context
+  }
+
+  const availableInCatalog = new Set<string>();
+
+  // Add text placeholders if available
+  if (catalog.texts && catalog.texts.length > 0) {
+    catalog.texts.forEach(text => {
+      if (text.id && availablePlaceholderIds.includes(text.id)) {
+        availableInCatalog.add(text.id);
+      }
+    });
+  }
+
+  // Add image placeholders if available
+  if (catalog.images && catalog.images.length > 0) {
+    catalog.images.forEach(image => {
+      if (image.id && availablePlaceholderIds.includes(image.id)) {
+        availableInCatalog.add(image.id);
+      }
+    });
+  }
+
+  // Add video placeholders if available
+  if (catalog.videos && catalog.videos.length > 0) {
+    catalog.videos.forEach(video => {
+      if (video.id && availablePlaceholderIds.includes(video.id)) {
+        availableInCatalog.add(video.id);
+      }
+    });
+  }
+
+  // Add quote placeholders if available
+  if (catalog.quotes && catalog.quotes.length > 0) {
+    catalog.quotes.forEach(quote => {
+      if (quote.id && availablePlaceholderIds.includes(quote.id)) {
+        availableInCatalog.add(quote.id);
+      }
+    });
+  }
+
+  // Ensure all static placeholders are included if they aren't mapped to catalog items
+  // This is important for AI to know about ALL possible placeholder slots, even if not used in the current catalog.
+  availablePlaceholderIds.forEach(id => {
+    if (!availableInCatalog.has(id)) {
+      // Add it back if it's a static placeholder and not explicitly used in catalog (e.g., image-1 through image-10 are always available)
+      // This logic needs to be precise: we only want to include placeholders that _could_ be used.
+      // If a placeholder type (like 'image') has zero items in the catalog, we still list all its placeholders.
+      const placeholderType = id.split('-')[0]; // e.g., 'image', 'video', 'text', 'quote'
+      if (
+        (placeholderType === 'image' && catalog.images?.length === 0) ||
+        (placeholderType === 'video' && catalog.videos?.length === 0) ||
+        (placeholderType === 'text' && catalog.texts?.length === 0) ||
+        (placeholderType === 'quote' && catalog.quotes?.length === 0)
+      ) {
+        availableInCatalog.add(id);
+      } else if (
+        (placeholderType === 'image' && catalog.images?.length > 0) ||
+        (placeholderType === 'video' && catalog.videos?.length > 0) ||
+        (placeholderType === 'text' && catalog.texts?.length > 0) ||
+        (placeholderType === 'quote' && catalog.quotes?.length > 0)
+      ) {
+        // If catalog items EXIST for this type, only add placeholders that ARE mapped
+        // This is handled by the above catalog.forEach loops.
+      } else {
+        // If it's a placeholder type that doesn't exist in the catalog at all (e.g., maybe an older placeholder ID is still listed)
+        // We still add it so the AI knows about it, but the generated scenes might not use it.
+        availableInCatalog.add(id);
+      }
+    }
+  });
+
+
+  // Special case: if no items of a certain type exist in catalog, still list all placeholders for that type
+  if (catalog.images && catalog.images.length === 0) {
+      PLACEHOLDER_CONFIG.images.forEach(id => availableInCatalog.add(id));
+  }
+  if (catalog.videos && catalog.videos.length === 0) {
+      PLACEHOLDER_CONFIG.videos.forEach(id => availableInCatalog.add(id));
+  }
+  if (catalog.texts && catalog.texts.length === 0) {
+      PLACEHOLDER_CONFIG.texts.forEach(id => availableInCatalog.add(id));
+  }
+  if (catalog.quotes && catalog.quotes.length === 0) {
+      PLACEHOLDER_CONFIG.quotes.forEach(id => availableInCatalog.add(id));
+  }
+
+
+  return Array.from(availableInCatalog).sort(); // Sort for consistent output
 }
+
 
 // Build Gemini prompt for portfolio orchestration
 function buildPortfolioPrompt(catalog: ContentCatalog): string {
-  const validAssetIds = buildAssetWhitelist();
+  const validAssetIds = buildAssetWhitelist(catalog); // Pass catalog context
 
   return `You are a cinematic director for scrollytelling portfolio websites. Your role is to ORCHESTRATE existing content into smooth, transition-driven storytelling experiences.
 
@@ -42,23 +135,26 @@ DIRECTOR'S VISION (USER'S CREATIVE GUIDANCE):
 ${catalog.directorNotes}
 
 STATIC PLACEHOLDER SYSTEM:
-You MUST ONLY use these pre-defined placeholder IDs. The user will map their real assets to these placeholders later.
+You MUST ONLY use these pre-defined placeholder IDs that are AVAILABLE IN THE USER'S CONTENT CATALOG. The user will map their real assets to these placeholders later.
 
-AVAILABLE PLACEHOLDER IDs:
+AVAILABLE PLACEHOLDER IDs (based on user's catalog):
 
-IMAGES (${PLACEHOLDER_CONFIG.images.length} available):
-${PLACEHOLDER_CONFIG.images.map((id) => `  - "${id}"`).join('\n')}
+IMAGES (${(catalog.images?.length ?? 0)} available):
+${(catalog.images?.length ?? 0) > 0 ? catalog.images.map((asset) => `  - "${asset.id}"`).join('\n') : '  (No images in catalog)'}
 
-VIDEOS (${PLACEHOLDER_CONFIG.videos.length} available):
-${PLACEHOLDER_CONFIG.videos.map((id) => `  - "${id}"`).join('\n')}
+VIDEOS (${(catalog.videos?.length ?? 0)} available):
+${(catalog.videos?.length ?? 0) > 0 ? catalog.videos.map((asset) => `  - "${asset.id}"`).join('\n') : '  (No videos in catalog)'}
 
-QUOTES (${PLACEHOLDER_CONFIG.quotes.length} available):
-${PLACEHOLDER_CONFIG.quotes.map((id) => `  - "${id}"`).join('\n')}
+QUOTES (${(catalog.quotes?.length ?? 0)} available):
+${(catalog.quotes?.length ?? 0) > 0 ? catalog.quotes.map((asset) => `  - "${asset.id}"`).join('\n') : '  (No quotes in catalog)'}
 
-VALID PLACEHOLDER IDS (you MUST use ONLY these exact IDs):
+TEXTS (${(catalog.texts?.length ?? 0)} available):
+${(catalog.texts?.length ?? 0) > 0 ? catalog.texts.map((asset) => `  - "${asset.id}"`).join('\n') : '  (No texts in catalog)'}
+
+VALID PLACEHOLDER IDS (you MUST use ONLY these exact IDs from the available list above):
 ${validAssetIds.join(', ')}
 
-DO NOT reference the user's actual asset IDs. Use ONLY the placeholder IDs listed above.
+DO NOT reference the user's actual asset IDs. Use ONLY the placeholder IDs listed above that are present in their catalog.
 The user will assign their real content (from the catalog below) to these placeholders after you generate the scenes.
 
 USER'S CONTENT CATALOG (for context only - DO NOT use these IDs directly):
@@ -180,7 +276,7 @@ CONTROL 1-2: ENTRY ANIMATION
 ☐ entryEffect: HOW the scene appears on screen
    Options: fade, slide-up, slide-down, slide-left, slide-right, zoom-in, zoom-out, sudden, cross-fade, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus
    Use: "fade" for smooth reveals, "zoom-in" for dramatic focus, "slide-up" for upward motion, "blur-focus" for dreamy transitions
-   
+
 ☐ entryDuration: HOW LONG the entry animation takes (seconds)
    Range: 0.8-5.0 seconds
    Guidelines: 0.8s = quick/snappy, 1.2-1.9s = smooth/cinematic (RECOMMENDED), 2.5s+ = dramatic/hero moments
@@ -190,16 +286,16 @@ CONTROL 3-4: ENTRY TIMING
 ☐ entryDelay: WHEN the animation starts after scroll trigger (seconds)
    Range: 0-2 seconds
    Use: 0 = immediate (default), 0.3-0.8 = staggered reveals, 1.0+ = delayed dramatic entrance
-   
+
 ☐ entryEasing: The ACCELERATION CURVE of entry motion
    Options: linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce
    Guidelines: "ease-out" = natural/smooth (most common), "power3"/"power4" = cinematic, "elastic"/"bounce" = playful, "back" = overshoot effect
 
-CONTROL 5-6: EXIT ANIMATION  
+CONTROL 5-6: EXIT ANIMATION
 ☐ exitEffect: HOW the scene disappears
    Options: fade, slide-up, slide-down, slide-left, slide-right, zoom-out, dissolve, cross-fade, rotate-out, flip-out, scale-blur
    Use: Should complement next scene's entry. "cross-fade" for smooth transitions, "dissolve" for cinematic blur, "scale-blur" for dramatic zoom-out
-   
+
 ☐ exitDuration: HOW LONG the exit animation takes (seconds)
    Range: 0.6-5.0 seconds
    Guidelines: Typically 20% faster than entry. 0.6s = quick, 1.0s = smooth (RECOMMENDED), 1.8s+ = slow/deliberate
@@ -208,7 +304,7 @@ CONTROL 7-8: EXIT TIMING
 ☐ exitDelay: WHEN the exit starts (seconds)
    Range: 0-2 seconds
    Use: Usually 0 for immediate exit. Use delays only for staggered multi-element exits.
-   
+
 ☐ exitEasing: The DECELERATION CURVE of exit motion
    Options: Same as entryEasing
    Guidelines: "ease-in" = smooth exits (most common), "power2" = faster exits, "elastic" = bouncy exits
@@ -218,9 +314,9 @@ CONTROL 9-10: COLOR FOUNDATION
    Format: "#000000" to "#ffffff" (must include # symbol)
    Examples: "#0a0a0a" = deep black, "#1e293b" = dark slate, "#f8fafc" = soft white
    Critical: Must contrast with textColor to avoid invisible text
-   
+
 ☐ textColor: Text color (EXACT hex code)
-   Format: "#000000" to "#ffffff" (must include # symbol)  
+   Format: "#000000" to "#ffffff" (must include # symbol)
    Examples: "#ffffff" = white, "#f1f5f9" = off-white, "#0a0a0a" = near-black
    Critical: MUST contrast with backgroundColor
 
@@ -229,11 +325,11 @@ CONTROL 11-13: SCROLL DEPTH EFFECTS
    Range: 0.0-1.0
    Guidelines: 0.0 = no parallax (use with scaleOnScroll), 0.2-0.3 = subtle, 0.5-0.8 = dramatic
    CONFLICT: If > 0, you MUST set scaleOnScroll to false
-   
+
 ☐ scrollSpeed: How fast scroll-based effects respond
    Options: "slow" (2x slower, cinematic), "normal" (balanced), "fast" (2x faster, snappy)
    Use: "slow" for hero sections, "normal" for most scenes, "fast" for galleries
-   
+
 ☐ animationDuration: Overall animation timing (seconds)
    Range: 0.5-10 seconds
    Use: Controls GSAP timeline duration. Usually matches or slightly exceeds entry/exit durations.
@@ -242,15 +338,15 @@ CONTROL 14-17: TYPOGRAPHY HIERARCHY
 ☐ headingSize: Heading scale
    Options: "4xl" (smallest), "5xl", "6xl", "7xl", "8xl" (largest)
    Guidelines: "6xl"/"7xl" for heroes, "5xl" for section headings, "4xl" for subtitles
-   
+
 ☐ bodySize: Body text scale
    Options: "base" (smallest), "lg", "xl", "2xl" (largest)
    Guidelines: "base" for dense content, "lg" for comfortable reading (RECOMMENDED), "xl"/"2xl" for emphasis
-   
+
 ☐ fontWeight: Text weight
    Options: "normal" (400), "medium" (500), "semibold" (600), "bold" (700)
    Use: "semibold" for headings (RECOMMENDED), "normal" for body text, "bold" for strong emphasis
-   
+
 ☐ alignment: Text alignment
    Options: "left", "center", "right"
    Guidelines: "center" for heroes/quotes, "left" for readable paragraphs, "right" for artistic effects
@@ -259,12 +355,12 @@ CONTROL 18-20: SCROLL INTERACTION EFFECTS (use sparingly)
 ☐ fadeOnScroll: Fade media as user scrolls (boolean)
    Values: true/false
    Use: true = subtle reveal effect, false = static (RECOMMENDED for most scenes)
-   
+
 ☐ scaleOnScroll: Subtle zoom during scroll (boolean)
    Values: true/false
    Use: true = dramatic zoom effect, false = static
    CONFLICT: If true, you MUST set parallaxIntensity to 0
-   
+
 ☐ blurOnScroll: Blur effect during scroll (boolean)
    Values: true/false
    Use: false = better performance (RECOMMENDED), true = cinematic depth (use max 1-2 scenes per portfolio)
@@ -273,7 +369,7 @@ CONTROL 21-22: MULTI-ELEMENT TIMING
 ☐ staggerChildren: Delay between child element animations (seconds)
    Range: 0.0-1.0
    Use: 0 = all elements animate together, 0.1-0.3 = subtle stagger (RECOMMENDED for galleries), 0.5+ = dramatic sequential reveal
-   
+
 ☐ layerDepth: Z-index for parallax layering
    Range: 0-10
    Use: 5 = default, higher = closer to viewer, lower = further from viewer
@@ -284,11 +380,11 @@ CONTROL 23-25: ADVANCED MOTION CONTROLS
    Options: "center center", "top left", "top center", "top right", "center left", "center right", "bottom left", "bottom center", "bottom right"
    Use: "center center" = default (RECOMMENDED), "top left" = rotate from corner, etc.
    Critical for rotate-in, flip-in, zoom-in effects
-   
+
 ☐ overflowBehavior: Content clipping
    Options: "visible", "hidden", "auto"
    Use: "visible" = no clipping (default), "hidden" = clip overflow (RECOMMENDED for most), "auto" = scrollable if needed
-   
+
 ☐ backdropBlur: Glass morphism effect
    Options: "none", "sm", "md", "lg", "xl"
    Use: "none" = no blur (RECOMMENDED for most), "sm"/"md" = subtle glass effect, "lg"/"xl" = strong blur
@@ -297,7 +393,7 @@ CONTROL 26-27: VISUAL BLENDING
 ☐ mixBlendMode: Photoshop-style color blending
    Options: "normal", "multiply", "screen", "overlay", "difference", "exclusion"
    Use: "normal" = no blending (RECOMMENDED for most), "screen" = lighten, "multiply" = darken, "overlay" = contrast boost
-   
+
 ☐ enablePerspective: Enable 3D depth for rotations (boolean)
    Values: true/false
    Use: true = 3D perspective (required for flip-in, rotate-in to look 3D), false = flat 2D
@@ -306,7 +402,7 @@ CONTROL 28-29: CUSTOM STYLING
 ☐ customCSSClasses: Space-separated Tailwind utility classes
    Format: String like "shadow-2xl ring-4 ring-purple-500" or empty string ""
    Use: "" = no custom classes (RECOMMENDED), add classes only for advanced customization
-   
+
 ☐ textShadow: Drop shadow on text (boolean)
    Values: true/false
    Use: false = clean text (RECOMMENDED), true = shadow for depth (use on light backgrounds)
@@ -320,7 +416,7 @@ CONTROL 31-32: VERTICAL SPACING
 ☐ paddingTop: Top spacing
    Options: "none", "sm", "md", "lg", "xl", "2xl"
    Use: "none" = tight (default), "md" = comfortable (RECOMMENDED for most), "xl"/"2xl" = spacious
-   
+
 ☐ paddingBottom: Bottom spacing
    Options: "none", "sm", "md", "lg", "xl", "2xl"
    Use: Same as paddingTop. Usually match top/bottom for symmetry.
@@ -329,11 +425,11 @@ CONTROL 33-35: MEDIA PRESENTATION (for image/video scenes)
 ☐ mediaPosition: Focal point for media
    Options: "center", "top", "bottom", "left", "right"
    Use: "center" = balanced (RECOMMENDED), "top" = focus top of image, "bottom" = focus bottom
-   
+
 ☐ mediaScale: How media fits the container
    Options: "cover" (fill, may crop), "contain" (fit all, may letterbox), "fill" (stretch to fit)
    Use: "cover" = full bleed (RECOMMENDED for most), "contain" = show full image, "fill" = distort to fit (avoid)
-   
+
 ☐ mediaOpacity: Media transparency
    Range: 0.0 (invisible) to 1.0 (fully opaque)
    Use: 1.0 = solid (RECOMMENDED), 0.7-0.9 = subtle transparency, 0.3-0.6 = background overlay
@@ -342,7 +438,7 @@ CONTROL 36-37: GRADIENT BACKGROUNDS (optional)
 ☐ gradientColors: Array of hex color codes for gradient (nullable)
    Format: ["#ff0000", "#0000ff"] or null
    Use: null = solid background (RECOMMENDED), array = gradient overlay
-   
+
 ☐ gradientDirection: Gradient direction (nullable)
    Options: "to-r", "to-l", "to-t", "to-b", "to-br", "to-bl", "to-tr", "to-tl" or null
    Use: null = no gradient (RECOMMENDED), "to-r" = left to right, "to-br" = diagonal bottom-right, etc.
@@ -363,7 +459,7 @@ SCENE TYPES (choose based on content):
 - "fullscreen": Immersive media (use for wow moments, transitions)
 
 FOR EACH SCENE, YOU MUST DECIDE:
-1. Which assets to use (from the placeholder list)
+1. Which assets to use (from the placeholder list available in the catalog)
 2. Entry effect (HOW it appears)
 3. Entry duration (HOW LONG it takes to appear)
 4. Entry delay (WHEN it starts appearing after scroll trigger)
@@ -404,8 +500,8 @@ EASING/MOTION QUALITY:
 DIRECTION:
 - "enters from left" → entryEffect: "slide-right"
 - "enters from right" → entryEffect: "slide-left"
-- "enters from top" → entryEffect: "slide-down"
-- "enters from bottom" → entryEffect: "slide-up"
+- "enters from top" → entryEffect: "slide-up"
+- "enters from bottom" → entryEffect: "slide-down"
 - "zooms in" / "grows" → entryEffect: "zoom-in" + scaleOnScroll: true
 - "appears suddenly" / "instant" → entryEffect: "sudden"
 - "spins in" / "rotates in" / "rotating entrance" → entryEffect: "rotate-in"
@@ -496,14 +592,14 @@ TRANSITION DESIGN RULES:
    - Shorter durations (0.8-1.2s) = quick reveals, use for content
 
 PLACEHOLDER SELECTION STRATEGY:
-1. START STRONG: Use image-1 or video-1 for hero/opening scenes
-2. BUILD NARRATIVE: Distribute placeholders logically (e.g., image-1 through image-5 for a 5-scene story)
-3. VISUAL SUPPORT: Place media placeholders (image-X, video-X) strategically for impact
-4. SOCIAL PROOF: Use quote-1, quote-2, quote-3 for testimonials/credibility
-5. VARIETY: Alternate between different placeholder types for visual rhythm
-6. RESERVE PLACEHOLDERS: Don't use all 10 images in one project - leave room for future expansion
+1. START STRONG: Use image-1 or video-1 for hero/opening scenes if available.
+2. BUILD NARRATIVE: Distribute placeholders logically (e.g., image-1 through image-5 for a 5-scene story).
+3. VISUAL SUPPORT: Place media placeholders (image-X, video-X) strategically for impact.
+4. SOCIAL PROOF: Use quote-1, quote-2, quote-3 for testimonials/credibility if available.
+5. VARIETY: Alternate between different placeholder types for visual rhythm.
+6. RESERVE PLACEHOLDERS: Don't use all available placeholders in one project - leave room for future expansion.
 
-Remember: You're selecting placeholder SLOTS, not actual content. The user assigns real assets later.
+REMEMBER: You're selecting placeholder SLOTS that are AVAILABLE IN THE USER'S CATALOG, not actual content. The user assigns real assets later.
 
 SCENE COUNT GUIDELINES:
 - 4-5 scenes: Quick story (2-3 min scroll)
@@ -516,11 +612,12 @@ BEFORE GENERATING OUTPUT, VERIFY:
 ✓ All durations are ≥ 0.8s for visibility
 ✓ All colors are valid hex codes
 ✓ No conflicts (parallax + scaleOnScroll, textShadow + textGlow, etc.)
+✓ All assetIds MUST reference ONLY placeholder IDs available in the user's catalog (from the list above).
 
 REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 {
   "sceneType": "text" | "image" | "video" | "split" | "gallery" | "quote" | "fullscreen",
-  "assetIds": string[], // MUST reference valid placeholder IDs ONLY
+  "assetIds": string[], // MUST reference valid placeholder IDs ONLY from the available list
   "layout": "default" | "reverse", // Optional, primarily for split scenes
   "director": {
     // Required fields (37 total - ALL MUST BE PRESENT AND VALID)
@@ -560,13 +657,13 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     "mediaScale": "cover" | "contain" | "fill", // Optional, for image/video scenes
     "mediaOpacity": number, // 0.0-1.0
 
-    // Optional fields (can be null or omitted if not applicable/desired, but defaults will be applied if missing)
-    "gradientColors"?: string[], // Array of hex colors, e.g., ["#ff0000", "#0000ff"]
-    "gradientDirection"?: string, // e.g., "to-r", "to-br"
+    // Optional fields (can be null or undefined if not applicable/desired, but defaults will be applied if missing by schema)
+    "gradientColors"?: string[] | undefined, // Array of hex colors, e.g., ["#ff0000", "#0000ff"] or undefined
+    "gradientDirection"?: string | undefined // e.g., "to-r", "to-br" or undefined
   }
 }
 
-Generate the scene sequence NOW using the above format. Ensure ONLY valid placeholder IDs are used.
+Generate the scene sequence NOW using the above format. Ensure ONLY valid placeholder IDs available in the user's catalog are used.
 `;
 }
 
@@ -672,8 +769,10 @@ const DEFAULT_DIRECTOR_CONFIG = {
  * Stage 1: Initial Generation (Form-Filling) - Gemini fills complete director config
  * Stage 2: Self-Audit for Inconsistencies - AI identifies conflicts and issues
  * Stage 3: Generate 10 Improvements - AI proposes specific enhancements
+ * Stage 3.5: Scene-Type Specific Refinement - AI refines complex scene types (split, gallery, quote, fullscreen)
  * Stage 4: Auto-Apply Non-Conflicting Improvements - System applies valid improvements
  * Stage 5: Final Regeneration - AI regenerates with all fixes applied
+ * Stage 5.5: Portfolio-Level Coherence Check - AI validates narrative flow, pacing, color progression etc.
  * Stage 6: Final Validation - System validates asset IDs and director configs
  */
 export async function generatePortfolioWithAI(
@@ -735,7 +834,7 @@ export async function generatePortfolioWithAI(
                     parallaxIntensity: { type: Type.NUMBER, description: "0-1, default 0.3" },
                     scrollSpeed: { type: Type.STRING, description: "slow, normal, or fast" },
                     entryEffect: { type: Type.STRING, description: "fade, slide-up, zoom-in, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus, cross-fade, sudden" },
-                    exitEffect: { type: Type.STRING, description: "fade, slide-down, zoom-out, dissolve, rotate-out, flip-out, scale-blur, cross-fade" },
+                    exitEffect: { type: Type.STRING, description: "fade, slide-up, slide-down, slide-left, slide-right, zoom-out, dissolve, rotate-out, flip-out, scale-blur, cross-fade" },
                     entryEasing: { type: Type.STRING, description: "linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce" },
                     exitEasing: { type: Type.STRING, description: "linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce" },
                     fadeOnScroll: { type: Type.BOOLEAN, description: "Enable fade effect during scroll" },
@@ -1018,7 +1117,7 @@ GRADIENT BACKGROUNDS (2 controls - nullable)
 CRITICAL CONFLICT DETECTION:
 1. ⚠️ parallax + scaleOnScroll conflict (MUST set parallaxIntensity to 0 if scaleOnScroll is true)
 2. ⚠️ Color contrast issues (backgroundColor vs textColor - must be distinguishable)
-3. ⚠️ Invalid placeholder IDs (must be from: ${getAllPlaceholderIds().join(', ')})
+3. ⚠️ Invalid placeholder IDs (must be from: ${buildAssetWhitelist(catalog).join(', ')})
 4. ⚠️ Duration thresholds (entryDuration < 1.0s = too fast, recommend 1.2s+)
 5. ⚠️ Pacing monotony (all scenes same speed = no rhythm variation)
 6. ⚠️ Transition flow (exit effect of Scene N should complement entry of Scene N+1)
@@ -1026,12 +1125,16 @@ CRITICAL CONFLICT DETECTION:
 8. ⚠️ Gradient validation (if gradientColors set, gradientDirection must also be set)
 
 PLACEHOLDER SYSTEM VALIDATION:
-CRITICAL: All assetIds MUST reference ONLY these placeholder IDs:
-- Images: ${PLACEHOLDER_CONFIG.images.join(', ')}
-- Videos: ${PLACEHOLDER_CONFIG.videos.join(', ')}
-- Quotes: ${PLACEHOLDER_CONFIG.quotes.join(', ')}
+CRITICAL: All assetIds MUST reference ONLY these placeholder IDs that are AVAILABLE IN THE USER'S CATALOG:
+- Images: ${(catalog.images?.length ?? 0) > 0 ? catalog.images.map(a => a.id).join(', ') : '(none)'}
+- Videos: ${(catalog.videos?.length ?? 0) > 0 ? catalog.videos.map(a => a.id).join(', ') : '(none)'}
+- Quotes: ${(catalog.quotes?.length ?? 0) > 0 ? catalog.quotes.map(a => a.id).join(', ') : '(none)'}
+- Texts: ${(catalog.texts?.length ?? 0) > 0 ? catalog.texts.map(a => a.id).join(', ') : '(none)'}
 
-DO NOT reference user asset IDs. The user will map their real content to these placeholders later.
+VALID PLACEHOLDER IDS (you MUST use ONLY these exact IDs from the available list above):
+${buildAssetWhitelist(catalog).join(', ')}
+
+DO NOT reference user asset IDs. The user will map placeholders to their real assets later.
 
 Return a JSON array of issues found (be thorough - check EVERY scene for EVERY control):
 {
@@ -1083,10 +1186,14 @@ User requirements from director notes:
 ${catalog.directorNotes}
 
 CRITICAL REMINDER - PLACEHOLDER SYSTEM:
-You MUST ONLY use these placeholder IDs in assetIds arrays:
-- Images: ${PLACEHOLDER_CONFIG.images.join(', ')}
-- Videos: ${PLACEHOLDER_CONFIG.videos.join(', ')}
-- Quotes: ${PLACEHOLDER_CONFIG.quotes.join(', ')}
+You MUST ONLY use these placeholder IDs that are AVAILABLE IN THE USER'S CONTENT CATALOG:
+- Images: ${(catalog.images?.length ?? 0) > 0 ? catalog.images.map(a => a.id).join(', ') : '(none)'}
+- Videos: ${(catalog.videos?.length ?? 0) > 0 ? catalog.videos.map(a => a.id).join(', ') : '(none)'}
+- Quotes: ${(catalog.quotes?.length ?? 0) > 0 ? catalog.quotes.map(a => a.id).join(', ') : '(none)'}
+- Texts: ${(catalog.texts?.length ?? 0) > 0 ? catalog.texts.map(a => a.id).join(', ') : '(none)'}
+
+VALID PLACEHOLDER IDS (you MUST use ONLY these exact IDs from the available list above):
+${buildAssetWhitelist(catalog).join(', ')}
 
 DO NOT reference user asset IDs. The user will map placeholders to their real assets later.
 
@@ -1286,8 +1393,8 @@ Return:
 
   // STAGE 4: Auto-Apply Non-Conflicting Improvements
   const appliedImprovements: string[] = [];
-  const validPlaceholderIds = buildAssetWhitelist();
-  
+  const validPlaceholderIds = buildAssetWhitelist(catalog); // Use catalog context
+
   for (const improvement of improvementsResult.improvements) {
     const scene = result.scenes[improvement.sceneIndex];
     if (!scene) {
@@ -1483,11 +1590,12 @@ CRITICAL REQUIREMENTS:
 4. Color progression creates visual journey
 5. Pacing has musical rhythm (varied scrollSpeed and durations)
 6. Asset selection tells compelling story
-7. ALL placeholder IDs must be valid - ONLY use these exact IDs:
-   - Images: ${PLACEHOLDER_CONFIG.images.join(', ')}
-   - Videos: ${PLACEHOLDER_CONFIG.videos.join(', ')}
-   - Quotes: ${PLACEHOLDER_CONFIG.quotes.join(', ')}
-8. DO NOT invent new placeholder IDs or reference user asset IDs
+7. ALL placeholder IDs must be valid and AVAILABLE IN THE USER'S CATALOG - ONLY use these exact IDs:
+   - Images: ${(catalog.images?.length ?? 0) > 0 ? catalog.images.map(a => a.id).join(', ') : '(none)'}
+   - Videos: ${(catalog.videos?.length ?? 0) > 0 ? catalog.videos.map(a => a.id).join(', ') : '(none)'}
+   - Quotes: ${(catalog.quotes?.length ?? 0) > 0 ? catalog.quotes.map(a => a.id).join(', ') : '(none)'}
+   - Texts: ${(catalog.texts?.length ?? 0) > 0 ? catalog.texts.map(a => a.id).join(', ') : '(none)'}
+8. DO NOT invent new placeholder IDs or reference user asset IDs.
 
 BEFORE GENERATING OUTPUT, VERIFY:
 ✓ Every scene has ALL 37 director fields with concrete values
@@ -1500,11 +1608,8 @@ BEFORE GENERATING OUTPUT, VERIFY:
 ✓ scrollSpeed is one of: "slow" | "normal" | "fast"
 
 PLACEHOLDER SYSTEM REMINDER:
-You MUST use ONLY these placeholder IDs in assetIds arrays:
-- Images: image-1, image-2, ..., image-10
-- Videos: video-1, video-2, ..., video-5
-- Quotes: quote-1, quote-2, quote-3
-- Texts: text-1, text-2, ..., text-10
+You MUST use ONLY these placeholder IDs that are AVAILABLE IN THE USER'S CATALOG.
+${buildAssetWhitelist(catalog).join(', ')}
 
 DO NOT reference user asset IDs. The user will map placeholders to their real assets later.
 
@@ -1513,7 +1618,7 @@ Return the complete scenes array with full director configs. Ensure ALL 37 requi
 REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 {
   "sceneType": "text" | "image" | "video" | "split" | "gallery" | "quote" | "fullscreen",
-  "assetIds": string[], // MUST reference valid placeholder IDs ONLY
+  "assetIds": string[], // MUST reference valid placeholder IDs ONLY from the available list
   "layout": "default" | "reverse", // Optional, primarily for split scenes
   "director": {
     // All 37 controls - EVERY SINGLE ONE MUST BE PRESENT
@@ -1552,8 +1657,8 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     "mediaPosition": string,
     "mediaScale": string,
     "mediaOpacity": number,
-    "gradientColors"?: string[], // Optional: array or undefined
-    "gradientDirection"?: string // Optional: string or undefined
+    "gradientColors"?: string[] | undefined, // Optional: array or undefined
+    "gradientDirection"?: string | undefined // Optional: string or undefined
   }
 }
 
@@ -1644,9 +1749,9 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 
   // STAGE 5.5: Portfolio-Level Coherence Validation
   console.log('[Portfolio Director] 🎬 Stage 5.5: Validating portfolio-level coherence...');
-  
+
   const coherencePrompt = buildPortfolioCoherencePrompt(finalResult.scenes, catalog);
-  
+
   try {
     const coherenceResponse = await aiClient.models.generateContent({
       model: "gemini-2.5-pro",
@@ -1688,30 +1793,30 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     });
 
     const coherenceResult = JSON.parse(coherenceResponse.text || '{"isCoherent":true,"issues":[],"improvements":[],"overallScore":100}');
-    
+
     console.log(`[Portfolio Director] 📊 Coherence Score: ${coherenceResult.overallScore}/100`);
     console.log(`[Portfolio Director] 🔍 Found ${coherenceResult.issues.length} coherence issues`);
-    
+
     // Apply coherence improvements if score is below 85
     if (coherenceResult.overallScore < 85 && coherenceResult.improvements.length > 0) {
       console.log(`[Portfolio Director] 🔧 Applying ${coherenceResult.improvements.length} coherence improvements...`);
-      
+
       for (const improvement of coherenceResult.improvements) {
         const scene = finalResult.scenes[improvement.sceneIndex];
         if (scene) {
           const fieldPath = improvement.field.split('.');
           let target: any = scene;
-          
+
           for (let i = 0; i < fieldPath.length - 1; i++) {
             if (!target[fieldPath[i]]) {
               target[fieldPath[i]] = {};
             }
             target = target[fieldPath[i]];
           }
-          
+
           const finalField = fieldPath[fieldPath.length - 1];
           let newValue: any = improvement.newValue;
-          
+
           // Type conversion
           try {
             if (typeof (scene.director as any)[finalField] === 'number') {
@@ -1722,12 +1827,12 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
           } catch (e) {
             console.warn(`[Portfolio Director] Type conversion warning for ${improvement.field}`);
           }
-          
+
           (target as any)[finalField] = newValue;
         }
       }
     }
-    
+
     console.log(`[Portfolio Director] ✅ Stage 5.5 complete: Portfolio coherence validated`);
   } catch (error) {
     console.warn('[Portfolio Director] Stage 5.5 failed, continuing with current scenes:', error);
@@ -1736,7 +1841,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
   // STAGE 6: Final Validation Against Requirements
   console.log('[Portfolio Director] ✅ Stage 6: Final validation - checking all 37 controls');
 
-  const finalValidAssetIds = buildAssetWhitelist(); // Static placeholders only
+  const finalValidAssetIds = buildAssetWhitelist(catalog); // Static placeholders only
   const warnings: string[] = [];
 
   // Define all 37 required controls with type expectations
@@ -1750,49 +1855,49 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     exitDuration: { type: 'number', min: 0.6 },
     exitDelay: { type: 'number', min: 0, max: 2 },
     exitEasing: { type: 'string', enum: ['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out', 'power1', 'power2', 'power3', 'power4', 'back', 'elastic', 'bounce'] },
-    
+
     // VISUAL FOUNDATION (2)
     backgroundColor: { type: 'string', pattern: /^#[0-9A-Fa-f]{6}$/ },
     textColor: { type: 'string', pattern: /^#[0-9A-Fa-f]{6}$/ },
-    
+
     // SCROLL DEPTH EFFECTS (3)
     parallaxIntensity: { type: 'number', min: 0, max: 1 },
     scrollSpeed: { type: 'string', enum: ['slow', 'normal', 'fast'] },
     animationDuration: { type: 'number', min: 0.5, max: 10 },
-    
+
     // TYPOGRAPHY (4)
     headingSize: { type: 'string', enum: ['4xl', '5xl', '6xl', '7xl', '8xl'] },
     bodySize: { type: 'string', enum: ['base', 'lg', 'xl', '2xl'] },
     fontWeight: { type: 'string', enum: ['normal', 'medium', 'semibold', 'bold'] },
     alignment: { type: 'string', enum: ['left', 'center', 'right'] },
-    
+
     // SCROLL INTERACTION (3)
     fadeOnScroll: { type: 'boolean' },
     scaleOnScroll: { type: 'boolean' },
     blurOnScroll: { type: 'boolean' },
-    
+
     // MULTI-ELEMENT TIMING (2)
     staggerChildren: { type: 'number', min: 0, max: 1 },
     layerDepth: { type: 'number', min: 0, max: 10 },
-    
+
     // ADVANCED MOTION (3)
     transformOrigin: { type: 'string' },
     overflowBehavior: { type: 'string', enum: ['visible', 'hidden', 'auto'] },
     backdropBlur: { type: 'string', enum: ['none', 'sm', 'md', 'lg', 'xl'] },
-    
+
     // VISUAL BLENDING (2)
     mixBlendMode: { type: 'string', enum: ['normal', 'multiply', 'screen', 'overlay', 'difference', 'exclusion'] },
     enablePerspective: { type: 'boolean' },
-    
+
     // CUSTOM STYLING (3)
     customCSSClasses: { type: 'string' },
     textShadow: { type: 'boolean' },
     textGlow: { type: 'boolean' },
-    
+
     // VERTICAL SPACING (2)
     paddingTop: { type: 'string', enum: ['none', 'sm', 'md', 'lg', 'xl', '2xl'] },
     paddingBottom: { type: 'string', enum: ['none', 'sm', 'md', 'lg', 'xl', '2xl'] },
-    
+
     // MEDIA PRESENTATION (3)
     mediaPosition: { type: 'string', enum: ['center', 'top', 'bottom', 'left', 'right'] },
     mediaScale: { type: 'string', enum: ['cover', 'contain', 'fill'] },
@@ -1806,41 +1911,42 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
         warnings.push(`Scene missing director object - initializing with defaults`);
         confidenceScore -= 10;
     }
-    
+
     // Validate all 37 required controls
     for (const [field, spec] of Object.entries(requiredDirectorControls)) {
     const value = scene.director[field];
-      
+
       // Check if field is missing
       if (value === undefined || value === null) {
         warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Missing required field '${field}' - applying default`);
+        // Use DEFAULT_DIRECTOR_CONFIG for default values
         scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? (spec.type === 'boolean' ? false : spec.type === 'number' ? 0 : '');
         confidenceScore -= 3;
         continue;
       }
-      
+
       // Type validation
       if (spec.type === 'number' && typeof value !== 'number') {
         warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be number, got ${typeof value}`);
         confidenceScore -= 2;
       }
-      
+
       if (spec.type === 'string' && typeof value !== 'string') {
         warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be string, got ${typeof value}`);
         confidenceScore -= 2;
       }
-      
+
       if (spec.type === 'boolean' && typeof value !== 'boolean') {
         warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be boolean, got ${typeof value}`);
         confidenceScore -= 2;
       }
-      
+
       // Enum validation
       if (spec.enum && !spec.enum.includes(value)) {
         warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' has invalid value '${value}'. Must be one of: ${spec.enum.join(', ')}`);
         confidenceScore -= 3;
       }
-      
+
       // Range validation
       if (spec.type === 'number') {
         if (spec.min !== undefined && value < spec.min) {
@@ -1852,7 +1958,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
           confidenceScore -= 2;
         }
       }
-      
+
       // Pattern validation (for hex colors)
       if (spec.pattern && typeof value === 'string' && !spec.pattern.test(value)) {
         warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value '${value}' doesn't match required pattern`);
@@ -1867,7 +1973,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     if (scene.director.gradientDirection === null) {
       scene.director.gradientDirection = undefined;
     }
-    
+
     // Validate gradient fields if present
     if (scene.director.gradientColors !== undefined) {
       if (!Array.isArray(scene.director.gradientColors)) {
@@ -1887,7 +1993,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
         }
       }
     }
-    
+
     // Validate gradientDirection is set if gradientColors is set
     if (scene.director.gradientColors !== undefined && !scene.director.gradientDirection) {
       warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: gradientColors set but gradientDirection missing, defaulting to 'to-br'`);
@@ -1896,10 +2002,10 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     }
 
 
-    // Validate asset IDs against static placeholders
+    // Validate asset IDs against static placeholders that are available in the catalog
     for (const assetId of scene.assetIds) {
       if (!finalValidAssetIds.includes(assetId)) {
-        const errorMsg = `AI referenced invalid placeholder ID: ${assetId}. Valid placeholder IDs: ${finalValidAssetIds.join(', ')}`;
+        const errorMsg = `AI referenced invalid placeholder ID: ${assetId}. Valid placeholder IDs available in catalog: ${finalValidAssetIds.join(', ')}`;
         console.error(`❌ [Portfolio Director] ${errorMsg}`);
         // Add to confidence factors as a warning
         confidenceScore -= 3; // Deduct score for invalid placeholder ID
@@ -2101,9 +2207,11 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     stage1: 'Initial generation',
     stage2: `Found ${auditResult.issues.length} issues`,
     stage3: `Generated ${improvementsResult.improvements.length} improvements`,
+    stage3_5: `Applied ${sceneTypeImprovements.length} scene-type refinements`,
     stage4: `Applied ${appliedImprovements.length} improvements`,
     stage5: 'Final regeneration with all fixes',
-    stage6: warnings.length > 0 ? `${warnings.length} warnings` : 'All validations passed',
+    stage5_5: `Coherence validated (${coherenceResult.overallScore}/100)`,
+    stage6: warnings.length > 0 ? `${warnings.length} validation warnings` : 'All validations passed',
     appliedImprovements: appliedImprovements.length > 0 ? appliedImprovements : 'none',
     warnings: warnings.length > 0 ? warnings : 'none',
     sceneSummary: finalResult.scenes.map((s, i) => ({
@@ -2309,7 +2417,7 @@ Return the refined scene JSON with complete director config.`;
 }
 
 /**
- * STAGE 5: Portfolio-Level Coherence Validation
+ * STAGE 5.5: Portfolio-Level Coherence Validation
  * This prompt ensures the entire sequence flows as a unified narrative
  */
 
@@ -2424,13 +2532,13 @@ export function convertToSceneConfigs(
     quotes: Array.from(quoteMap.keys()),
   });
 
-  // Validate all asset references exist
+  // Validate all asset references exist against available placeholders in catalog
   const validAssetIds = buildAssetWhitelist(catalog);
   for (const aiScene of aiScenes) {
     console.log(`[Portfolio Director] Scene type "${aiScene.sceneType}" wants assets:`, aiScene.assetIds);
     for (const assetId of aiScene.assetIds) {
       if (!validAssetIds.includes(assetId)) {
-        console.error(`❌ [Portfolio Director] AI referenced non-existent asset ID: ${assetId}. Valid IDs: ${validAssetIds.join(', ')}`);
+        console.error(`❌ [Portfolio Director] AI referenced non-existent or unavailable placeholder ID: ${assetId}. Valid IDs available in catalog: ${validAssetIds.join(', ')}`);
       }
     }
   }
@@ -2472,7 +2580,7 @@ export function convertToSceneConfigs(
 
         if (!image) {
           console.error(`❌ [Portfolio Director] Image scene failed - no matching image found for assetIds:`, aiScene.assetIds);
-          console.error(`   Available image IDs:`, Array.from(imageMap.keys()));
+          console.error(`   Available image IDs in catalog:`, Array.from(imageMap.keys()));
         } else {
           console.log(`✅ [Portfolio Director] Image scene matched:`, { imageId, url: image.url });
         }
@@ -2495,6 +2603,7 @@ export function convertToSceneConfigs(
 
         if (!video) {
           console.error(`❌ [Portfolio Director] Video scene failed - no matching video found for assetIds:`, aiScene.assetIds);
+          console.error(`   Available video IDs in catalog:`, Array.from(videoMap.keys()));
         }
 
         sceneConfig.content = video ? {
@@ -2514,6 +2623,7 @@ export function convertToSceneConfigs(
 
         if (!quote) {
           console.error(`❌ [Portfolio Director] Quote scene failed - no matching quote found for assetIds:`, aiScene.assetIds);
+          console.error(`   Available quote IDs in catalog:`, Array.from(quoteMap.keys()));
         }
 
         sceneConfig.content = quote ? {
@@ -2561,6 +2671,7 @@ export function convertToSceneConfigs(
 
         if (images.length === 0) {
           console.error(`❌ [Portfolio Director] Gallery scene has no valid images for assetIds:`, aiScene.assetIds);
+          console.error(`   Available image IDs in catalog:`, Array.from(imageMap.keys()));
         }
 
         sceneConfig.content = {
@@ -2587,6 +2698,8 @@ export function convertToSceneConfigs(
 
         if (!image && !video) {
           console.error(`❌ [Portfolio Director] Fullscreen scene missing media for assetIds:`, aiScene.assetIds);
+          console.error(`   Available image IDs in catalog:`, Array.from(imageMap.keys()));
+          console.error(`   Available video IDs in catalog:`, Array.from(videoMap.keys()));
         }
 
         sceneConfig.content = {
