@@ -90,6 +90,11 @@ DIRECTION:
 - "enters from bottom" → entryEffect: "slide-up"
 - "zooms in" / "grows" → entryEffect: "zoom-in" + scaleOnScroll: true
 - "appears suddenly" → entryEffect: "sudden"
+- "spins in" / "rotates" → entryEffect: "rotate-in" or "spiral-in"
+- "flips in" / "card flip" → entryEffect: "flip-in"
+- "bounces in" → entryEffect: "elastic-bounce"
+- "focuses" / "sharpens" → entryEffect: "blur-focus"
+- "cross-fades" → entryEffect: "cross-fade" (overlaps with previous scene)
 
 EXIT DIRECTION:
 - "exits to left" → exitEffect: "slide-left"
@@ -98,6 +103,10 @@ EXIT DIRECTION:
 - "exits downward" → exitEffect: "slide-down"
 - "fades away" → exitEffect: "fade"
 - "crossfades" / "dissolves" → exitEffect: "dissolve"
+- "cross-fades smoothly" → exitEffect: "cross-fade" (holds opacity during next scene entry)
+- "spins out" → exitEffect: "rotate-out"
+- "flips out" → exitEffect: "flip-out"
+- "blurs out dramatically" → exitEffect: "scale-blur"
 
 MOOD/ATMOSPHERE:
 - "dramatic" / "intense" → parallaxIntensity: 0.6-0.8, entryDuration: 2.5+

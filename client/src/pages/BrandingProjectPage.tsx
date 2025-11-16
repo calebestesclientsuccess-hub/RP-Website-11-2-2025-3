@@ -63,7 +63,13 @@ const entryEffectMap: Record<string, { from: gsap.TweenVars; to: gsap.TweenVars 
   'slide-right': { from: { opacity: 0, x: -100 }, to: { opacity: 1, x: 0 } },
   'zoom-in': { from: { opacity: 0, scale: 0.8 }, to: { opacity: 1, scale: 1 } },
   'zoom-out': { from: { opacity: 0, scale: 1.2 }, to: { opacity: 1, scale: 1 } },
-  'sudden': { from: { opacity: 0 }, to: { opacity: 1 } }, // Instant transition
+  'sudden': { from: { opacity: 0 }, to: { opacity: 1 } },
+  'cross-fade': { from: { opacity: 0 }, to: { opacity: 1 } }, // Overlaps with previous scene exit
+  'rotate-in': { from: { opacity: 0, rotation: -90 }, to: { opacity: 1, rotation: 0 } },
+  'flip-in': { from: { opacity: 0, rotationY: -90 }, to: { opacity: 1, rotationY: 0 } },
+  'spiral-in': { from: { opacity: 0, rotation: 180, scale: 0.5 }, to: { opacity: 1, rotation: 0, scale: 1 } },
+  'elastic-bounce': { from: { opacity: 0, scale: 0.3 }, to: { opacity: 1, scale: 1 } }, // Use elastic ease
+  'blur-focus': { from: { opacity: 0, filter: 'blur(20px)' }, to: { opacity: 1, filter: 'blur(0px)' } },
 };
 
 const exitEffectMap: Record<string, gsap.TweenVars> = {
@@ -74,6 +80,10 @@ const exitEffectMap: Record<string, gsap.TweenVars> = {
   'slide-right': { opacity: 0, x: 100 },
   'zoom-out': { opacity: 0, scale: 0.8 },
   'dissolve': { opacity: 0, filter: 'blur(10px)' },
+  'cross-fade': { opacity: 0 }, // Smooth overlap with next scene
+  'rotate-out': { opacity: 0, rotation: 90 },
+  'flip-out': { opacity: 0, rotationY: 90 },
+  'scale-blur': { opacity: 0, scale: 1.2, filter: 'blur(20px)' },
 };
 
 // Scroll speed mapping to GSAP scrub values
