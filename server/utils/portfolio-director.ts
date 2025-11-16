@@ -63,7 +63,9 @@ VALID ASSET IDS (you MUST use these exact IDs):
 ${validAssetIds.join(', ')}
 
 YOUR TASK:
-Create a scene sequence with SMOOTH TRANSITIONS between each scene. Focus on pacing, rhythm, and visual flow.
+Create a scene sequence by FILLING OUT A COMPLETE FORM for each scene. You MUST provide a value for EVERY field listed below. Do not skip any fields.
+
+Think of this as filling out a structured form where blank fields are not allowed. Each scene requires all these decisions:
 
 SCENE TYPES (choose based on content):
 - "text": Headlines and body copy (use for hero sections, chapter openers)
@@ -73,6 +75,25 @@ SCENE TYPES (choose based on content):
 - "split": Side-by-side text + media (use for feature explanations)
 - "gallery": Multiple images (use for before/after, process steps)
 - "fullscreen": Immersive media (use for wow moments, transitions)
+
+FOR EACH SCENE, YOU MUST DECIDE:
+1. Which assets to use (from the whitelist)
+2. Entry effect (HOW it appears)
+3. Entry duration (HOW LONG it takes to appear)
+4. Entry delay (WHEN it starts appearing after scroll trigger)
+5. Exit effect (HOW it disappears)
+6. Exit duration (HOW LONG it takes to disappear)
+7. Background color (EXACT hex code)
+8. Text color (EXACT hex code)
+9. Parallax intensity (0.0 to 1.0, or 0 if using scaleOnScroll)
+10. Heading size (4xl, 5xl, 6xl, 7xl, or 8xl)
+11. Body size (base, lg, xl, or 2xl)
+12. Alignment (left, center, or right)
+13. fadeOnScroll (true/false)
+14. scaleOnScroll (true/false - MUST be false if parallax > 0)
+15. blurOnScroll (true/false - use sparingly)
+
+NO FIELD MAY BE OMITTED. If you're unsure, use the defaults from the interpretation matrix, but you MUST provide a value.
 
 DIRECTOR'S NOTES INTERPRETATION MATRIX:
 Use this to translate natural language into technical configs:
@@ -210,14 +231,18 @@ interface PortfolioGenerateResponse {
 
 /**
  * Call Gemini to orchestrate portfolio scenes from content catalog
+ * Uses a 5-stage refinement pipeline for maximum quality
  */
 export async function generatePortfolioWithAI(
   catalog: ContentCatalog
 ): Promise<PortfolioGenerateResponse> {
-  const prompt = buildPortfolioPrompt(catalog);
   const aiClient = getAIClient();
-
-  const response = await aiClient.models.generateContent({
+  
+  console.log('[Portfolio Director] Starting 5-stage refinement pipeline...');
+  
+  // STAGE 1: Initial Generation (Form-Filling)
+  const prompt = buildPortfolioPrompt(catalog);
+  const stage1Response = await aiClient.models.generateContent({
     model: "gemini-2.5-pro", // Pro model for complex cinematic reasoning
     contents: [{
       role: "user",
@@ -282,7 +307,153 @@ export async function generatePortfolioWithAI(
     throw new Error("No response from Gemini AI");
   }
 
-  const result = JSON.parse(responseText) as PortfolioGenerateResponse;
+  let result = JSON.parse(responseText) as PortfolioGenerateResponse;
+  
+  console.log('[Portfolio Director] ✅ Stage 1 complete: Initial generation');
+  
+  // STAGE 2: Self-Audit for Inconsistencies
+  const auditPrompt = `You previously generated this scene sequence JSON:
+
+${JSON.stringify(result, null, 2)}
+
+Audit this JSON for:
+1. Internal contradictions (e.g., parallax + scaleOnScroll both enabled)
+2. Missing required fields
+3. Invalid values (durations < 0.1, colors not hex format, etc.)
+4. Pacing issues (all scenes same speed, no rhythm)
+5. Transition mismatches (exit effect of Scene N doesn't flow into entry of Scene N+1)
+
+Return a JSON array of issues found:
+{
+  "issues": [
+    {"sceneIndex": 0, "field": "parallaxIntensity", "problem": "Conflicts with scaleOnScroll: true", "suggestion": "Set parallaxIntensity to 0"},
+    ...
+  ]
+}`;
+
+  const auditResponse = await aiClient.models.generateContent({
+    model: "gemini-2.5-pro",
+    contents: [{ role: "user", parts: [{ text: auditPrompt }] }],
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          issues: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                sceneIndex: { type: Type.NUMBER },
+                field: { type: Type.STRING },
+                problem: { type: Type.STRING },
+                suggestion: { type: Type.STRING }
+              },
+              required: ["sceneIndex", "field", "problem", "suggestion"]
+            }
+          }
+        },
+        required: ["issues"]
+      }
+    }
+  });
+  
+  const auditResult = JSON.parse(auditResponse.text || '{"issues":[]}');
+  console.log(`[Portfolio Director] ✅ Stage 2 complete: Found ${auditResult.issues.length} issues`);
+  
+  // STAGE 3: Generate 10 Improvements
+  const improvementsPrompt = `You previously generated this scene sequence:
+
+${JSON.stringify(result, null, 2)}
+
+User requirements from director notes:
+${catalog.directorNotes}
+
+Generate 10 specific improvements to make this sequence better:
+1. Better timing/pacing
+2. More cinematic transitions
+3. Improved color progression
+4. Better asset utilization
+5. Enhanced narrative flow
+
+Each improvement should be actionable and specific.
+
+Return:
+{
+  "improvements": [
+    {"sceneIndex": 0, "field": "entryDuration", "currentValue": 1.2, "newValue": 2.5, "reason": "Hero should be slower and more dramatic"},
+    ...
+  ]
+}`;
+
+  const improvementsResponse = await aiClient.models.generateContent({
+    model: "gemini-2.5-pro",
+    contents: [{ role: "user", parts: [{ text: improvementsPrompt }] }],
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          improvements: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                sceneIndex: { type: Type.NUMBER },
+                field: { type: Type.STRING },
+                currentValue: { type: Type.STRING },
+                newValue: { type: Type.STRING },
+                reason: { type: Type.STRING }
+              },
+              required: ["sceneIndex", "field", "newValue", "reason"]
+            }
+          }
+        },
+        required: ["improvements"]
+      }
+    }
+  });
+  
+  const improvementsResult = JSON.parse(improvementsResponse.text || '{"improvements":[]}');
+  console.log(`[Portfolio Director] ✅ Stage 3 complete: Generated ${improvementsResult.improvements.length} improvements`);
+  
+  // STAGE 4: Auto-Apply Non-Conflicting Improvements
+  const appliedImprovements: string[] = [];
+  for (const improvement of improvementsResult.improvements) {
+    const scene = result.scenes[improvement.sceneIndex];
+    if (!scene) continue;
+    
+    // Check for conflicts with audit issues
+    const hasConflict = auditResult.issues.some(
+      (issue: any) => issue.sceneIndex === improvement.sceneIndex && issue.field === improvement.field
+    );
+    
+    if (!hasConflict) {
+      // Apply improvement
+      const fieldPath = improvement.field.split('.');
+      let target: any = scene;
+      for (let i = 0; i < fieldPath.length - 1; i++) {
+        target = target[fieldPath[i]];
+      }
+      const finalField = fieldPath[fieldPath.length - 1];
+      
+      // Type conversion
+      let newValue: any = improvement.newValue;
+      if (typeof target[finalField] === 'number') {
+        newValue = parseFloat(improvement.newValue);
+      } else if (typeof target[finalField] === 'boolean') {
+        newValue = improvement.newValue === 'true';
+      }
+      
+      target[finalField] = newValue;
+      appliedImprovements.push(`Scene ${improvement.sceneIndex}: ${improvement.field} = ${newValue} (${improvement.reason})`);
+    }
+  }
+  
+  console.log(`[Portfolio Director] ✅ Stage 4 complete: Applied ${appliedImprovements.length} improvements`);
+  
+  // STAGE 5: Final Validation Against Requirements
+  console.log('[Portfolio Director] ✅ Stage 5: Final validation');
 
   // Validate that all referenced asset IDs exist and log potential issues
   const validAssetIds = buildAssetWhitelist(catalog);
@@ -332,21 +503,23 @@ export async function generatePortfolioWithAI(
 
   }
 
-  console.log('[Portfolio Director] Generated scenes with potential warnings:', {
-    scenes: result.scenes.map(s => ({
-      sceneType: s.sceneType,
-      assetIds: s.assetIds,
-      director: {
-        entryDuration: s.director.entryDuration,
-        exitDuration: s.director.exitDuration,
-        entryDelay: s.director.entryDelay,
-        parallaxIntensity: s.director.parallaxIntensity,
-        scaleOnScroll: s.director.scaleOnScroll,
-      }
-    })),
+  console.log('[Portfolio Director] 🎬 PIPELINE COMPLETE - Final Output:', {
+    totalScenes: result.scenes.length,
+    stage1: 'Initial generation',
+    stage2: `Found ${auditResult.issues.length} issues`,
+    stage3: `Generated ${improvementsResult.improvements.length} improvements`,
+    stage4: `Applied ${appliedImprovements.length} improvements`,
+    stage5: warnings.length > 0 ? `${warnings.length} warnings` : 'All validations passed',
+    appliedImprovements: appliedImprovements.length > 0 ? appliedImprovements : 'none',
     warnings: warnings.length > 0 ? warnings : 'none',
+    sceneSummary: result.scenes.map((s, i) => ({
+      index: i,
+      type: s.sceneType,
+      assets: s.assetIds.length,
+      entry: `${s.director.entryEffect} (${s.director.entryDuration}s)`,
+      exit: `${s.director.exitEffect} (${s.director.exitDuration}s)`,
+    }))
   });
-
 
   return result;
 }
