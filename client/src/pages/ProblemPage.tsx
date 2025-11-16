@@ -1,10 +1,11 @@
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SEO } from "@/components/SEO";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { WidgetZone } from "@/components/WidgetZone";
-import { InternalHireCostCalculator } from "@/components/InternalHireCostCalculator";
+import { InternalLinks } from "@/components/InternalLinks";
+import { getRelatedLinks } from "@/lib/content-graph";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle } from "lucide-react";
@@ -307,9 +308,19 @@ export default function ProblemPage() {
         {/* Widget Zone 29 */}
         <WidgetZone zone="zone-29" className="my-8" />
 
-        {/* Primary CTA Module */}
-        <section className="py-20 px-4 md:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
+        {/* Internal Links Section */}
+        <section className="py-16 px-4 md:px-6 lg:px-8 bg-card/30">
+          <div className="max-w-7xl mx-auto">
+            <InternalLinks
+              links={getRelatedLinks('problem')}
+              title="Explore the Solution"
+            />
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="py-24 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-background to-card/30">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}

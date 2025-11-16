@@ -19,6 +19,8 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils"; // Assuming cn utility is available
 import { InternalHireCostCalculator } from "@/components/InternalHireCostCalculator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { InternalLinks } from "@/components/InternalLinks";
+import { getRelatedLinks } from "@/lib/content-graph";
 
 // Lazy load GSAP-heavy animation component
 const SimplifiedOrbitalPowers = lazy(() => import("@/components/SimplifiedOrbitalPowers").then(module => ({ default: module.SimplifiedOrbitalPowers })));
@@ -737,6 +739,16 @@ export default function Home() {
 
       {/* Widget Zone 6 */}
       <WidgetZone zone="zone-6" className="my-8" />
+
+      {/* Internal Links Section */}
+      <section className="py-16 px-4 md:px-6 lg:px-8 bg-card/30">
+        <div className="max-w-7xl mx-auto">
+          <InternalLinks 
+            links={getRelatedLinks('home')}
+            title="Explore Your Next Steps"
+          />
+        </div>
+      </section>
 
       {/* The GTM Engine Solution - New Section with Own Background */}
       <section className="relative py-32 px-4 md:px-6 lg:px-8 bg-background">

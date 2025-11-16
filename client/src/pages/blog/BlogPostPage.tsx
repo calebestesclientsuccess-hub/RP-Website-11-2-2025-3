@@ -2,6 +2,8 @@ import { SEO } from "@/components/SEO";
 import { ArticleSchema } from "@/components/schemas/ArticleSchema";
 import { ReadingProgressBar } from "@/components/ReadingProgressBar";
 import { WidgetZone } from "@/components/WidgetZone";
+import { InternalLinks } from "@/components/InternalLinks";
+import { getRelatedLinks } from "@/lib/content-graph";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { marked } from "marked";
@@ -77,6 +79,11 @@ export default function BlogPostPage() {
         />
 
         <WidgetZone zone="zone-4" />
+
+        <InternalLinks 
+          links={getRelatedLinks('blog')}
+          title="Continue Reading"
+        />
       </article>
     </>
   );

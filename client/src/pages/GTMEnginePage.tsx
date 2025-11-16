@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { WidgetZone } from "@/components/WidgetZone";
+import { InternalLinks } from "@/components/InternalLinks";
+import { getRelatedLinks } from "@/lib/content-graph";
 import { CostEquationCard } from "@/components/CostEquationCard";
 import { ComparisonTable } from "@/components/ComparisonTable";
 import { ArrowRight, Users, Brain, BookOpen } from "lucide-react";
@@ -533,6 +535,22 @@ export default function GTMEnginePage() {
               See The Proof <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
           </Button>
+        </div>
+      </section>
+
+      {/* Internal Links Section */}
+      <section className="py-16 px-4 md:px-6 lg:px-8 bg-card/30">
+        <div className="max-w-7xl mx-auto">
+          <InternalLinks
+            links={getRelatedLinks('gtmEngine')}
+            title="Your Next Steps"
+          />
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-24 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-card/30 to-background">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
         </div>
       </section>
     </>

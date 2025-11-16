@@ -4,11 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { InternalLinks } from "@/components/InternalLinks";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Star, TrendingUp, Shield, Award } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Testimonial } from "@shared/schema";
+import { getRelatedLinks } from "@/lib/content-graph";
+
 
 export default function ResultsPage() {
   // Fetch testimonials from API (same as Home page carousel)
@@ -50,7 +53,10 @@ export default function ResultsPage() {
         keywords="Revenue Party case studies, outsourced SDR case study, GTM engine results, guaranteed sales appointments, SDR performance, sales system results"
         canonical="/results"
       />
-      <Breadcrumbs items={[]} currentPage="Results & Case Studies" />
+      <Breadcrumbs
+        items={[]}
+        currentPage="Results & Case Studies"
+      />
 
       <div className="min-h-screen">
         {/* Hero Module */}
@@ -285,6 +291,16 @@ export default function ResultsPage() {
                 </motion.div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Internal Links Section */}
+        <section className="py-16 px-4 md:px-6 lg:px-8 bg-background">
+          <div className="max-w-7xl mx-auto">
+            <InternalLinks
+              links={getRelatedLinks('results')}
+              title="Ready to Get Started?"
+            />
           </div>
         </section>
 
