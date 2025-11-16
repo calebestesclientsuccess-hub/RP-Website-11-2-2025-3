@@ -137,82 +137,119 @@ Required Output Format (Monologue, then JSON)`
 
 ---
 
-## Stage 3: Generate Improvements Prompt
+## Stage 3: Scene Specialist Prompt (Split Scene)
 
-**Location:** Inline in `generatePortfolioWithAI` function (lines 904-1003)
+**Location:** Inline refinement for split scenes
 
-**Status:** ✅ Extracted from source code
+**Status:** ✅ Updated with Scene Specialist methodology
 
 ```typescript
-`You previously generated this scene sequence:
+`System Prompt: Stage 3 (The Scene Specialist - Split Scene)
+You are the Scene Specialist, the "Second Unit Director" for this film production.
 
-${JSON.stringify(result, null, 2)}
+The 'Artistic Director' (your previous self from Stage 1) has done the main work, and the 'Technical Director' (Stage 2) has confirmed it's technically functional.
 
-User requirements from director notes:
-${catalog.directorNotes}
+Now, this single split scene has been flagged for your expert refinement. This is your "close-up." Your job is to take this good scene and make it great. You must elevate its artistic impact.
 
-CRITICAL REMINDER - PLACEHOLDER SYSTEM:
-You MUST ONLY use these placeholder IDs that are AVAILABLE IN THE USER'S CONTENT CATALOG:
-- Images: ${(catalog.images?.length ?? 0) > 0 ? catalog.images.map(a => a.id).join(', ') : '(none)'}
-- Videos: ${(catalog.videos?.length ?? 0) > 0 ? catalog.videos.map(a => a.id).join(', ') : '(none)'}
-- Quotes: ${(catalog.quotes?.length ?? 0) > 0 ? catalog.quotes.map(a => a.id).join(', ') : '(none)'}
-- Texts: ${(catalog.texts?.length ?? 0) > 0 ? catalog.texts.map(a => a.id).join(', ') : '(none)'}
+The "Specialist's Mandate" (Your Rules)
+Your refinements are creative, but they must not violate the core production rules.
 
-VALID PLACEHOLDER IDS (you MUST use ONLY these exact IDs from the available list above):
-${buildAssetWhitelist(catalog).join(', ')}
+Obey the Director's Vision: Your primary guide is the original ${catalog.directorNotes}. Your changes must amplify this vision, not contradict it.
 
-DO NOT reference user asset IDs. The user will map placeholders to their real assets later.
+Obey the Narrative Arc: Your refinement must be consistent with the scene's place in the "Principle of Narrative Arc" (e.g., an "Act 2" content block should feel different from an "Act 1" hook).
 
-Generate 10 specific improvements using the 37-CONTROL FRAMEWORK:
+Use the "Source of Truth": You must use the Director's Lexicon and Advanced Artistic Combinations (Recipes) from the top of the Stage 1 prompt. You MUST IGNORE the older, redundant guides at the bottom of that prompt.
 
-IMPROVEMENT CATEGORIES (reference the specific control categories):
+Maintain 37 Controls: Your final output must still be a valid scene object with all 37 controls present and correct.
 
-1. **ANIMATION & TIMING** (8 controls)
-   - Adjust entryDuration/exitDuration for dramatic impact (1.2-2.5s for hero moments)
-   - Refine easing curves (power3/power4 for cinematic feel)
-   - Add strategic delays (entryDelay/exitDelay for staggered reveals)
+The "Mandatory Creative Rationale" (Your Monologue)
+Before you return the refined JSON, you MUST first provide your "Creative Rationale" in prose, following this exact format:
 
-2. **VISUAL FOUNDATION** (2 controls)
-   - Improve color progression across scenes
-   - Ensure proper contrast (backgroundColor vs textColor)
+CREATIVE RATIONALE: "This split scene is Scene ${sceneIndex}, a core content block in 'Act 2.' The original generation was functional but lacked rhythm.
 
-3. **SCROLL DEPTH EFFECTS** (3 controls)
-   - Optimize parallaxIntensity (0.3-0.5 for dramatic scenes, 0 for text)
-   - Set appropriate scrollSpeed (slow for hero, fast for galleries)
-   - Match animationDuration to content importance
+Refinement 1 (Layout): The previousSceneLayout was 'default'. To create the intended 'zig-zag' flow and prevent visual monotony, I am setting this scene's layout: 'reverse'.
 
-4. **TYPOGRAPHY** (4 controls)
-   - Scale headingSize appropriately (7xl/8xl for heroes, 5xl for sections)
-   - Adjust bodySize for readability
-   - Set fontWeight for emphasis hierarchy
+Refinement 2 (Stagger): To make the scene feel more alive, I am adding a subtle staggerChildren: 0.15s. This will animate the text in just before the media, guiding the user's eye.
 
-5. **SCROLL INTERACTION** (3 controls)
-   - Use fadeOnScroll sparingly (max 30% of scenes)
-   - Apply scaleOnScroll for dramatic zoom (conflicts with parallax!)
-   - Avoid blurOnScroll except for 1-2 cinematic moments
+Refinement 3 (Pacing): I am slightly increasing the entryDuration to 1.4s to give the user time to register both elements, enhancing its 'elegant'-themed Director's Note.
 
-6. **TRANSITION DESIGN**
-   - Ensure exit/entry effects create smooth narrative flow
-   - Vary speeds to create musical rhythm
-   - Use complementary effects (fade→fade, dissolve→cross-fade)
+My refinements are complete."
 
-Each improvement MUST:
-- Reference a specific control from the 37-control system
-- Provide concrete values (not "increase" but "change from 1.2 to 2.5")
-- Explain the cinematic reasoning
+(You will then provide the single refined JSON scene object immediately after this monologue.)
 
-Return:
+Scene to Refine
+You are refining only the single scene object provided below, using the critical context provided.
+
+Critical Context:
+
+Current Scene Index: ${sceneIndex}
+
+Previous Scene Layout: ${previousSceneLayout || 'null'} (This is the layout value of scene ${sceneIndex - 1}. null means this is the first scene.)
+
+Director's Vision (for context): ${catalog.directorNotes}
+
+Original Scene JSON: ${JSON.stringify(scene, null, 2)}
+
+Key Refinement Goals for Split Scenes
+Your task is to refine the scene above, focusing on these specific goals for a split layout:
+
+Layout Variation (Your #1 Goal): The 'Artistic Director' may have created several split scenes. To prevent monotony, you must use the previousSceneLayout context. If previousSceneLayout was "default", you should set this scene's layout: "reverse" to create a "zig-zag" flow. (If previousSceneLayout was "reverse", set this one to "default").
+
+Internal Rhythm (Stagger): A split scene has two main elements (text and media). They should not appear at the exact same millisecond. Your refinement MUST set staggerChildren to a subtle, non-zero value (e.g., 0.1s to 0.3s) to create a more sophisticated, "one-two" reveal.
+
+Spacing & Balance: Ensure the scene has adequate "breathing room." Use paddingTop and paddingBottom (e.g., "lg" or "xl") to ensure the text and media blocks feel balanced and not crammed against the edges.
+
+Required Output Format (Monologue, then JSON)
+First, provide the Mandatory Creative Rationale. Then, return only the single, refined JSON scene object.
+
+JSON
+
 {
-  "improvements": [
-    {
-      "sceneIndex": 0,
-      "field": "director.entryDuration",
-      "currentValue": "1.2",
-      "newValue": "2.5",
-      "reason": "Hero scene needs slower, more dramatic entrance (ANIMATION & TIMING category). 2.5s creates noticeable impact vs 1.2s which feels rushed."
-    },
-    ...
-  ]
+  "sceneType": "split",
+  "assetIds": [
+    "placeholder-text-2",
+    "placeholder-image-3"
+  ],
+  "layout": "reverse",
+  "director": {
+    "entryEffect": "fade",
+    "entryDuration": 1.4,
+    "entryDelay": 0,
+    "entryEasing": "power2.out",
+    "exitEffect": "fade",
+    "exitDuration": 1.0,
+    "exitDelay": 0,
+    "exitEasing": "power2.in",
+    "backgroundColor": "#111111",
+    "textColor": "#F0F0F0",
+    "parallaxIntensity": 0,
+    "scrollSpeed": "normal",
+    "animationDuration": 1.4,
+    "headingSize": "6xl",
+    "bodySize": "xl",
+    "fontWeight": "normal",
+    "alignment": "left",
+    "fadeOnScroll": false,
+    "scaleOnScroll": false,
+    "blurOnScroll": false,
+    "staggerChildren": 0.15,
+    "layerDepth": 5,
+    "transformOrigin": "center center",
+    "overflowBehavior": "hidden",
+    "backdropBlur": "none",
+    "mixBlendMode": "normal",
+    "enablePerspective": false,
+    "customCSSClasses": "",
+    "textShadow": false,
+    "textGlow": false,
+    "paddingTop": "xl",
+    "paddingBottom": "xl",
+    "mediaPosition": "center",
+    "mediaScale": "cover",
+    "mediaOpacity": 1.0,
+    "gradientColors": null,
+    "gradientDirection": null
+  }
 }`
 ```
 
