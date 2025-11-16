@@ -2052,7 +2052,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // NOTE: This part might need adjustment based on the actual output format of `generatePortfolio`
       // Assuming `generatePortfolio` returns an array of scene configurations compatible with `convertToSceneConfigs`
       // If `generatePortfolio` returns structured data, we might need to adapt `convertToSceneConfigs` or replace it.
-      // For now, assuming a direct mapping is possible or `convertToSceneConfigs` handles the output.
+      // For this example, let's assume a direct mapping is possible or `convertToSceneConfigs` handles the output.
 
       // Let's assume `generatePortfolio` returns scenes in a format that can be directly used or needs minimal transformation.
       // If `convertToSceneConfigs` is a separate utility, we'd call it here.
