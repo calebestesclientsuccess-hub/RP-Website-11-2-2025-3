@@ -1180,6 +1180,110 @@ Return:
   const improvementsResult = JSON.parse(improvementsResponse.text || '{"improvements":[]}');
   console.log(`[Portfolio Director] ✅ Stage 3 complete: Generated ${improvementsResult.improvements.length} improvements`);
 
+  // STAGE 3.5: Scene Type-Specific Refinement
+  console.log('[Portfolio Director] 🎬 Stage 3.5: Running scene-type-specific refinements...');
+  const sceneTypeImprovements: any[] = [];
+
+  for (let i = 0; i < result.scenes.length; i++) {
+    const scene = result.scenes[i];
+    let scenePrompt = '';
+
+    switch (scene.sceneType) {
+      case 'split':
+        scenePrompt = buildSplitScenePrompt(scene, catalog);
+        break;
+      case 'gallery':
+        scenePrompt = buildGalleryScenePrompt(scene, catalog);
+        break;
+      case 'quote':
+        scenePrompt = buildQuoteScenePrompt(scene, catalog);
+        break;
+      case 'fullscreen':
+        scenePrompt = buildFullscreenScenePrompt(scene, catalog);
+        break;
+      default:
+        // Skip refinement for basic scene types (text, image, video)
+        continue;
+    }
+
+    if (scenePrompt) {
+      try {
+        const sceneRefinementResponse = await aiClient.models.generateContent({
+          model: "gemini-2.5-pro",
+          contents: [{ role: "user", parts: [{ text: scenePrompt }] }],
+          config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                scene: {
+                  type: Type.OBJECT,
+                  properties: {
+                    sceneType: { type: Type.STRING },
+                    assetIds: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    layout: { type: Type.STRING },
+                    director: {
+                      type: Type.OBJECT,
+                      properties: {
+                        entryDuration: { type: Type.NUMBER },
+                        exitDuration: { type: Type.NUMBER },
+                        animationDuration: { type: Type.NUMBER },
+                        entryDelay: { type: Type.NUMBER },
+                        exitDelay: { type: Type.NUMBER },
+                        backgroundColor: { type: Type.STRING },
+                        textColor: { type: Type.STRING },
+                        parallaxIntensity: { type: Type.NUMBER },
+                        scrollSpeed: { type: Type.STRING },
+                        entryEffect: { type: Type.STRING },
+                        exitEffect: { type: Type.STRING },
+                        entryEasing: { type: Type.STRING },
+                        exitEasing: { type: Type.STRING },
+                        fadeOnScroll: { type: Type.BOOLEAN },
+                        scaleOnScroll: { type: Type.BOOLEAN },
+                        blurOnScroll: { type: Type.BOOLEAN },
+                        headingSize: { type: Type.STRING },
+                        bodySize: { type: Type.STRING },
+                        fontWeight: { type: Type.STRING },
+                        alignment: { type: Type.STRING },
+                        staggerChildren: { type: Type.NUMBER },
+                        layerDepth: { type: Type.NUMBER },
+                        transformOrigin: { type: Type.STRING },
+                        overflowBehavior: { type: Type.STRING },
+                        backdropBlur: { type: Type.STRING },
+                        mixBlendMode: { type: Type.STRING },
+                        enablePerspective: { type: Type.BOOLEAN },
+                        customCSSClasses: { type: Type.STRING },
+                        textShadow: { type: Type.BOOLEAN },
+                        textGlow: { type: Type.BOOLEAN },
+                        paddingTop: { type: Type.STRING },
+                        paddingBottom: { type: Type.STRING },
+                        mediaPosition: { type: Type.STRING },
+                        mediaScale: { type: Type.STRING },
+                        mediaOpacity: { type: Type.NUMBER },
+                        gradientColors: { type: Type.ARRAY, items: { type: Type.STRING }, nullable: true },
+                        gradientDirection: { type: Type.STRING, nullable: true },
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        const refinedScene = JSON.parse(sceneRefinementResponse.text || '{}');
+        if (refinedScene.scene) {
+          result.scenes[i] = refinedScene.scene;
+          sceneTypeImprovements.push(`Scene ${i} (${scene.sceneType}): Applied type-specific refinement`);
+        }
+      } catch (error) {
+        console.warn(`[Portfolio Director] Stage 3.5 failed for scene ${i}:`, error);
+      }
+    }
+  }
+
+  console.log(`[Portfolio Director] ✅ Stage 3.5 complete: Applied ${sceneTypeImprovements.length} scene-type refinements`);
+
   // STAGE 4: Auto-Apply Non-Conflicting Improvements
   const appliedImprovements: string[] = [];
   const validPlaceholderIds = buildAssetWhitelist();
@@ -1537,6 +1641,97 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 
   const finalResult: PortfolioGenerateResponse = JSON.parse(finalResponse.text || '{"scenes":[]}');
   console.log(`[Portfolio Director] ✅ Stage 5 complete: Final regeneration with ${finalResult.scenes.length} scenes`);
+
+  // STAGE 5.5: Portfolio-Level Coherence Validation
+  console.log('[Portfolio Director] 🎬 Stage 5.5: Validating portfolio-level coherence...');
+  
+  const coherencePrompt = buildPortfolioCoherencePrompt(finalResult.scenes, catalog);
+  
+  try {
+    const coherenceResponse = await aiClient.models.generateContent({
+      model: "gemini-2.5-pro",
+      contents: [{ role: "user", parts: [{ text: coherencePrompt }] }],
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            isCoherent: { type: Type.BOOLEAN },
+            issues: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  sceneIndex: { type: Type.NUMBER },
+                  issue: { type: Type.STRING },
+                  suggestion: { type: Type.STRING }
+                }
+              }
+            },
+            improvements: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  sceneIndex: { type: Type.NUMBER },
+                  field: { type: Type.STRING },
+                  currentValue: { type: Type.STRING },
+                  newValue: { type: Type.STRING },
+                  reason: { type: Type.STRING }
+                }
+              }
+            },
+            overallScore: { type: Type.NUMBER }
+          }
+        }
+      }
+    });
+
+    const coherenceResult = JSON.parse(coherenceResponse.text || '{"isCoherent":true,"issues":[],"improvements":[],"overallScore":100}');
+    
+    console.log(`[Portfolio Director] 📊 Coherence Score: ${coherenceResult.overallScore}/100`);
+    console.log(`[Portfolio Director] 🔍 Found ${coherenceResult.issues.length} coherence issues`);
+    
+    // Apply coherence improvements if score is below 85
+    if (coherenceResult.overallScore < 85 && coherenceResult.improvements.length > 0) {
+      console.log(`[Portfolio Director] 🔧 Applying ${coherenceResult.improvements.length} coherence improvements...`);
+      
+      for (const improvement of coherenceResult.improvements) {
+        const scene = finalResult.scenes[improvement.sceneIndex];
+        if (scene) {
+          const fieldPath = improvement.field.split('.');
+          let target: any = scene;
+          
+          for (let i = 0; i < fieldPath.length - 1; i++) {
+            if (!target[fieldPath[i]]) {
+              target[fieldPath[i]] = {};
+            }
+            target = target[fieldPath[i]];
+          }
+          
+          const finalField = fieldPath[fieldPath.length - 1];
+          let newValue: any = improvement.newValue;
+          
+          // Type conversion
+          try {
+            if (typeof (scene.director as any)[finalField] === 'number') {
+              newValue = parseFloat(improvement.newValue);
+            } else if (typeof (scene.director as any)[finalField] === 'boolean') {
+              newValue = improvement.newValue.toLowerCase() === 'true';
+            }
+          } catch (e) {
+            console.warn(`[Portfolio Director] Type conversion warning for ${improvement.field}`);
+          }
+          
+          (target as any)[finalField] = newValue;
+        }
+      }
+    }
+    
+    console.log(`[Portfolio Director] ✅ Stage 5.5 complete: Portfolio coherence validated`);
+  } catch (error) {
+    console.warn('[Portfolio Director] Stage 5.5 failed, continuing with current scenes:', error);
+  }
 
   // STAGE 6: Final Validation Against Requirements
   console.log('[Portfolio Director] ✅ Stage 6: Final validation - checking all 37 controls');
