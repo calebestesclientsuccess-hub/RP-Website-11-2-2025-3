@@ -923,6 +923,22 @@ export const DEFAULT_DIRECTOR_CONFIG = {
   blurOnScroll: false,
   layerDepth: 5,
   staggerChildren: 0,
+  scrollSpeed: "normal",
+  animationDuration: 2.0,
+  mediaPosition: "center",
+  mediaScale: "cover",
+  mediaOpacity: 1.0,
+  transformOrigin: "center center",
+  overflowBehavior: "hidden",
+  backdropBlur: "none",
+  mixBlendMode: "normal",
+  enablePerspective: false,
+  customCSSClasses: "",
+  textShadow: false,
+  textGlow: false,
+  paddingTop: "md",
+  paddingBottom: "md",
+  fontWeight: "bold",
 } as const;
 
 // Types

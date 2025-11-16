@@ -225,12 +225,20 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
 
     // Scroll effects (if enabled)
     if (director.fadeOnScroll || director.scaleOnScroll || director.blurOnScroll) {
+      // Map scrollSpeed to scrub value
+      const scrollSpeedMap: Record<string, number> = {
+        'slow': 3,
+        'normal': 1.5,
+        'fast': 0.5,
+      };
+      const scrubSpeed = scrollSpeedMap[director.scrollSpeed || 'normal'] || 1.5;
+
       gsap.to(contentEl, {
         scrollTrigger: {
           trigger: sceneEl,
           start: "top center",
           end: "bottom center",
-          scrub: true,
+          scrub: scrubSpeed,
         },
         opacity: director.fadeOnScroll ? 0.3 : 1,
         scale: director.scaleOnScroll ? 1.1 : 1,

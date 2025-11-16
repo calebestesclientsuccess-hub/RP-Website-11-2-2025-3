@@ -81,6 +81,8 @@ MANDATORY FIELD CHECKLIST - YOU MUST PROVIDE ALL OF THESE FOR EACH SCENE:
 ☐ backgroundColor (exact hex code like #0a0a0a or #1e293b)
 ☐ textColor (exact hex code like #ffffff or #f1f5f9)
 ☐ parallaxIntensity (number 0.0-1.0, use 0 if scaleOnScroll is true)
+☐ scrollSpeed (slow, normal, or fast - controls scroll animation speed)
+☐ animationDuration (number in seconds, 0.5-10, overall animation timing)
 ☐ headingSize (4xl, 5xl, 6xl, 7xl, or 8xl)
 ☐ bodySize (base, lg, xl, or 2xl)
 ☐ fontWeight (normal, medium, semibold, or bold)
@@ -365,6 +367,8 @@ export async function generatePortfolioWithAI(
                     backgroundColor: { type: Type.STRING, description: "Hex color code" },
                     textColor: { type: Type.STRING, description: "Hex color code" },
                     parallaxIntensity: { type: Type.NUMBER, description: "0-1, default 0.3" },
+                    scrollSpeed: { type: Type.STRING, description: "slow, normal, or fast" },
+                    animationDuration: { type: Type.NUMBER, description: "Overall animation duration in seconds (0.5-10)" },
                     entryEffect: { type: Type.STRING, description: "fade, slide-up, zoom-in, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus, cross-fade, sudden" },
                     exitEffect: { type: Type.STRING, description: "fade, slide-down, zoom-out, dissolve, rotate-out, flip-out, scale-blur, cross-fade" },
                     entryEasing: { type: Type.STRING, description: "linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce" },
@@ -374,6 +378,7 @@ export async function generatePortfolioWithAI(
                     blurOnScroll: { type: Type.BOOLEAN, description: "Enable blur effect during scroll" },
                     headingSize: { type: Type.STRING, description: "4xl, 5xl, 6xl, 7xl, or 8xl" },
                     bodySize: { type: Type.STRING, description: "base, lg, xl, or 2xl" },
+                    fontWeight: { type: Type.STRING, description: "normal, medium, semibold, or bold" },
                     alignment: { type: Type.STRING, description: "left, center, or right" },
                     staggerChildren: { type: Type.NUMBER, description: "Delay between child animations in seconds (0-1)" },
                     layerDepth: { type: Type.NUMBER, description: "Z-index for parallax layering (0-10)" },
@@ -386,10 +391,15 @@ export async function generatePortfolioWithAI(
                   required: [
                     "entryDuration", "exitDuration", "entryDelay", "exitDelay",
                     "backgroundColor", "textColor", "parallaxIntensity",
+                    "scrollSpeed", "animationDuration",
                     "entryEffect", "exitEffect", "entryEasing", "exitEasing",
-                    "headingSize", "bodySize", "alignment",
+                    "headingSize", "bodySize", "fontWeight", "alignment",
                     "fadeOnScroll", "scaleOnScroll", "blurOnScroll",
-                    "staggerChildren", "layerDepth"
+                    "staggerChildren", "layerDepth", "transformOrigin",
+                    "overflowBehavior", "backdropBlur", "mixBlendMode",
+                    "enablePerspective", "customCSSClasses",
+                    "textShadow", "textGlow", "paddingTop", "paddingBottom",
+                    "mediaPosition", "mediaScale", "mediaOpacity"
                   ]
                 }
               },
