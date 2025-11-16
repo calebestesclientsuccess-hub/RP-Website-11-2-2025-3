@@ -135,7 +135,23 @@ EXIT DIRECTION:
 - "spirals out" / "tornado exit" → exitEffect: "spiral-out"
 - "bounces out" / "elastic exit" → exitEffect: "elastic-bounce"
 
-IMPORTANT: Each effect is DRAMATICALLY VISIBLE when durations are >= 1.0s. Shorter durations (0.3-0.8s) create subtle, professional transitions. Use longer durations for hero moments and key transitions.
+EFFECT VISIBILITY THRESHOLDS (CRITICAL - READ CAREFULLY):
+- DRAMATIC (≥2.0s): User clearly sees the motion/transformation. Hero moments, chapter transitions.
+- NOTICEABLE (1.2-1.9s): Smooth, cinematic feel. Most content scenes should use this range.
+- SUBTLE (0.8-1.1s): Quick reveals, maintains flow without drawing attention to the effect itself.
+- FLASH (0.3-0.7s): Nearly instant, feels like a page load rather than an animation. AVOID unless intentional.
+
+MINIMUM RECOMMENDED DURATIONS:
+- entryDuration: 1.2s (anything below 1.0s feels rushed)
+- exitDuration: 1.0s (exits can be slightly faster than entries)
+- entryDelay: 0-0.5s (use sparingly, only for staggered reveals)
+
+USE LONGER DURATIONS (2.5s+) FOR:
+- First scene (hero entrance)
+- Last scene (closing statement)
+- Major section transitions
+- Quote/testimonial reveals
+- Fullscreen media showcases
 
 MOOD/ATMOSPHERE:
 - "dramatic" / "intense" → parallaxIntensity: 0.6-0.8, entryDuration: 2.5+
@@ -584,6 +600,21 @@ Return the complete scenes array with full director configs.`;
       warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Invalid parallaxIntensity (must be 0-1), defaulting to 0.3`);
     }
 
+    // Validate color contrast (simplified check - ensures not identical colors)
+    if (director.backgroundColor && director.textColor) {
+      const bgLower = director.backgroundColor.toLowerCase();
+      const textLower = director.textColor.toLowerCase();
+      
+      // Check if colors are too similar (simple heuristic)
+      if (bgLower === textLower) {
+        warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Text and background colors are identical - text will be invisible!`);
+        // Auto-fix: if background is dark, make text white; if light, make text dark
+        const isDarkBg = bgLower.includes('#0') || bgLower.includes('#1') || bgLower === '#000000';
+        scene.director.textColor = isDarkBg ? '#ffffff' : '#0a0a0a';
+        warnings.push(`  → Auto-fixed textColor to ${scene.director.textColor}`);
+      }
+    }
+
   }
 
   console.log('[Portfolio Director] 🎬 PIPELINE COMPLETE - Final Output:', {
@@ -698,12 +729,17 @@ export function convertToSceneConfigs(
         // Expects 1 video asset
         const videoId = aiScene.assetIds.find((id) => videoMap.has(id));
         const video = videoId ? videoMap.get(videoId) : null;
+        
+        if (!video) {
+          console.error(`❌ [Portfolio Director] Video scene failed - no matching video found for assetIds:`, aiScene.assetIds);
+        }
+        
         sceneConfig.content = video ? {
           url: video.url,
           caption: video.caption,
         } : {
           url: "",
-          caption: "Video not found",
+          caption: "Video content not available",
         };
         break;
       }
@@ -712,13 +748,20 @@ export function convertToSceneConfigs(
         // Expects 1 quote asset
         const quoteId = aiScene.assetIds.find((id) => quoteMap.has(id));
         const quote = quoteId ? quoteMap.get(quoteId) : null;
-        if (quote) {
-          sceneConfig.content = {
-            quote: quote.quote,
-            author: quote.author,
-            role: quote.role,
-          };
+        
+        if (!quote) {
+          console.error(`❌ [Portfolio Director] Quote scene failed - no matching quote found for assetIds:`, aiScene.assetIds);
         }
+        
+        sceneConfig.content = quote ? {
+          quote: quote.quote,
+          author: quote.author,
+          role: quote.role,
+        } : {
+          quote: "Testimonial content not available",
+          author: "Unknown",
+          role: "",
+        };
         break;
       }
 
@@ -732,12 +775,19 @@ export function convertToSceneConfigs(
         const image = imageId ? imageMap.get(imageId) : null;
         const video = videoId ? videoMap.get(videoId) : null;
 
+        if (!text) {
+          console.error(`❌ [Portfolio Director] Split scene missing text for assetIds:`, aiScene.assetIds);
+        }
+        if (!image && !video) {
+          console.error(`❌ [Portfolio Director] Split scene missing media for assetIds:`, aiScene.assetIds);
+        }
+
         sceneConfig.content = {
-          heading: text?.content || "",
+          heading: text?.content || "Content unavailable",
           body: texts[1]?.content || "",
-          media: image?.url || video?.url || "",
+          media: image?.url || video?.url || "https://via.placeholder.com/800x600",
           mediaType: video ? "video" : "image",
-          alt: image?.alt,
+          alt: image?.alt || "Placeholder image",
         };
         break;
       }
@@ -745,13 +795,22 @@ export function convertToSceneConfigs(
       case "gallery": {
         // Expects multiple images
         const images = aiScene.assetIds.map((id) => imageMap.get(id)).filter(Boolean);
+        
+        if (images.length === 0) {
+          console.error(`❌ [Portfolio Director] Gallery scene has no valid images for assetIds:`, aiScene.assetIds);
+        }
+        
         sceneConfig.content = {
           heading: "",
-          images: images.map((img) => ({
+          images: images.length > 0 ? images.map((img) => ({
             url: img!.url,
             alt: img!.alt,
             caption: img!.caption,
-          })),
+          })) : [{
+            url: "https://via.placeholder.com/800x600",
+            alt: "Placeholder image",
+            caption: "Gallery content not available",
+          }],
         };
         break;
       }
@@ -763,10 +822,14 @@ export function convertToSceneConfigs(
         const image = imageId ? imageMap.get(imageId) : null;
         const video = videoId ? videoMap.get(videoId) : null;
 
+        if (!image && !video) {
+          console.error(`❌ [Portfolio Director] Fullscreen scene missing media for assetIds:`, aiScene.assetIds);
+        }
+
         sceneConfig.content = {
-          url: image?.url || video?.url || "",
+          url: image?.url || video?.url || "https://via.placeholder.com/1920x1080",
           mediaType: video ? "video" : "image",
-          alt: image?.alt,
+          alt: image?.alt || "Fullscreen media placeholder",
           overlay: false,
         };
         break;
