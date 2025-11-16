@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 
 /**
@@ -151,240 +150,224 @@ export async function generateSceneWithGemini(
   if (!responseText) {
     throw new Error("No response from Gemini AI");
   }
-  
+
   const sceneConfig = JSON.parse(responseText) as GeneratedSceneConfig;
-  
+
   // Validate and sanitize output
   validateSceneConfig(sceneConfig);
-  
+
   return sceneConfig;
 }
 
 /**
  * Build the complete prompt for scene generation
- * Now emphasizes hybrid composition capabilities
+ * Now emphasizes hybrid composition capabilities and detailed director config
  */
 function buildScenePrompt(
-  userPrompt: string,
-  sceneType?: string,
-  systemInstructions?: string
-): string {
-  const baseInstructions = `You are a cinematic director specializing in scrollytelling web experiences.
-Generate a scene configuration for a brand portfolio website based on the user's creative direction.
-
-HYBRID SCENE COMPOSITION:
-You can now create MULTI-ASSET scenes with flexible layouts:
-- Text scenes can include H1 + H2 + body + images
-- Image scenes can be single image OR galleries (2-8 images)
-- Split scenes can have text + multiple media assets
-- Quote scenes can have background video or images
-
-SCENE TYPE CAPABILITIES:
-- "text": Headlines (H1/H2) + body copy + optional images (hero sections, chapter openers)
-- "image": Single image OR gallery (2-8 images) with captions
-- "video": Video background or focal video with optional text overlay
-- "quote": Testimonials with author + optional background media
-- "split": Side-by-side text + media (supports multiple media assets)
-- "gallery": Multiple images in grid layout (4, 6, or 8 images)
-- "fullscreen": Immersive media takeover (image or video)
-
-CRITICAL SEO CONSTRAINTS:
-- ALL images MUST have descriptive alt text (10-125 characters, no keyword stuffing)
-- Headlines MUST be under 60 characters for SEO optimization
-- Body text MUST be at least 50 characters for quality content
-- NEVER use generic alt text like "image" or "photo"
-
-DIRECTOR CONFIG REQUIREMENTS:
-You MUST answer ALL 37 configuration questions for EVERY scene. Use "NA" or default values if intentionally abstaining.
-
-=== ANIMATION & TIMING (10 REQUIRED) ===
-1. entryEffect: CHOOSE ONE (fade | slide-up | slide-down | slide-left | slide-right | zoom-in | zoom-out | sudden | cross-fade | rotate-in | flip-in | spiral-in | elastic-bounce | blur-focus)
-   - Reasoning: Why this effect for THIS scene's entrance?
-
-2. exitEffect: CHOOSE ONE (fade | slide-up | slide-down | slide-left | slide-right | zoom-out | dissolve | cross-fade | rotate-out | flip-out | scale-blur)
-   - Reasoning: How does this transition to the NEXT scene?
-
-3. entryDuration: NUMBER (0.1-5 seconds)
-   - Reasoning: Why this pacing? (fast <1s, normal 1-1.5s, dramatic 2.5s+)
-
-4. exitDuration: NUMBER (0.1-5 seconds)
-   - Reasoning: Exit should be 20% faster than entry unless intentional
-
-5. entryDelay: NUMBER (0-10 seconds)
-   - Reasoning: Should this scene wait? For dramatic pause or content loading?
-
-6. exitDelay: NUMBER (0-2 seconds)
-   - Reasoning: Stagger exit timing for layered effects?
-
-7. animationDuration: NUMBER (0.5-10 seconds)
-   - Reasoning: How long should the main animation loop?
-
-8. entryEasing: CHOOSE ONE (linear | ease | ease-in | ease-out | ease-in-out | power1 | power2 | power3 | power4 | back | elastic | bounce)
-   - Reasoning: What motion quality fits this entrance?
-
-9. exitEasing: CHOOSE ONE (same 12 options)
-   - Reasoning: Typically ease-in for exits, but justify if different
-
-10. staggerChildren: NUMBER (0-1 seconds)
-    - Reasoning: Should child elements animate sequentially or simultaneously?
-
-=== VISUAL STYLE (12 REQUIRED) ===
-11. backgroundColor: HEX CODE (#000000 - #ffffff)
-    - Reasoning: Why this color? Consider narrative flow and contrast
-
-12. textColor: HEX CODE (#000000 - #ffffff)
-    - Reasoning: Contrast ratio must be 4.5:1 minimum (WCAG AA)
-
-13. gradientColors: ARRAY of HEX CODES or null
-    - Reasoning: Single color or gradient? If gradient, why these colors?
-
-14. gradientDirection: CHOOSE ONE (to-top | to-bottom | to-left | to-right | to-top-right | to-bottom-right | to-top-left | to-bottom-left) or "NA"
-    - Reasoning: If using gradient, which direction enhances the scene?
-
-15. alignment: CHOOSE ONE (left | center | right)
-    - Reasoning: How does alignment serve the content hierarchy?
-
-16. headingSize: CHOOSE ONE (4xl | 5xl | 6xl | 7xl | 8xl)
-    - Reasoning: What emphasis does this headline need?
-
-17. bodySize: CHOOSE ONE (base | lg | xl | 2xl)
-    - Reasoning: Balance readability with visual impact
-
-18. fontWeight: CHOOSE ONE (normal | medium | semibold | bold)
-    - Reasoning: How much typographic authority?
-
-19. textShadow: BOOLEAN (true | false)
-    - Reasoning: Does text need depth/legibility boost?
-
-20. textGlow: BOOLEAN (true | false)
-    - Reasoning: Luminous effect for emphasis? (conflicts with textShadow)
-
-21. paddingTop: CHOOSE ONE (none | sm | md | lg | xl | 2xl)
-    - Reasoning: Vertical breathing room at top
-
-22. paddingBottom: CHOOSE ONE (none | sm | md | lg | xl | 2xl)
-    - Reasoning: Vertical breathing room at bottom
-
-=== SCROLL EFFECTS (5 REQUIRED) ===
-23. parallaxIntensity: NUMBER (0.0-1.0)
-    - Reasoning: Depth layering strength (CONFLICTS with scaleOnScroll if >0)
-
-24. fadeOnScroll: BOOLEAN (true | false)
-    - Reasoning: Should scene fade as user scrolls?
-
-25. scaleOnScroll: BOOLEAN (true | false)
-    - Reasoning: Zoom effect during scroll? (CONFLICTS with parallax if true)
-
-26. blurOnScroll: BOOLEAN (true | false)
-    - Reasoning: Motion blur effect? (use sparingly, conflicts with parallax)
-
-27. scrollSpeed: CHOOSE ONE (slow | normal | fast)
-    - Reasoning: How quickly should scene respond to scroll?
-
-=== CINEMATIC CONTROLS (7 REQUIRED) ===
-28. transformOrigin: CHOOSE ONE (center center | top left | top center | top right | center left | center right | bottom left | bottom center | bottom right)
-    - Reasoning: Pivot point for rotations/scales - where should effects originate?
-
-29. overflowBehavior: CHOOSE ONE (visible | hidden | auto)
-    - Reasoning: Should content outside bounds be visible or clipped?
-
-30. backdropBlur: CHOOSE ONE (none | sm | md | lg | xl)
-    - Reasoning: Glass morphism effect strength?
-
-31. mixBlendMode: CHOOSE ONE (normal | multiply | screen | overlay | difference | exclusion)
-    - Reasoning: Photoshop-style layer blending?
-
-32. enablePerspective: BOOLEAN (true | false)
-    - Reasoning: Enable 3D depth for rotate effects? (conflicts with parallax)
-
-33. customCSSClasses: STRING or ""
-    - Reasoning: Any custom Tailwind classes needed? (space-separated)
-
-34. layerDepth: NUMBER (0-10)
-    - Reasoning: Z-index for parallax layering (5 = default)
-
-=== MEDIA CONTROLS (3 REQUIRED - for image/video/fullscreen/split scenes only) ===
-35. mediaPosition: CHOOSE ONE (center | top | bottom | left | right) or "NA"
-    - Reasoning: Where should media focal point be?
-
-36. mediaScale: CHOOSE ONE (cover | contain | fill) or "NA"
-    - Reasoning: How should media fit its container?
-
-37. mediaOpacity: NUMBER (0.0-1.0) or "NA"
-    - Reasoning: Media transparency level?
-
-=== CONFLICT WARNINGS - GEMINI MUST CHECK ===
-- parallaxIntensity > 0 + scaleOnScroll = true → CONFLICT (choose one)
-- parallaxIntensity > 0 + blurOnScroll = true → CONFLICT (disable one)
-- enablePerspective = true + parallaxIntensity > 0 → MAY CONFLICT (visual confusion)
-- textShadow = true + textGlow = true → CONFLICT (choose one)
-- More than 2 scroll effects enabled → MAY COMPETE (simplify)
-
-=== OUTPUT FORMAT ===
-EVERY director config field MUST be present in JSON output.
-Use these default values ONLY if intentionally abstaining:
-- Strings: "NA" or ""
-- Numbers: Use middle of range (e.g., entryDuration: 1.2)
-- Booleans: false
-- Enums: Use "NA" or most conservative option
-
-Example required structure:
-{
-  "director": {
-    "entryEffect": "fade",
-    "exitEffect": "fade",
-    "entryDuration": 1.2,
-    "exitDuration": 1.0,
-    "entryDelay": 0,
-    "exitDelay": 0,
-    "animationDuration": 2.0,
-    "entryEasing": "ease-out",
-    "exitEasing": "ease-in",
-    "staggerChildren": 0,
-    "backgroundColor": "#0a0a0a",
-    "textColor": "#ffffff",
-    "gradientColors": null,
-    "gradientDirection": "NA",
-    "alignment": "center",
-    "headingSize": "6xl",
-    "bodySize": "lg",
-    "fontWeight": "bold",
-    "textShadow": false,
-    "textGlow": false,
-    "paddingTop": "md",
-    "paddingBottom": "md",
-    "parallaxIntensity": 0.3,
-    "fadeOnScroll": false,
-    "scaleOnScroll": false,
-    "blurOnScroll": false,
-    "scrollSpeed": "normal",
-    "transformOrigin": "center center",
-    "overflowBehavior": "hidden",
-    "backdropBlur": "none",
-    "mixBlendMode": "normal",
-    "enablePerspective": false,
-    "customCSSClasses": "",
-    "layerDepth": 5,
-    "mediaPosition": "center",
-    "mediaScale": "cover",
-    "mediaOpacity": 1.0
+  instruction: string,
+  context: {
+    projectTitle: string;
+    projectDescription: string;
+    existingScenes: any[];
+    sceneIndex: number;
+    totalScenes: number;
   }
-}`;
+): string {
+  const { projectTitle, projectDescription, existingScenes, sceneIndex, totalScenes } = context;
 
-  const sceneTypeConstraint = sceneType 
-    ? `\n\nREQUIRED: Set sceneType to "${sceneType}"` 
-    : "";
+  return `You are a cinematic director creating a portfolio scene. You MUST consider ALL 37 configuration options for professional-grade output.
 
-  const customInstructions = systemInstructions 
-    ? `\n\nADDITIONAL GUIDELINES:\n${systemInstructions}` 
-    : "";
+PROJECT CONTEXT
+- Title: ${projectTitle}
+- Description: ${projectDescription}
+- Scene ${sceneIndex + 1} of ${totalScenes}
 
-  return `${baseInstructions}${sceneTypeConstraint}${customInstructions}
+PREVIOUS SCENES
+${existingScenes.map((s, i) => `Scene ${i + 1}: ${s.heading || 'Untitled'} (${s.type})`).join('\n')}
 
-USER'S CREATIVE DIRECTION:
-${userPrompt}
+USER INSTRUCTION
+${instruction}
 
-Generate a complete scene configuration with director settings for cinematic scroll animations.`;
+MANDATORY CONFIGURATION PROTOCOL
+You must address every single control below. For each category, provide explicit values or "NA" with justification.
+
+CATEGORY 1: ANIMATION & TIMING (10 controls)
+1. entryEffect - Choose from: fade, slide-up, slide-down, slide-left, slide-right, zoom-in, zoom-out, rotate-in, flip-in, bounce-in, elastic-in, blur-in, glitch-in, particle-dissolve
+   Consider: Scene emotional tone, continuity from previous scene
+
+2. exitEffect - Choose from: fade, slide-down, slide-up, slide-left, slide-right, zoom-out, dissolve, rotate-out, flip-out, blur-out, particle-dissolve
+   Consider: Transition to next scene, narrative flow
+
+3. entryDuration - Range: 0.1-5 seconds
+   Consider: Pacing, dramatic weight, user attention span
+
+4. exitDuration - Range: 0.1-5 seconds
+   Consider: Should match or contrast entryDuration
+
+5. entryDelay - Range: 0-10 seconds
+   Consider: Scroll trigger timing, sequential reveal needs
+
+6. exitDelay - Range: 0-2 seconds
+   Consider: Smooth transition timing
+
+7. animationDuration - Range: 0.5-10 seconds
+   Consider: Background/ambient animations if applicable
+
+8. entryEasing - Choose from: linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, elastic, bounce, back
+   Consider: Naturalness vs dramatic impact
+
+9. exitEasing - Choose from: (same as entryEasing)
+   Consider: Should complement entryEasing
+
+10. staggerChildren - Range: 0-1 seconds
+    Consider: Multi-element reveals, text line-by-line effects
+
+CATEGORY 2: VISUAL STYLE (11 controls)
+11. backgroundColor - Hex color
+    Consider: Brand palette, mood, contrast with text
+
+12. textColor - Hex color
+    Consider: Readability (4.5:1 contrast minimum), hierarchy
+
+13. gradientColors - Array of hex colors (optional)
+    Consider: Visual interest, depth, brand consistency
+
+14. gradientDirection - Choose from: to-r, to-l, to-t, to-b, to-tr, to-tl, to-br, to-bl
+    Consider: Reading flow, visual hierarchy
+
+15. alignment - Choose from: left, center, right
+    Consider: Content type, screen width, emphasis
+
+16. headingSize - Choose from: 4xl, 5xl, 6xl, 7xl, 8xl
+    Consider: Hierarchy, viewport size, importance
+
+17. bodySize - Choose from: base, lg, xl, 2xl
+    Consider: Readability, emphasis level
+
+18. fontWeight - Choose from: normal, medium, semibold, bold
+    Consider: Emphasis, hierarchy, brand voice
+
+19. textShadow - Boolean
+    Consider: Contrast needs, depth, legibility on complex backgrounds
+
+20. textGlow - Boolean
+    Consider: Dramatic effect, hero moments, brand style
+    WARNING: Do not use with textShadow (choose one)
+
+21. paddingTop - Choose from: none, sm, md, lg, xl, 2xl
+    Consider: Breathing room, section separation
+
+22. paddingBottom - Choose from: none, sm, md, lg, xl, 2xl
+    Consider: Rhythm, next section proximity
+
+CATEGORY 3: SCROLL EFFECTS (5 controls)
+23. parallaxIntensity - Range: 0-1
+    Consider: Depth perception, motion sickness risk, subtlety
+
+24. fadeOnScroll - Boolean
+    Consider: Smooth transitions, cinematic flow
+
+25. scaleOnScroll - Boolean
+    Consider: Zoom effects, emphasis, performance impact
+    WARNING: Heavy on mobile, use sparingly
+
+26. blurOnScroll - Boolean
+    Consider: Depth of field, focus shifts, performance
+    WARNING: GPU intensive, avoid with scaleOnScroll
+
+27. scrollSpeed - Choose from: slow, normal, fast
+    Consider: Pacing, user control, narrative rhythm
+
+CATEGORY 4: CINEMATIC CONTROLS (7 controls)
+28. transformOrigin - Choose from: center center, top left, top center, top right, center left, center right, bottom left, bottom center, bottom right
+    Consider: Rotation/scale anchor point, visual balance
+
+29. overflowBehavior - Choose from: visible, hidden, auto
+    Consider: Content clipping, animations extending beyond bounds
+
+30. backdropBlur - Choose from: none, sm, md, lg, xl
+    Consider: Glassmorphism, depth, layering
+    WARNING: Performance heavy, use sparingly
+
+31. mixBlendMode - Choose from: normal, multiply, screen, overlay, difference, exclusion
+    Consider: Layering effects, creative compositing
+    WARNING: Test on various backgrounds
+
+32. enablePerspective - Boolean
+    Consider: 3D transforms, spatial depth, modern aesthetic
+
+33. customCSSClasses - String (optional)
+    Consider: Special edge cases, experimental effects
+
+34. layerDepth - Range: 0-10
+    Consider: Z-index management, stacking context, depth hierarchy
+
+CATEGORY 5: MEDIA CONTROLS (3 controls - for media/split types only)
+35. mediaPosition - Choose from: center, top, bottom, left, right
+    Consider: Focal point, composition, subject matter
+
+36. mediaScale - Choose from: cover, contain, fill
+    Consider: Aspect ratio preservation, content priority
+
+37. mediaOpacity - Range: 0-1
+    Consider: Overlay effects, text legibility, layering
+
+CONFLICT WARNINGS
+- textShadow + textGlow = visual mud (choose one)
+- scaleOnScroll + blurOnScroll = performance death (pick one)
+- backdropBlur + heavy animations = lag city (use sparingly)
+- mixBlendMode != "normal" requires testing on all backgrounds
+- parallaxIntensity > 0.5 = motion sickness risk
+
+OUTPUT FORMAT
+Return a JSON object with this exact structure:
+{
+  "type": "text" | "media" | "split",
+  "heading": "compelling heading",
+  "body": "optional body text",
+  "mediaUrl": "optional URL for media/split",
+  "config": {
+    "entryEffect": "value",
+    "exitEffect": "value",
+    "entryDuration": number,
+    "exitDuration": number,
+    "entryDelay": number,
+    "exitDelay": number,
+    "animationDuration": number,
+    "entryEasing": "value",
+    "exitEasing": "value",
+    "staggerChildren": number,
+    "backgroundColor": "#hex",
+    "textColor": "#hex",
+    "gradientColors": ["#hex", "#hex"] or null,
+    "gradientDirection": "value",
+    "alignment": "value",
+    "headingSize": "value",
+    "bodySize": "value",
+    "fontWeight": "value",
+    "textShadow": boolean,
+    "textGlow": boolean,
+    "paddingTop": "value",
+    "paddingBottom": "value",
+    "parallaxIntensity": number,
+    "fadeOnScroll": boolean,
+    "scaleOnScroll": boolean,
+    "blurOnScroll": boolean,
+    "scrollSpeed": "value",
+    "transformOrigin": "value",
+    "overflowBehavior": "value",
+    "backdropBlur": "value",
+    "mixBlendMode": "value",
+    "enablePerspective": boolean,
+    "customCSSClasses": "value or empty string",
+    "layerDepth": number,
+    "mediaPosition": "value or NA",
+    "mediaScale": "value or NA",
+    "mediaOpacity": number or 1
+  }
+}
+
+Return ONLY valid JSON. No markdown, no explanations, no commentary. Every field must be present with a concrete value.`;
 }
 
 /**
