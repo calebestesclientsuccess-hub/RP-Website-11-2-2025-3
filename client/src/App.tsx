@@ -227,21 +227,15 @@ function Router() {
 function App() {
   const [showShortcuts, setShowShortcuts] = useState(false);
 
-  // Set up global keyboard shortcuts with memoized handler
-  const handleShowShortcuts = useCallback(() => {
-    setShowShortcuts(true);
-  }, []);
-
-  const shortcuts = useMemo(() => 
+  // Set up global keyboard shortcuts - simplified to avoid initialization crashes
+  useKeyboardShortcuts(
     GLOBAL_SHORTCUTS.map(shortcut => 
       shortcut.key === '?' 
-        ? { ...shortcut, action: handleShowShortcuts }
+        ? { ...shortcut, action: () => setShowShortcuts(true) }
         : shortcut
     ),
-    [handleShowShortcuts]
+    true
   );
-
-  useKeyboardShortcuts(shortcuts);
 
   return (
     <QueryClientProvider client={queryClient}>
