@@ -477,6 +477,13 @@ export default function PortfolioBuilder() {
 
       const result = await response.json();
       console.log('[Portfolio Builder] Generation/Refinement successful:', result);
+      console.log('[Portfolio Builder] Result structure:', {
+        hasScenes: !!result.scenes,
+        scenesCount: result.scenes?.length,
+        hasConversationUpdate: !!result.conversationUpdate,
+        hasVersionData: !!result.versionData,
+        firstScene: result.scenes?.[0]
+      });
 
       // Update conversation history from backend response
       if (result.conversationUpdate) {
@@ -495,6 +502,7 @@ export default function PortfolioBuilder() {
       const newSceneJson = result.versionData?.json || JSON.stringify(result.scenes, null, 2);
       setCurrentSceneJson(newSceneJson);
       console.log('[Portfolio Builder] Updated currentSceneJson, length:', newSceneJson.length);
+      console.log('[Portfolio Builder] First 500 chars of JSON:', newSceneJson.substring(0, 500));
 
       // Create version entry from backend data
       if (result.versionData) {
@@ -1164,25 +1172,32 @@ export default function PortfolioBuilder() {
                               <CardContent>
                                 <ScrollArea className="h-[300px]">
                                   <div className="space-y-2 pr-4">
-                                    {scenes.map((scene: any, idx: number) => (
-                                      <div key={idx} className="flex items-start gap-3 p-3 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm">
-                                          {idx + 1}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <div className="text-sm font-medium">{scene.sceneType}</div>
-                                          <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                            {scene.content?.heading || scene.aiPrompt || 'No description'}
+                                    {scenes.map((scene: any, idx: number) => {
+                                      // Handle both old and new scene formats
+                                      const sceneType = scene.type || scene.sceneType || 'unknown';
+                                      const heading = scene.content?.heading || scene.content?.quote || scene.headline || 'Scene ' + (idx + 1);
+                                      
+                                      return (
+                                        <div key={idx} className="flex items-start gap-3 p-3 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm">
+                                            {idx + 1}
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-medium capitalize">{sceneType}</div>
+                                            <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                              {heading}
+                                            </div>
                                           </div>
                                         </div>
-                                      </div>
-                                    ))}
+                                      );
+                                    })}
                                   </div>
                                 </ScrollArea>
                               </CardContent>
                             </Card>
                           );
-                        } catch {
+                        } catch (error) {
+                          console.error('[Portfolio Builder] Failed to parse scene JSON for overview:', error);
                           return null;
                         }
                       })()}
