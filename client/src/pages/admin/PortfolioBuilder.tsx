@@ -283,18 +283,10 @@ export default function PortfolioBuilder() {
       return;
     }
 
-    // Mode-specific validation
-    if (mode === "cinematic") {
-      if (sections.length === 0) {
-        toast({ title: "Error", description: "Please add at least one section for Cinematic Mode", variant: "destructive" });
-        return;
-      }
-    } else {
-      // Hybrid mode
-      if (scenes.length === 0) {
-        toast({ title: "Error", description: "Please add at least one scene for Hybrid Mode", variant: "destructive" });
-        return;
-      }
+    // Hybrid mode validation (scenes required)
+    if (scenes.length === 0) {
+      toast({ title: "Error", description: "Please add at least one scene", variant: "destructive" });
+      return;
     }
 
     setIsGenerating(true);
@@ -309,15 +301,17 @@ export default function PortfolioBuilder() {
       };
 
       console.log('[Portfolio Builder] Generating with scene-by-scene config:', requestPayload);
+      console.log('[Portfolio Builder] Scenes count:', scenes.length);
+      console.log('[Portfolio Builder] Portfolio prompt:', portfolioAiPrompt);
 
       const response = await apiRequest("POST", "/api/portfolio/generate-enhanced", requestPayload);
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('[Portfolio Builder] Server error:', errorData);
         throw new Error(errorData.details || errorData.error || "Generation failed");
       }
 
-      // Assuming the response now includes scenes, confidenceScore, and confidenceFactors
       const result = await response.json();
       console.log('[Portfolio Builder] Generation successful:', result);
 
@@ -336,7 +330,7 @@ export default function PortfolioBuilder() {
       console.error('[Portfolio Builder] Generation error:', error);
       toast({
         title: "Generation failed",
-        description: error instanceof Error ? error.message : "Failed to generate scenes",
+        description: error instanceof Error ? error.message : "Failed to generate scenes. Please check the console for details.",
         variant: "destructive",
       });
     } finally {

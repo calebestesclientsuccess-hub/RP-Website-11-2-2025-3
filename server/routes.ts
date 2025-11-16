@@ -1762,25 +1762,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(401).json({ error: "Not authenticated" });
     }
 
-    // For Cinematic Mode, sections are required; for Hybrid, scenes are required
-    const { mode } = req.body;
+    // Basic validation of required fields
+    const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt } = req.body;
+    
+    if (!portfolioAiPrompt || !portfolioAiPrompt.trim()) {
+      console.error('[Portfolio Enhanced] Missing portfolioAiPrompt');
+      return res.status(400).json({
+        error: "Validation failed",
+        details: "Portfolio AI prompt is required"
+      });
+    }
+    
+    if (!projectId && (!newProjectTitle || !newProjectSlug)) {
+      console.error('[Portfolio Enhanced] Missing project identification');
+      return res.status(400).json({
+        error: "Validation failed",
+        details: "Either projectId or new project details (title, slug) are required"
+      });
+    }
 
-    if (mode === "cinematic") {
-      // Validate cinematic mode requires sections
-      if (!req.body.sections || req.body.sections.length === 0) {
-        return res.status(400).json({
-          error: "Validation failed",
-          details: "At least one section required for Cinematic Mode"
-        });
-      }
-    } else {
-      // Validate hybrid mode requires scenes
-      if (!req.body.scenes || req.body.scenes.length === 0) {
-        return res.status(400).json({
-          error: "Validation failed",
-          details: "At least one scene required for Hybrid Mode"
-        });
-      }
+    if (!scenes || scenes.length === 0) {
+      console.error('[Portfolio Enhanced] Missing scenes array');
+      return res.status(400).json({
+        error: "Validation failed",
+        details: "At least one scene is required"
+      });
     }
 
     // Basic validation of required fields
