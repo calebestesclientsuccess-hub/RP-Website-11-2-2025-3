@@ -1,5 +1,5 @@
 
-import { onCLS, onFID, onLCP, onFCP, onTTFB } from 'web-vitals';
+import { onCLS, onINP, onLCP, onFCP, onTTFB } from 'web-vitals';
 import type { Metric } from 'web-vitals';
 
 interface WebVitalsMetric {
@@ -52,8 +52,8 @@ export function initWebVitals() {
   // Track Largest Contentful Paint (LCP)
   onLCP(sendToAnalytics);
   
-  // Track First Input Delay (FID)
-  onFID(sendToAnalytics);
+  // Track Interaction to Next Paint (INP) - replaces FID
+  onINP(sendToAnalytics);
   
   // Track Cumulative Layout Shift (CLS)
   onCLS(sendToAnalytics);
