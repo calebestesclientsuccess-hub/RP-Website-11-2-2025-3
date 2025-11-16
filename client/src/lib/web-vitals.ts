@@ -1,4 +1,3 @@
-
 import { onCLS, onINP, onLCP, onFCP, onTTFB } from 'web-vitals';
 import type { Metric } from 'web-vitals';
 
@@ -49,18 +48,27 @@ function sendToAnalytics(metric: Metric) {
  * Initialize Web Vitals tracking
  */
 export function initWebVitals() {
-  // Track Largest Contentful Paint (LCP)
-  onLCP(sendToAnalytics);
-  
-  // Track Interaction to Next Paint (INP) - replaces FID
-  onINP(sendToAnalytics);
-  
-  // Track Cumulative Layout Shift (CLS)
-  onCLS(sendToAnalytics);
-  
-  // Track First Contentful Paint (FCP)
-  onFCP(sendToAnalytics);
-  
-  // Track Time to First Byte (TTFB)
-  onTTFB(sendToAnalytics);
+  if (typeof window === 'undefined') return;
+
+  const isDev = process.env.NODE_ENV === 'development';
+
+  onCLS((metric) => {
+    if (isDev) console.log('[Web Vitals] CLS:', metric);
+  });
+
+  onFCP((metric) => {
+    if (isDev) console.log('[Web Vitals] FCP:', metric);
+  });
+
+  onLCP((metric) => {
+    if (isDev) console.log('[Web Vitals] LCP:', metric);
+  });
+
+  onTTFB((metric) => {
+    if (isDev) console.log('[Web Vitals] TTFB:', metric);
+  });
+
+  onINP((metric) => {
+    if (isDev) console.log('[Web Vitals] INP:', metric);
+  });
 }

@@ -162,4 +162,5 @@ export function detectSuspiciousPatterns(req: Request, res: Response, next: Next
   }
 
   next();
+};
 }
