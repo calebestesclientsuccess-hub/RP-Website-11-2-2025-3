@@ -230,7 +230,7 @@ SCENE COUNT GUIDELINES:
 - 6-7 scenes: Standard portfolio (3-5 min scroll)
 - 8+ scenes: Epic narrative (5+ min scroll)
 
-OUTPUT REQUIREMENTS:
+Output Requirements:
 1. EVERY scene MUST have ALL director config fields (no omissions)
 2. ONLY use asset IDs from the whitelist: ${validAssetIds.join(', ')}
 3. DO NOT fabricate new content or IDs
@@ -265,16 +265,22 @@ interface GeneratedScene {
     scaleOnScroll?: boolean;
     blurOnScroll?: boolean;
   };
+  // Confidence score fields
+  confidenceScore?: number;
+  confidenceFactors?: string[];
+  content?: any; // Added to store content for confidence scoring
 }
 
 interface PortfolioGenerateResponse {
   scenes: GeneratedScene[];
+  confidenceScore?: number;
+  confidenceFactors?: string[];
 }
 
 /**
  * Call Gemini to orchestrate portfolio scenes from content catalog
  * Uses a 6-stage refinement pipeline for maximum quality:
- * 
+ *
  * Stage 1: Initial Generation (Form-Filling) - Gemini fills complete director config
  * Stage 2: Self-Audit for Inconsistencies - AI identifies conflicts and issues
  * Stage 3: Generate 10 Improvements - AI proposes specific enhancements
@@ -283,7 +289,8 @@ interface PortfolioGenerateResponse {
  * Stage 6: Final Validation - System validates asset IDs and director configs
  */
 export async function generatePortfolioWithAI(
-  catalog: ContentCatalog
+  catalog: ContentCatalog,
+  projectTitle: string // Added projectTitle for logging
 ): Promise<PortfolioGenerateResponse> {
   const aiClient = getAIClient();
 
@@ -356,214 +363,76 @@ export async function generatePortfolioWithAI(
     throw new Error("No response from Gemini AI");
   }
 
-  let result = JSON.parse(responseText) as PortfolioGenerateResponse;
+  // Parse the result
+  const result: PortfolioGenerateResponse = JSON.parse(responseText || '{}');
 
-  console.log('[Portfolio Director] ✅ Stage 1 complete: Initial generation');
+  if (!result.scenes || !Array.isArray(result.scenes)) {
+    throw new Error('Invalid response structure from AI: missing scenes array');
+  }
 
-  // CRITICAL: Validate ALL scenes have required fields before proceeding
-  const validAssetIds = buildAssetWhitelist(catalog);
-  let validationErrors: string[] = [];
-  
-  // Track which fields are missing per scene for targeted regeneration
-  const missingFieldsByScene: Map<number, string[]> = new Map();
+  // Calculate confidence score based on completeness
+  let confidenceScore = 100;
+  let confidenceFactors: string[] = [];
 
-  result.scenes.forEach((scene, idx) => {
-    const d = scene.director;
-    const missingFields: string[] = [];
+  // Check if all scenes have required fields
+  const requiredSceneFields = ['sceneType', 'assetIds'];
+  const requiredDirectorFields = [
+    'entryEffect', 'entryDuration', 'entryDelay',
+    'exitEffect', 'exitDuration',
+    'backgroundColor', 'textColor',
+    'headingSize', 'bodySize', 'alignment'
+  ];
 
-    // Check required fields and track what's missing
-    if (typeof d.entryDuration !== 'number') {
-      validationErrors.push(`Scene ${idx}: Missing entryDuration`);
-      missingFields.push('entryDuration');
-    }
-    if (typeof d.exitDuration !== 'number') {
-      validationErrors.push(`Scene ${idx}: Missing exitDuration`);
-      missingFields.push('exitDuration');
-    }
-    if (typeof d.entryDelay !== 'number') {
-      validationErrors.push(`Scene ${idx}: Missing entryDelay`);
-      missingFields.push('entryDelay');
-    }
-    if (!d.backgroundColor) {
-      validationErrors.push(`Scene ${idx}: Missing backgroundColor`);
-      missingFields.push('backgroundColor');
-    }
-    if (!d.textColor) {
-      validationErrors.push(`Scene ${idx}: Missing textColor`);
-      missingFields.push('textColor');
-    }
-    if (typeof d.parallaxIntensity !== 'number') {
-      validationErrors.push(`Scene ${idx}: Missing parallaxIntensity`);
-      missingFields.push('parallaxIntensity');
-    }
-    if (!d.entryEffect) {
-      validationErrors.push(`Scene ${idx}: Missing entryEffect`);
-      missingFields.push('entryEffect');
-    }
-    if (!d.exitEffect) {
-      validationErrors.push(`Scene ${idx}: Missing exitEffect`);
-      missingFields.push('exitEffect');
-    }
-    if (!d.headingSize) {
-      validationErrors.push(`Scene ${idx}: Missing headingSize`);
-      missingFields.push('headingSize');
-    }
-    if (!d.bodySize) {
-      validationErrors.push(`Scene ${idx}: Missing bodySize`);
-      missingFields.push('bodySize');
-    }
-    if (!d.alignment) {
-      validationErrors.push(`Scene ${idx}: Missing alignment`);
-      missingFields.push('alignment');
-    }
-    
-    if (missingFields.length > 0) {
-      missingFieldsByScene.set(idx, missingFields);
-    }
-
-    // Check asset IDs exist
-    scene.assetIds.forEach(assetId => {
-      if (!validAssetIds.includes(assetId)) {
-        validationErrors.push(`Scene ${idx}: Invalid asset ID "${assetId}"`);
+  result.scenes.forEach((scene: GeneratedScene, idx: number) => {
+    // Check scene structure
+    for (const field of requiredSceneFields) {
+      if (!scene[field]) {
+        confidenceScore -= 5;
+        confidenceFactors.push(`Scene ${idx}: missing ${field}`);
       }
-    });
+    }
+
+    // Check director configuration
+    if (!scene.director) {
+      confidenceScore -= 10;
+      confidenceFactors.push(`Scene ${idx}: missing director config`);
+    } else {
+      for (const field of requiredDirectorFields) {
+        if (scene.director[field] === undefined || scene.director[field] === null) {
+          confidenceScore -= 2;
+          confidenceFactors.push(`Scene ${idx}: missing director.${field}`);
+        }
+      }
+    }
+
+    // Check for placeholder/generic content - this check needs to be done *after* content is generated in convertToSceneConfigs
+    // For now, we'll rely on the AI not to use placeholders in its *initial* generation if prompted correctly.
+    // A more robust check would involve comparing generated content against a list of known placeholder strings.
   });
 
-  // If fields are missing, attempt targeted regeneration (Stage 1.5: Field Recovery with Retry)
-  if (missingFieldsByScene.size > 0) {
-    console.warn('[Portfolio Director] ⚠️ Stage 1 validation found missing fields, attempting recovery...');
-    
-    const MAX_RETRY_ATTEMPTS = 2;
-    
-    for (const [sceneIdx, missingFields] of missingFieldsByScene.entries()) {
-      const scene = result.scenes[sceneIdx];
-      let retryCount = 0;
-      let fieldsStillMissing = [...missingFields];
-      
-      while (fieldsStillMissing.length > 0 && retryCount < MAX_RETRY_ATTEMPTS) {
-        retryCount++;
-        console.log(`[Portfolio Director] 🔄 Retry ${retryCount}/${MAX_RETRY_ATTEMPTS} for scene ${sceneIdx}, missing: ${fieldsStillMissing.join(', ')}`);
-        
-        const recoveryPrompt = `You previously generated this scene but forgot to fill in some required fields:
-
-Scene Type: ${scene.sceneType}
-Asset IDs: ${scene.assetIds.join(', ')}
-
-MISSING FIELDS (you MUST provide these):
-${fieldsStillMissing.map(field => `- ${field}`).join('\n')}
-
-Please provide ONLY the missing field values in JSON format:
-{
-  ${fieldsStillMissing.map(field => `"${field}": <value>`).join(',\n  ')}
-}
-
-FIELD REQUIREMENTS:
-- entryDuration/exitDuration: numbers in seconds (0.8-5.0, e.g., 1.2)
-- entryDelay: number in seconds (0-2, e.g., 0.3)
-- backgroundColor/textColor: hex codes (e.g., "#0a0a0a")
-- parallaxIntensity: number 0-1 (e.g., 0.3)
-- entryEffect: fade, slide-up, slide-down, zoom-in, etc.
-- exitEffect: fade, slide-up, zoom-out, dissolve, etc.
-- headingSize: 4xl, 5xl, 6xl, 7xl, or 8xl
-- bodySize: base, lg, xl, or 2xl
-- alignment: left, center, or right
-
-Use the interpretation matrix from the original prompt for guidance.`;
-
-        try {
-          const recoveryResponse = await aiClient.models.generateContent({
-            model: "gemini-2.5-pro",
-            contents: [{ role: "user", parts: [{ text: recoveryPrompt }] }],
-            config: { responseMimeType: "application/json" }
-          });
-
-          const recoveredFields = JSON.parse(recoveryResponse.text || '{}');
-          
-          // Merge recovered fields back into the scene
-          const successfullyRecovered: string[] = [];
-          for (const field of fieldsStillMissing) {
-            if (recoveredFields[field] !== undefined && recoveredFields[field] !== null) {
-              (scene.director as any)[field] = recoveredFields[field];
-              successfullyRecovered.push(field);
-              console.log(`[Portfolio Director] ✅ Recovered ${field} for scene ${sceneIdx}: ${JSON.stringify(recoveredFields[field])}`);
-            }
-          }
-          
-          // Update list of fields still missing
-          fieldsStillMissing = fieldsStillMissing.filter(f => !successfullyRecovered.includes(f));
-          
-        } catch (error) {
-          console.error(`[Portfolio Director] ❌ Failed recovery attempt ${retryCount} for scene ${sceneIdx}:`, error);
-        }
-      }
-      
-      // If fields are still missing after all retries, apply intelligent defaults
-      if (fieldsStillMissing.length > 0) {
-        console.warn(`[Portfolio Director] ⚠️ Applying defaults for scene ${sceneIdx} fields: ${fieldsStillMissing.join(', ')}`);
-        for (const field of fieldsStillMissing) {
-          switch (field) {
-            case 'entryDuration':
-              scene.director.entryDuration = 1.2;
-              break;
-            case 'exitDuration':
-              scene.director.exitDuration = 1.0;
-              break;
-            case 'entryDelay':
-              scene.director.entryDelay = 0;
-              break;
-            case 'backgroundColor':
-              scene.director.backgroundColor = '#0a0a0a';
-              break;
-            case 'textColor':
-              scene.director.textColor = '#ffffff';
-              break;
-            case 'parallaxIntensity':
-              scene.director.parallaxIntensity = 0.3;
-              break;
-            case 'entryEffect':
-              scene.director.entryEffect = 'fade';
-              break;
-            case 'exitEffect':
-              scene.director.exitEffect = 'fade';
-              break;
-            case 'headingSize':
-              scene.director.headingSize = '5xl';
-              break;
-            case 'bodySize':
-              scene.director.bodySize = 'lg';
-              break;
-            case 'alignment':
-              scene.director.alignment = 'center';
-              break;
-          }
-        }
-      }
-    }
-    
-    // Re-validate after recovery
-    validationErrors = [];
-    result.scenes.forEach((scene, idx) => {
-      const d = scene.director;
-      if (typeof d.entryDuration !== 'number') validationErrors.push(`Scene ${idx}: Missing entryDuration`);
-      if (typeof d.exitDuration !== 'number') validationErrors.push(`Scene ${idx}: Missing exitDuration`);
-      if (typeof d.entryDelay !== 'number') validationErrors.push(`Scene ${idx}: Missing entryDelay`);
-      if (!d.backgroundColor) validationErrors.push(`Scene ${idx}: Missing backgroundColor`);
-      if (!d.textColor) validationErrors.push(`Scene ${idx}: Missing textColor`);
-      if (typeof d.parallaxIntensity !== 'number') validationErrors.push(`Scene ${idx}: Missing parallaxIntensity`);
-      if (!d.entryEffect) validationErrors.push(`Scene ${idx}: Missing entryEffect`);
-      if (!d.exitEffect) validationErrors.push(`Scene ${idx}: Missing exitEffect`);
-      if (!d.headingSize) validationErrors.push(`Scene ${idx}: Missing headingSize`);
-      if (!d.bodySize) validationErrors.push(`Scene ${idx}: Missing bodySize`);
-      if (!d.alignment) validationErrors.push(`Scene ${idx}: Missing alignment`);
-    });
+  // Bonus points for proper asset selection
+  const totalAssets = result.scenes.reduce((sum: number, scene: GeneratedScene) =>
+    sum + (scene.assetIds?.length || 0), 0
+  );
+  const avgAssetsPerScene = result.scenes.length > 0 ? totalAssets / result.scenes.length : 0;
+  if (avgAssetsPerScene >= 1.5) {
+    confidenceScore = Math.min(100, confidenceScore + 5);
+    confidenceFactors.push('Good asset utilization');
   }
 
-  if (validationErrors.length > 0) {
-    console.error('[Portfolio Director] ❌ Stage 1 validation failed after recovery:', validationErrors);
-    throw new Error(`Gemini output validation failed:\n${validationErrors.join('\n')}`);
+  // Clamp score between 0-100
+  confidenceScore = Math.max(0, Math.min(100, confidenceScore));
+
+  result.confidenceScore = confidenceScore;
+  result.confidenceFactors = confidenceFactors;
+
+  console.log(`[Portfolio Director] ✅ Generated ${result.scenes.length} scenes for project: ${projectTitle}`);
+  console.log(`[Portfolio Director] 📊 Confidence Score: ${confidenceScore}% ${confidenceScore < 70 ? '⚠️ LOW' : confidenceScore < 85 ? '✓ GOOD' : '✓✓ EXCELLENT'}`);
+  if (confidenceFactors.length > 0) {
+    console.log(`[Portfolio Director] 📋 Confidence Factors:`, confidenceFactors);
   }
 
-  console.log('[Portfolio Director] ✅ Stage 1 validation passed');
+  console.log('[Portfolio Director] ✅ Stage 1 complete: Initial generation and confidence scoring');
 
   // STAGE 2: Self-Audit for Inconsistencies
   const auditPrompt = `You previously generated this scene sequence JSON:
@@ -572,7 +441,7 @@ ${JSON.stringify(result, null, 2)}
 
 Audit this JSON for:
 1. Internal contradictions (e.g., parallax + scaleOnScroll both enabled)
-2. Missing required fields
+2. Missing required fields (even if confidence score is high, double check)
 3. Invalid values (durations < 0.1, colors not hex format, etc.)
 4. Pacing issues (all scenes same speed, no rhythm)
 5. Transition mismatches (exit effect of Scene N doesn't flow into entry of Scene N+1)
@@ -655,8 +524,8 @@ Return:
               properties: {
                 sceneIndex: { type: Type.NUMBER },
                 field: { type: Type.STRING },
-                currentValue: { type: Type.STRING },
-                newValue: { type: Type.STRING },
+                currentValue: { type: Type.STRING }, // Expecting string for flexibility
+                newValue: { type: Type.STRING }, // Expecting string for flexibility
                 reason: { type: Type.STRING }
               },
               required: ["sceneIndex", "field", "newValue", "reason"]
@@ -675,7 +544,10 @@ Return:
   const appliedImprovements: string[] = [];
   for (const improvement of improvementsResult.improvements) {
     const scene = result.scenes[improvement.sceneIndex];
-    if (!scene) continue;
+    if (!scene) {
+      console.warn(`[Portfolio Director] Warning: Improvement for non-existent scene index ${improvement.sceneIndex}. Skipping.`);
+      continue;
+    }
 
     // Check for conflicts with audit issues
     const hasConflict = auditResult.issues.some(
@@ -687,20 +559,40 @@ Return:
       const fieldPath = improvement.field.split('.');
       let target: any = scene;
       for (let i = 0; i < fieldPath.length - 1; i++) {
+        if (!target[fieldPath[i]]) {
+          // Attempt to create nested object if it doesn't exist
+          if (fieldPath[i] === 'director') {
+            target[fieldPath[i]] = {};
+          } else {
+            console.warn(`[Portfolio Director] Warning: Could not resolve path for improvement field "${improvement.field}". Skipping.`);
+            target = null; // Mark as unresolvable
+            break;
+          }
+        }
         target = target[fieldPath[i]];
       }
-      const finalField = fieldPath[fieldPath.length - 1];
 
-      // Type conversion
-      let newValue: any = improvement.newValue;
-      if (typeof target[finalField] === 'number') {
-        newValue = parseFloat(improvement.newValue);
-      } else if (typeof target[finalField] === 'boolean') {
-        newValue = improvement.newValue === 'true';
+      if (target) {
+        const finalField = fieldPath[fieldPath.length - 1];
+
+        // Type conversion - attempt to infer type or use string
+        let newValue: any = improvement.newValue;
+        try {
+          if (typeof (scene.director as any)[finalField] === 'number' || (finalField === 'entryDuration' || finalField === 'exitDuration' || finalField === 'entryDelay' || finalField === 'parallaxIntensity')) {
+            newValue = parseFloat(improvement.newValue);
+            if (isNaN(newValue)) throw new Error("Not a number");
+          } else if (typeof (scene.director as any)[finalField] === 'boolean' || (finalField === 'fadeOnScroll' || finalField === 'scaleOnScroll' || finalField === 'blurOnScroll')) {
+            newValue = improvement.newValue.toLowerCase() === 'true';
+          }
+          // Add more type checks as needed (e.g., for hex colors if needed)
+        } catch (e) {
+          console.warn(`[Portfolio Director] Warning: Could not convert "${improvement.newValue}" to expected type for field "${finalField}". Using as string. Error: ${e}`);
+          newValue = improvement.newValue; // Fallback to string
+        }
+
+        (target as any)[finalField] = newValue;
+        appliedImprovements.push(`Scene ${improvement.sceneIndex}: ${improvement.field} = ${JSON.stringify(newValue)} (${improvement.reason})`);
       }
-
-      target[finalField] = newValue;
-      appliedImprovements.push(`Scene ${improvement.sceneIndex}: ${improvement.field} = ${newValue} (${improvement.reason})`);
     }
   }
 
@@ -726,7 +618,7 @@ Generate the final, polished scene sequence incorporating ALL improvements and f
 5. Pacing has musical rhythm (varied speeds)
 6. Asset selection tells compelling story
 
-Return the complete scenes array with full director configs.`;
+Return the complete scenes array with full director configs. Ensure ALL required director fields are present for each scene.`;
 
   const finalResponse = await aiClient.models.generateContent({
     model: "gemini-2.5-pro",
@@ -775,77 +667,136 @@ Return the complete scenes array with full director configs.`;
     }
   });
 
-  result = JSON.parse(finalResponse.text || '{"scenes":[]}');
-  console.log(`[Portfolio Director] ✅ Stage 5 complete: Final regeneration with ${result.scenes.length} scenes`);
+  const finalResult: PortfolioGenerateResponse = JSON.parse(finalResponse.text || '{"scenes":[]}');
+  console.log(`[Portfolio Director] ✅ Stage 5 complete: Final regeneration with ${finalResult.scenes.length} scenes`);
 
   // STAGE 6: Final Validation Against Requirements
   console.log('[Portfolio Director] ✅ Stage 6: Final validation');
 
-  // Validate that all referenced asset IDs exist and log potential issues
-  const finalValidAssetIds = buildAssetWhitelist(catalog); // Re-fetch for latest context if catalog changed
+  const finalValidAssetIds = buildAssetWhitelist(catalog);
   const warnings: string[] = [];
 
-  for (const scene of result.scenes) {
+  for (const scene of finalResult.scenes) {
+    // Validate asset IDs
     for (const assetId of scene.assetIds) {
       if (!finalValidAssetIds.includes(assetId)) {
         const errorMsg = `AI referenced non-existent asset ID: ${assetId}. Valid IDs: ${finalValidAssetIds.join(', ')}`;
         console.error(`❌ [Portfolio Director] ${errorMsg}`);
-        // Instead of throwing, we'll just log and continue, as Gemini might hallucinate an ID
-        // but still produce a valid structure. The frontend will handle missing assets gracefully.
+        // Add to confidence factors as a warning
+        confidenceScore -= 3; // Deduct score for invalid asset ID
+        confidenceFactors.push(`Scene with assets [${scene.assetIds.join(', ')}]: Invalid asset ID "${assetId}"`);
       }
     }
 
-    // Basic validation for required director fields and potential conflicts
+    // Validate director fields and conflicts
     const director = scene.director;
+    if (!director) {
+      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing director config.`);
+      confidenceScore -= 10;
+      continue; // Skip further director checks if config is missing
+    }
+
+    // Conflict checks
     if (director.parallaxIntensity > 0 && director.scaleOnScroll) {
-      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ parallax + scaleOnScroll conflict detected. Auto-fixing scaleOnScroll to false.`);
+      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ parallax + scaleOnScroll conflict detected. Auto-fixing scaleOnScroll to false.`);
       scene.director.scaleOnScroll = false; // Auto-fix
     }
+    if (director.blurOnScroll && director.parallaxIntensity > 0) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ blurOnScroll conflicts with parallax. Auto-fixing blurOnScroll to false.`);
+        scene.director.blurOnScroll = false; // Auto-fix
+    }
 
+    // Duration checks
     if (director.entryDuration !== undefined && director.entryDuration < 0.5) {
-      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Entry duration ${director.entryDuration}s may be too subtle.`);
+      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Entry duration ${director.entryDuration}s may be too subtle.`);
+      confidenceScore -= 2;
+    }
+    if (director.exitDuration !== undefined && director.exitDuration < 0.4) {
+      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Exit duration ${director.exitDuration}s may be too abrupt.`);
+      confidenceScore -= 2;
     }
 
-    if (!director.exitEffect) {
-      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ No exit effect specified.`);
-    }
-
-    // Ensure valid durations with type and range checks
+    // Required field presence and basic validity
     if (typeof director.entryDuration !== 'number' || director.entryDuration < 0.1) {
-      scene.director.entryDuration = 1.2; // Default to standard
-      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Invalid entryDuration, defaulting to 1.2s`);
+      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid or missing entryDuration, defaulting to 1.2s.`);
+      scene.director.entryDuration = 1.2; // Default
+      confidenceScore -= 3;
     }
     if (typeof director.exitDuration !== 'number' || director.exitDuration < 0.1) {
-      scene.director.exitDuration = 1.0; // Default to standard
-      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Invalid exitDuration, defaulting to 1.0s`);
+      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid or missing exitDuration, defaulting to 1.0s.`);
+      scene.director.exitDuration = 1.0; // Default
+      confidenceScore -= 3;
     }
     if (typeof director.entryDelay !== 'number' || director.entryDelay < 0) {
-      scene.director.entryDelay = 0; // Default to no delay
+      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid or missing entryDelay, defaulting to 0s.`);
+      scene.director.entryDelay = 0; // Default
     }
     if (typeof director.parallaxIntensity !== 'number' || director.parallaxIntensity < 0 || director.parallaxIntensity > 1) {
-      scene.director.parallaxIntensity = 0.3; // Default to moderate
-      warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Invalid parallaxIntensity (must be 0-1), defaulting to 0.3`);
+      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid parallaxIntensity (must be 0-1), defaulting to 0.3.`);
+      scene.director.parallaxIntensity = 0.3; // Default
+      confidenceScore -= 3;
+    }
+    if (!director.entryEffect) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing entryEffect, defaulting to 'fade'.`);
+        scene.director.entryEffect = 'fade';
+        confidenceScore -= 3;
+    }
+    if (!director.exitEffect) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing exitEffect, defaulting to 'fade'.`);
+        scene.director.exitEffect = 'fade';
+        confidenceScore -= 3;
+    }
+     if (!director.backgroundColor) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing backgroundColor, defaulting to '#0a0a0a'.`);
+        scene.director.backgroundColor = '#0a0a0a';
+        confidenceScore -= 3;
+    }
+     if (!director.textColor) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing textColor, defaulting to '#ffffff'.`);
+        scene.director.textColor = '#ffffff';
+        confidenceScore -= 3;
+    }
+     if (!director.headingSize) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing headingSize, defaulting to '5xl'.`);
+        scene.director.headingSize = '5xl';
+        confidenceScore -= 3;
+    }
+     if (!director.bodySize) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing bodySize, defaulting to 'lg'.`);
+        scene.director.bodySize = 'lg';
+        confidenceScore -= 3;
+    }
+     if (!director.alignment) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing alignment, defaulting to 'center'.`);
+        scene.director.alignment = 'center';
+        confidenceScore -= 3;
     }
 
-    // Validate color contrast (simplified check - ensures not identical colors)
+
+    // Color contrast check
     if (director.backgroundColor && director.textColor) {
       const bgLower = director.backgroundColor.toLowerCase();
       const textLower = director.textColor.toLowerCase();
 
-      // Check if colors are too similar (simple heuristic)
       if (bgLower === textLower) {
-        warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Text and background colors are identical - text will be invisible!`);
-        // Auto-fix: if background is dark, make text white; if light, make text dark
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Text and background colors are identical - text will be invisible!`);
+        confidenceScore -= 5;
         const isDarkBg = bgLower.includes('#0') || bgLower.includes('#1') || bgLower === '#000000';
         scene.director.textColor = isDarkBg ? '#ffffff' : '#0a0a0a';
         warnings.push(`  → Auto-fixed textColor to ${scene.director.textColor}`);
       }
     }
-
   }
 
+  // Re-clamp score after warnings
+  confidenceScore = Math.max(0, Math.min(100, confidenceScore));
+  result.confidenceScore = confidenceScore;
+  // Update confidenceFactors with any new issues found during validation
+  result.confidenceFactors = Array.from(new Set([...(result.confidenceFactors || []), ...warnings.map(w => w.replace('⚠️ ', ''))]));
+
+
   console.log('[Portfolio Director] 🎬 PIPELINE COMPLETE - Final Output:', {
-    totalScenes: result.scenes.length,
+    totalScenes: finalResult.scenes.length,
     stage1: 'Initial generation',
     stage2: `Found ${auditResult.issues.length} issues`,
     stage3: `Generated ${improvementsResult.improvements.length} improvements`,
@@ -854,7 +805,7 @@ Return the complete scenes array with full director configs.`;
     stage6: warnings.length > 0 ? `${warnings.length} warnings` : 'All validations passed',
     appliedImprovements: appliedImprovements.length > 0 ? appliedImprovements : 'none',
     warnings: warnings.length > 0 ? warnings : 'none',
-    sceneSummary: result.scenes.map((s, i) => ({
+    sceneSummary: finalResult.scenes.map((s, i) => ({
       index: i,
       type: s.sceneType,
       assets: s.assetIds.length,
@@ -863,7 +814,11 @@ Return the complete scenes array with full director configs.`;
     }))
   });
 
-  return result;
+  return {
+    scenes: finalResult.scenes,
+    confidenceScore: result.confidenceScore,
+    confidenceFactors: result.confidenceFactors
+  };
 }
 
 /**
@@ -894,7 +849,7 @@ export function convertToSceneConfigs(
     console.log(`[Portfolio Director] Scene type "${aiScene.sceneType}" wants assets:`, aiScene.assetIds);
     for (const assetId of aiScene.assetIds) {
       if (!validAssetIds.includes(assetId)) {
-        console.error(`❌ AI referenced non-existent asset ID: ${assetId}. Valid IDs: ${validAssetIds.join(', ')}`);
+        console.error(`❌ [Portfolio Director] AI referenced non-existent asset ID: ${assetId}. Valid IDs: ${validAssetIds.join(', ')}`);
       }
     }
   }

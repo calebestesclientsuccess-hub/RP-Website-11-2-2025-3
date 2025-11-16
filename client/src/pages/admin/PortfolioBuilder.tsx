@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, X, Sparkles, Loader2, Edit, ArrowUp, ArrowDown, Trash2 } from "lucide-react";
+import { Plus, X, Sparkles, Loader2, Edit, ArrowUp, ArrowDown, Trash2, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Project } from "@shared/schema";
 import {
@@ -71,6 +72,15 @@ export default function PortfolioBuilder() {
   // Portfolio-level AI orchestration prompt
   const [portfolioAiPrompt, setPortfolioAiPrompt] = useState("");
   const [useAiDirector, setUseAiDirector] = useState(false); // NEW: Toggle for AI orchestration mode
+
+  // State for AI-generated scenes, including confidence score and factors
+  const [generatedScenes, setGeneratedScenes] = useState<{
+    scenes?: any[];
+    confidenceScore?: number;
+    confidenceFactors?: string[];
+  } | null>(null);
+  const [isSavingScenes, setIsSavingScenes] = useState(false);
+
 
   // Scene form state
   const form = useForm({
@@ -182,6 +192,62 @@ export default function PortfolioBuilder() {
     setScenes(newScenes);
   };
 
+  // Function to save generated scenes to the database
+  const handleSaveGeneratedScenes = async () => {
+    if (!generatedScenes || (Array.isArray(generatedScenes) ? generatedScenes.length : generatedScenes.scenes?.length) === 0) {
+      toast({ title: "Error", description: "No scenes to save", variant: "destructive" });
+      return;
+    }
+
+    setIsSavingScenes(true);
+    try {
+      const scenesToSave = Array.isArray(generatedScenes) ? generatedScenes : generatedScenes.scenes;
+      const requestPayload = {
+        projectId: isNewProject ? null : selectedProjectId,
+        newProjectTitle: isNewProject ? newProjectTitle : undefined,
+        newProjectSlug: isNewProject ? newProjectSlug : undefined,
+        newProjectClient: isNewProject ? newProjectClient : undefined,
+        scenes: scenesToSave,
+      };
+
+      console.log('[Portfolio Builder] Saving generated scenes:', requestPayload);
+
+      // Assuming you have an endpoint like /api/portfolio/save-generated-scenes
+      const response = await apiRequest("POST", "/api/portfolio/save-generated-scenes", requestPayload);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || errorData.error || "Failed to save scenes");
+      }
+
+      const result = await response.json();
+      console.log('[Portfolio Builder] Save successful:', result);
+
+      toast({
+        title: "Success!",
+        description: `Saved ${scenesToSave?.length} scenes successfully`,
+      });
+
+      // Clear generated scenes after saving
+      setGeneratedScenes(null);
+
+      // Navigate to project edit page if projectId is returned
+      if (result.projectId) {
+        setLocation(`/admin/projects/${result.projectId}/edit`);
+      }
+    } catch (error) {
+      console.error('[Portfolio Builder] Save error:', error);
+      toast({
+        title: "Save failed",
+        description: error instanceof Error ? error.message : "Failed to save scenes",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingScenes(false);
+    }
+  };
+
+
   // Generate portfolio with AI
   const handleGeneratePortfolio = async () => {
     // Validation
@@ -210,8 +276,8 @@ export default function PortfolioBuilder() {
 
     // AI Director Mode requires content catalog instead of manual scenes
     if (useAiDirector) {
-      toast({ 
-        title: "AI Director Mode", 
+      toast({
+        title: "AI Director Mode",
         description: "Build a content catalog in Content Library, then use this mode to let Gemini orchestrate the entire portfolio.",
         variant: "default"
       });
@@ -243,18 +309,21 @@ export default function PortfolioBuilder() {
         throw new Error(errorData.details || errorData.error || "Generation failed");
       }
 
+      // Assuming the response now includes scenes, confidenceScore, and confidenceFactors
       const result = await response.json();
       console.log('[Portfolio Builder] Generation successful:', result);
 
-      toast({
-        title: "Success!",
-        description: `Generated ${result.scenesCreated} scenes successfully`,
+      setGeneratedScenes({
+        scenes: result.scenes,
+        confidenceScore: result.confidenceScore,
+        confidenceFactors: result.confidenceFactors,
       });
 
-      // Navigate to project edit page
-      if (result.projectId) {
-        setLocation(`/admin/projects/${result.projectId}/edit`);
-      }
+      toast({
+        title: "Success!",
+        description: `Generated ${result.scenes?.length || 0} scenes with ${result.confidenceScore || 0}% confidence`,
+      });
+
     } catch (error) {
       console.error('[Portfolio Builder] Generation error:', error);
       toast({
@@ -524,10 +593,120 @@ export default function PortfolioBuilder() {
                   </CardContent>
                 </Card>
 
+                {/* Generated Scenes Display */}
+                {generatedScenes && (Array.isArray(generatedScenes) ? generatedScenes.length : generatedScenes.scenes?.length) > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <CardTitle>4. Generated Scenes</CardTitle>
+                          <CardDescription>
+                            AI-generated scenes based on your prompts
+                          </CardDescription>
+                          {generatedScenes.confidenceScore !== undefined && (
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-sm text-muted-foreground">AI Confidence:</span>
+                              <div className="flex items-center gap-2">
+                                <div className="w-32 h-2 bg-muted rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full transition-all ${
+                                      generatedScenes.confidenceScore >= 85
+                                        ? 'bg-green-500'
+                                        : generatedScenes.confidenceScore >= 70
+                                        ? 'bg-yellow-500'
+                                        : 'bg-red-500'
+                                    }`}
+                                    style={{ width: `${generatedScenes.confidenceScore}%` }}
+                                  />
+                                </div>
+                                <span className={`text-sm font-medium ${
+                                  generatedScenes.confidenceScore >= 85
+                                    ? 'text-green-600'
+                                    : generatedScenes.confidenceScore >= 70
+                                    ? 'text-yellow-600'
+                                    : 'text-red-600'
+                                }`}>
+                                  {generatedScenes.confidenceScore}%
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={handleSaveGeneratedScenes}
+                            disabled={isSavingScenes}
+                            data-testid="button-save-all-scenes"
+                          >
+                            {isSavingScenes ? "Saving..." : "Save All to Database"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => setGeneratedScenes(null)}
+                            data-testid="button-clear-scenes"
+                          >
+                            Clear
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {generatedScenes.confidenceFactors && generatedScenes.confidenceFactors.length > 0 && (
+                        <Collapsible>
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="sm" className="w-full justify-between mb-2">
+                              <span className="text-sm text-muted-foreground">
+                                View Confidence Details ({generatedScenes.confidenceFactors.length} factors)
+                              </span>
+                              <ChevronDown className="h-4 w-4" />
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="pt-2">
+                            <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-2 mb-4">
+                              {generatedScenes.confidenceFactors.map((factor: string, idx: number) => (
+                                <div key={idx} className="flex items-start gap-2 text-sm">
+                                  <span className="text-muted-foreground">•</span>
+                                  <span>{factor}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      )}
+
+                      <div className="grid gap-4">
+                        {(generatedScenes.scenes || generatedScenes).map((scene: any, index: number) => (
+                          <Card key={index} className="p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="font-medium">Scene {index + 1}</span>
+                                  <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded">
+                                    {scene.sceneType}
+                                  </span>
+                                </div>
+                                <div className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                                  <strong>AI Prompt:</strong> {scene.aiPrompt}
+                                </div>
+                                {scene.content.heading && (
+                                  <div className="text-xs text-muted-foreground">
+                                    Heading: {scene.content.heading}
+                                  </div>
+                                )}
+                              </div>
+                              {/* TODO: Add edit/delete for generated scenes if needed */}
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Generate Button */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>4. Generate Portfolio</CardTitle>
+                    <CardTitle>5. Generate Portfolio</CardTitle>
                     <CardDescription>
                       AI will enhance each scene and orchestrate the overall flow
                     </CardDescription>

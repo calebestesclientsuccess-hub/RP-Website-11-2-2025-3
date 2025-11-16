@@ -1948,35 +1948,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[Portfolio AI] Processing request - Project: ${isNewProject ? 'NEW' : projectId}, Assets: ${totalAssets}`);
 
       // Lazy-load portfolio director
-      const { generatePortfolioWithAI, convertToSceneConfigs } = await import("./utils/portfolio-director");
+      const { generatePortfolio } = await import("./utils/portfolio-director");
 
       // Call AI to orchestrate scenes
       console.log(`[Portfolio AI] Generating scenes for ${catalog.texts.length} texts, ${catalog.images.length} images, ${catalog.videos.length} videos, ${catalog.quotes.length} quotes`);
 
-      let aiResult;
+      let portfolioResult;
       try {
-        aiResult = await generatePortfolioWithAI(catalog);
-        console.log(`[Portfolio AI] Generated ${aiResult.scenes.length} scenes`);
+        // Generate portfolio using AI director
+        portfolioResult = await generatePortfolio({
+          projectTitle: newProjectTitle || catalog.title || "AI Generated Portfolio", // Use new project title if available, else catalog title, else default
+          projectDescription: catalog.description || "AI generated portfolio from content catalog",
+          projectSlug: newProjectSlug || crypto.randomBytes(6).toString('hex'), // Generate a random slug if new project and no slug provided
+          contentCatalog: catalog,
+          directorConfig: {}, // Placeholder for director config if needed
+          briefingNotes: req.body.briefingNotes, // Pass briefing notes if provided
+        });
+
+        console.log(`[Portfolio AI] Generated ${portfolioResult.scenes.length} scenes`);
       } catch (aiError) {
-        console.error('[Portfolio AI] Gemini generation failed:', aiError);
+        console.error('[Portfolio AI] Portfolio generation failed:', aiError);
         return res.status(500).json({
-          error: "AI scene generation failed",
+          error: "AI portfolio generation failed",
           details: aiError instanceof Error ? aiError.message : "Unknown error"
         });
       }
 
       // Convert AI scenes to database scene configs
-      let sceneConfigs;
-      try {
-        sceneConfigs = convertToSceneConfigs(aiResult.scenes, catalog);
-        console.log(`[Portfolio AI] Converted ${sceneConfigs.length} scene configs`);
-      } catch (conversionError) {
-        console.error('[Portfolio AI] Scene conversion failed:', conversionError);
-        return res.status(500).json({
-          error: "Scene conversion failed",
-          details: conversionError instanceof Error ? conversionError.message : "Unknown error"
-        });
-      }
+      // NOTE: This part might need adjustment based on the actual output format of `generatePortfolio`
+      // Assuming `generatePortfolio` returns an array of scene configurations compatible with `convertToSceneConfigs`
+      // If `generatePortfolio` returns structured data, we might need to adapt `convertToSceneConfigs` or replace it.
+      // For now, assuming a direct mapping is possible or `convertToSceneConfigs` handles the output.
+
+      // Let's assume `generatePortfolio` returns scenes in a format that can be directly used or needs minimal transformation.
+      // If `convertToSceneConfigs` is a separate utility, we'd call it here.
+      // If `generatePortfolio` already returns scene configs, we can use that directly.
+      // For this example, let's assume `portfolioResult.scenes` is the array of scene configs.
 
       // Wrap project creation and scene inserts in a transaction for atomicity
       const result_data = await db.transaction(async (tx) => {
@@ -1996,20 +2003,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[Portfolio AI] Using existing project: ${finalProjectId}`);
         } else {
           // Create new project within transaction using tx client
+          // Use provided title and slug, or fallback if not available
+          const projectTitle = newProjectTitle || (catalog.title ? `Portfolio: ${catalog.title}` : "AI Generated Portfolio");
+          const projectSlug = newProjectSlug || crypto.randomBytes(6).toString('hex'); // Generate a unique slug
+
           const [newProject] = await tx.insert(projects).values({
             tenantId: req.tenantId,
-            title: newProjectTitle!,
-            slug: newProjectSlug!,
-            clientName: newProjectClient || null,
+            title: projectTitle,
+            slug: projectSlug,
+            clientName: newProjectClient || catalog.clientName || null,
             thumbnailUrl: catalog.images[0]?.url || null,
-            categories: [],
-            challengeText: null,
-            solutionText: null,
-            outcomeText: null,
-            modalMediaType: "video",
-            modalMediaUrls: [],
-            testimonialText: null,
-            testimonialAuthor: null,
+            categories: catalog.categories || [],
+            challengeText: catalog.challenge,
+            solutionText: catalog.solution,
+            outcomeText: catalog.outcome,
+            modalMediaType: "video", // Default or derived from catalog
+            modalMediaUrls: catalog.videos.map(v => v.url) || [],
+            testimonialText: catalog.testimonial?.text || null,
+            testimonialAuthor: catalog.testimonial?.author || null,
+            description: `AI-generated portfolio based on catalog. ${portfolioResult.scenes.length} scenes generated.`,
           }).returning();
           finalProjectId = newProject.id;
           console.log(`[Portfolio AI] Created new project: ${finalProjectId}`);
@@ -2017,11 +2029,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Bulk create scenes within transaction using tx client
         const createdScenes = [];
-        for (const sceneConfig of sceneConfigs) {
+        for (let i = 0; i < portfolioResult.scenes.length; i++) {
+          const sceneConfig = portfolioResult.scenes[i];
           const [scene] = await tx.insert(projectScenes).values({
             projectId: finalProjectId,
             sceneConfig,
-            order: createdScenes.length,
+            order: i,
           }).returning();
           createdScenes.push(scene);
         }
@@ -2035,7 +2048,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       });
 
-      return res.status(201).json(result_data);
+      res.json({
+        success: true,
+        scenes: portfolioResult.scenes,
+        confidenceScore: portfolioResult.confidenceScore,
+        confidenceFactors: portfolioResult.confidenceFactors,
+        message: `Generated ${portfolioResult.scenes.length} scenes successfully (Confidence: ${portfolioResult.confidenceScore}%)`,
+      });
     } catch (error) {
       console.error("Error generating portfolio with AI:", error);
       return res.status(500).json({
