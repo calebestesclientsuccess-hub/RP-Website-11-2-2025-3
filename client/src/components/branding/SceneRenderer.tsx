@@ -1,10 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { SceneConfig } from "@shared/schema";
-import { Card, CardContent } from "@/components/ui/card";
 import { PlaceholderSlot } from "./PlaceholderSlot";
 import type { PlaceholderId } from "@shared/placeholder-config";
+import { ProgressiveImage } from "@/components/ui/progressive-image";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,89 +15,6 @@ interface SceneRendererProps {
   onOpenAssetMapper?: (placeholderId: PlaceholderId) => void;
   isEditMode?: boolean;
 }
-
-// Placeholder for ProgressiveImage component
-const ProgressiveImage: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className }) => (
-  <img src={src} alt={alt} className={className} />
-);
-
-// Placeholder for SceneConfig interface
-// interface SceneConfig { // This is now imported from @shared/schema
-//   type: string;
-//   content: any;
-//   layout?: string;
-//   director: DirectorConfig;
-//   sceneType?: string; // Added sceneType for image rendering logic
-//   imageUrl?: string; // Added imageUrl for image rendering logic
-// }
-
-
-gsap.registerPlugin(ScrollTrigger);
-
-interface DirectorConfig {
-  entryEffect: string;
-  exitEffect: string;
-  entryDuration: number;
-  exitDuration: number;
-  entryDelay: number;
-  exitDelay?: number;
-  entryEasing: string;
-  exitEasing: string;
-  backgroundColor: string;
-  textColor: string;
-  parallaxIntensity: number;
-  fadeOnScroll: boolean;
-  scaleOnScroll: boolean;
-  blurOnScroll: boolean;
-  headingSize: string;
-  bodySize: string;
-  alignment: string;
-  transformOrigin?: string;
-  backdropBlur?: string;
-  mixBlendMode?: string;
-  customCSSClasses?: string;
-  enablePerspective?: boolean;
-  overflowBehavior?: string;
-  layerDepth?: number;
-  staggerChildren?: number;
-  fontWeight?: string;
-  textShadow?: boolean;
-  textGlow?: boolean;
-  paddingTop?: string;
-  paddingBottom?: string;
-  mediaPosition?: string;
-  mediaScale?: string;
-  mediaOpacity?: number;
-  scrollSpeed?: string; // Added scrollSpeed
-}
-
-interface SceneData {
-  type: string;
-  content: any;
-  layout?: string;
-  director: DirectorConfig;
-  sceneType?: string; // Added sceneType for image rendering logic
-  imageUrl?: string; // Added imageUrl for image rendering logic
-}
-
-// interface SceneRendererProps { // This is now defined above
-//   scene: SceneConfig;
-//   index: number;
-//   assetMap?: Record<string, string>;
-// }
-
-// PlaceholderSlot component (assuming it exists elsewhere or will be defined)
-// This is a placeholder for the actual component implementation.
-// const PlaceholderSlot: React.FC<{ placeholderId: string; type: string; onAssignAsset: (id: string) => void }> = ({ placeholderId, type, onAssignAsset }) => {
-//   return (
-//     <div className="placeholder-slot flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg w-full h-full" onClick={() => onAssignAsset(placeholderId)}>
-//       <span className="text-gray-500 text-lg">
-//         {type === 'image' ? `Image Slot: ${placeholderId}` : `Placeholder: ${placeholderId}`}
-//       </span>
-//     </div>
-//   );
-// };
-
 
 // Helper to map heading/body sizes to Tailwind classes
 const headingSizeMap: Record<string, string> = {
@@ -139,6 +56,11 @@ const paddingBottomMap: Record<string, string> = {
   "xl": "pb-16",
   "2xl": "pb-24",
 };
+
+// Check for reduced motion preference
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function SceneRenderer({
   scenes,
@@ -192,43 +114,69 @@ function SceneItem({
     return value;
   };
 
-  const renderSceneContent = (scene: SceneConfig, index: number) => {
-    const config = scene as any;
+  // Type guards for scene content
+  const hasTextContent = (content: any): content is { heading?: string; body?: string } => {
+    return content && (typeof content.heading === 'string' || typeof content.body === 'string');
+  };
 
-    switch (config.type) {
+  const hasImageContent = (content: any): content is { url: string; alt?: string } => {
+    return content && typeof content.url === 'string';
+  };
+
+  const hasVideoContent = (content: any): content is { url: string; poster?: string } => {
+    return content && typeof content.url === 'string';
+  };
+
+  const hasQuoteContent = (content: any): content is { quote: string; author?: string } => {
+    return content && typeof content.quote === 'string';
+  };
+
+  const hasSplitContent = (content: any): content is { 
+    leftContent: { type: string; data: any }; 
+    rightContent: { type: string; data: any };
+  } => {
+    return content && content.leftContent && content.rightContent;
+  };
+
+  const hasGalleryContent = (content: any): content is { images: Array<{ url: string; alt?: string; caption?: string }> } => {
+    return content && Array.isArray(content.images);
+  };
+
+  const renderSceneContent = (scene: SceneConfig, index: number) => {
+    const { type, content, director } = scene;
+
+    switch (type) {
       case "text":
+        if (!hasTextContent(content)) return null;
         return (
-          <div className="max-w-4xl mx-auto text-center space-y-6">
-            {config.content?.heading && (
+          <div 
+            className="max-w-4xl mx-auto text-center space-y-6"
+            role="region"
+            aria-label={content.heading || "Text content"}
+          >
+            {content.heading && (
               <h2
-                className={`font-bold leading-tight ${
-                  config.director?.headingSize === "8xl" ? "text-5xl md:text-8xl" :
-                  config.director?.headingSize === "7xl" ? "text-4xl md:text-7xl" :
-                  config.director?.headingSize === "6xl" ? "text-3xl md:text-6xl" :
-                  config.director?.headingSize === "5xl" ? "text-2xl md:text-5xl" :
-                  "text-xl md:text-4xl"
-                }`}
+                className={`font-bold leading-tight ${headingSizeMap[director?.headingSize || "4xl"] || headingSizeMap["4xl"]}`}
+                id={`scene-${index}-heading`}
               >
-                {config.content.heading}
+                {content.heading}
               </h2>
             )}
-            {config.content?.body && (
+            {content.body && (
               <p
-                className={`${
-                  config.director?.bodySize === "2xl" ? "text-lg md:text-2xl" :
-                  config.director?.bodySize === "xl" ? "text-base md:text-xl" :
-                  config.director?.bodySize === "lg" ? "text-sm md:text-lg" :
-                  "text-sm md:text-base"
-                } opacity-90 max-w-3xl mx-auto`}
+                className={`${bodySizeMap[director?.bodySize || "base"] || bodySizeMap.base} opacity-90 max-w-3xl mx-auto`}
+                aria-describedby={content.heading ? `scene-${index}-heading` : undefined}
               >
-                {config.content.body}
+                {content.body}
               </p>
             )}
           </div>
         );
 
       case "image":
-        const imageUrl = config.content?.url || "";
+        if (!hasImageContent(content)) return null;
+        const imageUrl = content.url;
+        const imageAlt = content.alt || "";
         const isImagePlaceholder = isPlaceholderId(imageUrl);
 
         if (isEditMode && isImagePlaceholder) {
@@ -243,19 +191,33 @@ function SceneItem({
           );
         }
 
+        // Validate alt text exists for accessibility
+        const hasValidAlt = imageAlt && imageAlt.trim().length > 0;
+        
         return (
-          <div className="w-full max-w-5xl mx-auto">
-            <img
+          <figure 
+            className="w-full max-w-5xl mx-auto"
+            role="img"
+            aria-label={hasValidAlt ? imageAlt : "Decorative image"}
+          >
+            <ProgressiveImage
               src={resolveAsset(imageUrl)}
-              alt={config.content?.alt || ""}
-              className="w-full h-full object-cover"
-              style={{ opacity: config.director?.mediaOpacity || 1 }}
+              alt={imageAlt}
+              className="w-full h-full object-cover rounded-lg"
+              aspectRatio={director?.mediaScale || "16/9"}
+              style={{ opacity: director?.mediaOpacity || 1 }}
             />
-          </div>
+            {!hasValidAlt && process.env.NODE_ENV === 'development' && (
+              <span className="sr-only" role="alert">
+                Warning: Image missing alt text for accessibility
+              </span>
+            )}
+          </figure>
         );
 
       case "video":
-        const videoUrl = config.content?.url || "";
+        if (!hasVideoContent(content)) return null;
+        const videoUrl = content.url;
         const isVideoPlaceholder = isPlaceholderId(videoUrl);
 
         if (isEditMode && isVideoPlaceholder) {
@@ -271,19 +233,29 @@ function SceneItem({
         }
 
         return (
-          <div className="w-full max-w-5xl mx-auto aspect-video">
+          <figure className="w-full max-w-5xl mx-auto aspect-video">
             <video
               src={resolveAsset(videoUrl)}
+              poster={content.poster ? resolveAsset(content.poster) : undefined}
               className="w-full h-full rounded-lg shadow-2xl object-cover"
               controls
               playsInline
-              style={{ opacity: config.director?.mediaOpacity || 1 }}
-            />
-          </div>
+              preload="metadata"
+              style={{ opacity: director?.mediaOpacity || 1 }}
+              aria-label="Video content"
+            >
+              <track kind="captions" />
+              Your browser does not support the video tag.
+            </video>
+            <figcaption className="sr-only">
+              Video player with standard controls
+            </figcaption>
+          </figure>
         );
 
       case "quote":
-        const quoteText = config.content?.quote || "";
+        if (!hasQuoteContent(content)) return null;
+        const quoteText = content.quote;
         const isQuotePlaceholder = isPlaceholderId(quoteText);
 
         if (isEditMode && isQuotePlaceholder) {
@@ -299,40 +271,167 @@ function SceneItem({
         }
 
         return (
-          <div className="max-w-3xl mx-auto text-center space-y-4">
-            <blockquote className="text-2xl md:text-4xl font-serif italic">
-              "{quoteText}"
+          <figure 
+            className="max-w-3xl mx-auto text-center space-y-4"
+            role="figure"
+            aria-label={content.author ? `Quote by ${content.author}` : "Quote"}
+          >
+            <blockquote 
+              className="text-2xl md:text-4xl font-serif italic"
+              cite={content.author}
+            >
+              <p>"{quoteText}"</p>
             </blockquote>
-            {config.content?.author && (
-              <cite className="text-lg md:text-xl opacity-80 not-italic">
-                — {config.content.author}
-              </cite>
+            {content.author && (
+              <figcaption className="text-lg md:text-xl opacity-80">
+                <cite className="not-italic">— {content.author}</cite>
+              </figcaption>
             )}
+          </figure>
+        );
+
+      case "split":
+        if (!hasSplitContent(content)) return null;
+        return (
+          <div 
+            className="grid md:grid-cols-2 gap-8 max-w-7xl mx-auto items-center"
+            role="region"
+            aria-label="Split content section"
+          >
+            <div className="space-y-4" aria-label="Left content">
+              {renderSplitContent(content.leftContent, `${index}-left`)}
+            </div>
+            <div className="space-y-4" aria-label="Right content">
+              {renderSplitContent(content.rightContent, `${index}-right`)}
+            </div>
+          </div>
+        );
+
+      case "gallery":
+        if (!hasGalleryContent(content)) return null;
+        return (
+          <div 
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-7xl mx-auto"
+            role="region"
+            aria-label="Image gallery"
+          >
+            {content.images.map((img, idx) => (
+              <figure key={idx} className="relative aspect-square overflow-hidden rounded-lg">
+                <ProgressiveImage
+                  src={resolveAsset(img.url)}
+                  alt={img.alt || `Gallery image ${idx + 1}`}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  aspectRatio="1/1"
+                />
+                {img.caption && (
+                  <figcaption className="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-2 text-sm">
+                    {img.caption}
+                  </figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        );
+
+      case "fullscreen":
+        if (!hasImageContent(content)) return null;
+        return (
+          <div 
+            className="fixed inset-0 flex items-center justify-center"
+            role="region"
+            aria-label="Fullscreen media"
+          >
+            <ProgressiveImage
+              src={resolveAsset(content.url)}
+              alt={content.alt || "Fullscreen image"}
+              className="w-full h-full object-cover"
+              objectFit="cover"
+            />
           </div>
         );
 
       default:
+        if (process.env.NODE_ENV === 'development') {
+          return (
+            <div 
+              className="text-center text-muted-foreground p-8 border-2 border-dashed border-red-500 rounded-lg"
+              role="alert"
+            >
+              <p className="font-bold">Unsupported scene type: {type}</p>
+              <p className="text-sm mt-2">This scene type is not yet implemented.</p>
+            </div>
+          );
+        }
+        return null;
+    }
+  };
+
+  // Helper to render split content
+  const renderSplitContent = (splitContent: { type: string; data: any }, key: string) => {
+    switch (splitContent.type) {
+      case "text":
         return (
-          <div className="text-center text-muted-foreground">
-            Unsupported scene type: {config.type}
+          <div className="prose max-w-none">
+            {splitContent.data.heading && <h3>{splitContent.data.heading}</h3>}
+            {splitContent.data.body && <p>{splitContent.data.body}</p>}
           </div>
         );
+      case "image":
+        return (
+          <ProgressiveImage
+            src={resolveAsset(splitContent.data.url)}
+            alt={splitContent.data.alt || "Split content image"}
+            className="w-full h-auto rounded-lg"
+          />
+        );
+      case "video":
+        return (
+          <video
+            src={resolveAsset(splitContent.data.url)}
+            controls
+            playsInline
+            className="w-full h-auto rounded-lg"
+            aria-label="Split content video"
+          >
+            Your browser does not support the video tag.
+          </video>
+        );
+      default:
+        return <p>Unsupported split content type</p>;
     }
   };
 
 
-  useEffect(() => {
-    if (!sceneRef.current || !contentRef.current) return;
+  // Memoize animation configuration to prevent recalculation
+  const animationConfig = useMemo(() => {
+    if (prefersReducedMotion()) {
+      return {
+        entryDuration: 0,
+        exitDuration: 0,
+        scrollScrub: false,
+        enableAnimations: false
+      };
+    }
 
-    const director = scene.director as DirectorConfig;
-
-    // Map scrollSpeed to GSAP scrub values
     const scrollSpeedMap = {
-      'slow': 2,      // Slower, more dramatic scroll animations
-      'normal': 1,    // Standard scroll speed
-      'fast': 0.5     // Quick, snappy scroll animations
+      'slow': 2,
+      'normal': 1,
+      'fast': 0.5
     };
-    const scrollScrub = scrollSpeedMap[director.scrollSpeed || 'normal'];
+
+    return {
+      entryDuration: scene.director.entryDuration,
+      exitDuration: scene.director.exitDuration,
+      scrollScrub: scrollSpeedMap[scene.director.scrollSpeed || 'normal'],
+      enableAnimations: true
+    };
+  }, [scene.director]);
+
+  useEffect(() => {
+    if (!sceneRef.current || !contentRef.current || !animationConfig.enableAnimations) return;
+
+    const director = scene.director;
+    const scrollScrub = animationConfig.scrollScrub;
 
     const sceneEl = sceneRef.current;
     const contentEl = contentRef.current;
@@ -538,7 +637,7 @@ function SceneItem({
     .join(" ");
 
   return (
-    <div
+    <section
       ref={sceneRef}
       className={sceneClasses}
       style={{
@@ -546,6 +645,9 @@ function SceneItem({
         color: director.textColor,
         zIndex: director.layerDepth || 5,
       }}
+      aria-label={`Scene ${index + 1}: ${type}`}
+      tabIndex={0}
+      role="region"
     >
       <div
         ref={contentRef}
@@ -557,9 +659,6 @@ function SceneItem({
       >
         {renderSceneContent(scene, index)}
       </div>
-    </div>
+    </section>
   );
 }
-
-// Helper function to check if animation should run
-const shouldAnimate = () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
