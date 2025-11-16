@@ -10,10 +10,13 @@ router.post('/api/analytics/web-vitals', async (req, res) => {
   try {
     const { name, value, rating, delta, id, navigationType } = req.body;
 
+    // Handle null navigationType in JavaScript before SQL execution
+    const navType = navigationType || 'navigate';
+
     // Store in database
     await db.execute(sql`
       INSERT INTO web_vitals_metrics (name, value, rating, delta, metric_id, navigation_type, created_at)
-      VALUES (${name}, ${value}, ${rating}, ${delta}, ${id}, ${navigationType || 'navigate'}, NOW())
+      VALUES (${name}, ${value}, ${rating}, ${delta}, ${id}, ${navType}, NOW())
       ON CONFLICT (metric_id) DO NOTHING
     `);
 
