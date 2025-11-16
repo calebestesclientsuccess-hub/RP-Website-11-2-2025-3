@@ -264,9 +264,9 @@ export async function generatePortfolioWithAI(
   catalog: ContentCatalog
 ): Promise<PortfolioGenerateResponse> {
   const aiClient = getAIClient();
-  
+
   console.log('[Portfolio Director] Starting 6-stage refinement pipeline...');
-  
+
   // STAGE 1: Initial Generation (Form-Filling)
   const prompt = buildPortfolioPrompt(catalog);
   const stage1Response = await aiClient.models.generateContent({
@@ -335,9 +335,44 @@ export async function generatePortfolioWithAI(
   }
 
   let result = JSON.parse(responseText) as PortfolioGenerateResponse;
-  
+
   console.log('[Portfolio Director] ✅ Stage 1 complete: Initial generation');
-  
+
+  // CRITICAL: Validate ALL scenes have required fields before proceeding
+  const validAssetIds = buildAssetWhitelist(catalog);
+  let validationErrors: string[] = [];
+
+  result.scenes.forEach((scene, idx) => {
+    const d = scene.director;
+
+    // Check required fields
+    if (typeof d.entryDuration !== 'number') validationErrors.push(`Scene ${idx}: Missing entryDuration`);
+    if (typeof d.exitDuration !== 'number') validationErrors.push(`Scene ${idx}: Missing exitDuration`);
+    if (typeof d.entryDelay !== 'number') validationErrors.push(`Scene ${idx}: Missing entryDelay`);
+    if (!d.backgroundColor) validationErrors.push(`Scene ${idx}: Missing backgroundColor`);
+    if (!d.textColor) validationErrors.push(`Scene ${idx}: Missing textColor`);
+    if (typeof d.parallaxIntensity !== 'number') validationErrors.push(`Scene ${idx}: Missing parallaxIntensity`);
+    if (!d.entryEffect) validationErrors.push(`Scene ${idx}: Missing entryEffect`);
+    if (!d.exitEffect) validationErrors.push(`Scene ${idx}: Missing exitEffect`);
+    if (!d.headingSize) validationErrors.push(`Scene ${idx}: Missing headingSize`);
+    if (!d.bodySize) validationErrors.push(`Scene ${idx}: Missing bodySize`);
+    if (!d.alignment) validationErrors.push(`Scene ${idx}: Missing alignment`);
+
+    // Check asset IDs exist
+    scene.assetIds.forEach(assetId => {
+      if (!validAssetIds.includes(assetId)) {
+        validationErrors.push(`Scene ${idx}: Invalid asset ID "${assetId}"`);
+      }
+    });
+  });
+
+  if (validationErrors.length > 0) {
+    console.error('[Portfolio Director] ❌ Stage 1 validation failed:', validationErrors);
+    throw new Error(`Gemini output validation failed:\n${validationErrors.join('\n')}`);
+  }
+
+  console.log('[Portfolio Director] ✅ Stage 1 validation passed');
+
   // STAGE 2: Self-Audit for Inconsistencies
   const auditPrompt = `You previously generated this scene sequence JSON:
 
@@ -384,10 +419,10 @@ Return a JSON array of issues found:
       }
     }
   });
-  
+
   const auditResult = JSON.parse(auditResponse.text || '{"issues":[]}');
   console.log(`[Portfolio Director] ✅ Stage 2 complete: Found ${auditResult.issues.length} issues`);
-  
+
   // STAGE 3: Generate 10 Improvements
   const improvementsPrompt = `You previously generated this scene sequence:
 
@@ -440,21 +475,21 @@ Return:
       }
     }
   });
-  
+
   const improvementsResult = JSON.parse(improvementsResponse.text || '{"improvements":[]}');
   console.log(`[Portfolio Director] ✅ Stage 3 complete: Generated ${improvementsResult.improvements.length} improvements`);
-  
+
   // STAGE 4: Auto-Apply Non-Conflicting Improvements
   const appliedImprovements: string[] = [];
   for (const improvement of improvementsResult.improvements) {
     const scene = result.scenes[improvement.sceneIndex];
     if (!scene) continue;
-    
+
     // Check for conflicts with audit issues
     const hasConflict = auditResult.issues.some(
       (issue: any) => issue.sceneIndex === improvement.sceneIndex && issue.field === improvement.field
     );
-    
+
     if (!hasConflict) {
       // Apply improvement
       const fieldPath = improvement.field.split('.');
@@ -463,7 +498,7 @@ Return:
         target = target[fieldPath[i]];
       }
       const finalField = fieldPath[fieldPath.length - 1];
-      
+
       // Type conversion
       let newValue: any = improvement.newValue;
       if (typeof target[finalField] === 'number') {
@@ -471,14 +506,14 @@ Return:
       } else if (typeof target[finalField] === 'boolean') {
         newValue = improvement.newValue === 'true';
       }
-      
+
       target[finalField] = newValue;
       appliedImprovements.push(`Scene ${improvement.sceneIndex}: ${improvement.field} = ${newValue} (${improvement.reason})`);
     }
   }
-  
+
   console.log(`[Portfolio Director] ✅ Stage 4 complete: Applied ${appliedImprovements.length} improvements`);
-  
+
   // STAGE 5: Final Regeneration for Consistency
   const finalPrompt = `Based on the following improvements and fixes, regenerate the complete scene sequence with all enhancements applied:
 
@@ -547,21 +582,21 @@ Return the complete scenes array with full director configs.`;
       }
     }
   });
-  
+
   result = JSON.parse(finalResponse.text || '{"scenes":[]}');
   console.log(`[Portfolio Director] ✅ Stage 5 complete: Final regeneration with ${result.scenes.length} scenes`);
-  
+
   // STAGE 6: Final Validation Against Requirements
   console.log('[Portfolio Director] ✅ Stage 6: Final validation');
 
   // Validate that all referenced asset IDs exist and log potential issues
-  const validAssetIds = buildAssetWhitelist(catalog);
+  const finalValidAssetIds = buildAssetWhitelist(catalog); // Re-fetch for latest context if catalog changed
   const warnings: string[] = [];
 
   for (const scene of result.scenes) {
     for (const assetId of scene.assetIds) {
-      if (!validAssetIds.includes(assetId)) {
-        const errorMsg = `AI referenced non-existent asset ID: ${assetId}. Valid IDs: ${validAssetIds.join(', ')}`;
+      if (!finalValidAssetIds.includes(assetId)) {
+        const errorMsg = `AI referenced non-existent asset ID: ${assetId}. Valid IDs: ${finalValidAssetIds.join(', ')}`;
         console.error(`❌ [Portfolio Director] ${errorMsg}`);
         // Instead of throwing, we'll just log and continue, as Gemini might hallucinate an ID
         // but still produce a valid structure. The frontend will handle missing assets gracefully.
@@ -604,7 +639,7 @@ Return the complete scenes array with full director configs.`;
     if (director.backgroundColor && director.textColor) {
       const bgLower = director.backgroundColor.toLowerCase();
       const textLower = director.textColor.toLowerCase();
-      
+
       // Check if colors are too similar (simple heuristic)
       if (bgLower === textLower) {
         warnings.push(`Scene with assetIds [${scene.assetIds.join(', ')}]: ⚠️ Text and background colors are identical - text will be invisible!`);
@@ -729,11 +764,11 @@ export function convertToSceneConfigs(
         // Expects 1 video asset
         const videoId = aiScene.assetIds.find((id) => videoMap.has(id));
         const video = videoId ? videoMap.get(videoId) : null;
-        
+
         if (!video) {
           console.error(`❌ [Portfolio Director] Video scene failed - no matching video found for assetIds:`, aiScene.assetIds);
         }
-        
+
         sceneConfig.content = video ? {
           url: video.url,
           caption: video.caption,
@@ -748,11 +783,11 @@ export function convertToSceneConfigs(
         // Expects 1 quote asset
         const quoteId = aiScene.assetIds.find((id) => quoteMap.has(id));
         const quote = quoteId ? quoteMap.get(quoteId) : null;
-        
+
         if (!quote) {
           console.error(`❌ [Portfolio Director] Quote scene failed - no matching quote found for assetIds:`, aiScene.assetIds);
         }
-        
+
         sceneConfig.content = quote ? {
           quote: quote.quote,
           author: quote.author,
@@ -795,11 +830,11 @@ export function convertToSceneConfigs(
       case "gallery": {
         // Expects multiple images
         const images = aiScene.assetIds.map((id) => imageMap.get(id)).filter(Boolean);
-        
+
         if (images.length === 0) {
           console.error(`❌ [Portfolio Director] Gallery scene has no valid images for assetIds:`, aiScene.assetIds);
         }
-        
+
         sceneConfig.content = {
           heading: "",
           images: images.length > 0 ? images.map((img) => ({

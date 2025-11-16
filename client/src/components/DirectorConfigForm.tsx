@@ -167,6 +167,88 @@ export function DirectorConfigForm({ form, sceneType }: DirectorConfigFormProps)
               </FormItem>
             )}
           />
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="director.textShadow"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between p-3 bg-card rounded-md">
+                  <FormLabel className="!mt-0">Text Shadow</FormLabel>
+                  <FormControl>
+                    <Switch
+                      checked={field.value ?? false}
+                      onCheckedChange={field.onChange}
+                      data-testid="switch-text-shadow"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="director.textGlow"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between p-3 bg-card rounded-md">
+                  <FormLabel className="!mt-0">Text Glow</FormLabel>
+                  <FormControl>
+                    <Switch
+                      checked={field.value ?? false}
+                      onCheckedChange={field.onChange}
+                      data-testid="switch-text-glow"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="director.paddingTop"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Top Padding</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value || "md"}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-padding-top">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {["none", "sm", "md", "lg", "xl", "2xl"].map((size) => (
+                        <SelectItem key={size} value={size}>{size.toUpperCase()}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="director.paddingBottom"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bottom Padding</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value || "md"}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-padding-bottom">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {["none", "sm", "md", "lg", "xl", "2xl"].map((size) => (
+                        <SelectItem key={size} value={size}>{size.toUpperCase()}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+          </div>
         </CollapsibleContent>
       </Collapsible>
 

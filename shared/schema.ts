@@ -790,6 +790,7 @@ const directorConfigSchema = z.object({
   backgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   textColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   gradientColors: z.array(z.string().regex(/^#[0-9A-Fa-f]{6}$/)).optional(),
+  gradientDirection: z.enum(["to-top", "to-bottom", "to-left", "to-right", "to-top-right", "to-bottom-right", "to-top-left", "to-bottom-left"]).optional(),
   headingSize: z.enum(["4xl", "5xl", "6xl", "7xl", "8xl"]).optional(),
   bodySize: z.enum(["base", "lg", "xl", "2xl"]).optional(),
   fontWeight: z.enum(["normal", "medium", "semibold", "bold"]).optional(),
@@ -797,12 +798,20 @@ const directorConfigSchema = z.object({
   scrollSpeed: z.enum(["slow", "normal", "fast"]).optional(),
   parallaxIntensity: z.number().min(0).max(1).optional(),
   animationDuration: z.number().min(0.5).max(10.0).optional(),
+  animationEasing: z.enum(["linear", "ease", "ease-in", "ease-out", "ease-in-out", "bounce", "elastic"]).optional(),
   blurOnScroll: z.boolean().optional(),
   fadeOnScroll: z.boolean().optional(),
   scaleOnScroll: z.boolean().optional(),
   mediaPosition: z.enum(["center", "top", "bottom", "left", "right"]).optional(),
   mediaScale: z.enum(["cover", "contain", "fill"]).optional(),
   mediaOpacity: z.number().min(0).max(1).optional(),
+  textShadow: z.boolean().optional(),
+  textGlow: z.boolean().optional(),
+  paddingTop: z.enum(["none", "sm", "md", "lg", "xl", "2xl"]).optional(),
+  paddingBottom: z.enum(["none", "sm", "md", "lg", "xl", "2xl"]).optional(),
+  overlayOpacity: z.number().min(0).max(1).optional(),
+  overlayColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  zIndex: z.number().min(0).max(50).optional(),
 }).optional();
 
 // Update scene schemas to include optional director config
