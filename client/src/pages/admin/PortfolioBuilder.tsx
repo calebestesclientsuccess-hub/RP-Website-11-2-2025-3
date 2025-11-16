@@ -38,6 +38,8 @@ import { VersionTimeline } from "@/components/admin/VersionTimeline";
 import { LivePreviewPanel } from "@/components/admin/LivePreviewPanel";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AssetMapperModal } from "@/components/admin/AssetMapperModal";
+import type { PlaceholderId } from "@shared/placeholder-config";
 
 interface SceneBuilder {
   id: string;
@@ -129,6 +131,11 @@ export default function PortfolioBuilder() {
 
   // Live preview state
   const [livePreviewEnabled, setLivePreviewEnabled] = useState(false);
+
+  // Asset mapping state
+  const [isAssetMapperOpen, setIsAssetMapperOpen] = useState(false);
+  const [selectedPlaceholder, setSelectedPlaceholder] = useState<PlaceholderId | null>(null);
+  const [assetMap, setAssetMap] = useState<Record<string, string>>({});
 
   // --- Form State for Scene Editor ---
   const form = useForm({
@@ -385,6 +392,20 @@ export default function PortfolioBuilder() {
     const newScenes = [...scenes];
     [newScenes[index], newScenes[newIndex]] = [newScenes[newIndex], newScenes[index]];
     setScenes(newScenes);
+  };
+
+  // Asset mapper handlers
+  const handleOpenAssetMapper = (placeholderId: PlaceholderId) => {
+    setSelectedPlaceholder(placeholderId);
+    setIsAssetMapperOpen(true);
+  };
+
+  const handleSaveAssetMapping = (placeholderId: PlaceholderId, assetId: string) => {
+    setAssetMap(prev => ({
+      ...prev,
+      [placeholderId]: assetId
+    }));
+    toast({ title: "Asset mapped", description: `${placeholderId} → ${assetId}` });
   };
 
   // --- AI Generation and Refinement Handlers ---
@@ -1704,6 +1725,25 @@ export default function PortfolioBuilder() {
           </div>
         </div>
       </SidebarProvider>
+
+      {/* Asset Mapper Modal */}
+      {selectedPlaceholder && (
+        <AssetMapperModal
+          isOpen={isAssetMapperOpen}
+          onClose={() => {
+            setIsAssetMapperOpen(false);
+            setSelectedPlaceholder(null);
+          }}
+          placeholderId={selectedPlaceholder}
+          currentMapping={assetMap[selectedPlaceholder]}
+          availableAssets={{
+            images: [], // TODO: Load from content library
+            videos: [], // TODO: Load from content library
+            quotes: [], // TODO: Load from content library
+          }}
+          onSave={handleSaveAssetMapping}
+        />
+      )}
 
       {/* Scene Editor Dialog */}
       <Dialog open={isSceneDialogOpen} onOpenChange={setIsSceneDialogOpen}>
