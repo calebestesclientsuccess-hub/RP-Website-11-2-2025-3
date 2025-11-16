@@ -10,11 +10,11 @@ router.post('/api/analytics/web-vitals', async (req, res) => {
   try {
     const { name, value, rating, delta, id, navigationType } = req.body;
 
-    // Store in database (you may want to create a dedicated table)
+    // Store in database
     await db.execute(sql`
       INSERT INTO web_vitals_metrics (name, value, rating, delta, metric_id, navigation_type, created_at)
-      VALUES (${name}, ${value}, ${rating}, ${delta}, ${id}, ${navigationType}, NOW())
-      ON CONFLICT DO NOTHING
+      VALUES (${name}, ${value}, ${rating}, ${delta}, ${id}, ${navigationType}, CURRENT_TIMESTAMP)
+      ON CONFLICT (metric_id) DO NOTHING
     `);
 
     res.status(204).send();

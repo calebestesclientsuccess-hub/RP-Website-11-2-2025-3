@@ -110,5 +110,15 @@ jobs:
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
+      - name: Build for bundle analysis
+        run: npm run build
+
       - name: Check bundle size budgets
         run: npx tsx scripts/check-bundle-size.ts
+
+      - name: Upload bundle stats
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: bundle-stats
+          path: client/dist/stats.json

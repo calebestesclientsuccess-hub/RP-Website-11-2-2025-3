@@ -17,9 +17,9 @@ const budgets: BundleBudget[] = [
   { path: 'client/dist/assets/index-*.css', maxSize: 50 },
 ];
 
-function getFileSize(pattern: string): number {
-  const glob = await import('glob');
-  const files = glob.sync(join(__dirname, '..', pattern));
+async function getFileSize(pattern: string): Promise<number> {
+  const { glob } = await import('glob');
+  const files = await glob(join(__dirname, '..', pattern));
   
   if (files.length === 0) {
     console.warn(`⚠️  No files found matching: ${pattern}`);
@@ -38,7 +38,7 @@ async function checkBudgets() {
   console.log('📊 Checking bundle size budgets...\n');
 
   for (const budget of budgets) {
-    const sizeBytes = getFileSize(budget.path);
+    const sizeBytes = await getFileSize(budget.path);
     const sizeKB = Math.round(sizeBytes / 1024);
     const withinBudget = sizeKB <= budget.maxSize;
 

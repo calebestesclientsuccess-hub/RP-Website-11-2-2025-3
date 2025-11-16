@@ -6,7 +6,9 @@
         "http://localhost:5000/",
         "http://localhost:5000/blog",
         "http://localhost:5000/gtm-engine",
-        "http://localhost:5000/pricing"
+        "http://localhost:5000/pricing",
+        "http://localhost:5000/assessment",
+        "http://localhost:5000/roi-calculator"
       ],
       "numberOfRuns": 3,
       "settings": {
@@ -16,7 +18,9 @@
           "throughputKbps": 10240,
           "cpuSlowdownMultiplier": 1
         }
-      }
+      },
+      "startServerCommand": "npm start",
+      "startServerReadyPattern": "serving on port"
     },
     "assert": {
       "preset": "lighthouse:recommended",

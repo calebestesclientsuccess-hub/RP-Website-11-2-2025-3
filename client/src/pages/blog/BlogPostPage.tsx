@@ -9,6 +9,7 @@ import { useRoute } from "wouter";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import type { BlogPost } from "@shared/schema";
+import { RelatedContent } from "@/components/RelatedContent"; // Import RelatedContent component
 
 export default function BlogPostPage() {
   const [, params] = useRoute("/blog/:slug");
@@ -80,10 +81,12 @@ export default function BlogPostPage() {
 
         <WidgetZone zone="zone-4" />
 
-        <InternalLinks 
+        <InternalLinks
           links={getRelatedLinks('blog')}
           title="Continue Reading"
         />
+
+        <RelatedContent postId={post.id} /> {/* Add RelatedContent section */}
       </article>
     </>
   );

@@ -67,15 +67,27 @@ export function InternalLinkSuggestions({ postId, onInsertLink }: InternalLinkSu
               <p className="text-xs text-muted-foreground line-clamp-2">
                 Anchor: "{suggestion.anchorText}"
               </p>
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full text-xs"
-                onClick={() => onInsertLink(suggestion)}
-              >
-                <LinkIcon className="h-3 w-3 mr-1" />
-                Insert Link
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 text-xs"
+                  onClick={() => onInsertLink(suggestion)}
+                >
+                  <LinkIcon className="h-3 w-3 mr-1" />
+                  Insert Link
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-xs"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`[${suggestion.anchorText}](/blog/${suggestion.targetSlug})`);
+                  }}
+                >
+                  Copy
+                </Button>
+              </div>
             </div>
           ))
         ) : (
