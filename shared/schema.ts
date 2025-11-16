@@ -945,11 +945,15 @@ export type PromptTemplate = typeof promptTemplates.$inferSelect;
 export type InsertPromptTemplate = z.infer<typeof insertPromptTemplateSchema>;
 export type UpdatePromptTemplate = z.infer<typeof updatePromptTemplateSchema>;
 
-// Portfolio Builder Content Catalog Schemas
+// Portfolio Builder Content Catalog Schemas - Enhanced for Cinematic Mode
 export const textAssetSchema = z.object({
   id: z.string(),
   type: z.enum(["headline", "paragraph", "subheading"]),
   content: z.string().min(1),
+  metadata: z.object({
+    sectionType: z.enum(["hero", "problem", "solution", "proof", "closing"]).optional(),
+    emotionalTone: z.enum(["dramatic", "urgent", "authoritative", "inspirational", "contemplative"]).optional(),
+  }).optional(),
 });
 
 export const imageAssetSchema = z.object({
@@ -957,12 +961,20 @@ export const imageAssetSchema = z.object({
   url: z.string().url(),
   alt: z.string().min(1),
   caption: z.string().optional(),
+  metadata: z.object({
+    visualStyle: z.enum(["hero-shot", "detail", "proof", "transition", "atmosphere"]).optional(),
+    dominantColor: z.string().optional(), // Hex color for AI color matching
+  }).optional(),
 });
 
 export const videoAssetSchema = z.object({
   id: z.string(),
   url: z.string().url(),
   caption: z.string().optional(),
+  metadata: z.object({
+    duration: z.number().optional(), // seconds
+    energyLevel: z.enum(["calm", "moderate", "energetic", "explosive"]).optional(),
+  }).optional(),
 });
 
 export const quoteAssetSchema = z.object({
@@ -970,14 +982,36 @@ export const quoteAssetSchema = z.object({
   quote: z.string().min(1),
   author: z.string().min(1),
   role: z.string().optional(),
+  metadata: z.object({
+    emotionalWeight: z.enum(["light", "moderate", "powerful", "transformative"]).optional(),
+  }).optional(),
+});
+
+// Section-level guidance for AI orchestration
+export const contentSectionSchema = z.object({
+  sectionId: z.string(),
+  sectionType: z.enum(["hero", "problem", "solution", "proof", "testimonial", "closing"]),
+  sectionPrompt: z.string().min(1), // Specific guidance for this section
+  assetIds: z.array(z.string()), // Which assets belong to this section
+  userStyling: z.object({
+    preferredFontFamily: z.string().optional(),
+    preferredAlignment: z.enum(["left", "center", "right"]).optional(),
+    colorScheme: z.object({
+      background: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+      text: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+      accent: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    }).optional(),
+    transitionStyle: z.enum(["smooth", "sharp", "cinematic", "energetic"]).optional(),
+  }).optional(),
 });
 
 export const contentCatalogSchema = z.object({
+  globalPrompt: z.string().min(1), // Overall narrative vision
+  sections: z.array(contentSectionSchema).min(1), // Section-by-section structure
   texts: z.array(textAssetSchema),
   images: z.array(imageAssetSchema),
   videos: z.array(videoAssetSchema),
   quotes: z.array(quoteAssetSchema),
-  directorNotes: z.string().min(1),
 }).refine(
   (data) => data.texts.length + data.images.length + data.videos.length + data.quotes.length > 0,
   { message: "Catalog must contain at least one asset (text, image, video, or quote)" }

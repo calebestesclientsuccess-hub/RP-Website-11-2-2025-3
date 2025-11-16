@@ -71,7 +71,16 @@ export default function PortfolioBuilder() {
 
   // Portfolio-level AI orchestration prompt
   const [portfolioAiPrompt, setPortfolioAiPrompt] = useState("");
-  const [useAiDirector, setUseAiDirector] = useState(false); // NEW: Toggle for AI orchestration mode
+  const [useAiDirector, setUseAiDirector] = useState(false); // Toggle for AI orchestration mode
+  const [mode, setMode] = useState<"hybrid" | "cinematic">("hybrid"); // NEW: Mode selector
+
+  // Cinematic mode: Section-based structure
+  const [sections, setSections] = useState<Array<{
+    id: string;
+    sectionType: "hero" | "problem" | "solution" | "proof" | "testimonial" | "closing";
+    sectionPrompt: string;
+    assetIds: string[];
+  }>>([]);
 
   // State for AI-generated scenes, including confidence score and factors
   const [generatedScenes, setGeneratedScenes] = useState<{

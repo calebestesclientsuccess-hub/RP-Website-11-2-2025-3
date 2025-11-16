@@ -1914,10 +1914,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Portfolio Generation endpoint (orchestrates entire portfolio from content catalog)
-  app.post("/api/portfolio/generate-with-ai", requireAuth, async (req, res) => {
+  // CINEMATIC MODE: Full AI Director (4-stage pipeline)
+  app.post("/api/portfolio/generate-cinematic", requireAuth, async (req, res) => {
     try {
-      // Validate request
+      const result = portfolioGenerateRequestSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+
+      const { catalog, projectId, newProjectTitle, newProjectSlug, newProjectClient } = result.data;
+
+      // Validate catalog has sections
+      if (!catalog.sections || catalog.sections.length === 0) {
+        return res.status(400).json({
+          error: "Cinematic mode requires section-level structure in catalog",
+        });
+      }
+
+      console.log(`[Cinematic Mode] Generating from ${catalog.sections.length} sections`);
+
+      // Lazy-load cinematic director
+      const { generateCinematicPortfolio } = await import("./utils/cinematic-director");
+
+      // Generate using 4-stage pipeline
+      const cinematicResult = await generateCinematicPortfolio(catalog);
+
+      // Convert to scene configs (same format as existing system)
+      const { convertToSceneConfigs } = await import("./utils/portfolio-director");
+      const sceneConfigs = convertToSceneConfigs(cinematicResult.scenes, catalog);
+
+      // Save to database
+      const isNewProject = !projectId || projectId === null;
+      let finalProjectId: string;
+
+      if (isNewProject) {
+        if (!newProjectTitle || !newProjectSlug) {
+          return res.status(400).json({ error: "New project requires title and slug" });
+        }
+
+        const newProject = await storage.createProject({
+          slug: newProjectSlug,
+          title: newProjectTitle,
+          clientName: newProjectClient || null,
+          thumbnailUrl: catalog.images[0]?.url || null,
+          categories: [],
+        }, req.tenantId);
+
+        finalProjectId = newProject.id;
+      } else {
+        finalProjectId = projectId;
+      }
+
+      // Create scenes
+      for (let i = 0; i < sceneConfigs.length; i++) {
+        await storage.createProjectScene({
+          projectId: finalProjectId,
+          sceneConfig: sceneConfigs[i],
+          order: i,
+        });
+      }
+
+      return res.json({
+        success: true,
+        projectId: finalProjectId,
+        scenes: cinematicResult.scenes,
+        storyboard: cinematicResult.storyboard,
+        confidenceScore: cinematicResult.confidenceScore,
+        warnings: cinematicResult.warnings,
+        message: `Cinematic generation complete (${cinematicResult.scenes.length} scenes)`,
+      });
+    } catch (error) {
+      console.error("Cinematic generation error:", error);
+      return res.status(500).json({
+        error: "Failed to generate cinematic portfolio",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // HYBRID MODE: AI Portfolio Generation (original content catalog orchestration)
+  app.post("/api/portfolio/generate-ai", requireAuth, async (req, res) => {
+    try {
       const result = portfolioGenerateRequestSchema.safeParse(req.body);
       if (!result.success) {
         const validationError = fromZodError(result.error);
