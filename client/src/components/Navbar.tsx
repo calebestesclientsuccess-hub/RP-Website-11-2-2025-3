@@ -178,33 +178,41 @@ export function Navbar() {
               variant="ghost"
               size="icon"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden hover-elevate"
+              className="md:hidden hover-elevate touch-target"
               data-testid="button-mobile-menu"
               aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-navigation"
             >
               {mobileMenuOpen ? (
-                <X className="h-5 w-5" aria-hidden="true" />
+                <X className="h-6 w-6" aria-hidden="true" />
               ) : (
-                <Menu className="h-5 w-5" aria-hidden="true" />
+                <Menu className="h-6 w-6" aria-hidden="true" />
               )}
             </Button>
           </div>
         </div>
 
         {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div
-            id="mobile-navigation"
-            className="lg:hidden absolute top-16 left-0 right-0 bg-background border-b border-border shadow-lg"
-            role="navigation"
-            aria-label="Mobile navigation menu"
-          >
-            <div className="px-4 py-4 space-y-3">
+        <div
+          id="mobile-navigation"
+          className={`lg:hidden absolute top-16 left-0 right-0 bg-background border-b border-border shadow-lg transition-all duration-300 ease-in-out ${
+            mobileMenuOpen 
+              ? 'opacity-100 translate-y-0 pointer-events-auto' 
+              : 'opacity-0 -translate-y-4 pointer-events-none'
+          }`}
+          role="navigation"
+          aria-label="Mobile navigation menu"
+          aria-hidden={!mobileMenuOpen}
+        >
+          <div className="px-4 py-4 space-y-2">
             <Link
               href="/problem"
-              className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-all touch-target-button ${
+                isActivePath("/problem")
+                  ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
+                  : "hover-elevate hover:bg-accent"
+              }`}
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-link-problem"
             >
@@ -212,7 +220,11 @@ export function Navbar() {
             </Link>
             <Link
               href="/gtm-engine"
-              className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-all touch-target-button ${
+                isActivePath("/gtm-engine")
+                  ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
+                  : "hover-elevate hover:bg-accent"
+              }`}
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-link-gtm-engine"
             >
@@ -220,7 +232,11 @@ export function Navbar() {
             </Link>
             <Link
               href="/results"
-              className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-all touch-target-button ${
+                isActivePath("/results")
+                  ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
+                  : "hover-elevate hover:bg-accent"
+              }`}
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-link-results"
             >
@@ -228,7 +244,11 @@ export function Navbar() {
             </Link>
             <Link
               href="/why-us"
-              className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-all touch-target-button ${
+                isActivePath("/why-us")
+                  ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
+                  : "hover-elevate hover:bg-accent"
+              }`}
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-link-why-us"
             >
@@ -236,7 +256,11 @@ export function Navbar() {
             </Link>
             <Link
               href="/pricing"
-              className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-all touch-target-button ${
+                isActivePath("/pricing")
+                  ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
+                  : "hover-elevate hover:bg-accent"
+              }`}
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-link-pricing"
             >
@@ -244,7 +268,11 @@ export function Navbar() {
             </Link>
             <Link
               href="/blog"
-              className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-all touch-target-button ${
+                isActivePath("/blog")
+                  ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
+                  : "hover-elevate hover:bg-accent"
+              }`}
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-link-blog"
             >
@@ -252,25 +280,28 @@ export function Navbar() {
             </Link>
             <Link
               href="/branding"
-              className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
+              className={`block px-4 py-3 rounded-md text-base font-medium transition-all touch-target-button ${
+                isActivePath("/branding")
+                  ? "bg-primary/10 text-primary border-l-4 border-primary pl-3"
+                  : "hover-elevate hover:bg-accent"
+              }`}
               onClick={() => setMobileMenuOpen(false)}
               data-testid="mobile-link-branding"
             >
               Branding
             </Link>
 
-            <Link href="/audit" onClick={() => setMobileMenuOpen(false)}>
+            <Link href="/audit" onClick={() => setMobileMenuOpen(false)} className="block mt-4">
               <Button
                 size="default"
-                className="w-full mt-4"
+                className="w-full touch-target-button"
                 data-testid="button-mobile-schedule-audit"
               >
                 Schedule GTM Audit
               </Button>
             </Link>
           </div>
-          </div>
-        )}
+        </div>
       </div>
     </nav>
     </header>
