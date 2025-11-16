@@ -405,12 +405,8 @@ export default function BrandingProjectPage() {
               onEnterBack: () => {
                 // When scrolling UP back into this scene, restore to fully visible state
                 const restoreState = { ...getCleanState(), ...toState };
-                // Check if ANY blur effect was used (entry or exit)
-                const hasBlurEffect = director.entryEffect === 'blur-focus' || 
-                                     director.exitEffect === 'dissolve' || 
-                                     director.exitEffect === 'scale-blur';
-                // If no blur effects, ensure any residual filter is removed
-                if (!hasBlurEffect && 'filter' in restoreState) {
+                // Always clear blur filter on restore unless blur is part of the target state
+                if ('filter' in restoreState && !toState.filter) {
                   restoreState.filter = 'blur(0px)';
                 }
                 gsap.to(targetElement, {
@@ -422,12 +418,8 @@ export default function BrandingProjectPage() {
               onLeaveBack: () => {
                 // When scrolling UP past this scene, reverse to initial hidden state
                 const exitBackState = { ...getCleanState(), ...fromState };
-                // Check if ANY blur effect was used
-                const hasBlurEffect = director.entryEffect === 'blur-focus' || 
-                                     director.exitEffect === 'dissolve' || 
-                                     director.exitEffect === 'scale-blur';
-                // If no blur effects, ensure any residual filter is removed
-                if (!hasBlurEffect && 'filter' in exitBackState) {
+                // Always clear blur filter when leaving back unless blur is part of the from state
+                if ('filter' in exitBackState && !fromState.filter) {
                   exitBackState.filter = 'blur(0px)';
                 }
                 gsap.to(targetElement, {
@@ -729,7 +721,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               alt={content.alt || "Scene image"}
               className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
               style={{ opacity: director.mediaOpacity }}
-              data-media-opacity="true"
+              data-media-opacity={director.mediaOpacity}
               loading="lazy"
             />
           </div>
@@ -761,7 +753,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               controls
               className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
               style={{ opacity: director.mediaOpacity }}
-              data-media-opacity="true"
+              data-media-opacity={director.mediaOpacity}
             />
           </div>
           {content.caption && (
@@ -803,7 +795,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 controls
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                 style={{ opacity: director.mediaOpacity }}
-                data-media-opacity="true"
+                data-media-opacity={director.mediaOpacity}
               />
             ) : (
               <img
@@ -811,7 +803,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 alt={content.alt || "Scene media"}
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                 style={{ opacity: director.mediaOpacity }}
-                data-media-opacity="true"
+                data-media-opacity={director.mediaOpacity}
                 loading="lazy"
               />
             )}
@@ -839,7 +831,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                     alt={img.alt || `Gallery image ${idx + 1}`}
                     className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                     style={{ opacity: director.mediaOpacity }}
-                    data-media-opacity="true"
+                    data-media-opacity={director.mediaOpacity}
                     loading="lazy"
                   />
                 </div>
