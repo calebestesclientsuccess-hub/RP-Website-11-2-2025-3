@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { MobileInput } from "@/components/ui/mobile-input";
+import { ValidatedInput, validationRules } from "@/components/ui/validated-input";
 import { Progress } from "@/components/ui/progress";
 import { 
   ClipboardCheck, 
@@ -34,7 +36,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Link } from "wouter";
-import { SuccessAnimation } from "@/components/ui/success-animation";
 
 // Schema for lead capture form
 const leadSchema = z.object({
@@ -446,10 +447,7 @@ export default function AssessmentPage() {
 
   const handleLeadSubmit = (data: LeadFormData) => {
     console.log('Lead captured:', data);
-    // Show success animation briefly before showing results
-    setTimeout(() => {
-      setLeadCaptured(true);
-    }, 1500);
+    setLeadCaptured(true);
   };
 
   const results = showResults && leadCaptured ? calculateResults() : null;
@@ -628,10 +626,11 @@ export default function AssessmentPage() {
                               <FormControl>
                                 <div className="relative">
                                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                  <Input 
+                                  <MobileInput 
                                     placeholder="John Smith" 
-                                    className="pl-10 touch-target"
+                                    className="pl-10"
                                     autoComplete="name"
+                                    inputMode="text"
                                     {...field} 
                                     data-testid="input-name"
                                   />
@@ -671,14 +670,20 @@ export default function AssessmentPage() {
                             <FormLabel>Work Email *</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <Input 
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                                <ValidatedInput
+                                  id="email"
                                   type="email" 
                                   placeholder="john@acme.com" 
-                                  className="pl-10 touch-target"
-                                  autoComplete="email"
-                                  inputMode="email"
-                                  {...field}
+                                  className="pl-10"
+                                  label=""
+                                  rules={[
+                                    validationRules.required("Email is required"),
+                                    validationRules.email()
+                                  ]}
+                                  onChange={(value, isValid) => {
+                                    field.onChange(value);
+                                  }}
                                   data-testid="input-email"
                                 />
                               </div>
@@ -696,9 +701,10 @@ export default function AssessmentPage() {
                             <FormControl>
                               <div className="relative">
                                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <Input 
+                                <MobileInput 
                                   placeholder="(555) 123-4567" 
                                   className="pl-10"
+                                  inputMode="tel"
                                   {...field}
                                   data-testid="input-phone"
                                 />

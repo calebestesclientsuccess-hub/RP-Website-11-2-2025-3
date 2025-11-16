@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -27,12 +26,12 @@ export function ProgressiveImage({
   useEffect(() => {
     const img = new Image();
     img.src = src;
-    
+
     img.onload = () => {
       setImgSrc(src);
       setIsLoading(false);
     };
-    
+
     img.onerror = () => {
       setHasError(true);
       setIsLoading(false);

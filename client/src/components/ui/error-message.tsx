@@ -1,8 +1,9 @@
-
 import * as React from "react";
 import { AlertCircle, RefreshCw, ArrowLeft, HelpCircle } from "lucide-react";
 import { Button } from "./button";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "./alert";
+
 
 export interface ErrorMessageProps {
   title?: string;
@@ -26,7 +27,7 @@ export function ErrorMessage({
   suggestions,
 }: ErrorMessageProps) {
   const baseStyles = "rounded-lg border border-destructive/20 bg-destructive/5";
-  
+
   const variantStyles = {
     inline: "p-3",
     card: "p-6",
@@ -95,7 +96,7 @@ export function NotFoundError({ onGoBack, onGoHome }: { onGoBack?: () => void; o
         "Go back to the previous page",
       ]}
       actions={[
-        ...(onGoBack ? [{ label: "Go Back", onClick: onGoBack, variant: "outline" as const, icon: ArrowLeft }] : []),
+        ...(onGoBack ? [{ label: "Go Back", onClick: onGoBack, variant: "outline" as const }] : []),
         ...(onGoHome ? [{ label: "Go Home", onClick: onGoHome, variant: "default" as const }] : []),
       ]}
     />

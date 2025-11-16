@@ -88,10 +88,12 @@ export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputP
 
     return (
       <div className="space-y-2">
-        <Label htmlFor={props.id} className="text-sm font-medium">
-          {label}
-          {props.required && <span className="text-destructive ml-1" aria-label="required">*</span>}
-        </Label>
+        {label && (
+          <Label htmlFor={props.id} className="text-sm font-medium">
+            {label}
+            {props.required && <span className="text-destructive ml-1" aria-label="required">*</span>}
+          </Label>
+        )}
         
         <div className="relative">
           <Input

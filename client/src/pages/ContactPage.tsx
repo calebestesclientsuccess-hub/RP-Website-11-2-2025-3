@@ -1,6 +1,9 @@
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SEO } from "@/components/SEO";
 import { WidgetZone } from "@/components/WidgetZone";
+import { Input } from "@/components/ui/input";
+import { ValidatedInput, validationRules } from "@/components/ui/validated-input";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function ContactPage() {
   return (
@@ -12,10 +15,10 @@ export default function ContactPage() {
         canonical="/contact"
       />
       <Breadcrumbs items={[]} currentPage="Contact Us" />
-      
+
       {/* Top Widget Zone */}
       <WidgetZone zone="zone-1" className="my-8" />
-      
+
       <div className="min-h-screen flex items-center justify-center">
         <h1 className="text-4xl font-bold" data-testid="heading-contact">
           Contact Us / Careers
@@ -24,7 +27,7 @@ export default function ContactPage() {
 
       {/* Middle Widget Zone */}
       <WidgetZone zone="zone-11" className="my-8" />
-      
+
       {/* Bottom Widget Zone */}
       <WidgetZone zone="zone-4" className="my-8" />
     </>

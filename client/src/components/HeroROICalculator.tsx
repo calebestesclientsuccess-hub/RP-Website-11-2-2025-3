@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { SuccessAnimation } from "@/components/ui/success-animation";
 
 interface HeroROICalculatorProps {
   testIdSuffix?: string;
@@ -13,6 +14,17 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
   const [ltv, setLtv] = useState([120000]);
   const [closeRate, setCloseRate] = useState([25]);
   const [, setLocation] = useLocation();
+
+  const [hasCalculated, setHasCalculated] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const handleCalculate = () => {
+    setShowSuccess(true);
+    setTimeout(() => {
+      setHasCalculated(true);
+      setShowSuccess(false);
+    }, 1000);
+  };
 
   // Locked to 2-SDR defaults
   const monthlyInvestment = 15000;
@@ -174,13 +186,18 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
             className="w-full gap-2" 
             variant="tertiary"
             data-testid={`button-full-calculator${testIdSuffix}`}
-            onClick={() => setLocation(`/roi-calculator?ltv=${ltv[0]}&closeRate=${closeRate[0]}`)}
+            onClick={() => {handleCalculate(); setLocation(`/roi-calculator?ltv=${ltv[0]}&closeRate=${closeRate[0]}`)}}
           >
             My Full Analysis
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </Card>
+        {showSuccess && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+            <SuccessAnimation message="Calculating your savings..." />
+          </div>
+        )}
     </div>
   );
 }
