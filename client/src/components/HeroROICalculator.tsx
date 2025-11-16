@@ -17,7 +17,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
   // Locked to 2-SDR defaults
   const monthlyInvestment = 15000;
   const guaranteedSQOs = 20;
-  
+
   // Annual calculations (11 months, excluding December for training)
   const annualInvestment = monthlyInvestment * 12;
   const annualSQOs = guaranteedSQOs * 11; // 20 meetings × 11 months = 220
@@ -25,7 +25,7 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
   const closedDealsPerMonth = guaranteedSQOs * (closeRate[0] / 100);
   const projectedLTVPerMonth = closedDealsPerMonth * ltv[0];
   const roi = projectedLTVPerMonth / monthlyInvestment;
-  
+
   const closedDealsPerYear = annualSQOs * (closeRate[0] / 100);
   const projectedLTVPerYear = closedDealsPerYear * ltv[0];
   const annualROI = projectedLTVPerYear / annualInvestment;
@@ -56,21 +56,26 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
       {/* Glow effect layers */}
       <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-2xl blur-2xl opacity-50 animate-pulse" style={{ animationDuration: '3s' }}></div>
       <div className="absolute -inset-2 bg-primary/10 rounded-xl blur-xl"></div>
-      
-      <Card className="p-5 bg-card/95 backdrop-blur-md border-primary/40 shadow-2xl relative" data-testid="card-hero-roi">
+
+      <Card 
+        className="p-5 bg-card/95 backdrop-blur-md border-primary/40 shadow-2xl relative" 
+        data-testid="card-hero-roi"
+        role="form"
+        aria-labelledby="roi-calculator-title"
+      >
         <div className="mb-4">
-          <h2 className="text-xl font-bold mb-1">The $15K Investment That Returns 40x</h2>
+          <h2 id="roi-calculator-title" className="text-xl font-bold mb-1">The $15K Investment That Returns 40x</h2>
           <p className="text-xs text-muted-foreground">
             Adjust for your business to see the math
           </p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3" role="group" aria-label="Calculator inputs">
           {/* LTV Slider */}
           <div>
             <div className="flex justify-between mb-1.5">
               <div className="flex items-center gap-1.5">
-                <label className="text-xs font-medium">Average LTV</label>
+                <label className="text-xs font-medium" htmlFor="ltv-slider">Average LTV</label>
                 <span className="group relative">
                   <span className="cursor-help text-muted-foreground hover:text-foreground transition-colors text-xs">ⓘ</span>
                   <div className="absolute left-0 top-5 hidden group-hover:block w-64 p-2.5 bg-popover border border-border rounded-lg shadow-lg z-10 text-xs">
@@ -86,30 +91,42 @@ export function HeroROICalculator({ testIdSuffix = "" }: HeroROICalculatorProps)
               </span>
             </div>
             <Slider
+              id="ltv-slider"
               value={ltv}
               onValueChange={setLtv}
               min={10000}
               max={500000}
               step={5000}
               data-testid="slider-ltv"
+              aria-label={`Average LTV: ${formatCurrency(ltv[0])}`}
+              aria-valuemin={10000}
+              aria-valuemax={500000}
+              aria-valuenow={ltv[0]}
+              aria-valuetext={formatCurrency(ltv[0])}
             />
           </div>
 
           {/* Close Rate Slider */}
           <div>
             <div className="flex justify-between mb-1.5">
-              <label className="text-xs font-medium">Close Rate from Real Opportunity</label>
+              <label className="text-xs font-medium" htmlFor="close-rate-slider">Close Rate from Real Opportunity</label>
               <span className="text-xs font-mono font-bold text-muted-foreground" data-testid="text-close-rate-value">
                 {closeRate[0]}%
               </span>
             </div>
             <Slider
+              id="close-rate-slider"
               value={closeRate}
               onValueChange={setCloseRate}
               min={5}
               max={50}
               step={5}
               data-testid="slider-close-rate"
+              aria-label={`Close rate: ${closeRate[0]}%`}
+              aria-valuemin={5}
+              aria-valuemax={50}
+              aria-valuenow={closeRate[0]}
+              aria-valuetext={`${closeRate[0]}%`}
             />
           </div>
         </div>

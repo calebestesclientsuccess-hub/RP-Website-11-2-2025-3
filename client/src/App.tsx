@@ -241,7 +241,7 @@ function App() {
 
                   <div className="min-h-screen bg-background text-foreground">
                     <Navbar />
-                    <main id="main-content" role="main" aria-label="Main content">
+                    <main id="main-content" role="main" aria-label="Main content region">
                       <Router />
                     </main>
                     <Footer />

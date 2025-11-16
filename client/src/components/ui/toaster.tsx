@@ -13,9 +13,12 @@ export function Toaster() {
 
   return (
     <ToastProvider>
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {toasts.length > 0 && `${toasts.length} notification${toasts.length > 1 ? 's' : ''}`}
+      </div>
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
-          <Toast key={id} {...props}>
+          <Toast key={id} {...props} role="status" aria-live="polite">
             <div className="grid gap-1">
               {title && <ToastTitle>{title}</ToastTitle>}
               {description && (

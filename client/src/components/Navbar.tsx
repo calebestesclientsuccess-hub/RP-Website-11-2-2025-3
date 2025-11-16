@@ -139,33 +139,36 @@ export function Navbar() {
             {/* Theme toggle - show when feature flag is enabled */}
             {!themeToggleLoading && themeToggleEnabled && (
               <Button
-                size="icon"
                 variant="ghost"
+                size="icon"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="hover-elevate"
                 data-testid="button-theme-toggle"
-                aria-label="Toggle theme"
+                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
               >
                 {theme === "dark" ? (
-                  <Sun className="h-5 w-5" />
+                  <Sun className="h-5 w-5" aria-hidden="true" />
                 ) : (
-                  <Moon className="h-5 w-5" />
+                  <Moon className="h-5 w-5" aria-hidden="true" />
                 )}
               </Button>
             )}
 
             {/* Mobile Menu Toggle */}
             <Button
-              size="icon"
               variant="ghost"
-              className="md:hidden"
+              size="icon"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden hover-elevate"
               data-testid="button-mobile-menu"
-              aria-label="Toggle mobile menu"
+              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation"
             >
               {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5" aria-hidden="true" />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className="h-5 w-5" aria-hidden="true" />
               )}
             </Button>
           </div>
@@ -173,7 +176,13 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-2 border-t border-border">
+          <div
+            id="mobile-navigation"
+            className="lg:hidden absolute top-16 left-0 right-0 bg-background border-b border-border shadow-lg"
+            role="navigation"
+            aria-label="Mobile navigation menu"
+          >
+            <div className="px-4 py-4 space-y-3">
             <Link
               href="/problem"
               className="block px-4 py-2 rounded-md text-sm hover-elevate transition-all"
@@ -240,6 +249,7 @@ export function Navbar() {
                 Schedule GTM Audit
               </Button>
             </Link>
+          </div>
           </div>
         )}
       </div>
