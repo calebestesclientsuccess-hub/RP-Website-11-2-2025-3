@@ -83,7 +83,7 @@ export default function AssessmentPage() {
   const [showResults, setShowResults] = useState(false);
   const [leadCaptured, setLeadCaptured] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string>("");
-  
+
   const form = useForm<LeadFormData>({
     resolver: zodResolver(leadSchema),
     defaultValues: {
@@ -339,7 +339,7 @@ export default function AssessmentPage() {
 
   const handleNext = () => {
     if (!selectedOption) return;
-    
+
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
       setSelectedOption("");
@@ -365,11 +365,11 @@ export default function AssessmentPage() {
     const totalScore = Object.values(answers).reduce((sum, score) => sum + score, 0);
     const maxScore = questions.length * 10;
     const percentage = (totalScore / maxScore) * 100;
-    
+
     let level: AssessmentResults["level"];
     let diagnosis: string;
     let primaryBottleneck: string;
-    
+
     if (percentage < 30) {
       level = "Foundational";
       primaryBottleneck = "The Lone Wolf Fallacy (Single Point of Failure)";
@@ -387,11 +387,11 @@ export default function AssessmentPage() {
       primaryBottleneck = "Minor Optimization Opportunities";
       diagnosis = "You have a sophisticated GTM system. You've escaped the common traps: Lone Wolf dependency, Management Tax, and Zero-IP risk. Your focus should be on continuous optimization, scaling what works, and exploring advanced strategies like account-based orchestration.";
     }
-    
+
     // Identify strengths and gaps
     const strengths: string[] = [];
     const gaps: string[] = [];
-    
+
     questions.forEach(q => {
       const score = answers[q.id] || 0;
       if (score >= 7) {
@@ -400,14 +400,14 @@ export default function AssessmentPage() {
         gaps.push(q.category);
       }
     });
-    
+
     // Generate recommendations based on specific gaps
     const recommendations: AssessmentResults["recommendations"] = {
       immediate: [],
       shortTerm: [],
       longTerm: []
     };
-    
+
     if (gaps.includes("ICP Definition")) {
       recommendations.immediate.push("Define your ICP with firmographic, technographic, and behavioral signals");
     }
@@ -417,7 +417,7 @@ export default function AssessmentPage() {
     if (gaps.includes("Talent Quality")) {
       recommendations.immediate.push("Audit your hiring process and consider a pod-based system to reduce 'Lone Wolf' risk");
     }
-    
+
     if (gaps.includes("Management Burden")) {
       recommendations.shortTerm.push("Build self-managing systems to reduce the 'Management Tax'");
     }
@@ -427,13 +427,13 @@ export default function AssessmentPage() {
     if (gaps.includes("Performance Tracking")) {
       recommendations.shortTerm.push("Implement full-funnel tracking with leading and lagging indicators");
     }
-    
+
     if (gaps.includes("IP Ownership")) {
       recommendations.longTerm.push("Document all playbooks, processes, and systems to escape the 'Zero-IP Trap'");
     }
     recommendations.longTerm.push("Build predictive models for lead scoring and opportunity prioritization");
     recommendations.longTerm.push("Create a continuous optimization culture with data-driven strategy sessions");
-    
+
     return {
       score: totalScore,
       level,
@@ -705,6 +705,7 @@ export default function AssessmentPage() {
                                   placeholder="(555) 123-4567" 
                                   className="pl-10"
                                   inputMode="tel"
+                                  autoComplete="tel"
                                   {...field}
                                   data-testid="input-phone"
                                 />
@@ -804,7 +805,7 @@ export default function AssessmentPage() {
                     <TrendingUp className="w-6 h-6 text-primary" />
                     Your 1-Page Playbook (The Antidote)
                   </h3>
-                  
+
                   <div className="space-y-6">
                     {/* Immediate Actions */}
                     <div>

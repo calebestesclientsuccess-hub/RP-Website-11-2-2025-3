@@ -18,6 +18,8 @@ export interface ValidatedInputProps extends Omit<React.ComponentProps<"input">,
   validateOnBlur?: boolean;
   validateOnChange?: boolean;
   onChange?: (value: string, isValid: boolean) => void;
+  autoComplete?: string;
+  description?: string;
 }
 
 export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputProps>(
@@ -95,6 +97,12 @@ export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputP
           </Label>
         )}
         
+        {description && (
+          <p id={`${props.id}-description`} className="text-sm text-muted-foreground">
+            {description}
+          </p>
+        )}
+        
         <div className="relative">
           <Input
             ref={ref}
@@ -108,7 +116,12 @@ export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputP
               className
             )}
             aria-invalid={showError}
-            aria-describedby={showError ? `${props.id}-error` : undefined}
+            aria-describedby={cn(
+              description && `${props.id}-description`,
+              showError && `${props.id}-error`
+            )}
+            aria-required={props.required}
+            autoComplete={autoComplete}
             {...props}
           />
           

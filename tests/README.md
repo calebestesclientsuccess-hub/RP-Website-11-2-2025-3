@@ -1,4 +1,3 @@
-
 # Testing Infrastructure
 
 This directory contains the complete test suite for the Revenue Party application.
@@ -15,35 +14,47 @@ tests/
 
 ## Running Tests
 
-### All Tests
 ```bash
+# Run all tests
 npm test
-```
 
-### Unit Tests Only
-```bash
+# Run unit tests only
 npm run test:unit
-```
 
-### Integration Tests Only
-```bash
+# Run integration tests only
 npm run test:integration
-```
 
-### E2E Tests Only
-```bash
+# Run E2E tests only
 npm run test:e2e
-```
 
-### Watch Mode (for development)
-```bash
+# Run accessibility tests only
+npx playwright test tests/e2e/accessibility.spec.ts
+
+# Run tests in watch mode
 npm run test:watch
-```
 
-### Coverage Report
-```bash
+# Run tests with coverage
 npm run test:coverage
 ```
+
+## Accessibility Testing
+
+Our accessibility tests use axe-core to validate WCAG 2.1 Level AA compliance:
+
+```bash
+# Run accessibility tests
+npx playwright test tests/e2e/accessibility.spec.ts
+
+# Run with UI mode for debugging
+npx playwright test tests/e2e/accessibility.spec.ts --ui
+```
+
+Tests cover:
+- WCAG 2.1 Level AA compliance
+- Form label associations
+- Touch target sizes
+- Keyboard navigation
+- Focus management
 
 ## Test Database
 

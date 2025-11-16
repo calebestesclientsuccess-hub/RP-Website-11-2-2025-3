@@ -761,6 +761,28 @@ select:focus-visible {
   border-color: hsl(var(--primary));
 }
 
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  *:focus-visible {
+    outline-width: 4px;
+    outline-offset: 3px;
+  }
+  
+  button:focus-visible,
+  a:focus-visible {
+    box-shadow: 
+      0 0 0 4px hsl(var(--background)),
+      0 0 0 8px hsl(var(--primary));
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *:focus-visible {
+    transition: none;
+  }
+}
+
 /* Focus for custom checkboxes and radios */
 [role="checkbox"]:focus-visible,
 [role="radio"]:focus-visible,

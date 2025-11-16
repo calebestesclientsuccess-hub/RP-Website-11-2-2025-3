@@ -68,7 +68,7 @@ export default function AuditPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" id="main-content">
       <SEO 
         title="Free GTM Audit - 30-Min Blueprint Session | Revenue Party"
         description="Book your free 30-minute GTM Leverage Audit with expert architects. Get a custom revenue blueprint, diagnose your #1 bottleneck, and receive transparent ROI projections. No sales pitch - just strategic insights."
@@ -207,6 +207,8 @@ export default function AuditPage() {
                               <FormControl>
                                 <Input 
                                   placeholder="John Smith" 
+                                  autoComplete="name"
+                                  aria-required="true"
                                   {...field} 
                                   data-testid="input-full-name"
                                 />
@@ -226,7 +228,9 @@ export default function AuditPage() {
                                 <MobileInput 
                                   type="email"
                                   inputMode="email"
-                                  placeholder="john@company.com" 
+                                  placeholder="john@company.com"
+                                  autoComplete="email"
+                                  aria-required="true"
                                   {...field} 
                                   data-testid="input-email"
                                 />
@@ -244,7 +248,9 @@ export default function AuditPage() {
                               <FormLabel>Company Name</FormLabel>
                               <FormControl>
                                 <Input 
-                                  placeholder="Acme Inc" 
+                                  placeholder="Acme Inc"
+                                  autoComplete="organization"
+                                  aria-required="true"
                                   {...field} 
                                   data-testid="input-company-name"
                                 />
@@ -262,7 +268,9 @@ export default function AuditPage() {
                               <FormLabel>Website</FormLabel>
                               <FormControl>
                                 <Input 
-                                  placeholder="acme.com" 
+                                  placeholder="acme.com"
+                                  autoComplete="url"
+                                  aria-required="true"
                                   {...field} 
                                   data-testid="input-website"
                                 />

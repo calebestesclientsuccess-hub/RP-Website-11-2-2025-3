@@ -212,7 +212,7 @@ export default function BlogPage() {
   ], [combinedPosts]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" id="main-content">
       <SEO 
         title="The Lone Wolf Trap: Why SDR Outsourcing Fails When You Need Scale - Revenue Party Blog"
         description="An open-source library of strategic frameworks, financial models, and execution playbooks to build high-performance revenue engines. Deconstruct the hidden costs of traditional GTM."
