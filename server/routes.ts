@@ -1789,23 +1789,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
 
-    // Basic validation of required fields
-    const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt } = req.body;
-    
-    if (!portfolioAiPrompt || !portfolioAiPrompt.trim()) {
-      return res.status(400).json({
-        error: "Validation failed",
-        details: "Portfolio AI prompt is required"
-      });
-    }
-    
-    if (!projectId && (!newProjectTitle || !newProjectSlug)) {
-      return res.status(400).json({
-        error: "Validation failed",
-        details: "Either projectId or new project details (title, slug) are required"
-      });
-    }
-
     console.log(`[Portfolio Enhanced] Generating ${scenes.length} scenes with per-scene AI prompts`);
 
     // Lazy-load Gemini client
