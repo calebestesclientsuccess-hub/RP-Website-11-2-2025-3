@@ -1867,10 +1867,10 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
 
     // Basic validation of required fields
-    const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt, currentPrompt, conversationHistory } = req.body;
+    const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt, currentPrompt, conversationHistory, currentSceneJson } = req.body;
     
     // In refinement mode (existing conversation), use currentPrompt; otherwise use portfolioAiPrompt
-    const isRefinementMode = (conversationHistory && conversationHistory.length > 0) || currentPrompt;
+    const isRefinementMode = (conversationHistory && conversationHistory.length > 0) || currentPrompt || currentSceneJson;
     const promptToValidate = isRefinementMode ? currentPrompt : portfolioAiPrompt;
     
     if (!promptToValidate || !promptToValidate.trim()) {
@@ -1881,20 +1881,24 @@ Your explanation should be conversational and reference specific scene numbers.`
       });
     }
     
-    if (!projectId && (!newProjectTitle || !newProjectSlug)) {
-      console.error('[Portfolio Enhanced] Missing project identification');
-      return res.status(400).json({
-        error: "Validation failed",
-        details: "Either projectId or new project details (title, slug) are required"
-      });
-    }
+    // In refinement mode, we don't need new project details or scenes array
+    // We're working with existing scenes via currentSceneJson
+    if (!isRefinementMode) {
+      if (!projectId && (!newProjectTitle || !newProjectSlug)) {
+        console.error('[Portfolio Enhanced] Missing project identification');
+        return res.status(400).json({
+          error: "Validation failed",
+          details: "Either projectId or new project details (title, slug) are required"
+        });
+      }
 
-    if (!scenes || scenes.length === 0) {
-      console.error('[Portfolio Enhanced] Missing scenes array');
-      return res.status(400).json({
-        error: "Validation failed",
-        details: "At least one scene is required"
-      });
+      if (!scenes || scenes.length === 0) {
+        console.error('[Portfolio Enhanced] Missing scenes array');
+        return res.status(400).json({
+          error: "Validation failed",
+          details: "At least one scene is required"
+        });
+      }
     }
 
     console.log(`[Portfolio Enhanced] Generating ${scenes.length} scenes with per-scene AI prompts`);
