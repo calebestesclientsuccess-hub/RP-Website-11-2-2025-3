@@ -120,7 +120,7 @@ SCENE TYPES (choose based on content):
 - "fullscreen": Immersive media (use for wow moments, transitions)
 
 FOR EACH SCENE, YOU MUST DECIDE:
-1. Which assets to use (from the whitelist)
+1. Which assets to use (from the placeholder list)
 2. Entry effect (HOW it appears)
 3. Entry duration (HOW LONG it takes to appear)
 4. Entry delay (WHEN it starts appearing after scroll trigger)
@@ -266,7 +266,10 @@ SCENE COUNT GUIDELINES:
 
 Output Requirements:
 1. EVERY scene MUST have ALL director config fields (no omissions)
-2. ONLY use asset IDs from the whitelist: ${validAssetIds.join(', ')}
+2. ONLY use asset IDs from the placeholder list (e.g., "placeholder-image-1")
+         - Use these IDs EXACTLY as written
+         - The user will assign their real assets to these placeholders later
+         - Never use actual URLs or file paths
 3. DO NOT fabricate new content or IDs
 4. Timings MUST be in SECONDS (not milliseconds)
 5. Colors MUST be valid hex format (#RRGGBB)
@@ -389,11 +392,11 @@ export async function generatePortfolioWithAI(
 
   // STAGE 1: Initial Generation (Form-Filling) with retry logic
   const prompt = buildPortfolioPrompt(catalog);
-  
+
   let stage1Response;
   let retryCount = 0;
   const maxRetries = 3;
-  
+
   while (retryCount < maxRetries) {
     try {
       stage1Response = await aiClient.models.generateContent({
@@ -462,7 +465,6 @@ export async function generatePortfolioWithAI(
                     mediaPosition: { type: Type.STRING },
                     mediaScale: { type: Type.STRING },
                     mediaOpacity: { type: Type.NUMBER },
-                    overflowBehavior: { type: Type.STRING },
                   },
                   required: [
                     "entryDuration", "exitDuration", "entryDelay", "exitDelay",
@@ -491,11 +493,11 @@ export async function generatePortfolioWithAI(
     } catch (error) {
       retryCount++;
       console.error(`[Portfolio Director] Stage 1 attempt ${retryCount} failed:`, error);
-      
+
       if (retryCount >= maxRetries) {
         throw new Error(`Failed to generate portfolio after ${maxRetries} attempts: ${error.message}`);
       }
-      
+
       // Exponential backoff
       await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
     }

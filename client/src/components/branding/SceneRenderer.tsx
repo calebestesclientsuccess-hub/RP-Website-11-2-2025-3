@@ -46,12 +46,27 @@ interface SceneData {
   content: any;
   layout?: string;
   director: DirectorConfig;
+  sceneType?: string; // Added sceneType for image rendering logic
+  imageUrl?: string; // Added imageUrl for image rendering logic
 }
 
 interface SceneRendererProps {
   scene: SceneData;
   index: number;
 }
+
+// PlaceholderSlot component (assuming it exists elsewhere or will be defined)
+// This is a placeholder for the actual component implementation.
+const PlaceholderSlot: React.FC<{ placeholderId: string; type: string; onAssignAsset: (id: string) => void }> = ({ placeholderId, type, onAssignAsset }) => {
+  return (
+    <div className="placeholder-slot flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg w-full h-full" onClick={() => onAssignAsset(placeholderId)}>
+      <span className="text-gray-500 text-lg">
+        {type === 'image' ? `Image Slot: ${placeholderId}` : `Placeholder: ${placeholderId}`}
+      </span>
+    </div>
+  );
+};
+
 
 // Helper to map heading/body sizes to Tailwind classes
 const headingSizeMap: Record<string, string> = {
@@ -260,7 +275,7 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
         y: `${director.parallaxIntensity * 100}%`,
       });
     }
-    
+
     // Scale effect for media elements
     if (director.scaleOnScroll) {
         const mediaElements = contentEl.querySelectorAll('img, video'); // Adjust selector as needed
@@ -344,16 +359,24 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
         )}
 
         {type === "image" && (
-          <div className="w-full">
-            <img
-              src={content.url}
-              alt={content.alt}
-              className="w-full h-auto object-cover"
-              style={{ opacity: director.mediaOpacity || 1 }}
-            />
-            {content.caption && (
-              <p className="text-center mt-4 text-sm opacity-70">{content.caption}</p>
-            )}
+          <div className="relative w-full h-full">
+            {scene.imageUrl?.startsWith('placeholder-') ? (
+              <PlaceholderSlot
+                placeholderId={scene.imageUrl}
+                type="image"
+                onAssignAsset={(id) => {
+                  // This will open the asset picker modal (implement in next step)
+                  console.log('Assign asset to:', id);
+                }}
+              />
+            ) : scene.imageUrl ? (
+              <img
+                src={scene.imageUrl}
+                alt={scene.heading || ''}
+                className="w-full h-full object-cover"
+                style={{ opacity: director.mediaOpacity || 1 }}
+              />
+            ) : null}
           </div>
         )}
 
