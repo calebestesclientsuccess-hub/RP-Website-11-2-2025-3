@@ -426,13 +426,26 @@ export default function PortfolioBuilder() {
         { role: "user", content: promptToSend }
       ];
 
+      // Parse current scenes for refinement mode
+      let scenesForRefinement = undefined;
+      if (isRefinementMode && currentSceneJson) {
+        try {
+          const parsed = JSON.parse(currentSceneJson);
+          // If it's an array of scenes, use it directly
+          // If it's a single scene object, wrap it in an array
+          scenesForRefinement = Array.isArray(parsed) ? parsed : [parsed];
+        } catch (e) {
+          console.error('[Portfolio Builder] Failed to parse currentSceneJson:', e);
+        }
+      }
+
       const requestPayload = {
         projectId: isNewProject ? null : selectedProjectId,
         newProjectTitle: isNewProject ? newProjectTitle : undefined,
         newProjectSlug: isNewProject ? newProjectSlug : undefined,
         newProjectClient: isNewProject ? newProjectClient : undefined,
         mode: mode, // Pass the selected mode
-        scenes: mode === "hybrid" ? scenes : undefined, // Use manually added scenes in hybrid mode
+        scenes: isRefinementMode ? scenesForRefinement : (mode === "hybrid" ? scenes : undefined), // Use current scenes in refinement mode
         sections: mode === "cinematic" ? sections : undefined, // Use defined sections in cinematic mode
         portfolioAiPrompt: portfolioAiPrompt, // Global guidance
         conversationHistory: fullConversationHistory, // Complete conversation thread for context
