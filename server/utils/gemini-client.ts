@@ -141,8 +141,8 @@ export async function generateSceneWithGemini(
               // Visual Style (11 controls)
               backgroundColor: { type: Type.STRING, description: "Hex color" },
               textColor: { type: Type.STRING, description: "Hex color" },
-              gradientColors: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Array of hex colors or null" },
-              gradientDirection: { type: Type.STRING, description: "to-r, to-l, to-t, to-b, etc. or null" },
+              gradientColors: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Array of hex colors", nullable: true },
+              gradientDirection: { type: Type.STRING, description: "to-r, to-l, to-t, to-b, etc.", nullable: true },
               alignment: { type: Type.STRING, description: "left, center, right" },
               headingSize: { type: Type.STRING, description: "4xl, 5xl, 6xl, 7xl, 8xl" },
               bodySize: { type: Type.STRING, description: "base, lg, xl, 2xl" },
@@ -168,9 +168,9 @@ export async function generateSceneWithGemini(
               customCSSClasses: { type: Type.STRING, description: "Custom Tailwind classes" },
               layerDepth: { type: Type.NUMBER, description: "0-10 z-index" },
               
-              // Media Controls (3 controls)
-              mediaPosition: { type: Type.STRING, description: "center, top, bottom, left, right or null" },
-              mediaScale: { type: Type.STRING, description: "cover, contain, fill or null" },
+              // Media Controls (3 controls - nullable for text-only scenes)
+              mediaPosition: { type: Type.STRING, description: "center, top, bottom, left, right", nullable: true },
+              mediaScale: { type: Type.STRING, description: "cover, contain, fill", nullable: true },
               mediaOpacity: { type: Type.NUMBER, description: "0-1" }
             },
             required: [
