@@ -1,0 +1,357 @@
+I found the system prompts. They're scattered across multiple files:
+
+Main hybrid mode: buildPortfolioPrompt() in portfolio-director.ts
+
+Cinematic mode: generateStoryboard() in cinematic-director.ts
+
+6-stage refinement pipeline: Multiple specialized prompts for each stage
+
+Conversational refinement: Simple prompts in routes.ts
+
+Now let me design the UX and user journeys for making these editable per-portfolio:
+
+🎯 Feature: Per-Portfolio System Prompt Customization
+
+Core Concept
+
+Admin users can customize the system-level instructions that tell Gemini HOW to generate and refine portfolio scenes. Each portfolio project can have its own prompt configuration, allowing fine-tuned control over AI behavior for different clients/brands.
+
+📊 Data Model
+
+New Database Table: portfolio_prompts
+
+{
+
+  id: serial
+
+  projectId: integer (FK to projects)
+
+  promptType: enum('initial_generation', 'refinement', 'cinematic_storyboard')
+
+  customPrompt: text (nullable) // User's custom prompt
+
+  isActive: boolean // Can toggle between custom/default
+
+  createdAt: timestamp
+
+  updatedAt: timestamp
+
+}
+
+
+
+Key Design Decisions:
+
+Per-project storage - Different prompts for different clients
+
+Prompt types - Separate prompts for different AI stages
+
+Toggle system - Easy A/B testing (custom vs default)
+
+Audit trail - Track when prompts change
+
+🎨 UX Design & User Journeys
+
+Journey 1: First-Time User (Default Behavior)
+
+Steps:
+
+User creates new portfolio project
+
+User fills in catalog (images, text, etc.)
+
+User clicks "Generate Portfolio with AI"
+
+Behind the scenes: System uses default hardcoded prompts
+
+Portfolio generates successfully
+
+No changes to existing flow - defaults work seamlessly.
+
+Journey 2: Power User Customizes Prompts
+
+Entry Points:
+
+Option A: "Advanced Settings" accordion on Portfolio Builder page
+
+Option B: New tab alongside "Hybrid" and "Cinematic" called "Prompt Editor"
+
+Detailed Flow:
+
+Portfolio Builder Page
+
+  └─ Section: "AI Behavior Settings" (collapsible)
+
+      ├─ Tab 1: Initial Generation Prompt
+
+      ├─ Tab 2: Refinement Prompt  
+
+      └─ Tab 3: Cinematic Storyboard Prompt
+
+
+
+Each Tab Contains:
+
+  ├─ Toggle: [ Use Custom Prompt ] / [ Use System Default ]
+
+  ├─ Editor: CodeMirror/Monaco-style textarea (when custom enabled)
+
+  ├─ Variables Guide: Shows available template variables
+
+  │   - {directorNotes}
+
+  │   - {totalImagesProvided}
+
+  │   - {assetCatalog}
+
+  │   - etc.
+
+  ├─ Preview: "View Default Prompt" (read-only modal)
+
+  └─ Actions:
+
+      - [Save Draft] (saves to DB, doesn't activate)
+
+      - [Save & Activate] (saves + sets isActive=true)
+
+      - [Reset to Default]
+
+
+
+Mockup Flow:
+
+1. User clicks "Advanced Settings" → Accordion expands
+
+
+
+2. User sees:
+
+   ┌────────────────────────────────────────┐
+
+   │ AI Behavior Settings                    │
+
+   ├────────────────────────────────────────┤
+
+   │ ○ Initial Generation Prompt            │
+
+   │   [x] Use Custom Prompt                 │
+
+   │   ┌───────────────────────────────────┐│
+
+   │   │ You are a luxury brand director...││
+
+   │   │ Available variables:              ││
+
+   │   │ - {directorNotes}                 ││
+
+   │   │ - {totalImagesProvided}           ││
+
+   │   └───────────────────────────────────┘│
+
+   │   [View Default] [Save Draft] [Activate]│
+
+   └────────────────────────────────────────┘
+
+
+
+3. User edits prompt to emphasize luxury brand voice
+
+
+
+4. User clicks "Save & Activate"
+
+
+
+5. Toast: "Custom prompt saved! Future generations will use this."
+
+
+
+6. User generates portfolio → Uses custom prompt
+
+
+
+Journey 3: Testing Custom Prompts
+
+Problem: User wants to see if custom prompt works before activating
+
+Solution: "Test Generate" mode
+
+1. User edits custom prompt
+
+2. User clicks [Test with Custom Prompt]
+
+3. Modal appears:
+
+   ┌────────────────────────────────────────┐
+
+   │ Test Custom Prompt                      │
+
+   ├────────────────────────────────────────┤
+
+   │ This will generate 3 test scenes using  │
+
+   │ your custom prompt without saving to    │
+
+   │ the project.                            │
+
+   │                                        │
+
+   │ [Cancel] [Run Test Generation]         │
+
+   └────────────────────────────────────────┘
+
+4. System generates scenes (doesn't save to project)
+
+5. User reviews output in preview panel
+
+6. User decides: [Use This] or [Keep Editing]
+
+
+
+Journey 4: Switching Between Default & Custom
+
+Scenario: User wants to compare default vs custom behavior
+
+Solution: Quick toggle system
+
+┌────────────────────────────────────────┐
+
+│ Current Prompt: Custom                  │
+
+│ [Switch to Default]                     │
+
+│                                        │
+
+│ Last 5 generations:                    │
+
+│ ○ Jan 15, 3:24 PM - Custom Prompt      │
+
+│ ○ Jan 15, 2:10 PM - Default Prompt    │
+
+│ ○ Jan 14, 5:45 PM - Custom Prompt     │
+
+└────────────────────────────────────────┘
+
+
+
+Each generation tagged with which prompt was used.
+
+🧩 Technical Implementation Plan
+
+Phase 1: Data Layer
+
+Add portfolio_prompts table to schema
+
+Create insert/select schemas with Zod
+
+Add storage methods (CRUD for prompts)
+
+Phase 2: Backend API
+
+New routes:GET /api/portfolio/:projectId/prompts - Fetch custom prompts
+
+PUT /api/portfolio/:projectId/prompts/:type - Save/update prompt
+
+DELETE /api/portfolio/:projectId/prompts/:type - Reset to default
+
+Modify generatePortfolioWithAI() to:Check if custom prompt exists for project
+
+Use custom if isActive=true, else use default
+
+Template variable interpolation
+
+Phase 3: Frontend UI
+
+Add "Prompt Editor" component to Portfolio Builder
+
+Implement tabbed interface for different prompt types
+
+Add toggle, save, and reset functionality
+
+Show variable guide/documentation
+
+Phase 4: Testing & Polish
+
+Add test generation mode
+
+Track which prompt was used per generation
+
+Add prompt history/audit log
+
+🎯 Key UX Decisions
+
+Decision 1: Placement
+
+Recommended: Collapsible "Advanced Settings" section on Portfolio Builder
+
+Pro: Keeps advanced users empowered without overwhelming beginners
+
+Pro: Contextual - settings live with the tool
+
+Con: Could add visual clutter
+
+Alternative: Separate "Prompt Library" page in admin sidebar
+
+Pro: Clean separation of concerns
+
+Con: Breaks context - user jumps between pages
+
+Decision 2: Granularity
+
+Recommended: 3 separate prompt types (initial, refinement, cinematic)
+
+Pro: Maximum control for power users
+
+Pro: Can tune each stage independently
+
+Con: More complex UI
+
+Alternative: Single "Master Prompt" override
+
+Pro: Simpler UX
+
+Con: Less control over multi-stage pipeline
+
+Decision 3: Template Variables
+
+Recommended: Use clear template syntax like {directorNotes}
+
+Pro: Familiar to users (mustache/handlebars style)
+
+Pro: Easy to document
+
+Pro: Safe - can validate variables exist
+
+📝 Variables Available for Templates
+
+// Initial Generation Prompt
+
+{directorNotes}       // User's creative vision
+
+{totalImagesProvided} // Asset counts
+
+{totalVideosProvided}
+
+{totalQuotesProvided}
+
+{placeholderImages}   // Available placeholder IDs
+
+{placeholderVideos}
+
+{placeholderQuotes}
+
+{assetCatalog}        // Full JSON of assets
+
+
+
+// Refinement Prompt
+
+{projectTitle}        // Project metadata
+
+{projectClient}
+
+{currentScenes}       // JSON of scenes being refined
+
+{conversationHistory} // Chat context
+
+{userPrompt}          // Current refinement request
