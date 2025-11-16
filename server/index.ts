@@ -23,7 +23,8 @@ app.use(detectSuspiciousPatterns);
 
 // Session configuration
 const PgSession = connectPgSimple(session);
-const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours of inactivity
+// Session timeout: 30 minutes of inactivity
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 
 app.use(
   session({
@@ -39,7 +40,7 @@ app.use(
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: SESSION_TIMEOUT,
+      maxAge: SESSION_TIMEOUT_MS,
       // Tenant-specific cookies (if using subdomains)
       domain: process.env.NODE_ENV === "production" ? ".revenueparty.com" : undefined,
       sameSite: "lax",

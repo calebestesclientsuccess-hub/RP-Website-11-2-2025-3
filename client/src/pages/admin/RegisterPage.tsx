@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Helmet } from "react-helmet-async";
-import { Info } from "lucide-react";
+import { Info, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+
+interface PasswordStrength {
+  valid: boolean;
+  score: number;
+  errors: string[];
+  suggestions: string[];
+}
+
+const getStrengthLabel = (score: number): string => {
+  switch (score) {
+    case 0:
+    case 1:
+      return 'Weak';
+    case 2:
+      return 'Fair';
+    case 3:
+      return 'Good';
+    case 4:
+      return 'Strong';
+    default:
+      return 'Unknown';
+  }
+};
+
+const getStrengthColor = (score: number): string => {
+  switch (score) {
+    case 0:
+    case 1:
+      return 'bg-red-500';
+    case 2:
+      return 'bg-yellow-500';
+    case 3:
+      return 'bg-blue-500';
+    case 4:
+      return 'bg-green-500';
+    default:
+      return 'bg-gray-500';
+  }
+};
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -16,9 +56,39 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength | null>(null);
+  const [isCheckingStrength, setIsCheckingStrength] = useState(false);
   const { register, user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  // Check password strength on change
+  useEffect(() => {
+    if (!password) {
+      setPasswordStrength(null);
+      return;
+    }
+
+    const checkStrength = async () => {
+      setIsCheckingStrength(true);
+      try {
+        const response = await fetch('/api/auth/check-password-strength', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password }),
+        });
+        const data = await response.json();
+        setPasswordStrength(data);
+      } catch (error) {
+        console.error('Failed to check password strength:', error);
+      } finally {
+        setIsCheckingStrength(false);
+      }
+    };
+
+    const debounce = setTimeout(checkStrength, 300);
+    return () => clearTimeout(debounce);
+  }, [password]);
 
   if (user) {
     setLocation("/admin");
@@ -130,9 +200,52 @@ export default function RegisterPage() {
                   autoComplete="new-password"
                   placeholder="At least 8 characters"
                   data-testid="input-password"
+                  aria-describedby="password-strength password-requirements"
                 />
-                <p className="text-xs text-muted-foreground" data-testid="text-password-hint">
-                  Password must be at least 8 characters long
+                
+                {password && passwordStrength && (
+                  <div className="space-y-2" id="password-strength" aria-live="polite">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Password Strength:</span>
+                      <span className={`font-medium ${
+                        passwordStrength.score >= 3 ? 'text-green-600' : 
+                        passwordStrength.score >= 2 ? 'text-yellow-600' : 
+                        'text-red-600'
+                      }`}>
+                        {getStrengthLabel(passwordStrength.score)}
+                      </span>
+                    </div>
+                    <Progress 
+                      value={(passwordStrength.score / 4) * 100} 
+                      className={getStrengthColor(passwordStrength.score)}
+                    />
+                    
+                    {passwordStrength.errors.length > 0 && (
+                      <div className="space-y-1">
+                        {passwordStrength.errors.map((error, idx) => (
+                          <div key={idx} className="flex items-start gap-2 text-sm text-red-600">
+                            <XCircle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                            <span>{error}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {passwordStrength.suggestions.length > 0 && (
+                      <div className="space-y-1">
+                        {passwordStrength.suggestions.map((suggestion, idx) => (
+                          <div key={idx} className="flex items-start gap-2 text-sm text-yellow-600">
+                            <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                            <span>{suggestion}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <p className="text-xs text-muted-foreground" id="password-requirements" data-testid="text-password-hint">
+                  Must include: lowercase, uppercase, number, and be at least 8 characters
                 </p>
               </div>
               <div className="space-y-2">
