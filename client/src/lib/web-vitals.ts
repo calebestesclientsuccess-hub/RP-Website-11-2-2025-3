@@ -1,5 +1,6 @@
 
-import { onCLS, onFID, onLCP, onFCP, onTTFB, type Metric } from 'web-vitals';
+import { onCLS, onFID, onLCP, onFCP, onTTFB } from 'web-vitals';
+import type { Metric } from 'web-vitals';
 
 interface WebVitalsMetric {
   name: string;
