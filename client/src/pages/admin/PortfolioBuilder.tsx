@@ -1127,6 +1127,7 @@ export default function PortfolioBuilder() {
                     </Button>
                   </CardContent>
                 </Card>
+                )}
 
                 {/* OLD REFINEMENT UI - REMOVED, NOW INTEGRATED ABOVE */}
                 {false && conversationHistory.length > 0 && (
