@@ -40,7 +40,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AssetMapperModal } from "@/components/admin/AssetMapperModal";
 import type { PlaceholderId } from "@shared/placeholder-config";
-import { SceneRenderer } from "@/components/admin/SceneRenderer"; // Assuming SceneRenderer is in this path
+import { SceneRenderer } from "@/components/admin/SceneRenderer";
+import { PortfolioPromptsManager } from "@/components/admin/PortfolioPromptsManager";
 
 interface SceneBuilder {
   id: string;
@@ -718,6 +719,19 @@ export default function PortfolioBuilder() {
 
             <main className="flex-1 overflow-auto p-6">
               <div className="max-w-6xl mx-auto space-y-6">
+                {/* Main Tabs */}
+                <Tabs defaultValue="build" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 mb-6">
+                    <TabsTrigger value="build">Build Portfolio</TabsTrigger>
+                    <TabsTrigger value="prompts" disabled={!selectedProjectId && isNewProject}>
+                      AI Prompts
+                    </TabsTrigger>
+                    <TabsTrigger value="preview" disabled={!selectedProjectId && isNewProject}>
+                      Preview
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="build" className="space-y-6">
                 {/* Project Selection */}
                 <Card>
                   <CardHeader>
@@ -1796,6 +1810,60 @@ export default function PortfolioBuilder() {
                     </CardContent>
                   </Card>
                 )}
+              </TabsContent>
+
+                  {/* AI Prompts Tab */}
+                  <TabsContent value="prompts" className="space-y-6">
+                    {selectedProjectId && !isNewProject ? (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Custom AI Prompts for This Project</CardTitle>
+                          <CardDescription>
+                            Override default system prompts for AI-powered scene generation
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <PortfolioPromptsManager projectId={selectedProjectId} />
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <Card>
+                        <CardContent className="pt-6">
+                          <p className="text-center text-muted-foreground">
+                            Please select an existing project to configure AI prompts
+                          </p>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </TabsContent>
+
+                  {/* Preview Tab */}
+                  <TabsContent value="preview" className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Preview</CardTitle>
+                        <CardDescription>
+                          Preview your portfolio scenes
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {currentSceneJson ? (
+                          <LivePreviewPanel
+                            scenes={generatedScenes?.scenes || []}
+                            enabled={livePreviewEnabled}
+                            onToggle={() => setLivePreviewEnabled(!livePreviewEnabled)}
+                            assetMap={assetMap}
+                            onOpenAssetMapper={handleOpenAssetMapper}
+                          />
+                        ) : (
+                          <p className="text-center text-muted-foreground py-8">
+                            Generate scenes first to see preview
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
               </div>
             </main>
           </div>
