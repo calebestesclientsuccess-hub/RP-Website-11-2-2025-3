@@ -1,0 +1,177 @@
+Hello Replit. This is the final and most critical update to our prompt chain.
+
+You must implement the "Perfected Enforcer," which is the `responseSchema` for our Stage 1 "Artistic Director" prompt. This new version is the correct one, as it solves the "text scene paradox" we identified.
+
+**Your Task:**
+
+1.  Locate the `responseSchema` object within the **`server/utils/portfolio-director.ts`** file.
+2.  You must **delete** the *entire* old `responseSchema` object.
+3.  You must **replace** it with the following new, perfected, and unabridged code block.
+
+This new schema correctly enforces the 37-control mandate by making the 5 optional controls (`mediaPosition`, `mediaScale`, `mediaOpacity`, `gradientColors`, `gradientDirection`) **required but nullable**. This is the perfect solution.
+
+Implement this exact code now:
+
+```typescript
+// This is the responseSchema for the Stage 1 'Artistic Director'
+// (buildPortfolioPrompt)
+const responseSchema = {
+  type: Type.OBJECT,
+  properties: {
+    scenes: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          sceneType: {
+            type: Type.STRING,
+            description: "Must be: text, image, video, quote, split, gallery, or fullscreen"
+          },
+          assetIds: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "Array of valid placeholder IDs (e.g., ['placeholder-image-1'])."
+          },
+          layout: {
+            type: Type.STRING,
+            description: "Optional layout: default or reverse (for split scenes)."
+          },
+          director: {
+            type: Type.OBJECT,
+            properties: {
+              // --- ANIMATION & TIMING (8 controls) ---
+              entryEffect: { type: Type.STRING, description: "e.g., fade, slide-up, zoom-in" },
+              entryDuration: { type: Type.NUMBER, description: "seconds, min 0.8" },
+              entryDelay: { type: Type.NUMBER, description: "seconds, min 0" },
+              entryEasing: { type: Type.STRING, description: "e.g., power2.out" },
+              exitEffect: { type: Type.STRING, description: "e.g., fade, slide-down" },
+              exitDuration: { type: Type.NUMBER, description: "seconds, min 0.6" },
+              exitDelay: { type: Type.NUMBER, description: "seconds, min 0" },
+              exitEasing: { type: Type.STRING, description: "e.g., power2.in" },
+              
+              // --- VISUAL FOUNDATION (2 controls) ---
+              backgroundColor: { type: Type.STRING, description: "Hex code, e.g., #0a0a0a" },
+              textColor: { type: Type.STRING, description: "Hex code, e.g., #ffffff" },
+
+              // --- SCROLL DEPTH & DURATION (3 controls) ---
+              parallaxIntensity: { type: Type.NUMBER, description: "0.0-1.0. Set to 0 if scaleOnScroll is true" },
+              scrollSpeed: { type: Type.STRING, description: "slow, normal, or fast" },
+              animationDuration: { type: Type.NUMBER, description: "seconds, min 0.5" },
+
+              // --- TYPOGRAPHY (4 controls) ---
+              headingSize: { type: Type.STRING, description: "4xl, 5xl, 6xl, 7xl, or 8xl" },
+              bodySize: { type: Type.STRING, description: "base, lg, xl, or 2xl" },
+              fontWeight: { type: Type.STRING, description: "normal, medium, semibold, or bold" },
+              alignment: { type: Type.STRING, description: "left, center, or right" },
+
+              // --- SCROLL INTERACTION (3 controls) ---
+              fadeOnScroll: { type: Type.BOOLEAN },
+              scaleOnScroll: { type: Type.BOOLEAN },
+              blurOnScroll: { type: Type.BOOLEAN },
+
+              // --- MULTI-ELEMENT TIMING (2 controls) ---
+              staggerChildren: { type: Type.NUMBER, description: "seconds, min 0.0" },
+              layerDepth: { type: Type.NUMBER, description: "0-10" },
+
+              // --- ADVANCED MOTION (3 controls) ---
+              transformOrigin: { type: Type.STRING, description: "e.g., center center" },
+              overflowBehavior: { type: Type.STRING, description: "visible, hidden, or auto" },
+              backdropBlur: { type: Type.STRING, description: "none, sm, md, lg, xl" },
+
+              // --- VISUAL BLENDING (2 controls) ---
+              mixBlendMode: { type: Type.STRING, description: "e.g., normal, multiply" },
+              enablePerspective: { type: Type.BOOLEAN },
+
+              // --- CUSTOM STYLING & TEXT (3 controls) ---
+              customCSSClasses: { type: Type.STRING, description: "e.g., 'shadow-xl' or ''" },
+              textShadow: { type: Type.BOOLEAN },
+              textGlow: { type: Type.BOOLEAN },
+
+              // --- VERTICAL SPACING (2 controls) ---
+              paddingTop: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
+              paddingBottom: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
+
+              // --- MEDIA PRESENTATION (3 controls) ---
+              // These are now required BUT nullable to allow for 'text' scenes
+              mediaPosition: { 
+                type: Type.STRING, 
+                description: "center, top, bottom, left, right, or null for text scenes",
+                nullable: true 
+              },
+              mediaScale: { 
+                type: Type.STRING, 
+                description: "cover, contain, fill, or null for text scenes",
+                nullable: true 
+              },
+              mediaOpacity: { 
+                type: Type.NUMBER, 
+                description: "0.0-1.0, or null for text scenes",
+                nullable: true 
+              },
+
+              // --- GRADIENT BACKGROUNDS (2 controls) ---
+              // These are required BUT nullable
+              gradientColors: { 
+                type: Type.ARRAY, 
+                items: { type: Type.STRING }, 
+                description: "Array of hex colors or null",
+                nullable: true 
+              },
+              gradientDirection: { 
+                type: Type.STRING, 
+                description: "e.g., to-r, to-br, or null",
+                nullable: true 
+              },
+            },
+            // 
+            // --- THE 37-CONTROL ENFORCER ---
+            // This 'required' array now matches the 37-control mandate.
+            // All 37 fields must be present.
+            //
+            required: [
+              // Animation & Timing (8)
+              "entryEffect", "entryDuration", "entryDelay", "entryEasing",
+              "exitEffect", "exitDuration", "exitDelay", "exitEasing",
+              
+              // Visual Foundation (2)
+              "backgroundColor", "textColor",
+              
+              // Scroll Depth & Duration (3)
+              "parallaxIntensity", "scrollSpeed", "animationDuration",
+              
+              // Typography (4)
+              "headingSize", "bodySize", "fontWeight", "alignment",
+              
+              // Scroll Interaction (3)
+              "fadeOnScroll", "scaleOnScroll", "blurOnScroll",
+              
+              // Multi-Element Timing (2)
+              "staggerChildren", "layerDepth",
+              
+              // Advanced Motion (3)
+              "transformOrigin", "overflowBehavior", "backdropBlur",
+              
+              // Visual Blending (2)
+              "mixBlendMode", "enablePerspective",
+              
+              // Custom Styling & Text (3)
+              "customCSSClasses", "textShadow", "textGlow",
+              
+              // Vertical Spacing (2)
+              "paddingTop", "paddingBottom",
+              
+              // Media Presentation (3) - NOW REQUIRED (but nullable)
+              "mediaPosition", "mediaScale", "mediaOpacity",
+              
+              // Gradient Backgrounds (2) - NOW REQUIRED (but nullable)
+              "gradientColors", "gradientDirection"
+            ]
+          }
+        },
+        required: ["sceneType", "assetIds", "director"]
+      }
+    }
+  },
+  required: ["scenes"]
+};
+```
