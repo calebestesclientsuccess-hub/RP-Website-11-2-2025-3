@@ -1113,6 +1113,15 @@ export default function PortfolioBuilder() {
                                         description: "Your feedback helps improve Gemini"
                                       });
                                     }}
+                                    onEdit={(newContent) => {
+                                      const updatedHistory = [...conversationHistory];
+                                      updatedHistory[idx] = { ...updatedHistory[idx], content: newContent };
+                                      setConversationHistory(updatedHistory);
+                                      toast({ 
+                                        title: "Message updated", 
+                                        description: "The conversation has been updated with your changes"
+                                      });
+                                    }}
                                   />
                                 ))
                               )}

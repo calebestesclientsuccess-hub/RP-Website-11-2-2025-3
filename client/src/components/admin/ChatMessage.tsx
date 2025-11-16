@@ -1,8 +1,9 @@
 
 import { cn } from "@/lib/utils";
-import { User, Sparkles, Copy, ThumbsUp, ThumbsDown } from "lucide-react";
+import { User, Sparkles, Copy, ThumbsUp, ThumbsDown, Edit2, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from "react";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -11,14 +12,34 @@ interface ChatMessageProps {
   isTyping?: boolean;
   onCopy?: () => void;
   onFeedback?: (type: "positive" | "negative") => void;
+  onEdit?: (newContent: string) => void;
 }
 
-export function ChatMessage({ role, content, timestamp, isTyping, onCopy, onFeedback }: ChatMessageProps) {
+export function ChatMessage({ role, content, timestamp, isTyping, onCopy, onFeedback, onEdit }: ChatMessageProps) {
   const [feedback, setFeedback] = useState<"positive" | "negative" | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState(content);
+  
+  // Sync editedContent with content prop changes
+  useEffect(() => {
+    setEditedContent(content);
+  }, [content]);
   
   const handleFeedback = (type: "positive" | "negative") => {
     setFeedback(type);
     onFeedback?.(type);
+  };
+
+  const handleSaveEdit = () => {
+    if (editedContent.trim() && editedContent !== content) {
+      onEdit?.(editedContent);
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditedContent(content);
+    setIsEditing(false);
   };
   
   return (
@@ -46,15 +67,59 @@ export function ChatMessage({ role, content, timestamp, isTyping, onCopy, onFeed
           </span>
         </div>
         
-        <div className={cn(
-          "text-sm whitespace-pre-wrap",
-          isTyping && "animate-pulse"
-        )}>
-          {content}
-        </div>
+        {isEditing ? (
+          <div className="space-y-2">
+            <Textarea
+              value={editedContent}
+              onChange={(e) => setEditedContent(e.target.value)}
+              className="min-h-[100px] text-sm resize-y"
+              data-testid="textarea-edit-message"
+            />
+            <div className="flex gap-2">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSaveEdit}
+                disabled={!editedContent.trim() || editedContent === content}
+                data-testid="button-save-edit"
+              >
+                <Save className="w-3 h-3 mr-1" />
+                Save
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCancelEdit}
+                data-testid="button-cancel-edit"
+              >
+                <X className="w-3 h-3 mr-1" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className={cn(
+            "text-sm whitespace-pre-wrap",
+            isTyping && "animate-pulse"
+          )}>
+            {content}
+          </div>
+        )}
         
-        {role === "assistant" && !isTyping && (
+        {!isTyping && !isEditing && (
           <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border/50">
+            {onEdit && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="h-7 text-xs"
+                data-testid="button-edit-message"
+              >
+                <Edit2 className="w-3 h-3 mr-1" />
+                Edit
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -65,30 +130,32 @@ export function ChatMessage({ role, content, timestamp, isTyping, onCopy, onFeed
               Copy
             </Button>
             
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleFeedback("positive")}
-                className={cn(
-                  "h-7 w-7 p-0",
-                  feedback === "positive" && "text-green-500"
-                )}
-              >
-                <ThumbsUp className="w-3 h-3" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleFeedback("negative")}
-                className={cn(
-                  "h-7 w-7 p-0",
-                  feedback === "negative" && "text-red-500"
-                )}
-              >
-                <ThumbsDown className="w-3 h-3" />
-              </Button>
-            </div>
+            {role === "assistant" && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleFeedback("positive")}
+                  className={cn(
+                    "h-7 w-7 p-0",
+                    feedback === "positive" && "text-green-500"
+                  )}
+                >
+                  <ThumbsUp className="w-3 h-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleFeedback("negative")}
+                  className={cn(
+                    "h-7 w-7 p-0",
+                    feedback === "negative" && "text-red-500"
+                  )}
+                >
+                  <ThumbsDown className="w-3 h-3" />
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>
