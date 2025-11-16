@@ -1017,6 +1017,14 @@ ${JSON.stringify(result, null, 2)}
 User requirements from director notes:
 ${catalog.directorNotes}
 
+CRITICAL REMINDER - PLACEHOLDER SYSTEM:
+You MUST ONLY use these placeholder IDs in assetIds arrays:
+- Images: ${PLACEHOLDER_CONFIG.images.join(', ')}
+- Videos: ${PLACEHOLDER_CONFIG.videos.join(', ')}
+- Quotes: ${PLACEHOLDER_CONFIG.quotes.join(', ')}
+
+DO NOT reference user asset IDs. The user will map placeholders to their real assets later.
+
 Generate 10 specific improvements using the 37-CONTROL FRAMEWORK:
 
 IMPROVEMENT CATEGORIES (reference the specific control categories):
@@ -1109,6 +1117,8 @@ Return:
 
   // STAGE 4: Auto-Apply Non-Conflicting Improvements
   const appliedImprovements: string[] = [];
+  const validPlaceholderIds = buildAssetWhitelist();
+  
   for (const improvement of improvementsResult.improvements) {
     const scene = result.scenes[improvement.sceneIndex];
     if (!scene) {
@@ -1121,7 +1131,19 @@ Return:
       (issue: any) => issue.sceneIndex === improvement.sceneIndex && issue.field === improvement.field
     );
 
-    if (!hasConflict) {
+    // Validate placeholder IDs if this improvement touches assetIds
+    let hasInvalidPlaceholder = false;
+    if (improvement.field === 'assetIds' && Array.isArray(improvement.newValue)) {
+      for (const assetId of improvement.newValue) {
+        if (!validPlaceholderIds.includes(assetId)) {
+          console.warn(`[Portfolio Director] Warning: Improvement contains invalid placeholder ID "${assetId}". Skipping.`);
+          hasInvalidPlaceholder = true;
+          break;
+        }
+      }
+    }
+
+    if (!hasConflict && !hasInvalidPlaceholder) {
       // Apply improvement
       const fieldPath = improvement.field.split('.');
       let target: any = scene;
@@ -1292,7 +1314,11 @@ CRITICAL REQUIREMENTS:
 4. Color progression creates visual journey
 5. Pacing has musical rhythm (varied scrollSpeed and durations)
 6. Asset selection tells compelling story
-7. ALL placeholder IDs must be valid (image-1 through image-10, etc.)
+7. ALL placeholder IDs must be valid - ONLY use these exact IDs:
+   - Images: ${PLACEHOLDER_CONFIG.images.join(', ')}
+   - Videos: ${PLACEHOLDER_CONFIG.videos.join(', ')}
+   - Quotes: ${PLACEHOLDER_CONFIG.quotes.join(', ')}
+8. DO NOT invent new placeholder IDs or reference user asset IDs
 
 BEFORE GENERATING OUTPUT, VERIFY:
 ✓ Every scene has ALL 37 director fields with concrete values
@@ -1588,6 +1614,9 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
         warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: gradientColors should be array or undefined, got ${typeof scene.director.gradientColors}`);
         scene.director.gradientColors = undefined;
         confidenceScore -= 2;
+      } else if (scene.director.gradientColors.length === 0) {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: gradientColors array is empty, setting to undefined`);
+        scene.director.gradientColors = undefined;
       } else {
         // Validate each color is a hex code
         for (const color of scene.director.gradientColors) {
@@ -1597,6 +1626,13 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
           }
         }
       }
+    }
+    
+    // Validate gradientDirection is set if gradientColors is set
+    if (scene.director.gradientColors !== undefined && !scene.director.gradientDirection) {
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: gradientColors set but gradientDirection missing, defaulting to 'to-br'`);
+      scene.director.gradientDirection = 'to-br';
+      confidenceScore -= 1;
     }
 
 
