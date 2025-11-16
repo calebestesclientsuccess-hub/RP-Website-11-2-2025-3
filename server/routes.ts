@@ -1783,15 +1783,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
 
-    const validation = insertDirectorConfigSchema.safeParse(req.body);
-    if (!validation.success) {
+    // Basic validation of required fields
+    const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt } = req.body;
+    
+    if (!portfolioAiPrompt || !portfolioAiPrompt.trim()) {
       return res.status(400).json({
         error: "Validation failed",
-        details: validation.error.format()
+        details: "Portfolio AI prompt is required"
       });
     }
-
-    const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt } = validation.data;
+    
+    if (!projectId && (!newProjectTitle || !newProjectSlug)) {
+      return res.status(400).json({
+        error: "Validation failed",
+        details: "Either projectId or new project details (title, slug) are required"
+      });
+    }
 
     console.log(`[Portfolio Enhanced] Generating ${scenes.length} scenes with per-scene AI prompts`);
 
