@@ -29,7 +29,7 @@ export function ComponentScene({ componentType, props, heading, description, dir
                 </CardHeader>
                 <CardContent>
                   <div className="text-4xl font-bold">
-                    <AnimatedCounter end={metric.value} duration={2000} />
+                    <AnimatedCounter value={metric.value} duration={2000} />
                     {metric.suffix}
                   </div>
                   {metric.description && (
@@ -48,10 +48,10 @@ export function ComponentScene({ componentType, props, heading, description, dir
         return <BuildAndRampTimeline />;
 
       case "comparison-table":
-        return <ComparisonTable data={props.data} columns={props.columns} />;
+        return <ComparisonTable title={props.title || ""} subtitle={props.subtitle} items={props.items || []} />;
 
       case "testimonial-carousel":
-        return <TestimonialCarousel testimonials={props.testimonials} />;
+        return <TestimonialCarousel />;
 
       case "badge-grid":
         return (
@@ -88,7 +88,7 @@ export function ComponentScene({ componentType, props, heading, description, dir
             {props.stats?.map((stat: any, idx: number) => (
               <div key={idx} className="text-center space-y-2">
                 <div className="text-5xl font-bold bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
-                  <AnimatedCounter end={stat.value} duration={2000} />
+                  <AnimatedCounter value={stat.value} duration={2000} />
                   {stat.suffix}
                 </div>
                 <div className="text-sm text-muted-foreground">{stat.label}</div>
