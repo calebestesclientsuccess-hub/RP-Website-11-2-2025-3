@@ -1754,6 +1754,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Conversational AI refinement endpoint
+  app.post("/api/portfolio/refine-conversation", requireAuth, async (req, res) => {
+    try {
+      const { conversationHistory, currentScenes, userPrompt, projectContext } = req.body;
+
+      if (!userPrompt || !userPrompt.trim()) {
+        return res.status(400).json({ error: "User prompt is required" });
+      }
+
+      if (!currentScenes) {
+        return res.status(400).json({ error: "Current scenes context is required" });
+      }
+
+      // Parse current scenes
+      const parsedScenes = typeof currentScenes === 'string' ? JSON.parse(currentScenes) : currentScenes;
+
+      // Lazy-load Gemini client
+      const { GoogleGenAI, Type } = await import("@google/genai");
+      const ai = new GoogleGenAI({
+        apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
+        httpOptions: {
+          apiVersion: "",
+          baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
+        },
+      });
+
+      // Build conversation context
+      const systemPrompt = `You are a cinematic director helping refine a scrollytelling portfolio.
+
+CURRENT PROJECT:
+Title: ${projectContext?.title || "Portfolio"}
+Client: ${projectContext?.client || "N/A"}
+
+CURRENT SCENES (JSON):
+${JSON.stringify(parsedScenes, null, 2)}
+
+USER'S REFINEMENT REQUEST:
+"${userPrompt}"
+
+SECTION REFERENCE SUPPORT:
+- If user mentions "Scene 1", "Scene 2", etc., focus on that specific scene
+- If user says "all scenes", apply changes globally
+- If user says "make it more dramatic", increase entryDuration, use power3 easing, add parallax
+- If user says "faster", reduce durations and use quicker effects
+
+RESPONSE FORMAT:
+1. Explain what changes you're making and why (in plain English)
+2. Return the complete refined scenes JSON with your improvements
+
+Your explanation should be conversational and reference specific scene numbers.`;
+
+      const conversationMessages = [
+        { role: "user", parts: [{ text: systemPrompt }] },
+        ...(conversationHistory || []).map((msg: any) => ({
+          role: msg.role === "user" ? "user" : "model",
+          parts: [{ text: msg.content }]
+        })),
+        { role: "user", parts: [{ text: `Now refine based on: "${userPrompt}"` }] }
+      ];
+
+      const geminiResponse = await ai.models.generateContent({
+        model: "gemini-2.5-pro",
+        contents: conversationMessages,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              explanation: { 
+                type: Type.STRING,
+                description: "Plain English explanation of what changes you made and why"
+              },
+              refinedScenes: {
+                type: Type.ARRAY,
+                description: "The complete refined scenes array with your improvements",
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    id: { type: Type.STRING },
+                    sceneType: { type: Type.STRING },
+                    aiPrompt: { type: Type.STRING },
+                    content: { type: Type.OBJECT },
+                    director: { type: Type.OBJECT }
+                  }
+                }
+              }
+            },
+            required: ["explanation", "refinedScenes"]
+          }
+        }
+      });
+
+      const result = JSON.parse(geminiResponse.text || '{}');
+
+      return res.json(result);
+    } catch (error) {
+      console.error("Conversational refinement error:", error);
+      return res.status(500).json({
+        error: "Failed to refine scenes",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Enhanced AI Portfolio Generation endpoint (scene-by-scene with per-scene AI prompts)
   // This endpoint handles both "cinematic" and "hybrid" modes
   app.post("/api/portfolio/generate-enhanced", requireAuth, async (req, res) => {

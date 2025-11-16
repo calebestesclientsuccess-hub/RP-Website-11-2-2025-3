@@ -55,7 +55,13 @@ interface SceneBuilder {
 export default function PortfolioBuilder() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [isGenerating, setIsGenerating] = useState(false);
+  // AI Conversation state
+  const [conversationHistory, setConversationHistory] = useState<Array<{role: string; content: string}>>([]);
+  const [currentPrompt, setCurrentPrompt] = useState("");
+  const [isRefining, setIsRefining] = useState(false);
+  const [currentSceneJson, setCurrentSceneJson] = useState<string>("");
+  const [proposedChanges, setProposedChanges] = useState<string>("");
+
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [isNewProject, setIsNewProject] = useState(true);
 
@@ -289,7 +295,7 @@ export default function PortfolioBuilder() {
       return;
     }
 
-    setIsGenerating(true);
+    setIsRefining(true); // Changed from setIsGenerating to setIsRefining
     try {
       const requestPayload = {
         projectId: isNewProject ? null : selectedProjectId,
@@ -298,6 +304,14 @@ export default function PortfolioBuilder() {
         newProjectClient: isNewProject ? newProjectClient : undefined,
         scenes: scenes,
         portfolioAiPrompt: portfolioAiPrompt,
+        // Pass conversation history for context
+        conversationHistory: conversationHistory,
+        // Pass current prompt for refinement
+        currentPrompt: currentPrompt,
+        // Pass currentSceneJson for section-based editing
+        currentSceneJson: currentSceneJson,
+        // Pass proposedChanges to Gemini
+        proposedChanges: proposedChanges,
       };
 
       console.log('[Portfolio Builder] Generating with scene-by-scene config:', requestPayload);
@@ -321,6 +335,10 @@ export default function PortfolioBuilder() {
         confidenceFactors: result.confidenceFactors,
       });
 
+      // Update conversation history with the AI's response
+      setConversationHistory(prev => [...prev, { role: "assistant", content: JSON.stringify(result.scenes) }]);
+
+
       toast({
         title: "Success!",
         description: `Generated ${result.scenes?.length || 0} scenes with ${result.confidenceScore || 0}% confidence`,
@@ -334,7 +352,7 @@ export default function PortfolioBuilder() {
         variant: "destructive",
       });
     } finally {
-      setIsGenerating(false);
+      setIsRefining(false); // Changed from setIsGenerating to setIsRefining
     }
   };
 
@@ -912,15 +930,15 @@ export default function PortfolioBuilder() {
                   <CardContent>
                     <Button
                       onClick={handleGeneratePortfolio}
-                      disabled={isGenerating}
+                      disabled={isRefining} // Changed from isGenerating to isRefining
                       size="lg"
                       className="w-full"
                       data-testid="button-generate-portfolio"
                     >
-                      {isGenerating ? (
+                      {isRefining ? ( // Changed from isGenerating to isRefining
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating Portfolio...
+                          Refining Portfolio... {/* Changed text */}
                         </>
                       ) : (
                         <>
