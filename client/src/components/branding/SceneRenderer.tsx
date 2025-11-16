@@ -537,8 +537,3 @@ export function SceneRenderer({
     </div>
   );
 }
-
-// Re-exporting SceneRenderer to maintain existing import paths if needed.
-// If this component is part of a larger file with multiple components,
-// this export might need adjustment.
-export { SceneRenderer };
