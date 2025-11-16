@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, RotateCcw, Edit2, Eye } from "lucide-react";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import type { AiPromptTemplate } from "@shared/schema";
 
 export default function AIPromptSettings() {
@@ -67,86 +68,92 @@ export default function AIPromptSettings() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
+      <ProtectedRoute>
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+      </ProtectedRoute>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">AI Prompt Templates</h2>
-        <p className="text-muted-foreground mt-2">
-          Customize the system prompts used in the AI Portfolio Director's 6-stage refinement pipeline
-        </p>
+    <ProtectedRoute>
+      <div className="container mx-auto py-8">
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold">AI Prompt Templates</h2>
+            <p className="text-muted-foreground mt-2">
+              Customize the system prompts used in the AI Portfolio Director's 6-stage refinement pipeline
+            </p>
+          </div>
+
+          <Tabs defaultValue="core" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="core">Core Chain (4)</TabsTrigger>
+              <TabsTrigger value="specialists">Scene Specialists (4)</TabsTrigger>
+              <TabsTrigger value="all">All Prompts</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="core" className="space-y-4 mt-4">
+              {templates
+                .filter((t) => 
+                  ['artistic_director', 'technical_director', 'executive_producer'].includes(t.promptKey)
+                )
+                .map((template) => (
+                  <PromptCard
+                    key={template.id}
+                    template={template}
+                    isEditing={editingPrompt === template.id}
+                    editedContent={editedContent}
+                    onEdit={handleEdit}
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                    onToggleActive={handleToggleActive}
+                    onContentChange={setEditedContent}
+                    isSaving={updatePromptMutation.isPending}
+                  />
+                ))}
+            </TabsContent>
+
+            <TabsContent value="specialists" className="space-y-4 mt-4">
+              {templates
+                .filter((t) => t.promptKey.includes('specialist'))
+                .map((template) => (
+                  <PromptCard
+                    key={template.id}
+                    template={template}
+                    isEditing={editingPrompt === template.id}
+                    editedContent={editedContent}
+                    onEdit={handleEdit}
+                    onSave={handleSave}
+                    onCancel={handleCancel}
+                    onToggleActive={handleToggleActive}
+                    onContentChange={setEditedContent}
+                    isSaving={updatePromptMutation.isPending}
+                  />
+                ))}
+            </TabsContent>
+
+            <TabsContent value="all" className="space-y-4 mt-4">
+              {templates.map((template) => (
+                <PromptCard
+                  key={template.id}
+                  template={template}
+                  isEditing={editingPrompt === template.id}
+                  editedContent={editedContent}
+                  onEdit={handleEdit}
+                  onSave={handleSave}
+                  onCancel={handleCancel}
+                  onToggleActive={handleToggleActive}
+                  onContentChange={setEditedContent}
+                  isSaving={updatePromptMutation.isPending}
+                />
+              ))}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-
-      <Tabs defaultValue="core" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="core">Core Chain (4)</TabsTrigger>
-          <TabsTrigger value="specialists">Scene Specialists (4)</TabsTrigger>
-          <TabsTrigger value="all">All Prompts</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="core" className="space-y-4 mt-4">
-          {templates
-            .filter((t) => 
-              ['artistic_director', 'technical_director', 'executive_producer'].includes(t.promptKey)
-            )
-            .map((template) => (
-              <PromptCard
-                key={template.id}
-                template={template}
-                isEditing={editingPrompt === template.id}
-                editedContent={editedContent}
-                onEdit={handleEdit}
-                onSave={handleSave}
-                onCancel={handleCancel}
-                onToggleActive={handleToggleActive}
-                onContentChange={setEditedContent}
-                isSaving={updatePromptMutation.isPending}
-              />
-            ))}
-        </TabsContent>
-
-        <TabsContent value="specialists" className="space-y-4 mt-4">
-          {templates
-            .filter((t) => t.promptKey.includes('specialist'))
-            .map((template) => (
-              <PromptCard
-                key={template.id}
-                template={template}
-                isEditing={editingPrompt === template.id}
-                editedContent={editedContent}
-                onEdit={handleEdit}
-                onSave={handleSave}
-                onCancel={handleCancel}
-                onToggleActive={handleToggleActive}
-                onContentChange={setEditedContent}
-                isSaving={updatePromptMutation.isPending}
-              />
-            ))}
-        </TabsContent>
-
-        <TabsContent value="all" className="space-y-4 mt-4">
-          {templates.map((template) => (
-            <PromptCard
-              key={template.id}
-              template={template}
-              isEditing={editingPrompt === template.id}
-              editedContent={editedContent}
-              onEdit={handleEdit}
-              onSave={handleSave}
-              onCancel={handleCancel}
-              onToggleActive={handleToggleActive}
-              onContentChange={setEditedContent}
-              isSaving={updatePromptMutation.isPending}
-            />
-          ))}
-        </TabsContent>
-      </Tabs>
-    </div>
+    </ProtectedRoute>
   );
 }
 
