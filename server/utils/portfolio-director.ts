@@ -16,19 +16,16 @@ function getAIClient(): GoogleGenAI {
   return ai;
 }
 
-// Build asset ID whitelist from catalog
-function buildAssetWhitelist(catalog: ContentCatalog): string[] {
-  return [
-    ...catalog.texts.map((t) => t.id),
-    ...catalog.images.map((i) => i.id),
-    ...catalog.videos.map((v) => v.id),
-    ...catalog.quotes.map((q) => q.id),
-  ];
+import { getAllPlaceholderIds, PLACEHOLDER_CONFIG } from "@shared/placeholder-config";
+
+// Build asset ID whitelist from static placeholders (NOT user's catalog)
+function buildAssetWhitelist(): string[] {
+  return getAllPlaceholderIds();
 }
 
 // Build Gemini prompt for portfolio orchestration
 function buildPortfolioPrompt(catalog: ContentCatalog): string {
-  const validAssetIds = buildAssetWhitelist(catalog);
+  const validAssetIds = buildAssetWhitelist();
 
   return `You are a cinematic director for scrollytelling portfolio websites. Your role is to ORCHESTRATE existing content into smooth, transition-driven storytelling experiences.
 
@@ -44,23 +41,31 @@ THE 30 WEBPAGE AREAS EXPLAINED:
 DIRECTOR'S VISION (USER'S CREATIVE GUIDANCE):
 ${catalog.directorNotes}
 
-AVAILABLE CONTENT CATALOG:
-You MUST ONLY reference these asset IDs. DO NOT create new content or fabricate IDs.
+STATIC PLACEHOLDER SYSTEM:
+You MUST ONLY use these pre-defined placeholder IDs. The user will map their real assets to these placeholders later.
 
-TEXTS (${catalog.texts.length} available):
-${catalog.texts.map((t) => `  - ID: "${t.id}" | Type: ${t.type} | Content: "${t.content.substring(0, 100)}${t.content.length > 100 ? '...' : ''}"`).join('\n')}
+AVAILABLE PLACEHOLDER IDs:
 
-IMAGES (${catalog.images.length} available):
-${catalog.images.map((i) => `  - ID: "${i.id}" | Alt: "${i.alt}" | Caption: "${i.caption || 'none'}"`).join('\n')}
+IMAGES (${PLACEHOLDER_CONFIG.images.length} available):
+${PLACEHOLDER_CONFIG.images.map((id) => `  - "${id}"`).join('\n')}
 
-VIDEOS (${catalog.videos.length} available):
-${catalog.videos.map((v) => `  - ID: "${v.id}" | Caption: "${v.caption || 'none'}"`).join('\n')}
+VIDEOS (${PLACEHOLDER_CONFIG.videos.length} available):
+${PLACEHOLDER_CONFIG.videos.map((id) => `  - "${id}"`).join('\n')}
 
-QUOTES (${catalog.quotes.length} available):
-${catalog.quotes.map((q) => `  - ID: "${q.id}" | Author: ${q.author} | Quote: "${q.quote.substring(0, 80)}${q.quote.length > 80 ? '...' : ''}"`).join('\n')}
+QUOTES (${PLACEHOLDER_CONFIG.quotes.length} available):
+${PLACEHOLDER_CONFIG.quotes.map((id) => `  - "${id}"`).join('\n')}
 
-VALID ASSET IDS (you MUST use these exact IDs):
+VALID PLACEHOLDER IDS (you MUST use ONLY these exact IDs):
 ${validAssetIds.join(', ')}
+
+DO NOT reference the user's actual asset IDs. Use ONLY the placeholder IDs listed above.
+The user will assign their real content (from the catalog below) to these placeholders after you generate the scenes.
+
+USER'S CONTENT CATALOG (for context only - DO NOT use these IDs directly):
+- ${catalog.texts.length} text assets available
+- ${catalog.images.length} image assets available
+- ${catalog.videos.length} video assets available
+- ${catalog.quotes.length} quote assets available
 
 YOUR TASK:
 Create a scene sequence by FILLING OUT A COMPLETE FORM for each scene. You MUST provide a value for EVERY field listed below. Do not skip any fields.
@@ -252,12 +257,15 @@ TRANSITION DESIGN RULES:
    - Longer durations (2.5s+) = more noticeable, use for hero moments
    - Shorter durations (0.8-1.2s) = quick reveals, use for content
 
-ASSET SELECTION STRATEGY:
-1. START STRONG: First scene should use the most impactful headline
-2. BUILD NARRATIVE: Use texts in logical order (problem → solution → proof)
-3. VISUAL SUPPORT: Place images/videos AFTER related text scenes
-4. SOCIAL PROOF: Insert quotes after demonstrating value
-5. VARIETY: Alternate between text-heavy and media-heavy scenes
+PLACEHOLDER SELECTION STRATEGY:
+1. START STRONG: Use image-1 or video-1 for hero/opening scenes
+2. BUILD NARRATIVE: Distribute placeholders logically (e.g., image-1 through image-5 for a 5-scene story)
+3. VISUAL SUPPORT: Place media placeholders (image-X, video-X) strategically for impact
+4. SOCIAL PROOF: Use quote-1, quote-2, quote-3 for testimonials/credibility
+5. VARIETY: Alternate between different placeholder types for visual rhythm
+6. RESERVE PLACEHOLDERS: Don't use all 10 images in one project - leave room for future expansion
+
+Remember: You're selecting placeholder SLOTS, not actual content. The user assigns real assets later.
 
 SCENE COUNT GUIDELINES:
 - 4-5 scenes: Quick story (2-3 min scroll)
@@ -914,18 +922,18 @@ Return the complete scenes array with full director configs. Ensure ALL required
   // STAGE 6: Final Validation Against Requirements
   console.log('[Portfolio Director] ✅ Stage 6: Final validation');
 
-  const finalValidAssetIds = buildAssetWhitelist(catalog);
+  const finalValidAssetIds = buildAssetWhitelist(); // Static placeholders only
   const warnings: string[] = [];
 
   for (const scene of finalResult.scenes) {
-    // Validate asset IDs
+    // Validate asset IDs against static placeholders
     for (const assetId of scene.assetIds) {
       if (!finalValidAssetIds.includes(assetId)) {
-        const errorMsg = `AI referenced non-existent asset ID: ${assetId}. Valid IDs: ${finalValidAssetIds.join(', ')}`;
+        const errorMsg = `AI referenced invalid placeholder ID: ${assetId}. Valid placeholder IDs: ${finalValidAssetIds.join(', ')}`;
         console.error(`❌ [Portfolio Director] ${errorMsg}`);
         // Add to confidence factors as a warning
-        confidenceScore -= 3; // Deduct score for invalid asset ID
-        confidenceFactors.push(`Scene with assets [${scene.assetIds.join(', ')}]: Invalid asset ID "${assetId}"`);
+        confidenceScore -= 3; // Deduct score for invalid placeholder ID
+        confidenceFactors.push(`Scene with assets [${scene.assetIds.join(', ')}]: Invalid placeholder ID "${assetId}"`);
       }
     }
 
