@@ -1964,6 +1964,7 @@ Your explanation should be conversational and reference specific scene numbers.`
       newProjectSlug,
       newProjectClient,
       scenes,
+      mode,
       portfolioAiPrompt,
       currentPrompt,
       conversationHistory: clientConversationHistory = [],

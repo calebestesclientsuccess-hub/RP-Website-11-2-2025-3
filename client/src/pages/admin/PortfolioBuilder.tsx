@@ -571,24 +571,43 @@ export default function PortfolioBuilder() {
         }
       }
 
-      const requestPayload = {
-        projectId: isNewProject ? null : selectedProjectId,
-        newProjectTitle: isNewProject ? newProjectTitle : undefined,
-        newProjectSlug: isNewProject ? newProjectSlug : undefined,
-        newProjectClient: isNewProject ? newProjectClient : undefined,
-        mode: mode, // Pass the selected mode
-        scenes: isRefinementMode ? scenesForRefinement : (mode === "hybrid" ? scenes : undefined), // Use current scenes in refinement mode
-        sections: mode === "cinematic" ? sections : undefined, // Use defined sections in cinematic mode
-        portfolioAiPrompt: portfolioAiPrompt, // Global guidance
-        conversationHistory: fullConversationHistory, // Complete conversation thread for context
-        currentPrompt: promptToSend, // The user's latest input
-        currentSceneJson: currentSceneJson, // The current state of the generated/refined JSON
-        proposedChanges: proposedChanges, // If specific changes are being proposed (e.g., from UI controls)
-      };
+      // Determine which endpoint to use based on mode and refinement status
+      let endpoint = "/api/portfolio/generate-enhanced"; // Default to enhanced endpoint
+      let requestPayload: any = {};
 
-      console.log('[Portfolio Builder] Generating/Refining:', requestPayload);
+      if (!isRefinementMode && mode === "cinematic") {
+        // Initial generation in cinematic mode uses dedicated endpoint
+        endpoint = "/api/portfolio/generate-cinematic";
+        requestPayload = {
+          projectId: isNewProject ? null : selectedProjectId,
+          newProjectTitle: isNewProject ? newProjectTitle : undefined,
+          newProjectSlug: isNewProject ? newProjectSlug : undefined,
+          newProjectClient: isNewProject ? newProjectClient : undefined,
+          catalog: {
+            directorNotes: portfolioAiPrompt,
+            sections: sections
+          }
+        };
+      } else {
+        // Hybrid mode or refinement uses enhanced endpoint
+        requestPayload = {
+          projectId: isNewProject ? null : selectedProjectId,
+          newProjectTitle: isNewProject ? newProjectTitle : undefined,
+          newProjectSlug: isNewProject ? newProjectSlug : undefined,
+          newProjectClient: isNewProject ? newProjectClient : undefined,
+          mode: mode,
+          scenes: isRefinementMode ? scenesForRefinement : (mode === "hybrid" ? scenes : undefined),
+          portfolioAiPrompt: portfolioAiPrompt,
+          conversationHistory: fullConversationHistory,
+          currentPrompt: promptToSend,
+          currentSceneJson: currentSceneJson,
+          proposedChanges: proposedChanges,
+        };
+      }
 
-      const response = await apiRequest("POST", "/api/portfolio/generate-enhanced", requestPayload);
+      console.log('[Portfolio Builder] Generating/Refining:', { endpoint, payload: requestPayload });
+
+      const response = await apiRequest("POST", endpoint, requestPayload);
 
       if (!response.ok) {
         const errorData = await response.json();
