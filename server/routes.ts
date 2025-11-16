@@ -39,7 +39,8 @@ import {
   assessmentResultBuckets,
   type InsertAssessmentResponse,
   projects,
-  projectScenes
+  projectScenes,
+  insertDirectorConfigSchema // Assuming this is the schema for director config
 } from "@shared/schema";
 import { eq, and, asc } from "drizzle-orm";
 import { calculatePointsBasedBucket, calculateDecisionTreeBucket } from "./utils/assessment-scoring";
@@ -74,7 +75,7 @@ const DEFAULT_DIRECTOR_CONFIG = {
 };
 
 // Configure multer for memory storage (files will be uploaded to Cloudinary)
-const pdfUpload = multer({
+const pdfUploadMulter = multer({ // Renamed to avoid conflict with imported pdfUpload
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/pdf') {
@@ -86,7 +87,7 @@ const pdfUpload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
-const imageUpload = multer({
+const imageUploadMulter = multer({ // Renamed to avoid conflict with imported imageUpload
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -567,7 +568,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // PDF Upload endpoint (Cloudinary)
-  app.post("/api/upload/pdf", requireAuth, pdfUpload.single('pdf'), async (req, res) => {
+  app.post("/api/upload/pdf", requireAuth, pdfUploadMulter.single('pdf'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No PDF file uploaded" });
@@ -605,7 +606,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Image Upload endpoint (Cloudinary)
-  app.post("/api/upload/image", requireAuth, imageUpload.single('image'), async (req, res) => {
+  app.post("/api/upload/image", requireAuth, imageUploadMulter.single('image'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No image file uploaded" });
@@ -1755,163 +1756,156 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Enhanced AI Portfolio Generation endpoint (scene-by-scene with per-scene AI prompts)
+  // This endpoint handles both "cinematic" and "hybrid" modes
   app.post("/api/portfolio/generate-enhanced", requireAuth, async (req, res) => {
-    try {
-      const requestSchema = z.object({
-        projectId: z.string().nullable(),
-        newProjectTitle: z.string().optional(),
-        newProjectSlug: z.string().optional(),
-        newProjectClient: z.string().optional(),
-        scenes: z.array(z.object({
-          id: z.string(),
-          sceneType: z.enum(["text", "image", "video", "split", "gallery", "quote", "fullscreen"]),
-          aiPrompt: z.string().min(1, "AI prompt required for each scene"),
-          content: z.object({
-            heading: z.string().optional(),
-            body: z.string().optional(),
-            url: z.string().optional(),
-            media: z.string().optional(),
-            quote: z.string().optional(),
-            author: z.string().optional(),
-            role: z.string().optional(),
-            images: z.string().optional(),
-            mediaType: z.enum(["image", "video"]).optional(),
-          }),
-          director: z.any(),
-        })).min(1, "At least one scene required"),
-        portfolioAiPrompt: z.string().min(1, "Portfolio orchestration prompt required"),
-      });
+    const userId = req.session?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
 
-      const result = requestSchema.safeParse(req.body);
-      if (!result.success) {
-        const validationError = fromZodError(result.error);
+    // For Cinematic Mode, sections are required; for Hybrid, scenes are required
+    const { mode } = req.body;
+
+    if (mode === "cinematic") {
+      // Validate cinematic mode requires sections
+      if (!req.body.sections || req.body.sections.length === 0) {
         return res.status(400).json({
           error: "Validation failed",
-          details: validationError.message,
+          details: "At least one section required for Cinematic Mode"
         });
       }
-
-      const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt } = result.data;
-
-      console.log(`[Portfolio Enhanced] Generating ${scenes.length} scenes with per-scene AI prompts`);
-
-      // Lazy-load Gemini client
-      const { generateSceneWithGemini } = await import("./utils/gemini-client");
-
-      // Generate each scene with AI
-      const enhancedScenes = [];
-      for (let i = 0; i < scenes.length; i++) {
-        const scene = scenes[i];
-        console.log(`[Portfolio Enhanced] Processing scene ${i + 1}: ${scene.sceneType}`);
-
-        // Build system instructions from portfolio-level prompt
-        const systemInstructions = `Portfolio Context: ${portfolioAiPrompt}\n\nThis is scene ${i + 1} of ${scenes.length} in the portfolio.`;
-
-        // Generate AI-enhanced scene config
-        const aiEnhanced = await generateSceneWithGemini(
-          scene.aiPrompt,
-          scene.sceneType,
-          systemInstructions
-        );
-
-        // Merge user-provided content with AI enhancements
-        const mergedContent: any = { ...aiEnhanced };
-
-        // Override with user-provided values if present
-        if (scene.content.heading) mergedContent.headline = scene.content.heading;
-        if (scene.content.body) mergedContent.bodyText = scene.content.body;
-        if (scene.content.url) mergedContent.mediaUrl = scene.content.url;
-        if (scene.content.media) mergedContent.mediaUrl = scene.content.media;
-        if (scene.content.quote) mergedContent.quote = scene.content.quote;
-        if (scene.content.author) mergedContent.author = scene.content.author;
-
-        // Build final scene config
-        const sceneConfig: any = {
-          type: aiEnhanced.sceneType || scene.sceneType,
-          content: {},
-        };
-
-        // Map content based on scene type
-        if (sceneConfig.type === "text") {
-          sceneConfig.content.heading = mergedContent.headline || mergedContent.heading || "Untitled";
-          sceneConfig.content.body = mergedContent.bodyText || mergedContent.body || "";
-        } else if (sceneConfig.type === "image") {
-          sceneConfig.content.url = mergedContent.mediaUrl || mergedContent.url || "";
-          sceneConfig.content.alt = mergedContent.alt || "Image";
-        } else if (sceneConfig.type === "quote") {
-          sceneConfig.content.quote = mergedContent.quote || "";
-          sceneConfig.content.author = mergedContent.author || "";
-          sceneConfig.content.role = scene.content.role || mergedContent.role;
-        }
-
-        // Merge director config (user settings take precedence)
-        sceneConfig.director = {
-          ...DEFAULT_DIRECTOR_CONFIG,
-          ...(aiEnhanced.director || {}),
-          ...(scene.director || {}),
-        };
-
-        enhancedScenes.push(sceneConfig);
+    } else {
+      // Validate hybrid mode requires scenes
+      if (!req.body.scenes || req.body.scenes.length === 0) {
+        return res.status(400).json({
+          error: "Validation failed",
+          details: "At least one scene required for Hybrid Mode"
+        });
       }
+    }
 
-      console.log(`[Portfolio Enhanced] All ${enhancedScenes.length} scenes enhanced with AI`);
-
-      // Create or update project
-      const result_data = await db.transaction(async (tx) => {
-        let finalProjectId: string;
-
-        if (projectId) {
-          // Add to existing project
-          finalProjectId = projectId;
-          console.log(`[Portfolio Enhanced] Adding scenes to existing project ${finalProjectId}`);
-        } else {
-          // Create new project
-          if (!newProjectTitle || !newProjectSlug || !newProjectClient) {
-            throw new Error("New project requires title, slug, and client");
-          }
-
-          const [newProject] = await tx.insert(projects).values({
-            tenantId: req.tenantId,
-            title: newProjectTitle,
-            slug: newProjectSlug,
-            client: newProjectClient,
-            description: `AI-generated portfolio with ${enhancedScenes.length} scenes`,
-            thumbnail: "",
-            status: "draft",
-          }).returning();
-
-          finalProjectId = newProject.id;
-          console.log(`[Portfolio Enhanced] Created new project ${finalProjectId}`);
-        }
-
-        // Create all scenes
-        const createdScenes = [];
-        for (let i = 0; i < enhancedScenes.length; i++) {
-          const [scene] = await tx.insert(projectScenes).values({
-            projectId: finalProjectId,
-            sceneConfig: enhancedScenes[i],
-            order: i,
-          }).returning();
-          createdScenes.push(scene);
-        }
-
-        console.log(`[Portfolio Enhanced] Created ${createdScenes.length} scenes`);
-
-        return {
-          projectId: finalProjectId,
-          scenesCreated: createdScenes.length,
-          scenes: createdScenes,
-        };
-      });
-
-      return res.status(201).json(result_data);
-    } catch (error) {
-      console.error("Error generating enhanced portfolio:", error);
-      return res.status(500).json({
-        error: "Failed to generate portfolio",
-        details: error instanceof Error ? error.message : "Unknown error"
+    const validation = insertDirectorConfigSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({
+        error: "Validation failed",
+        details: validation.error.format()
       });
     }
+
+    const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt } = validation.data;
+
+    console.log(`[Portfolio Enhanced] Generating ${scenes.length} scenes with per-scene AI prompts`);
+
+    // Lazy-load Gemini client
+    const { generateSceneWithGemini } = await import("./utils/gemini-client");
+
+    // Generate each scene with AI
+    const enhancedScenes = [];
+    for (let i = 0; i < scenes.length; i++) {
+      const scene = scenes[i];
+      console.log(`[Portfolio Enhanced] Processing scene ${i + 1}: ${scene.sceneType}`);
+
+      // Build system instructions from portfolio-level prompt
+      const systemInstructions = `Portfolio Context: ${portfolioAiPrompt}\n\nThis is scene ${i + 1} of ${scenes.length} in the portfolio.`;
+
+      // Generate AI-enhanced scene config
+      const aiEnhanced = await generateSceneWithGemini(
+        scene.aiPrompt,
+        scene.sceneType,
+        systemInstructions
+      );
+
+      // Merge user-provided content with AI enhancements
+      const mergedContent: any = { ...aiEnhanced };
+
+      // Override with user-provided values if present
+      if (scene.content.heading) mergedContent.headline = scene.content.heading;
+      if (scene.content.body) mergedContent.bodyText = scene.content.body;
+      if (scene.content.url) mergedContent.mediaUrl = scene.content.url;
+      if (scene.content.media) mergedContent.mediaUrl = scene.content.media;
+      if (scene.content.quote) mergedContent.quote = scene.content.quote;
+      if (scene.content.author) mergedContent.author = scene.content.author;
+
+      // Build final scene config
+      const sceneConfig: any = {
+        type: aiEnhanced.sceneType || scene.sceneType,
+        content: {},
+      };
+
+      // Map content based on scene type
+      if (sceneConfig.type === "text") {
+        sceneConfig.content.heading = mergedContent.headline || mergedContent.heading || "Untitled";
+        sceneConfig.content.body = mergedContent.bodyText || mergedContent.body || "";
+      } else if (sceneConfig.type === "image") {
+        sceneConfig.content.url = mergedContent.mediaUrl || mergedContent.url || "";
+        sceneConfig.content.alt = mergedContent.alt || "Image";
+      } else if (sceneConfig.type === "quote") {
+        sceneConfig.content.quote = mergedContent.quote || "";
+        sceneConfig.content.author = mergedContent.author || "";
+        sceneConfig.content.role = scene.content.role || mergedContent.role;
+      }
+
+      // Merge director config (user settings take precedence)
+      sceneConfig.director = {
+        ...DEFAULT_DIRECTOR_CONFIG,
+        ...(aiEnhanced.director || {}),
+        ...(scene.director || {}),
+      };
+
+      enhancedScenes.push(sceneConfig);
+    }
+
+    console.log(`[Portfolio Enhanced] All ${enhancedScenes.length} scenes enhanced with AI`);
+
+    // Create or update project
+    const result_data = await db.transaction(async (tx) => {
+      let finalProjectId: string;
+
+      if (projectId) {
+        // Add to existing project
+        finalProjectId = projectId;
+        console.log(`[Portfolio Enhanced] Adding scenes to existing project ${finalProjectId}`);
+      } else {
+        // Create new project
+        if (!newProjectTitle || !newProjectSlug || !newProjectClient) {
+          throw new Error("New project requires title, slug, and client");
+        }
+
+        const [newProject] = await tx.insert(projects).values({
+          tenantId: req.tenantId,
+          title: newProjectTitle,
+          slug: newProjectSlug,
+          client: newProjectClient,
+          description: `AI-generated portfolio with ${enhancedScenes.length} scenes`,
+          thumbnail: "",
+          status: "draft",
+        }).returning();
+
+        finalProjectId = newProject.id;
+        console.log(`[Portfolio Enhanced] Created new project ${finalProjectId}`);
+      }
+
+      // Create all scenes
+      const createdScenes = [];
+      for (let i = 0; i < enhancedScenes.length; i++) {
+        const [scene] = await tx.insert(projectScenes).values({
+          projectId: finalProjectId,
+          sceneConfig: enhancedScenes[i],
+          order: i,
+        }).returning();
+        createdScenes.push(scene);
+      }
+
+      console.log(`[Portfolio Enhanced] Created ${createdScenes.length} scenes`);
+
+      return {
+        projectId: finalProjectId,
+        scenesCreated: createdScenes.length,
+        scenes: createdScenes,
+      };
+    });
+
+    return res.status(201).json(result_data);
   });
 
   // CINEMATIC MODE: Full AI Director (4-stage pipeline)
