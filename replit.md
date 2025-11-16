@@ -45,6 +45,7 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
         - **Error Handling**: Detailed validation messages with field-level errors surfaced in UI toasts
         - **API**: POST `/api/scenes/generate-with-ai` with lazy-loaded Gemini client
     - **AI Portfolio Builder** (`/admin/portfolio-builder`): Comprehensive project creation tool with AI-orchestrated scene generation.
+        - **Editable Conversation History**: All chat messages (user and AI) in the conversation history are editable via inline Edit/Save/Cancel controls. ChatMessage component features useEffect-based state synchronization to prevent stale edits when conversation updates.
         - **Content Catalog System**: Structured asset management with the following fields:
             - **Texts**: type (headline/subheading/paragraph, required) + content (required)
             - **Images**: url (required) + alt (required for accessibility) + caption (optional)
@@ -55,7 +56,9 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
         - **Workflow**: Supports both new projects (requires title and slug; client optional) and adding scenes to existing projects
         - **Validation**: Triple-layer enforcement (frontend UI → Zod schema refinement → backend runtime checks); catalog must contain at least one asset
         - **Transactional Atomicity**: Drizzle transaction wrapper ensures project creation and scene inserts commit or rollback together
-        - **API**: POST `/api/portfolio/generate-with-ai` with Gemini orchestration via `portfolio-director.ts`
+        - **API Endpoint Routing**: Frontend routes to mode-specific endpoints:
+            - Initial cinematic generation → POST `/api/portfolio/generate-cinematic` with catalog payload
+            - Initial hybrid/refinement → POST `/api/portfolio/generate-enhanced` with scenes/conversation payload
         - **Navigation**: Accessible from admin sidebar with Sparkles icon
 
 **System Design Choices:**

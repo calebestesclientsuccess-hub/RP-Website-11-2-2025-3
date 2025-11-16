@@ -552,12 +552,6 @@ export default function PortfolioBuilder() {
 
     setIsRefining(true);
     try {
-      // Build conversation history for context
-      const fullConversationHistory = [
-        ...conversationHistory,
-        { role: "user", content: promptToSend }
-      ];
-
       // Parse current scenes for refinement mode
       let scenesForRefinement = undefined;
       if (isRefinementMode && currentSceneJson) {
@@ -598,7 +592,7 @@ export default function PortfolioBuilder() {
           mode: mode,
           scenes: isRefinementMode ? scenesForRefinement : (mode === "hybrid" ? scenes : undefined),
           portfolioAiPrompt: portfolioAiPrompt,
-          conversationHistory: fullConversationHistory,
+          conversationHistory: conversationHistory, // Send existing history only, not including current message
           currentPrompt: promptToSend,
           currentSceneJson: currentSceneJson,
           proposedChanges: proposedChanges,
