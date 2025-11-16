@@ -9,6 +9,7 @@ import { getRelatedLinks } from "@/lib/content-graph";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle } from "lucide-react";
+import { InternalHireCostCalculator } from "@/components/InternalHireCostCalculator";
 
 export default function ProblemPage() {
 
