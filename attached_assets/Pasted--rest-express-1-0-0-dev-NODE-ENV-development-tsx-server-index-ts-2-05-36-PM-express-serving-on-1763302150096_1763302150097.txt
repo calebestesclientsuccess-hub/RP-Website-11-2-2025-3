@@ -1,0 +1,59 @@
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+2:05:36 PM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 13 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+2:05:49 PM [express] GET /api/public/feature-flags/theme-toggle 304 in 349ms :: {"enabled":false}
+2:05:49 PM [express] GET /api/public/feature-flags/high-contrast-mode 304 in 354ms :: {"enabled":tru…
+2:05:49 PM [express] GET /api/public/feature-flags/revenue-architecture-playbook 304 in 385ms :: {"e…
+2:05:49 PM [express] GET /api/public/feature-flags/high-contrast-mode 304 in 213ms :: {"enabled":tru…
+2:05:49 PM [express] GET /api/public/feature-flags/theme-toggle 304 in 209ms :: {"enabled":false}
+2:05:49 PM [express] GET /api/public/campaigns 304 in 110ms :: []
+2:05:49 PM [express] GET /api/widget-config 304 in 116ms :: {"id":"a2ab5447-2a7b-406a-803c-55486022b…
+2:05:49 PM [express] GET /api/public/campaigns 304 in 400ms :: []
+2:05:49 PM [express] GET /api/auth/session 304 in 586ms :: {"user":{"id":"c2265118-f762-41b7-b522-e2…
+2:05:49 PM [express] GET /api/testimonials 304 in 1026ms :: [{"id":"6f5a514b-14f7-4488-81d3-69d1f193…
+2:05:49 PM [express] GET /api/auth/session 304 in 86ms :: {"user":{"id":"c2265118-f762-41b7-b522-e26…
+2:05:49 PM [express] POST /api/analytics/web-vitals 200 in 165ms
+2:05:49 PM [express] POST /api/analytics/web-vitals 200 in 182ms
+2:05:49 PM [express] POST /api/analytics/web-vitals 200 in 189ms
+2:05:49 PM [express] GET /api/widget-config 304 in 1150ms :: {"id":"a2ab5447-2a7b-406a-803c-55486022…
+2:05:50 PM [express] GET /api/content-assets 200 in 38ms
+2:05:50 PM [express] GET /api/projects 304 in 80ms :: [{"id":"013f768a-8163-4e47-bf7f-617068b54438",…
+2:05:51 PM [express] POST /api/analytics/web-vitals 200 in 36ms
+2:06:41 PM [express] GET /api/auth/session 304 in 179ms :: {"user":{"id":"c2265118-f762-41b7-b522-e2…
+2:06:41 PM [express] GET /api/public/feature-flags/high-contrast-mode 304 in 190ms :: {"enabled":tru…
+2:06:41 PM [express] GET /api/public/feature-flags/theme-toggle 304 in 202ms :: {"enabled":false}
+2:06:41 PM [express] GET /api/widget-config 304 in 43ms :: {"id":"a2ab5447-2a7b-406a-803c-55486022b0…
+2:06:41 PM [express] GET /api/branding/projects 304 in 213ms :: [{"id":"013f768a-8163-4e47-bf7f-6170…
+2:06:41 PM [express] GET /api/public/campaigns 304 in 178ms :: []
+2:06:42 PM [express] POST /api/analytics/web-vitals 200 in 43ms
+2:07:27 PM [vite] hmr update /src/components/branding/SceneRenderer.tsx, /src/index.css?v=YoH-9P6SLT48y4ssuz-6n
+2:07:28 PM [vite] hmr update /src/pages/admin/PortfolioBuilder.tsx, /src/index.css?v=YoH-9P6SLT48y4ssuz-6n
+2:07:28 PM [vite] Internal server error: Transform failed with 1 error:
+/home/runner/workspace/client/src/components/branding/SceneRenderer.tsx:563:120: ERROR: Multiple exports with the same name "SceneRenderer"
+  Plugin: vite:esbuild
+  File: /home/runner/workspace/client/src/components/branding/SceneRenderer.tsx:544:9
+  
+  Multiple exports with the same name "SceneRenderer"
+  561|  // If this component is part of a larger file with multiple components,
+  562|  // this export might need adjustment.
+  563|  _s(SceneRenderer, "2pPBNTTZlNRZBybDyTP2tg7cYW8=", true, function () {return [useInView];});_c2 = SceneRenderer;export { SceneRenderer };var _c, _c2;$RefreshReg$(_c, "ProgressiveImage");$RefreshReg$(_c2, "SceneRenderer");
+     |                                                                                                                          ^
+  564|  
+  565|  if (import.meta.hot && !inWebWorker) {
+  
+      at failureErrorWithLog (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:1472:15)
+      at /home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:755:50
+      at responseCallbacks.<computed> (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:622:9)
+      at handleIncomingPacket (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:677:12)
+      at Socket.readFromStdout (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:600:7)
+      at Socket.emit (node:events:524:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
