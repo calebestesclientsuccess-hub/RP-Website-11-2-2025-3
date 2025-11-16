@@ -174,6 +174,14 @@ export default function PortfolioBuilder() {
 
   // Load existing project scenes into the refinement interface when project is selected
   useEffect(() => {
+    console.log('[Portfolio Builder] State Check:', {
+      isNewProject,
+      selectedProjectId,
+      existingProjectScenes: existingProjectScenes?.length,
+      currentSceneJson: currentSceneJson?.length,
+      conversationHistory: conversationHistory?.length
+    });
+
     if (!isNewProject && selectedProjectId && existingProjectScenes && existingProjectScenes.length > 0) {
       // Convert scenes to the format we need for display
       const scenesJson = JSON.stringify(existingProjectScenes.map((scene: any) => scene.sceneConfig), null, 2);
@@ -186,11 +194,14 @@ export default function PortfolioBuilder() {
           content: `✅ Loaded ${existingProjectScenes.length} existing scenes from this project.\n\nYou can now refine them by describing what you'd like to change. For example:\n• "Make Scene 3 more dramatic"\n• "Add smoother transitions between all scenes"\n• "The hero section needs more impact"`
         }
       ]);
+      
+      console.log('[Portfolio Builder] Loaded existing scenes, set conversation history');
     } else if (!isNewProject && selectedProjectId && (!existingProjectScenes || existingProjectScenes.length === 0)) {
       // If project is selected but has no scenes, clear relevant states
       setCurrentSceneJson("");
       setConversationHistory([]);
       setGeneratedScenes(null);
+      console.log('[Portfolio Builder] Project has no scenes, cleared states');
     }
   }, [selectedProjectId, existingProjectScenes, isNewProject]);
 
@@ -834,7 +845,16 @@ export default function PortfolioBuilder() {
                 )}
 
                 {/* Show refinement mode if we have existing scenes OR generated scenes */}
-                {(currentSceneJson || conversationHistory.length > 0 || (existingProjectScenes && existingProjectScenes.length > 0)) ? (
+                {(() => {
+                  const shouldShowRefinement = (currentSceneJson || conversationHistory.length > 0 || (existingProjectScenes && existingProjectScenes.length > 0));
+                  console.log('[Portfolio Builder] Render Check:', {
+                    shouldShowRefinement,
+                    currentSceneJson: !!currentSceneJson,
+                    conversationHistoryLength: conversationHistory.length,
+                    existingScenesLength: existingProjectScenes?.length || 0
+                  });
+                  return shouldShowRefinement;
+                })() ? (
                   // REFINEMENT MODE - NEW CHAT INTERFACE
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Main Chat Column (2/3 width on large screens) */}
