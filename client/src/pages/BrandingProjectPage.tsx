@@ -151,21 +151,16 @@ export default function BrandingProjectPage() {
   useEffect(() => {
     if (!scenes || scenes.length === 0 || !scrollContainerRef.current) return;
 
-    // Debug: Verify GSAP is loaded
-    console.log('[BrandingProjectPage] GSAP loaded:', typeof gsap !== 'undefined');
-    console.log('[BrandingProjectPage] ScrollTrigger loaded:', typeof ScrollTrigger !== 'undefined');
-    console.log('[BrandingProjectPage] Scenes count:', scenes.length);
-    console.log('[GSAP] Initialization complete, animating', scenes?.length, 'scenes');
-
     // Detect prefers-reduced-motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // Clean up previous ScrollTrigger instances
     ScrollTrigger.getAll().forEach(trigger => trigger.kill());
 
-    // Enable smooth scrolling
-    gsap.to(scrollContainerRef.current, {
-      scrollBehavior: "smooth"
+    // Configure ScrollTrigger for smoother performance
+    ScrollTrigger.config({
+      limitCallbacks: true,
+      syncInterval: 150, // Reduce refresh rate for smoother scroll
     });
 
     // Hero parallax effect
@@ -184,14 +179,12 @@ export default function BrandingProjectPage() {
     }
 
     // Hero Section Fade-In Animation (Not scroll-triggered, loads immediately)
-    console.log('[GSAP] Animating hero section');
     const heroTitle = document.querySelector('[data-testid="text-project-title"]');
     const heroSubtitle = document.querySelector('[data-testid="text-project-subtitle"]');
     const heroBounce = document.querySelector('[data-testid="hero-bounce-indicator"]');
     
     // Animate hero title
     if (heroTitle) {
-      console.log('[GSAP] Hero title found, animating with fade-in');
       gsap.fromTo(heroTitle, 
         { autoAlpha: 0, y: 30 }, 
         { 
@@ -231,19 +224,23 @@ export default function BrandingProjectPage() {
       );
     }
 
-    // Track scroll progress on window
+    // Track scroll progress on window with throttling
+    let scrollTimeout: NodeJS.Timeout;
     const updateScrollProgress = () => {
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const scrollHeight = document.documentElement.scrollHeight;
-      const clientHeight = window.innerHeight;
-      const progress = (scrollTop / (scrollHeight - clientHeight)) * 100;
-      setScrollProgress(Math.min(100, Math.max(0, progress)));
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = window.innerHeight;
+        const progress = (scrollTop / (scrollHeight - clientHeight)) * 100;
+        setScrollProgress(Math.min(100, Math.max(0, progress)));
+      }, 100); // Throttle to every 100ms
     };
 
     // Initial progress update
     updateScrollProgress();
 
-    window.addEventListener('scroll', updateScrollProgress);
+    window.addEventListener('scroll', updateScrollProgress, { passive: true });
 
     // Setup scroll-driven animations for each scene
     const sceneElements = scrollContainerRef.current.querySelectorAll('[data-scene]');
@@ -288,24 +285,19 @@ export default function BrandingProjectPage() {
         });
       }
 
-      // Track active scene
+      // Track active scene (throttled state updates)
+      let sceneUpdateTimeout: NodeJS.Timeout;
       ScrollTrigger.create({
         trigger: element,
         start: "top center",
         end: "bottom center",
         onEnter: () => {
-          console.log('[GSAP] Scene', index, 'became active (scrolling down)');
-          setActiveSceneIndex(index);
+          clearTimeout(sceneUpdateTimeout);
+          sceneUpdateTimeout = setTimeout(() => setActiveSceneIndex(index), 50);
         },
         onEnterBack: () => {
-          console.log('[GSAP] Scene', index, 'became active (scrolling up)');
-          setActiveSceneIndex(index);
-        },
-        onLeave: () => {
-          console.log('[GSAP] Scene', index, 'left viewport (scrolling down)');
-        },
-        onLeaveBack: () => {
-          console.log('[GSAP] Scene', index, 'left viewport (scrolling up)');
+          clearTimeout(sceneUpdateTimeout);
+          sceneUpdateTimeout = setTimeout(() => setActiveSceneIndex(index), 50);
         },
       });
 
@@ -314,28 +306,6 @@ export default function BrandingProjectPage() {
       const exitEffect = director.exitEffect ? (exitEffectMap[director.exitEffect] || exitEffectMap.fade) : null;
       const entryDuration = director.entryEffect === 'sudden' ? 0.1 : (director.entryDuration || DEFAULT_DIRECTOR_CONFIG.entryDuration);
       const exitDuration = director.exitDuration || DEFAULT_DIRECTOR_CONFIG.exitDuration;
-      
-      console.log(`[Scene ${index}] Animation setup:`, {
-        configuredEntry: director.entryEffect,
-        resolvedEntryEffect: entryEffect,
-        entryDuration,
-        configuredExit: director.exitEffect,
-        resolvedExitEffect: exitEffect,
-        exitDuration,
-        scaleOnScroll: director.scaleOnScroll,
-        fadeOnScroll: director.fadeOnScroll,
-      });
-      
-      // PHASE 1: Diagnostic logging to falsify hypotheses H1-H5
-      console.log(`[Scene ${index}] Pre-GSAP State:`, {
-        dataScene: (element as HTMLElement).dataset.scene,
-        className: element.className,
-        hasOpacityZeroClass: element.classList.contains('opacity-0'),
-        computedOpacity: getComputedStyle(element).opacity,
-        computedVisibility: getComputedStyle(element).visibility,
-        tagName: element.tagName,
-        inlineStyle: (element as HTMLElement).style.cssText,
-      });
       
       if (prefersReducedMotion) {
         // Simplified animation for accessibility - just fade in/out
@@ -371,7 +341,6 @@ export default function BrandingProjectPage() {
         
         // Animate section element with time-based animation (not scroll-driven)
         // This allows smooth transitions that play over the configured duration
-        console.log('[GSAP] Creating entry animation for scene', index, 'with duration', entryDuration);
         gsap.fromTo(
           element,
           fromState,
@@ -384,17 +353,7 @@ export default function BrandingProjectPage() {
               trigger: element,
               start: "top bottom",
               end: "center center",
-              // NO scrub - this makes it time-based instead of scroll-position-based
               toggleActions: "play none none reverse",
-              onEnter: () => {
-                console.log('[GSAP] Scene', index, 'animation started (onEnter)');
-              },
-              onComplete: () => {
-                console.log('[GSAP] Scene', index, 'animation completed (onComplete)');
-              },
-              onEnterBack: () => {
-                console.log('[GSAP] Scene', index, 'animation reversed (onEnterBack)');
-              },
             }
           }
         );
@@ -429,10 +388,7 @@ export default function BrandingProjectPage() {
             delete exitState.opacity;
           }
           
-          console.log(`[Scene ${index}] Exit animation configured:`, exitState);
-          
           // Use time-based exit animation instead of scroll-driven
-          // This creates smooth transitions that play over the configured duration
           gsap.to(element, {
             ...exitState,
             duration: exitDuration,
@@ -441,19 +397,9 @@ export default function BrandingProjectPage() {
               trigger: element,
               start: "bottom center",
               end: "bottom top",
-              // NO scrub - makes it time-based instead of scroll-tied
               toggleActions: "play none none reverse",
-              onEnter: () => {
-                console.log(`[GSAP] Scene ${index} exit animation started - leaving viewport`);
-                console.log(`[Scene ${index}] Exit trigger fired`);
-              },
-              onComplete: () => {
-                console.log(`[GSAP] Scene ${index} exit animation completed`);
-              },
               onEnterBack: () => {
-                console.log(`[GSAP] Scene ${index} re-entering viewport - reversing exit`);
-                console.log(`[Scene ${index}] Reversing exit, resetting to visible`);
-                // Reset to visible state when scrolling back
+                // Reset to visible state when scrolling back (batch updates)
                 gsap.to(element, {
                   autoAlpha: 1,
                   y: 0,
@@ -463,15 +409,16 @@ export default function BrandingProjectPage() {
                   duration: 0.3,
                 });
                 
-                // Also reset media elements to their target opacity
                 const mediaElements = element.querySelectorAll('[data-media-opacity]');
-                mediaElements.forEach((media) => {
-                  const targetOpacity = parseFloat((media as HTMLElement).dataset.mediaOpacity || '1');
-                  gsap.to(media, {
-                    opacity: targetOpacity,
-                    duration: 0.3,
+                if (mediaElements.length > 0) {
+                  mediaElements.forEach((media) => {
+                    const targetOpacity = parseFloat((media as HTMLElement).dataset.mediaOpacity || '1');
+                    gsap.to(media, {
+                      opacity: targetOpacity,
+                      duration: 0.3,
+                    });
                   });
-                });
+                }
               },
             }
           });
@@ -517,36 +464,17 @@ export default function BrandingProjectPage() {
 
   // Navigate to a specific scene
   const scrollToScene = (index: number) => {
-    // CRITICAL: Gate navigation until animations are ready
-    // Prevents button clicks before ScrollTrigger initialization completes
-    if (!animationsReady) {
-      console.warn('[scrollToScene] Animations not ready yet, deferring navigation');
-      return;
-    }
+    if (!animationsReady || !scrollContainerRef.current) return;
     
-    if (!scrollContainerRef.current) return;
     const sceneElements = scrollContainerRef.current.querySelectorAll('[data-scene]');
     const targetScene = sceneElements[index] as HTMLElement;
     
     if (targetScene) {
-      // CRITICAL FIX: Scroll to position that brings scene INSIDE viewport
-      // Previous calculation (sceneTop - viewportHeight - 100) left scene BELOW viewport
-      // Example: sceneTop=1500, viewportHeight=800 → target=600 → new top=900 (still below 800!)
-      // New calculation brings scene to 40% down viewport, ensuring trigger fires
       const sceneTop = targetScene.getBoundingClientRect().top + window.scrollY;
       const viewportHeight = window.innerHeight;
-      const scrollTarget = sceneTop - (viewportHeight * 0.4); // Position scene at 40% down viewport
+      const scrollTarget = sceneTop - (viewportHeight * 0.4);
       
-      console.log('[scrollToScene] Scrolling to scene', index, 'target:', scrollTarget);
       window.scrollTo({ top: scrollTarget, behavior: 'smooth' });
-      
-      // CRITICAL: Refresh ScrollTrigger after programmatic scroll
-      // ScrollTrigger doesn't always detect programmatic scroll events
-      // Refresh ensures triggers fire correctly
-      setTimeout(() => {
-        console.log('[scrollToScene] Refreshing ScrollTrigger');
-        ScrollTrigger.refresh();
-      }, 100); // Small delay to ensure scroll has started
     }
   };
 
