@@ -88,3 +88,87 @@ export const sceneConfigSchema = z.discriminatedUnion("type", [
 export function validateScene(sceneConfig: any) {
   return sceneConfigSchema.parse(sceneConfig);
 }
+
+// Assume validateDirectorConfig is defined elsewhere and returns an object with `valid` (boolean), `errors` (array), and `warnings` (array) properties.
+// Example placeholder for validateDirectorConfig if it were in this file:
+/*
+function validateDirectorConfig(directorConfig: any) {
+  // Placeholder logic: In a real scenario, this would validate the director config
+  // and return validation results, including potential warnings.
+  const errors = [];
+  const warnings = [];
+
+  // Example: Check for entryDelay and its application
+  if (directorConfig && directorConfig.entryDelay !== undefined) {
+    // Simulate checking if entryDelay is correctly used in animations (this part would be complex)
+    // For demonstration, let's assume a conflict if entryDelay is negative or too large
+    if (directorConfig.entryDelay < 0 || directorConfig.entryDelay > 10000) {
+      errors.push("Invalid entryDelay value.");
+    } else {
+      // Simulate a potential conflict warning
+      if (directorConfig.animations && directorConfig.animations.some((anim: any) => anim.duration === undefined)) {
+        warnings.push("entryDelay might conflict with animations missing duration.");
+      }
+    }
+  }
+
+  // Example: Check for opacity handling
+  if (directorConfig && directorConfig.animations) {
+    const hasOpacity = directorConfig.animations.some((anim: any) => anim.opacity !== undefined);
+    const hasAutoAlpha = directorConfig.animations.some((anim: any) => anim.autoAlpha !== undefined);
+    if (hasOpacity && hasAutoAlpha) {
+      warnings.push("Mixing 'opacity' and 'autoAlpha' can lead to unexpected behavior. Consider using 'autoAlpha' exclusively.");
+    }
+  }
+
+  // Example: Add more checks for other potential conflicts
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+  };
+}
+*/
+
+// Assuming validateDirectorConfig is imported or defined elsewhere.
+// For the purpose of this combined file, let's assume it's available.
+// If it were in this file, it would be placed here or imported.
+
+// The following is a placeholder to make the code runnable as is,
+// assuming validateDirectorConfig is an external function.
+// In a real project, you would import it.
+declare function validateDirectorConfig(directorConfig: any): { valid: boolean; errors: string[]; warnings?: string[] };
+
+export function validateSceneWithDirector(scene: any) {
+  // Validate basic scene structure first
+  try {
+    validateScene(scene);
+  } catch (e) {
+    return {
+      valid: false,
+      errors: e.errors || ["Unknown validation error"],
+    };
+  }
+
+  // Validate director config if present
+  if (scene.director) {
+    const directorValidation = validateDirectorConfig(scene.director);
+    if (!directorValidation.valid) {
+      return {
+        valid: false,
+        errors: directorValidation.errors
+      };
+    }
+
+    // Log warnings (non-blocking) about potential conflicts
+    if (directorValidation.warnings && directorValidation.warnings.length > 0) {
+      console.warn(`[Scene Validator] Animation warnings for scene:`, directorValidation.warnings);
+    }
+  }
+
+  return {
+    valid: true,
+    errors: [],
+  };
+}

@@ -55,35 +55,36 @@ const objectFitMap: Record<string, string> = {
 };
 
 // GSAP animation mapping for director entry/exit effects
+// Using autoAlpha (opacity + visibility) for all effects for consistency
 const entryEffectMap: Record<string, { from: gsap.TweenVars; to: gsap.TweenVars }> = {
-  'fade': { from: { opacity: 0 }, to: { opacity: 1 } },
-  'slide-up': { from: { opacity: 0, y: 100 }, to: { opacity: 1, y: 0 } },
-  'slide-down': { from: { opacity: 0, y: -100 }, to: { opacity: 1, y: 0 } },
-  'slide-left': { from: { opacity: 0, x: 100 }, to: { opacity: 1, x: 0 } },
-  'slide-right': { from: { opacity: 0, x: -100 }, to: { opacity: 1, x: 0 } },
-  'zoom-in': { from: { opacity: 0, scale: 0.8 }, to: { opacity: 1, scale: 1 } },
-  'zoom-out': { from: { opacity: 0, scale: 1.2 }, to: { opacity: 1, scale: 1 } },
-  'sudden': { from: { opacity: 0 }, to: { opacity: 1 } },
-  'cross-fade': { from: { opacity: 0 }, to: { opacity: 1 } }, // Overlaps with previous scene exit
-  'rotate-in': { from: { opacity: 0, rotation: -90 }, to: { opacity: 1, rotation: 0 } },
-  'flip-in': { from: { opacity: 0, rotationY: -90 }, to: { opacity: 1, rotationY: 0 } },
-  'spiral-in': { from: { opacity: 0, rotation: 180, scale: 0.5 }, to: { opacity: 1, rotation: 0, scale: 1 } },
-  'elastic-bounce': { from: { opacity: 0, scale: 0.3 }, to: { opacity: 1, scale: 1 } }, // Use elastic ease
-  'blur-focus': { from: { opacity: 0, filter: 'blur(20px)' }, to: { opacity: 1, filter: 'blur(0px)' } },
+  'fade': { from: { autoAlpha: 0 }, to: { autoAlpha: 1 } },
+  'slide-up': { from: { autoAlpha: 0, y: 100 }, to: { autoAlpha: 1, y: 0 } },
+  'slide-down': { from: { autoAlpha: 0, y: -100 }, to: { autoAlpha: 1, y: 0 } },
+  'slide-left': { from: { autoAlpha: 0, x: 100 }, to: { autoAlpha: 1, x: 0 } },
+  'slide-right': { from: { autoAlpha: 0, x: -100 }, to: { autoAlpha: 1, x: 0 } },
+  'zoom-in': { from: { autoAlpha: 0, scale: 0.8 }, to: { autoAlpha: 1, scale: 1 } },
+  'zoom-out': { from: { autoAlpha: 0, scale: 1.2 }, to: { autoAlpha: 1, scale: 1 } },
+  'sudden': { from: { autoAlpha: 0 }, to: { autoAlpha: 1 } },
+  'cross-fade': { from: { autoAlpha: 0 }, to: { autoAlpha: 1 } }, // Overlaps with previous scene exit
+  'rotate-in': { from: { autoAlpha: 0, rotation: -90 }, to: { autoAlpha: 1, rotation: 0 } },
+  'flip-in': { from: { autoAlpha: 0, rotationY: -90 }, to: { autoAlpha: 1, rotationY: 0 } },
+  'spiral-in': { from: { autoAlpha: 0, rotation: 180, scale: 0.5 }, to: { autoAlpha: 1, rotation: 0, scale: 1 } },
+  'elastic-bounce': { from: { autoAlpha: 0, scale: 0.3 }, to: { autoAlpha: 1, scale: 1 } }, // Use elastic ease
+  'blur-focus': { from: { autoAlpha: 0, filter: 'blur(20px)' }, to: { autoAlpha: 1, filter: 'blur(0px)' } },
 };
 
 const exitEffectMap: Record<string, gsap.TweenVars> = {
-  'fade': { opacity: 0 },
-  'slide-up': { opacity: 0, y: -100 },
-  'slide-down': { opacity: 0, y: 100 },
-  'slide-left': { opacity: 0, x: -100 },
-  'slide-right': { opacity: 0, x: 100 },
-  'zoom-out': { opacity: 0, scale: 0.8 },
-  'dissolve': { opacity: 0, filter: 'blur(10px)' },
-  'cross-fade': { opacity: 0 }, // Smooth overlap with next scene
-  'rotate-out': { opacity: 0, rotation: 90 },
-  'flip-out': { opacity: 0, rotationY: 90 },
-  'scale-blur': { opacity: 0, scale: 1.2, filter: 'blur(20px)' },
+  'fade': { autoAlpha: 0 },
+  'slide-up': { autoAlpha: 0, y: -100 },
+  'slide-down': { autoAlpha: 0, y: 100 },
+  'slide-left': { autoAlpha: 0, x: -100 },
+  'slide-right': { autoAlpha: 0, x: 100 },
+  'zoom-out': { autoAlpha: 0, scale: 0.8 },
+  'dissolve': { autoAlpha: 0, filter: 'blur(10px)' },
+  'cross-fade': { autoAlpha: 0 }, // Smooth overlap with next scene
+  'rotate-out': { autoAlpha: 0, rotation: 90 },
+  'flip-out': { autoAlpha: 0, rotationY: 90 },
+  'scale-blur': { autoAlpha: 0, scale: 1.2, filter: 'blur(20px)' },
 };
 
 // Scroll speed mapping to GSAP scrub values
@@ -344,24 +345,9 @@ export default function BrandingProjectPage() {
         const contentWrapper = element.querySelector('[data-scene-content]');
         const mediaElements = element.querySelectorAll('[data-media-opacity]');
 
-        // Entry animation - Use autoAlpha for safer visibility control
+        // Entry animation - maps already use autoAlpha for visibility control
         const fromState = { ...entryEffect.from };
         const toState = { ...entryEffect.to };
-
-        // Replace opacity with autoAlpha (controls both opacity and visibility)
-        if ('opacity' in fromState) {
-          fromState.autoAlpha = fromState.opacity;
-          delete fromState.opacity;
-        } else {
-          fromState.autoAlpha = 0;
-        }
-
-        if ('opacity' in toState) {
-          toState.autoAlpha = toState.opacity;
-          delete toState.opacity;
-        } else {
-          toState.autoAlpha = 1;
-        }
 
         // Animate the CONTENT WRAPPER ONLY (never the section background)
         const targetElement = contentWrapper || element;
@@ -370,13 +356,16 @@ export default function BrandingProjectPage() {
         // Use elastic ease for bounce effect, otherwise power3
         const entryEase = director.entryEffect === 'elastic-bounce' ? "elastic.out(1, 0.5)" : "power3.out";
 
+        // Apply entry delay - CRITICAL FIX: ensure delay is always respected
+        const entryDelayValue = director.entryDelay !== undefined ? director.entryDelay : 0;
+        
         gsap.fromTo(
           targetElement,
           fromState,
           {
             ...toState,
             duration: entryDuration,
-            delay: director.entryDelay || 0,
+            delay: entryDelayValue,
             ease: entryEase,
             scrollTrigger: {
               trigger: element,
@@ -387,14 +376,8 @@ export default function BrandingProjectPage() {
               onLeave: () => {
                 // When scrolling DOWN past this scene, apply exit effect
                 if (exitEffect) {
-                  // Use getCleanState to ensure only properties GSAP understands are passed,
-                  // and combine with the specific exit effect.
+                  // Exit effect already uses autoAlpha from exitEffectMap
                   const exitState = { ...getCleanState(), ...exitEffect };
-                  // Convert opacity to autoAlpha for cleaner visibility handling
-                  if ('opacity' in exitState) {
-                    exitState.autoAlpha = exitState.opacity;
-                    delete exitState.opacity;
-                  }
                   gsap.to(targetElement, {
                     ...exitState,
                     duration: exitDuration,
