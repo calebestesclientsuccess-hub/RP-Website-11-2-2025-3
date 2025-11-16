@@ -161,37 +161,29 @@ export async function generateSceneWithGemini(
 
 /**
  * Build the complete prompt for scene generation
- * Now emphasizes hybrid composition capabilities and detailed director config
+ * Implements 37-control comprehensive configuration protocol
  */
 function buildScenePrompt(
   instruction: string,
-  context: {
-    projectTitle: string;
-    projectDescription: string;
-    existingScenes: any[];
-    sceneIndex: number;
-    totalScenes: number;
-  }
+  sceneType?: string,
+  systemInstructions?: string
 ): string {
-  const { projectTitle, projectDescription, existingScenes, sceneIndex, totalScenes } = context;
-
   return `You are a cinematic director creating a portfolio scene. You MUST consider ALL 37 configuration options for professional-grade output.
 
-PROJECT CONTEXT
-- Title: ${projectTitle}
-- Description: ${projectDescription}
-- Scene ${sceneIndex + 1} of ${totalScenes}
+${systemInstructions ? `SYSTEM CONTEXT:\n${systemInstructions}\n` : ''}
 
-PREVIOUS SCENES
-${existingScenes.map((s, i) => `Scene ${i + 1}: ${s.heading || 'Untitled'} (${s.type})`).join('\n')}
-
-USER INSTRUCTION
+USER INSTRUCTION:
 ${instruction}
 
-MANDATORY CONFIGURATION PROTOCOL
-You must address every single control below. For each category, provide explicit values or "NA" with justification.
+${sceneType ? `REQUESTED SCENE TYPE: ${sceneType}` : 'SCENE TYPE: Determine the most appropriate type'}
 
+MANDATORY CONFIGURATION PROTOCOL
+You must address every single control below. For each category, provide explicit values (never skip or use "default").
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CATEGORY 1: ANIMATION & TIMING (10 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 1. entryEffect - Choose from: fade, slide-up, slide-down, slide-left, slide-right, zoom-in, zoom-out, rotate-in, flip-in, bounce-in, elastic-in, blur-in, glitch-in, particle-dissolve
    Consider: Scene emotional tone, continuity from previous scene
 
@@ -222,18 +214,21 @@ CATEGORY 1: ANIMATION & TIMING (10 controls)
 10. staggerChildren - Range: 0-1 seconds
     Consider: Multi-element reveals, text line-by-line effects
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CATEGORY 2: VISUAL STYLE (11 controls)
-11. backgroundColor - Hex color
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+11. backgroundColor - Hex color (e.g., #0a0a0a)
     Consider: Brand palette, mood, contrast with text
 
-12. textColor - Hex color
+12. textColor - Hex color (e.g., #ffffff)
     Consider: Readability (4.5:1 contrast minimum), hierarchy
 
-13. gradientColors - Array of hex colors (optional)
+13. gradientColors - Array of hex colors or null
     Consider: Visual interest, depth, brand consistency
 
 14. gradientDirection - Choose from: to-r, to-l, to-t, to-b, to-tr, to-tl, to-br, to-bl
-    Consider: Reading flow, visual hierarchy
+    Consider: Reading flow, visual hierarchy (use null if no gradient)
 
 15. alignment - Choose from: left, center, right
     Consider: Content type, screen width, emphasis
@@ -249,10 +244,11 @@ CATEGORY 2: VISUAL STYLE (11 controls)
 
 19. textShadow - Boolean
     Consider: Contrast needs, depth, legibility on complex backgrounds
+    ⚠️ WARNING: Do not use with textGlow (choose one)
 
 20. textGlow - Boolean
     Consider: Dramatic effect, hero moments, brand style
-    WARNING: Do not use with textShadow (choose one)
+    ⚠️ WARNING: Do not use with textShadow (choose one)
 
 21. paddingTop - Choose from: none, sm, md, lg, xl, 2xl
     Consider: Breathing room, section separation
@@ -260,25 +256,32 @@ CATEGORY 2: VISUAL STYLE (11 controls)
 22. paddingBottom - Choose from: none, sm, md, lg, xl, 2xl
     Consider: Rhythm, next section proximity
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CATEGORY 3: SCROLL EFFECTS (5 controls)
-23. parallaxIntensity - Range: 0-1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+23. parallaxIntensity - Range: 0-1 (0 = no parallax, 1 = extreme)
     Consider: Depth perception, motion sickness risk, subtlety
+    ⚠️ WARNING: Values > 0.5 can cause motion sickness
 
 24. fadeOnScroll - Boolean
     Consider: Smooth transitions, cinematic flow
 
 25. scaleOnScroll - Boolean
-    Consider: Zoom effects, emphasis, performance impact
-    WARNING: Heavy on mobile, use sparingly
+    Consider: Zoom effects, emphasis
+    ⚠️ WARNING: Heavy on mobile, use sparingly, avoid with blurOnScroll
 
 26. blurOnScroll - Boolean
-    Consider: Depth of field, focus shifts, performance
-    WARNING: GPU intensive, avoid with scaleOnScroll
+    Consider: Depth of field, focus shifts
+    ⚠️ WARNING: GPU intensive, avoid with scaleOnScroll
 
 27. scrollSpeed - Choose from: slow, normal, fast
     Consider: Pacing, user control, narrative rhythm
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CATEGORY 4: CINEMATIC CONTROLS (7 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 28. transformOrigin - Choose from: center center, top left, top center, top right, center left, center right, bottom left, bottom center, bottom right
     Consider: Rotation/scale anchor point, visual balance
 
@@ -287,46 +290,58 @@ CATEGORY 4: CINEMATIC CONTROLS (7 controls)
 
 30. backdropBlur - Choose from: none, sm, md, lg, xl
     Consider: Glassmorphism, depth, layering
-    WARNING: Performance heavy, use sparingly
+    ⚠️ WARNING: Performance heavy, use sparingly
 
 31. mixBlendMode - Choose from: normal, multiply, screen, overlay, difference, exclusion
     Consider: Layering effects, creative compositing
-    WARNING: Test on various backgrounds
+    ⚠️ WARNING: Test on various backgrounds
 
 32. enablePerspective - Boolean
     Consider: 3D transforms, spatial depth, modern aesthetic
 
-33. customCSSClasses - String (optional)
+33. customCSSClasses - String (empty string if not needed)
     Consider: Special edge cases, experimental effects
 
-34. layerDepth - Range: 0-10
-    Consider: Z-index management, stacking context, depth hierarchy
+34. layerDepth - Range: 0-10 (z-index management)
+    Consider: Stacking context, depth hierarchy
 
-CATEGORY 5: MEDIA CONTROLS (3 controls - for media/split types only)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CATEGORY 5: MEDIA CONTROLS (3 controls - required for image/video scenes)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 35. mediaPosition - Choose from: center, top, bottom, left, right
     Consider: Focal point, composition, subject matter
+    Use null for text-only scenes
 
 36. mediaScale - Choose from: cover, contain, fill
     Consider: Aspect ratio preservation, content priority
+    Use null for text-only scenes
 
 37. mediaOpacity - Range: 0-1
     Consider: Overlay effects, text legibility, layering
+    Use 1 for full opacity, lower for overlay effects
 
-CONFLICT WARNINGS
-- textShadow + textGlow = visual mud (choose one)
-- scaleOnScroll + blurOnScroll = performance death (pick one)
-- backdropBlur + heavy animations = lag city (use sparingly)
-- mixBlendMode != "normal" requires testing on all backgrounds
-- parallaxIntensity > 0.5 = motion sickness risk
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL CONFLICT WARNINGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-OUTPUT FORMAT
-Return a JSON object with this exact structure:
+❌ textShadow + textGlow = visual mud (choose one)
+❌ scaleOnScroll + blurOnScroll = performance death (pick one)
+❌ backdropBlur + heavy animations = lag city (use sparingly)
+❌ mixBlendMode != "normal" requires testing on all backgrounds
+❌ parallaxIntensity > 0.5 = motion sickness risk
+
+REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 {
-  "type": "text" | "media" | "split",
-  "heading": "compelling heading",
-  "body": "optional body text",
-  "mediaUrl": "optional URL for media/split",
-  "config": {
+  "sceneType": "text" | "image" | "video" | "split" | "gallery" | "quote" | "fullscreen",
+  "headline": "compelling headline text",
+  "subheadline": "optional subheadline",
+  "bodyText": "optional body copy",
+  "mediaUrl": "URL or null",
+  "mediaType": "image" | "video" | null,
+  "backgroundColor": "#hex",
+  "textColor": "#hex",
+  "director": {
     "entryEffect": "value",
     "exitEffect": "value",
     "entryDuration": number,
@@ -340,7 +355,7 @@ Return a JSON object with this exact structure:
     "backgroundColor": "#hex",
     "textColor": "#hex",
     "gradientColors": ["#hex", "#hex"] or null,
-    "gradientDirection": "value",
+    "gradientDirection": "value" or null,
     "alignment": "value",
     "headingSize": "value",
     "bodySize": "value",
@@ -359,15 +374,15 @@ Return a JSON object with this exact structure:
     "backdropBlur": "value",
     "mixBlendMode": "value",
     "enablePerspective": boolean,
-    "customCSSClasses": "value or empty string",
+    "customCSSClasses": "value",
     "layerDepth": number,
-    "mediaPosition": "value or NA",
-    "mediaScale": "value or NA",
-    "mediaOpacity": number or 1
+    "mediaPosition": "value" or null,
+    "mediaScale": "value" or null,
+    "mediaOpacity": number
   }
 }
 
-Return ONLY valid JSON. No markdown, no explanations, no commentary. Every field must be present with a concrete value.`;
+Return ONLY valid JSON. Every field must be present with a concrete value (never omit or use defaults).`;
 }
 
 /**
