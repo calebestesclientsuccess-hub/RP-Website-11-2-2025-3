@@ -3,7 +3,6 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { SceneConfig } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
-import { useInView } from "react-intersection-observer";
 import { PlaceholderSlot } from "./PlaceholderSlot";
 import type { PlaceholderId } from "@shared/placeholder-config";
 
@@ -148,11 +147,35 @@ export function SceneRenderer({
   onOpenAssetMapper,
   isEditMode = false
 }: SceneRendererProps) {
-  const controls = useAnimation();
-  const [ref, inView] = useInView({
-    triggerOnce: false,
-    threshold: 0.3,
-  });
+  return (
+    <div className={className}>
+      {scenes.map((scene, index) => (
+        <SceneItem
+          key={index}
+          scene={scene}
+          index={index}
+          assetMap={assetMap}
+          onOpenAssetMapper={onOpenAssetMapper}
+          isEditMode={isEditMode}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SceneItem({
+  scene,
+  index,
+  assetMap = {},
+  onOpenAssetMapper,
+  isEditMode = false
+}: {
+  scene: SceneConfig;
+  index: number;
+  assetMap?: Record<string, string>;
+  onOpenAssetMapper?: (placeholderId: PlaceholderId) => void;
+  isEditMode?: boolean;
+}) {
   const sceneRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -537,3 +560,6 @@ export function SceneRenderer({
     </div>
   );
 }
+
+// Helper function to check if animation should run
+const shouldAnimate = () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
