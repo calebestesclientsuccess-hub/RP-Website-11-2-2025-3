@@ -37,6 +37,8 @@ import {
 } from "@shared/schema";
 import { ChevronDown, RotateCcw } from "lucide-react";
 import { useState } from "react";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface DirectorConfigFormProps {
   form: UseFormReturn<any>;
@@ -590,6 +592,121 @@ export function DirectorConfigForm({ form, sceneType }: DirectorConfigFormProps)
           </div>
         </CollapsibleContent>
       </Collapsible>
+
+      {/* Easing Controls */}
+      <div className="space-y-3">
+        <Label className="text-base font-semibold">Motion Quality (Easing)</Label>
+        <div className="space-y-2">
+          <Label htmlFor="entryEasing">Entry Easing</Label>
+          <Select
+            value={form.watch("director.entryEasing") || "ease-out"}
+            onValueChange={(value) => form.setValue("director.entryEasing", value)}
+          >
+            <SelectTrigger id="entryEasing">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="linear">Linear (mechanical)</SelectItem>
+              <SelectItem value="ease">Ease (default)</SelectItem>
+              <SelectItem value="ease-in">Ease In (accelerating)</SelectItem>
+              <SelectItem value="ease-out">Ease Out (decelerating)</SelectItem>
+              <SelectItem value="ease-in-out">Ease In-Out (smooth)</SelectItem>
+              <SelectItem value="power1">Power 1 (subtle)</SelectItem>
+              <SelectItem value="power2">Power 2 (medium)</SelectItem>
+              <SelectItem value="power3">Power 3 (cinematic)</SelectItem>
+              <SelectItem value="power4">Power 4 (dramatic)</SelectItem>
+              <SelectItem value="back">Back (overshoot)</SelectItem>
+              <SelectItem value="elastic">Elastic (bouncy)</SelectItem>
+              <SelectItem value="bounce">Bounce (playful)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="exitEasing">Exit Easing</Label>
+          <Select
+            value={form.watch("director.exitEasing") || "ease-in"}
+            onValueChange={(value) => form.setValue("director.exitEasing", value)}
+          >
+            <SelectTrigger id="exitEasing">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="linear">Linear (mechanical)</SelectItem>
+              <SelectItem value="ease">Ease (default)</SelectItem>
+              <SelectItem value="ease-in">Ease In (accelerating)</SelectItem>
+              <SelectItem value="ease-out">Ease Out (decelerating)</SelectItem>
+              <SelectItem value="ease-in-out">Ease In-Out (smooth)</SelectItem>
+              <SelectItem value="power1">Power 1 (subtle)</SelectItem>
+              <SelectItem value="power2">Power 2 (medium)</SelectItem>
+              <SelectItem value="power3">Power 3 (cinematic)</SelectItem>
+              <SelectItem value="power4">Power 4 (dramatic)</SelectItem>
+              <SelectItem value="back">Back (overshoot)</SelectItem>
+              <SelectItem value="elastic">Elastic (bouncy)</SelectItem>
+              <SelectItem value="bounce">Bounce (playful)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Advanced Timing */}
+      <div className="space-y-3">
+        <Label className="text-base font-semibold">Advanced Timing</Label>
+        <div className="space-y-2">
+          <Label htmlFor="exitDelay">Exit Delay (seconds)</Label>
+          <Input
+            id="exitDelay"
+            type="number"
+            step="0.1"
+            min="0"
+            max="2"
+            value={form.watch("director.exitDelay") || 0}
+            onChange={(e) =>
+              form.setValue("director.exitDelay", parseFloat(e.target.value))
+            }
+          />
+          <p className="text-xs text-muted-foreground">
+            Delay before exit animation starts
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="staggerChildren">Stagger Children (seconds)</Label>
+          <Input
+            id="staggerChildren"
+            type="number"
+            step="0.05"
+            min="0"
+            max="1"
+            value={form.watch("director.staggerChildren") || 0}
+            onChange={(e) =>
+              form.setValue("director.staggerChildren", parseFloat(e.target.value))
+            }
+          />
+          <p className="text-xs text-muted-foreground">
+            Delay between child element animations (0 = simultaneous)
+          </p>
+        </div>
+      </div>
+
+      {/* Layering */}
+      <div className="space-y-3">
+        <Label className="text-base font-semibold">Parallax Layering</Label>
+        <div className="space-y-2">
+          <Label htmlFor="layerDepth">Layer Depth (0-10)</Label>
+          <Input
+            id="layerDepth"
+            type="number"
+            min="0"
+            max="10"
+            value={form.watch("director.layerDepth") || 5}
+            onChange={(e) =>
+              form.setValue("director.layerDepth", parseInt(e.target.value))
+            }
+          />
+          <p className="text-xs text-muted-foreground">
+            Controls z-index for parallax layering (5 = default)
+          </p>
+        </div>
+      </div>
 
       {/* Media Settings (conditional) */}
       {isMediaScene && (

@@ -72,9 +72,12 @@ MANDATORY FIELD CHECKLIST - YOU MUST PROVIDE ALL OF THESE FOR EACH SCENE:
 ☐ assetIds (array of valid IDs from the catalog - MUST reference existing IDs only)
 ☐ entryEffect (fade, slide-up, slide-down, slide-left, slide-right, zoom-in, zoom-out, sudden, cross-fade, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus)
 ☐ entryDuration (number in seconds, minimum 0.8s recommended, 1.2s+ for noticeable effects)
-☐ entryDelay (number in seconds, 0-2, use 0 if unsure)
+☐ entryDelay (number in seconds, 0-2, use 0 if unsure - this is WHEN the animation starts after scroll trigger)
+☐ entryEasing (linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce)
 ☐ exitEffect (fade, slide-up, slide-down, slide-left, slide-right, zoom-out, dissolve, cross-fade, rotate-out, flip-out, scale-blur)
 ☐ exitDuration (number in seconds, minimum 0.6s recommended)
+☐ exitDelay (number in seconds, 0-2, use 0 if unsure - this is WHEN the exit animation starts)
+☐ exitEasing (linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce)
 ☐ backgroundColor (exact hex code like #0a0a0a or #1e293b)
 ☐ textColor (exact hex code like #ffffff or #f1f5f9)
 ☐ parallaxIntensity (number 0.0-1.0, use 0 if scaleOnScroll is true)
@@ -84,6 +87,8 @@ MANDATORY FIELD CHECKLIST - YOU MUST PROVIDE ALL OF THESE FOR EACH SCENE:
 ☐ fadeOnScroll (boolean: true or false)
 ☐ scaleOnScroll (boolean: true or false - MUST be false if parallaxIntensity > 0)
 ☐ blurOnScroll (boolean: true or false - recommended false for performance)
+☐ layerDepth (number 0-10, default 5 - controls z-index for parallax layering)
+☐ staggerChildren (number 0.0-1.0, default 0 - delay between child element animations in seconds)
 
 IF YOU SKIP ANY FIELD, THE SCENE WILL FAIL VALIDATION.
 IF YOU USE AN INVALID VALUE, THE SCENE WILL FAIL VALIDATION.
@@ -121,12 +126,20 @@ DIRECTOR'S NOTES INTERPRETATION MATRIX:
 Use this to translate natural language into technical configs:
 
 SPEED/PACING:
-- "fast" / "quick" / "snappy" → entryDuration: 0.8, exitDuration: 0.6, entryDelay: 0
-- "normal" / "smooth" / "standard" → entryDuration: 1.2, exitDuration: 1.0, entryDelay: 0
-- "slow" / "dramatic" / "deliberate" → entryDuration: 2.5, exitDuration: 1.8, entryDelay: 0.3
-- "very slow" / "contemplative" → entryDuration: 4.0, exitDuration: 3.0, entryDelay: 0.5
+- "fast" / "quick" / "snappy" → entryDuration: 0.8, exitDuration: 0.6, entryDelay: 0, entryEasing: "power2", exitEasing: "power2"
+- "normal" / "smooth" / "standard" → entryDuration: 1.2, exitDuration: 1.0, entryDelay: 0, entryEasing: "ease-out", exitEasing: "ease-in"
+- "slow" / "dramatic" / "deliberate" → entryDuration: 2.5, exitDuration: 1.8, entryDelay: 0.3, entryEasing: "power3", exitEasing: "power3"
+- "very slow" / "contemplative" → entryDuration: 4.0, exitDuration: 3.0, entryDelay: 0.5, entryEasing: "power4", exitEasing: "power4"
 - "delayed entrance" / "waits before entering" → entryDelay: 0.5-1.0
-- "staggered" / "sequential" → entryDelay: 0.3-0.8 (use for variety)
+- "staggered" / "sequential" → entryDelay: 0.3-0.8 (use for variety), staggerChildren: 0.1-0.3 for multi-element scenes
+
+EASING/MOTION QUALITY:
+- "sharp" / "mechanical" / "instant" → easing: "linear" or "power1"
+- "smooth" / "natural" → easing: "ease-out" (entry), "ease-in" (exit)
+- "cinematic" / "film-like" → easing: "power3" or "power4"
+- "bouncy" / "playful" / "energetic" → easing: "bounce" or "elastic"
+- "overshoot" / "anticipation" → easing: "back" (creates slight overshoot effect)
+- "explosive" / "powerful" → easing: "power4" with short duration
 
 DIRECTION:
 - "enters from left" → entryEffect: "slide-right"

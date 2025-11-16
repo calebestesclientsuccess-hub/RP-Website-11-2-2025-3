@@ -162,7 +162,7 @@ export const assessmentResponses = pgTable("assessment_responses", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
   sessionId: varchar("session_id").notNull().unique(),
-  
+
   q1: text("q1"),
   q2: text("q2"),
   q3: text("q3"),
@@ -187,11 +187,11 @@ export const assessmentResponses = pgTable("assessment_responses", {
   q18: text("q18"),
   q19: text("q19"),
   q20: text("q20"),
-  
+
   bucket: text("bucket"),
   completed: boolean("completed").default(false).notNull(),
   usedCalculator: boolean("used_calculator").default(false).notNull(),
-  
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -672,13 +672,13 @@ export const promptTemplates = pgTable("prompt_templates", {
 }, (table) => [
   // Unique constraint: name unique per tenant
   unique("unique_name_per_tenant").on(table.tenantId, table.name),
-  
+
   // Partial unique index: only one default template per tenant/sceneType/scope
   // CRITICAL: Use COALESCE to handle NULL sceneType (universal templates) so uniqueness is enforced
   uniqueIndex("unique_default_per_type_scope")
     .on(table.tenantId, sql`COALESCE(${table.sceneType}, '')`, table.scope)
     .where(sql`${table.isDefault} = true`),
-  
+
   // Regular composite index for query performance
   index("tenant_type_active_idx")
     .on(table.tenantId, table.sceneType, table.isActive),
@@ -781,12 +781,11 @@ const fullscreenSceneSchema = z.object({
 });
 
 // Director configuration schema (optional customization)
-const directorConfigSchema = z.object({
-  entryEffect: z.enum(["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-in", "zoom-out", "sudden", "cross-fade", "rotate-in", "flip-in", "spiral-in", "elastic-bounce", "blur-focus"]).optional(),
-  entryDuration: z.number().min(0.1).max(5.0).optional(),
-  entryDelay: z.number().min(0).max(10.0).optional(),
-  exitEffect: z.enum(["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-out", "dissolve", "cross-fade", "rotate-out", "flip-out", "scale-blur"]).optional(),
-  exitDuration: z.number().min(0.1).max(5.0).optional(),
+export const directorConfigSchema = z.object({
+  entryDuration: z.number().min(0.1).max(5).default(1.2),
+  exitDuration: z.number().min(0.1).max(5).default(1.0),
+  entryDelay: z.number().min(0).max(2).default(0),
+  exitDelay: z.number().min(0).max(2).default(0), // NEW: stagger exit timing
   backgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   textColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   gradientColors: z.array(z.string().regex(/^#[0-9A-Fa-f]{6}$/)).optional(),
@@ -798,7 +797,7 @@ const directorConfigSchema = z.object({
   scrollSpeed: z.enum(["slow", "normal", "fast"]).optional(),
   parallaxIntensity: z.number().min(0).max(1).optional(),
   animationDuration: z.number().min(0.5).max(10.0).optional(),
-  animationEasing: z.enum(["linear", "ease", "ease-in", "ease-out", "ease-in-out", "bounce", "elastic"]).optional(),
+  animationEasing: z.enum(["linear", "ease", "ease-in", "ease-out", "ease-in-out", "power1", "power2", "power3", "power4", "back", "elastic", "bounce"]).optional(),
   blurOnScroll: z.boolean().optional(),
   fadeOnScroll: z.boolean().optional(),
   scaleOnScroll: z.boolean().optional(),
@@ -812,6 +811,12 @@ const directorConfigSchema = z.object({
   overlayOpacity: z.number().min(0).max(1).optional(),
   overlayColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   zIndex: z.number().min(0).max(50).optional(),
+  entryEffect: z.enum(["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-in", "zoom-out", "sudden", "cross-fade", "rotate-in", "flip-in", "spiral-in", "elastic-bounce", "blur-focus"]).optional(),
+  exitEffect: z.enum(["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-out", "dissolve", "cross-fade", "rotate-out", "flip-out", "scale-blur"]).optional(),
+  entryEasing: z.enum(["linear", "ease", "ease-in", "ease-out", "ease-in-out", "power1", "power2", "power3", "power4", "back", "elastic", "bounce"]).default("ease-out"), // NEW: GSAP easing
+  exitEasing: z.enum(["linear", "ease", "ease-in", "ease-out", "ease-in-out", "power1", "power2", "power3", "power4", "back", "elastic", "bounce"]).default("ease-in"), // NEW: GSAP easing
+  layerDepth: z.number().min(0).max(10).default(5), // NEW: z-index control for parallax layering
+  staggerChildren: z.number().min(0).max(1).default(0), // NEW: delay between child element animations (0 = simultaneous)
 }).optional();
 
 // Update scene schemas to include optional director config
@@ -896,29 +901,29 @@ export const ALIGNMENTS = ["left", "center", "right"] as const;
 export const SCROLL_SPEEDS = ["slow", "normal", "fast"] as const;
 export const MEDIA_POSITIONS = ["center", "top", "bottom", "left", "right"] as const;
 export const MEDIA_SCALES = ["cover", "contain", "fill"] as const;
+export const EASING_FUNCTIONS = ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "power1", "power2", "power3", "power4", "back", "elastic", "bounce"] as const;
 
 export const DEFAULT_DIRECTOR_CONFIG = {
-  entryEffect: "fade" as const,
-  entryDuration: 1.0,
+  entryDuration: 1.2,
+  exitDuration: 1.0,
   entryDelay: 0,
-  exitEffect: "fade" as const,
-  exitDuration: 0.8,
-  backgroundColor: "#0a0a0a",
-  textColor: "#f0f0f0",
-  headingSize: "6xl" as const,
-  bodySize: "lg" as const,
-  fontWeight: "normal" as const,
-  alignment: "center" as const,
-  scrollSpeed: "normal" as const,
+  exitDelay: 0,
+  backgroundColor: "#000000",
+  textColor: "#ffffff",
   parallaxIntensity: 0.3,
-  animationDuration: 2.0,
-  fadeOnScroll: true,
-  blurOnScroll: false,
+  entryEffect: "fade",
+  exitEffect: "fade",
+  entryEasing: "ease-out",
+  exitEasing: "ease-in",
+  headingSize: "6xl",
+  bodySize: "lg",
+  alignment: "center",
+  fadeOnScroll: false,
   scaleOnScroll: false,
-  mediaPosition: "center" as const,
-  mediaScale: "cover" as const,
-  mediaOpacity: 1.0,
-};
+  blurOnScroll: false,
+  layerDepth: 5,
+  staggerChildren: 0,
+} as const;
 
 // Types
 export type FormField = z.infer<typeof formFieldSchema>;
