@@ -9,6 +9,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { DirectorConfig, DEFAULT_DIRECTOR_CONFIG } from "@shared/schema";
 import { validateDirectorConfig } from '@/lib/director-validator';
+import { ComponentScene } from "@/components/branding/ComponentScene";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -1034,7 +1035,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
       );
 
     case "component":
-      const { ComponentScene } = await import("@/components/branding/ComponentScene");
+      // Dynamic import handled at module level - ComponentScene is now imported statically
       return (
         <ComponentScene
           componentType={content.componentType}

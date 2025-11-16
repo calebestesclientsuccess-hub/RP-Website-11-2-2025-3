@@ -9,7 +9,7 @@ function getAIClient(): GoogleGenAI {
       apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
       httpOptions: {
         apiVersion: "",
-        baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
+        baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASEURL || "",
       },
     });
   }
@@ -400,7 +400,7 @@ CONTROL 26-27: VISUAL BLENDING
 
 CONTROL 28-29: CUSTOM STYLING
 ☐ customCSSClasses: Space-separated Tailwind utility classes
-   Format: String like "shadow-2xl ring-4 ring-purple-500" or empty string ""
+   Format: String like "shadow-2xl ring-4" or empty string ""
    Use: "" = no custom classes (RECOMMENDED), add classes only for advanced customization
 
 ☐ textShadow: Drop shadow on text (boolean)
@@ -617,24 +617,24 @@ BEFORE GENERATING OUTPUT, VERIFY:
 
 REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 {
-  "sceneType": "text" | "image" | "video" | "split" | "gallery" | "quote" | "fullscreen",
-  "assetIds": string[], // MUST reference valid placeholder IDs ONLY from the available list
+  "sceneType": "text" | "image" | "video" | "split" | "gallery" | "quote" | "fullscreen" | "component",
+  "assetIds": string[], // MUST reference valid placeholder IDs ONLY from the available list (empty array for component scenes)
   "layout": "default" | "reverse", // Optional, primarily for split scenes
   "director": {
     // Required fields (37 total - ALL MUST BE PRESENT AND VALID)
     "entryEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-in" | "zoom-out" | "sudden" | "cross-fade" | "rotate-in" | "flip-in" | "spiral-in" | "elastic-bounce" | "blur-focus",
     "entryDuration": number, // seconds, min 0.8
-    "entryDelay": number, // seconds, 0-2
+    "entryDelay": number, // seconds, min 0
     "entryEasing": "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "power1" | "power2" | "power3" | "power4" | "back" | "elastic" | "bounce",
     "exitEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-out" | "dissolve" | "cross-fade" | "rotate-out" | "flip-out" | "scale-blur",
     "exitDuration": number, // seconds, min 0.6
-    "exitDelay": number, // seconds, 0-2
+    "exitDelay": number, // seconds, min 0
     "exitEasing": "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "power1" | "power2" | "power3" | "power4" | "back" | "elastic" | "bounce",
     "backgroundColor": string, // hex code, e.g., "#0a0a0a"
     "textColor": string, // hex code, e.g., "#ffffff"
     "parallaxIntensity": number, // 0.0-1.0 (set to 0 if scaleOnScroll is true)
     "scrollSpeed": "slow" | "normal" | "fast",
-    "animationDuration": number, // seconds, 0.5-10
+    "animationDuration": number, // seconds, min 0.5
     "headingSize": "4xl" | "5xl" | "6xl" | "7xl" | "8xl",
     "bodySize": "base" | "lg" | "xl" | "2xl",
     "fontWeight": "normal" | "medium" | "semibold" | "bold",
@@ -813,12 +813,12 @@ export async function generatePortfolioWithAI(
                   properties: {
                     sceneType: {
                       type: Type.STRING,
-                      description: "Must be: text, image, video, quote, split, gallery, or fullscreen"
+                      description: "Must be: text, image, video, quote, split, gallery, fullscreen, or component"
                     },
                     assetIds: {
                       type: Type.ARRAY,
                       items: { type: Type.STRING },
-                      description: "Array of valid placeholder IDs (e.g., ['placeholder-image-1'])."
+                      description: "Array of valid placeholder IDs (e.g., ['placeholder-image-1']). MUST be an empty array for 'component' sceneType."
                     },
                     layout: {
                       type: Type.STRING,
@@ -877,7 +877,7 @@ export async function generatePortfolioWithAI(
 
                         // --- VERTICAL SPACING (2 controls) ---
                         paddingTop: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
-                        paddingBottom: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
+                        paddingBottom: { type: Type.STRING, description: "none, sm, md", },
 
                         // --- MEDIA PRESENTATION (3 controls) ---
                         // These are now required BUT nullable to allow for 'text' scenes
@@ -1453,7 +1453,11 @@ Return:
         scenePrompt = buildFullscreenScenePrompt(scene, catalog);
         break;
       default:
-        // Skip refinement for basic scene types (text, image, video)
+        // Skip refinement for basic scene types (text, image, video) and 'component'
+        if (scene.sceneType === 'component') {
+            // Special handling for component scenes if needed, but for now, skip
+            console.log(`[Portfolio Director] Stage 3.5 skipping refinement for 'component' scene type (index ${i}).`);
+        }
         continue;
     }
 
@@ -2883,6 +2887,18 @@ export function convertToSceneConfigs(
           mediaType: video ? "video" : "image",
           alt: image?.alt || "Fullscreen media placeholder",
           overlay: false,
+        };
+        break;
+      }
+      case "component": {
+        // Component scenes do not use assetIds directly from the catalog.
+        // They will reference component names or configurations.
+        // For now, we assign an empty array and rely on the AI's director config.
+        sceneConfig.assetIds = []; // Explicitly empty for component scenes
+        sceneConfig.content = {
+          // The AI will populate this based on the director config and potentially other context
+          // For example, it might specify which specific component to render and its props.
+          // This will likely be a JSON object defining the component and its configuration.
         };
         break;
       }
