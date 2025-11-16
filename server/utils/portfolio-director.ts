@@ -776,14 +776,22 @@ const DEFAULT_DIRECTOR_CONFIG = {
  */
 export async function generatePortfolioWithAI(
   catalog: ContentCatalog,
-  projectTitle: string // Added projectTitle for logging
+  projectTitle: string, // Added projectTitle for logging
+  projectId?: string, // Optional: for loading custom prompts
+  customPrompts?: Record<string, string> // Optional: pre-loaded custom prompts
 ): Promise<PortfolioGenerateResponse> {
   const aiClient = getAIClient();
 
   console.log('[Portfolio Director] Starting 6-stage refinement pipeline...');
 
   // STAGE 1: Initial Generation (Form-Filling) with retry logic
-  const prompt = buildPortfolioPrompt(catalog);
+  // Check for custom prompt override
+  const defaultPrompt = buildPortfolioPrompt(catalog);
+  const prompt = customPrompts?.['artistic_director'] || defaultPrompt;
+  
+  if (customPrompts?.['artistic_director']) {
+    console.log('[Portfolio Director] Using CUSTOM prompt for Stage 1 (Artistic Director)');
+  }
 
   let stage1Response;
   let retryCount = 0;

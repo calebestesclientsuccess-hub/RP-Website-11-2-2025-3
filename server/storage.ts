@@ -1022,6 +1022,107 @@ export class DbStorage implements IStorage {
     return message;
   }
 
+  // Portfolio Prompts (per-portfolio system prompt overrides)
+  async getPortfolioPrompts(projectId: string) {
+    return db
+      .select()
+      .from(portfolioPrompts)
+      .where(eq(portfolioPrompts.projectId, projectId))
+      .orderBy(portfolioPrompts.promptType);
+  }
+
+  async getActivePortfolioPrompt(projectId: string, promptType: string) {
+    const [prompt] = await db
+      .select()
+      .from(portfolioPrompts)
+      .where(
+        and(
+          eq(portfolioPrompts.projectId, projectId),
+          eq(portfolioPrompts.promptType, promptType),
+          eq(portfolioPrompts.isActive, true)
+        )
+      )
+      .limit(1);
+    return prompt || null;
+  }
+
+  async createPortfolioPrompt(
+    projectId: string,
+    userId: string,
+    data: InsertPortfolioPrompt
+  ) {
+    const [prompt] = await db
+      .insert(portfolioPrompts)
+      .values({
+        ...data,
+        projectId,
+        createdBy: userId,
+        updatedBy: userId,
+      })
+      .returning();
+    return prompt;
+  }
+
+  async updatePortfolioPrompt(
+    id: string,
+    userId: string,
+    data: UpdatePortfolioPrompt
+  ) {
+    const [prompt] = await db
+      .update(portfolioPrompts)
+      .set({
+        ...data,
+        updatedBy: userId,
+        updatedAt: new Date(),
+      })
+      .where(eq(portfolioPrompts.id, id))
+      .returning();
+    return prompt;
+  }
+
+  async deletePortfolioPrompt(id: string) {
+    await db
+      .delete(portfolioPrompts)
+      .where(eq(portfolioPrompts.id, id));
+  }
+
+  async togglePortfolioPrompt(id: string, userId: string) {
+    const [prompt] = await db
+      .select()
+      .from(portfolioPrompts)
+      .where(eq(portfolioPrompts.id, id))
+      .limit(1);
+
+    if (!prompt) {
+      throw new Error('Prompt not found');
+    }
+
+    // If activating, deactivate other prompts of same type for same project
+    if (!prompt.isActive) {
+      await db
+        .update(portfolioPrompts)
+        .set({ isActive: false })
+        .where(
+          and(
+            eq(portfolioPrompts.projectId, prompt.projectId),
+            eq(portfolioPrompts.promptType, prompt.promptType)
+          )
+        );
+    }
+
+    const [updated] = await db
+      .update(portfolioPrompts)
+      .set({
+        isActive: !prompt.isActive,
+        updatedBy: userId,
+        updatedAt: new Date(),
+      })
+      .where(eq(portfolioPrompts.id, id))
+      .returning();
+
+    return updated;
+  }
+
   async getConversationHistory(projectId: string) {
     return db
       .select()

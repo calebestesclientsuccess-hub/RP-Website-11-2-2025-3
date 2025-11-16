@@ -1940,6 +1940,68 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
+  // Portfolio-specific prompt overrides
+  app.get("/api/projects/:projectId/prompts", requireAuth, async (req, res) => {
+    try {
+      const prompts = await storage.getPortfolioPrompts(req.params.projectId);
+      return res.json(prompts);
+    } catch (error) {
+      console.error("Error fetching portfolio prompts:", error);
+      return res.status(500).json({ error: "Failed to fetch portfolio prompts" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/prompts", requireAuth, async (req, res) => {
+    try {
+      const prompt = await storage.createPortfolioPrompt(
+        req.params.projectId,
+        req.session.userId!,
+        req.body
+      );
+      return res.json(prompt);
+    } catch (error) {
+      console.error("Error creating portfolio prompt:", error);
+      return res.status(500).json({ error: "Failed to create portfolio prompt" });
+    }
+  });
+
+  app.put("/api/portfolio-prompts/:id", requireAuth, async (req, res) => {
+    try {
+      const prompt = await storage.updatePortfolioPrompt(
+        req.params.id,
+        req.session.userId!,
+        req.body
+      );
+      return res.json(prompt);
+    } catch (error) {
+      console.error("Error updating portfolio prompt:", error);
+      return res.status(500).json({ error: "Failed to update portfolio prompt" });
+    }
+  });
+
+  app.delete("/api/portfolio-prompts/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deletePortfolioPrompt(req.params.id);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting portfolio prompt:", error);
+      return res.status(500).json({ error: "Failed to delete portfolio prompt" });
+    }
+  });
+
+  app.post("/api/portfolio-prompts/:id/toggle", requireAuth, async (req, res) => {
+    try {
+      const prompt = await storage.togglePortfolioPrompt(
+        req.params.id,
+        req.session.userId!
+      );
+      return res.json(prompt);
+    } catch (error) {
+      console.error("Error toggling portfolio prompt:", error);
+      return res.status(500).json({ error: "Failed to toggle portfolio prompt" });
+    }
+  });
+
   // Enhanced AI Portfolio Generation endpoint (scene-by-scene with per-scene AI prompts)
   // This endpoint handles both "cinematic" and "hybrid" modes, AND refinement
   app.post("/api/portfolio/generate-enhanced", requireAuth, async (req, res) => {

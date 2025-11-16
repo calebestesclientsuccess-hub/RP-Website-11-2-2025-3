@@ -1193,3 +1193,37 @@ export const insertAiPromptTemplateSchema = createInsertSchema(aiPromptTemplates
 
 export type InsertAiPromptTemplate = z.infer<typeof insertAiPromptTemplateSchema>;
 export type AiPromptTemplate = typeof aiPromptTemplates.$inferSelect;
+
+// Portfolio-specific prompt overrides
+export const portfolioPrompts = pgTable("portfolio_prompts", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  promptType: text("prompt_type").notNull().$type<
+    'artistic_director' | 
+    'technical_director' | 
+    'executive_producer' | 
+    'split_specialist' | 
+    'gallery_specialist' | 
+    'quote_specialist' | 
+    'fullscreen_specialist'
+  >(),
+  customPrompt: text("custom_prompt"),
+  isActive: boolean("is_active").default(false).notNull(),
+  version: integer("version").default(1).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdBy: text("created_by").references(() => users.id),
+  updatedBy: text("updated_by").references(() => users.id),
+});
+
+export const insertPortfolioPromptSchema = createInsertSchema(portfolioPrompts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updatePortfolioPromptSchema = insertPortfolioPromptSchema.partial();
+
+export type InsertPortfolioPrompt = z.infer<typeof insertPortfolioPromptSchema>;
+export type UpdatePortfolioPrompt = z.infer<typeof updatePortfolioPromptSchema>;
+export type PortfolioPrompt = typeof portfolioPrompts.$inferSelect;
