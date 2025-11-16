@@ -857,13 +857,13 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
             {content.quote}
           </blockquote>
           {content.author && (
-            <cite
-              className={`block ${bodySizeMap[director.bodySize]} not-italic`}
-              style={{ color: director.textColor, opacity: 0.6 }}
+            <cite 
+              className={`block ${bodySizeMap[director.bodySize]} not-italic opacity-60`}
+              style={{ color: director.textColor }}
             >
               — {content.author}
               {content.role && (
-                <span className="block text-base mt-2" style={{ opacity: 0.6 }}>
+                <span className="block text-base mt-2 opacity-60">
                   {content.role}
                 </span>
               )}
