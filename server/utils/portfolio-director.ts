@@ -925,17 +925,56 @@ export async function generatePortfolioWithAI(
 
 ${JSON.stringify(result, null, 2)}
 
-Audit this JSON for:
-1. Internal contradictions (e.g., parallax + scaleOnScroll both enabled)
-2. Missing required fields (even if confidence score is high, double check)
-3. Invalid values (durations < 0.1, colors not hex format, etc.)
-4. Pacing issues (all scenes same speed, no rhythm)
-5. Transition mismatches (exit effect of Scene N doesn't flow into entry of Scene N+1)
+COMPREHENSIVE AUDIT AGAINST THE 37-CONTROL SYSTEM:
+
+MANDATORY FIELD VERIFICATION:
+For each scene, verify ALL 37 controls are present with valid values:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ANIMATION & TIMING (8 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ entryEffect - valid enum value
+✓ entryDuration - number >= 0.8
+✓ entryDelay - number 0-2
+✓ entryEasing - valid enum value
+✓ exitEffect - valid enum value
+✓ exitDuration - number >= 0.6
+✓ exitDelay - number 0-2
+✓ exitEasing - valid enum value
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VISUAL FOUNDATION (2 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ backgroundColor - valid hex code
+✓ textColor - valid hex code (contrasts with background)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCROLL DEPTH EFFECTS (3 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ parallaxIntensity - number 0-1
+✓ scrollSpeed - "slow" | "normal" | "fast"
+✓ animationDuration - number 0.5-10
+
+[Continue for all 37 controls...]
+
+CONFLICT DETECTION:
+1. parallax + scaleOnScroll conflict (MUST set parallaxIntensity to 0 if scaleOnScroll is true)
+2. Color contrast issues (backgroundColor vs textColor)
+3. Invalid asset IDs (must be from placeholder list)
+4. Duration thresholds (entryDuration < 1.0s may be too fast for visibility)
+5. Pacing issues (all scenes same speed = no rhythm)
+6. Transition flow (exit effect of Scene N should complement entry of Scene N+1)
+
+PLACEHOLDER SYSTEM VALIDATION:
+✓ All assetIds reference valid placeholder IDs (image-1 through image-10, video-1 through video-5, etc.)
+✓ No references to user asset IDs (those come later via asset mapping)
 
 Return a JSON array of issues found:
 {
   "issues": [
     {"sceneIndex": 0, "field": "parallaxIntensity", "problem": "Conflicts with scaleOnScroll: true", "suggestion": "Set parallaxIntensity to 0"},
+    {"sceneIndex": 1, "field": "scrollSpeed", "problem": "Missing required field", "suggestion": "Add scrollSpeed: 'normal'"},
+    {"sceneIndex": 2, "field": "assetIds", "problem": "References non-existent asset 'user-image-1'", "suggestion": "Use placeholder ID like 'image-1'"},
     ...
   ]
 }`;
@@ -978,19 +1017,61 @@ ${JSON.stringify(result, null, 2)}
 User requirements from director notes:
 ${catalog.directorNotes}
 
-Generate 10 specific improvements to make this sequence better:
-1. Better timing/pacing
-2. More cinematic transitions
-3. Improved color progression
-4. Better asset utilization
-5. Enhanced narrative flow
+Generate 10 specific improvements using the 37-CONTROL FRAMEWORK:
 
-Each improvement should be actionable and specific.
+IMPROVEMENT CATEGORIES (reference the specific control categories):
+
+1. **ANIMATION & TIMING** (8 controls)
+   - Adjust entryDuration/exitDuration for dramatic impact (1.2-2.5s for hero moments)
+   - Refine easing curves (power3/power4 for cinematic feel)
+   - Add strategic delays (entryDelay/exitDelay for staggered reveals)
+
+2. **VISUAL FOUNDATION** (2 controls)
+   - Improve color progression across scenes
+   - Ensure proper contrast (backgroundColor vs textColor)
+
+3. **SCROLL DEPTH EFFECTS** (3 controls)
+   - Optimize parallaxIntensity (0.3-0.5 for dramatic scenes, 0 for text)
+   - Set appropriate scrollSpeed (slow for hero, fast for galleries)
+   - Match animationDuration to content importance
+
+4. **TYPOGRAPHY** (4 controls)
+   - Scale headingSize appropriately (7xl/8xl for heroes, 5xl for sections)
+   - Adjust bodySize for readability
+   - Set fontWeight for emphasis hierarchy
+
+5. **SCROLL INTERACTION** (3 controls)
+   - Use fadeOnScroll sparingly (max 30% of scenes)
+   - Apply scaleOnScroll for dramatic zoom (conflicts with parallax!)
+   - Avoid blurOnScroll except for 1-2 cinematic moments
+
+6. **TRANSITION DESIGN**
+   - Ensure exit/entry effects create smooth narrative flow
+   - Vary speeds to create musical rhythm
+   - Use complementary effects (fade→fade, dissolve→cross-fade)
+
+Each improvement MUST:
+- Reference a specific control from the 37-control system
+- Provide concrete values (not "increase" but "change from 1.2 to 2.5")
+- Explain the cinematic reasoning
 
 Return:
 {
   "improvements": [
-    {"sceneIndex": 0, "field": "entryDuration", "currentValue": 1.2, "newValue": 2.5, "reason": "Hero should be slower and more dramatic"},
+    {
+      "sceneIndex": 0,
+      "field": "director.entryDuration",
+      "currentValue": "1.2",
+      "newValue": "2.5",
+      "reason": "Hero scene needs slower, more dramatic entrance (ANIMATION & TIMING category). 2.5s creates noticeable impact vs 1.2s which feels rushed."
+    },
+    {
+      "sceneIndex": 1,
+      "field": "director.scrollSpeed",
+      "currentValue": "normal",
+      "newValue": "slow",
+      "reason": "Second scene should maintain hero's contemplative pace (SCROLL DEPTH EFFECTS category). Slow scroll speed creates cinematic continuity."
+    },
     ...
   ]
 }`;
@@ -1159,22 +1240,80 @@ ${appliedImprovements.join('\n')}
 AUDIT ISSUES FIXED:
 ${auditResult.issues.map((issue: any) => `- Scene ${issue.sceneIndex}: ${issue.field} - ${issue.suggestion}`).join('\n')}
 
-Generate the final, polished scene sequence incorporating ALL improvements and fixes. Ensure:
-1. All timing is dramatic and noticeable
-2. Transitions flow seamlessly between scenes
-3. No conflicts between parallax/scaleOnScroll/blurOnScroll
-4. Color progression creates visual journey
-5. Pacing has musical rhythm (varied speeds)
-6. Asset selection tells compelling story
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MANDATORY 37-CONTROL VERIFICATION CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Return the complete scenes array with full director configs. Ensure ALL required director fields are present for each scene.
+YOU MUST PROVIDE ALL 37 CONTROLS FOR EVERY SCENE. NO EXCEPTIONS.
+
+ANIMATION & TIMING (8 controls):
+✓ entryEffect, entryDuration, entryDelay, entryEasing
+✓ exitEffect, exitDuration, exitDelay, exitEasing
+
+VISUAL FOUNDATION (2 controls):
+✓ backgroundColor, textColor
+
+SCROLL DEPTH EFFECTS (3 controls):
+✓ parallaxIntensity, scrollSpeed, animationDuration
+
+TYPOGRAPHY (4 controls):
+✓ headingSize, bodySize, fontWeight, alignment
+
+SCROLL INTERACTION (3 controls):
+✓ fadeOnScroll, scaleOnScroll, blurOnScroll
+
+MULTI-ELEMENT TIMING (2 controls):
+✓ staggerChildren, layerDepth
+
+ADVANCED MOTION (3 controls):
+✓ transformOrigin, overflowBehavior, backdropBlur
+
+VISUAL BLENDING (2 controls):
+✓ mixBlendMode, enablePerspective
+
+CUSTOM STYLING (3 controls):
+✓ customCSSClasses, textShadow, textGlow
+
+VERTICAL SPACING (2 controls):
+✓ paddingTop, paddingBottom
+
+MEDIA PRESENTATION (3 controls):
+✓ mediaPosition, mediaScale, mediaOpacity
+
+GRADIENT BACKGROUNDS (2 controls - nullable):
+✓ gradientColors, gradientDirection
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CRITICAL REQUIREMENTS:
+1. All timing is dramatic and noticeable (entryDuration >= 1.2s for impact)
+2. Transitions flow seamlessly between scenes
+3. NO conflicts (parallax + scaleOnScroll = FORBIDDEN)
+4. Color progression creates visual journey
+5. Pacing has musical rhythm (varied scrollSpeed and durations)
+6. Asset selection tells compelling story
+7. ALL placeholder IDs must be valid (image-1 through image-10, etc.)
 
 BEFORE GENERATING OUTPUT, VERIFY:
 ✓ Every scene has ALL 37 director fields with concrete values
-✓ No field is set to "default", "auto", or left as null (except gradientColors/gradientDirection/mediaPosition/mediaScale when appropriate)
+✓ No field is set to "default", "auto", or left as undefined
+✓ gradientColors is either an array of hex codes OR undefined (not null)
+✓ gradientDirection is either a string OR undefined (not null)
 ✓ All durations are ≥ 0.8s for visibility
-✓ All colors are valid hex codes
-✓ No conflicts (parallax + scaleOnScroll, textShadow + textGlow, etc.)
+✓ All colors are valid hex codes with # prefix
+✓ No conflicts (parallaxIntensity = 0 when scaleOnScroll = true)
+✓ scrollSpeed is one of: "slow" | "normal" | "fast"
+
+PLACEHOLDER SYSTEM REMINDER:
+You MUST use ONLY these placeholder IDs in assetIds arrays:
+- Images: image-1, image-2, ..., image-10
+- Videos: video-1, video-2, ..., video-5
+- Quotes: quote-1, quote-2, quote-3
+- Texts: text-1, text-2, ..., text-10
+
+DO NOT reference user asset IDs. The user will map placeholders to their real assets later.
+
+Return the complete scenes array with full director configs. Ensure ALL 37 required director fields are present for each scene.
 
 REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 {
@@ -1182,46 +1321,44 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
   "assetIds": string[], // MUST reference valid placeholder IDs ONLY
   "layout": "default" | "reverse", // Optional, primarily for split scenes
   "director": {
-    // Required fields (37 total - ALL MUST BE PRESENT AND VALID)
-    "entryEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-in" | "zoom-out" | "sudden" | "cross-fade" | "rotate-in" | "flip-in" | "spiral-in" | "elastic-bounce" | "blur-focus",
-    "entryDuration": number, // seconds, min 0.8
-    "entryDelay": number, // seconds, 0-2
-    "entryEasing": "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "power1" | "power2" | "power3" | "power4" | "back" | "elastic" | "bounce",
-    "exitEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-out" | "dissolve" | "cross-fade" | "rotate-out" | "flip-out" | "scale-blur",
-    "exitDuration": number, // seconds, min 0.6
-    "exitDelay": number, // seconds, 0-2
-    "exitEasing": "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "power1" | "power2" | "power3" | "power4" | "back" | "elastic" | "bounce",
-    "backgroundColor": string, // hex code, e.g., "#0a0a0a"
-    "textColor": string, // hex code, e.g., "#ffffff"
-    "parallaxIntensity": number, // 0.0-1.0 (set to 0 if scaleOnScroll is true)
-    "scrollSpeed": "slow" | "normal" | "fast",
-    "animationDuration": number, // seconds, 0.5-10
-    "headingSize": "4xl" | "5xl" | "6xl" | "7xl" | "8xl",
-    "bodySize": "base" | "lg" | "xl" | "2xl",
-    "fontWeight": "normal" | "medium" | "semibold" | "bold",
-    "alignment": "left" | "center" | "right",
+    // All 37 controls - EVERY SINGLE ONE MUST BE PRESENT
+    "entryEffect": string,
+    "entryDuration": number,
+    "entryDelay": number,
+    "entryEasing": string,
+    "exitEffect": string,
+    "exitDuration": number,
+    "exitDelay": number,
+    "exitEasing": string,
+    "backgroundColor": string,
+    "textColor": string,
+    "parallaxIntensity": number,
+    "scrollSpeed": string,
+    "animationDuration": number,
+    "headingSize": string,
+    "bodySize": string,
+    "fontWeight": string,
+    "alignment": string,
     "fadeOnScroll": boolean,
-    "scaleOnScroll": boolean, // MUST be false if parallaxIntensity > 0
-    "blurOnScroll": boolean, // Recommended false for performance
-    "staggerChildren": number, // 0.0-1.0
-    "layerDepth": number, // 0-10
-    "transformOrigin": "center center" | "top left" | "top center" | "top right" | "center left" | "center right" | "bottom left" | "bottom center" | "bottom right",
-    "overflowBehavior": "visible" | "hidden" | "auto",
-    "backdropBlur": "none" | "sm" | "md" | "lg" | "xl",
-    "mixBlendMode": "normal" | "multiply" | "screen" | "overlay" | "difference" | "exclusion",
-    "enablePerspective": boolean, // true for 3D rotations
-    "customCSSClasses": string, // space-separated Tailwind classes
+    "scaleOnScroll": boolean,
+    "blurOnScroll": boolean,
+    "staggerChildren": number,
+    "layerDepth": number,
+    "transformOrigin": string,
+    "overflowBehavior": string,
+    "backdropBlur": string,
+    "mixBlendMode": string,
+    "enablePerspective": boolean,
+    "customCSSClasses": string,
     "textShadow": boolean,
     "textGlow": boolean,
-    "paddingTop": "none" | "sm" | "md" | "lg" | "xl" | "2xl",
-    "paddingBottom": "none" | "sm" | "md" | "lg" | "xl" | "2xl",
-    "mediaPosition": "center" | "top" | "bottom" | "left" | "right", // Optional, for image/video scenes
-    "mediaScale": "cover" | "contain" | "fill", // Optional, for image/video scenes
-    "mediaOpacity": number, // 0.0-1.0
-
-    // Optional fields (can be null or omitted if not applicable/desired, but defaults will be applied if missing)
-    "gradientColors"?: string[], // Array of hex colors, e.g., ["#ff0000", "#0000ff"]
-    "gradientDirection"?: string, // e.g., "to-r", "to-br"
+    "paddingTop": string,
+    "paddingBottom": string,
+    "mediaPosition": string,
+    "mediaScale": string,
+    "mediaOpacity": number,
+    "gradientColors"?: string[], // Optional: array or undefined
+    "gradientDirection"?: string // Optional: string or undefined
   }
 }
 
@@ -1311,47 +1448,155 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
   console.log(`[Portfolio Director] ✅ Stage 5 complete: Final regeneration with ${finalResult.scenes.length} scenes`);
 
   // STAGE 6: Final Validation Against Requirements
-  console.log('[Portfolio Director] ✅ Stage 6: Final validation');
+  console.log('[Portfolio Director] ✅ Stage 6: Final validation - checking all 37 controls');
 
   const finalValidAssetIds = buildAssetWhitelist(); // Static placeholders only
   const warnings: string[] = [];
 
+  // Define all 37 required controls with type expectations
+  const requiredDirectorControls = {
+    // ANIMATION & TIMING (8)
+    entryEffect: { type: 'string', enum: ['fade', 'slide-up', 'slide-down', 'slide-left', 'slide-right', 'zoom-in', 'zoom-out', 'sudden', 'cross-fade', 'rotate-in', 'flip-in', 'spiral-in', 'elastic-bounce', 'blur-focus'] },
+    entryDuration: { type: 'number', min: 0.8 },
+    entryDelay: { type: 'number', min: 0, max: 2 },
+    entryEasing: { type: 'string', enum: ['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out', 'power1', 'power2', 'power3', 'power4', 'back', 'elastic', 'bounce'] },
+    exitEffect: { type: 'string', enum: ['fade', 'slide-up', 'slide-down', 'slide-left', 'slide-right', 'zoom-out', 'dissolve', 'cross-fade', 'rotate-out', 'flip-out', 'scale-blur'] },
+    exitDuration: { type: 'number', min: 0.6 },
+    exitDelay: { type: 'number', min: 0, max: 2 },
+    exitEasing: { type: 'string', enum: ['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out', 'power1', 'power2', 'power3', 'power4', 'back', 'elastic', 'bounce'] },
+    
+    // VISUAL FOUNDATION (2)
+    backgroundColor: { type: 'string', pattern: /^#[0-9A-Fa-f]{6}$/ },
+    textColor: { type: 'string', pattern: /^#[0-9A-Fa-f]{6}$/ },
+    
+    // SCROLL DEPTH EFFECTS (3)
+    parallaxIntensity: { type: 'number', min: 0, max: 1 },
+    scrollSpeed: { type: 'string', enum: ['slow', 'normal', 'fast'] },
+    animationDuration: { type: 'number', min: 0.5, max: 10 },
+    
+    // TYPOGRAPHY (4)
+    headingSize: { type: 'string', enum: ['4xl', '5xl', '6xl', '7xl', '8xl'] },
+    bodySize: { type: 'string', enum: ['base', 'lg', 'xl', '2xl'] },
+    fontWeight: { type: 'string', enum: ['normal', 'medium', 'semibold', 'bold'] },
+    alignment: { type: 'string', enum: ['left', 'center', 'right'] },
+    
+    // SCROLL INTERACTION (3)
+    fadeOnScroll: { type: 'boolean' },
+    scaleOnScroll: { type: 'boolean' },
+    blurOnScroll: { type: 'boolean' },
+    
+    // MULTI-ELEMENT TIMING (2)
+    staggerChildren: { type: 'number', min: 0, max: 1 },
+    layerDepth: { type: 'number', min: 0, max: 10 },
+    
+    // ADVANCED MOTION (3)
+    transformOrigin: { type: 'string' },
+    overflowBehavior: { type: 'string', enum: ['visible', 'hidden', 'auto'] },
+    backdropBlur: { type: 'string', enum: ['none', 'sm', 'md', 'lg', 'xl'] },
+    
+    // VISUAL BLENDING (2)
+    mixBlendMode: { type: 'string', enum: ['normal', 'multiply', 'screen', 'overlay', 'difference', 'exclusion'] },
+    enablePerspective: { type: 'boolean' },
+    
+    // CUSTOM STYLING (3)
+    customCSSClasses: { type: 'string' },
+    textShadow: { type: 'boolean' },
+    textGlow: { type: 'boolean' },
+    
+    // VERTICAL SPACING (2)
+    paddingTop: { type: 'string', enum: ['none', 'sm', 'md', 'lg', 'xl', '2xl'] },
+    paddingBottom: { type: 'string', enum: ['none', 'sm', 'md', 'lg', 'xl', '2xl'] },
+    
+    // MEDIA PRESENTATION (3)
+    mediaPosition: { type: 'string', enum: ['center', 'top', 'bottom', 'left', 'right'] },
+    mediaScale: { type: 'string', enum: ['cover', 'contain', 'fill'] },
+    mediaOpacity: { type: 'number', min: 0, max: 1 }
+  };
+
   for (const scene of finalResult.scenes) {
-    // Ensure director object exists and all fields are populated with defaults if necessary
+    // Ensure director object exists
     if (!scene.director) {
         scene.director = {};
+        warnings.push(`Scene missing director object - initializing with defaults`);
+        confidenceScore -= 10;
     }
-     const requiredDirectorFields = [
-      "entryDuration", "exitDuration", "entryDelay", "exitDelay",
-      "backgroundColor", "textColor", "parallaxIntensity",
-      "scrollSpeed", "animationDuration", "entryEffect", "exitEffect", "entryEasing", "exitEasing",
-      "headingSize", "bodySize", "fontWeight", "alignment",
-      "fadeOnScroll", "scaleOnScroll", "blurOnScroll",
-      "staggerChildren", "layerDepth", "transformOrigin",
-      "overflowBehavior", "backdropBlur", "mixBlendMode",
-      "enablePerspective", "customCSSClasses",
-      "textShadow", "textGlow", "paddingTop", "paddingBottom",
-      "mediaPosition", "mediaScale", "mediaOpacity"
-    ];
-    requiredDirectorFields.forEach(field => {
-        if (scene.director[field] === undefined || scene.director[field] === null) {
-            if (DEFAULT_DIRECTOR_CONFIG.hasOwnProperty(field)) {
-                scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field];
-            } else {
-                // Fallback for fields not explicitly in DEFAULT_DIRECTOR_CONFIG but required by schema
-                if (typeof field === 'boolean') scene.director[field] = false;
-                else if (typeof field === 'number') scene.director[field] = 0;
-                else scene.director[field] = ''; // Fallback to empty string for others
-            }
+    
+    // Validate all 37 required controls
+    for (const [field, spec] of Object.entries(requiredDirectorControls)) {
+    const value = scene.director[field];
+      
+      // Check if field is missing
+      if (value === undefined || value === null) {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Missing required field '${field}' - applying default`);
+        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? (spec.type === 'boolean' ? false : spec.type === 'number' ? 0 : '');
+        confidenceScore -= 3;
+        continue;
+      }
+      
+      // Type validation
+      if (spec.type === 'number' && typeof value !== 'number') {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be number, got ${typeof value}`);
+        confidenceScore -= 2;
+      }
+      
+      if (spec.type === 'string' && typeof value !== 'string') {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be string, got ${typeof value}`);
+        confidenceScore -= 2;
+      }
+      
+      if (spec.type === 'boolean' && typeof value !== 'boolean') {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be boolean, got ${typeof value}`);
+        confidenceScore -= 2;
+      }
+      
+      // Enum validation
+      if (spec.enum && !spec.enum.includes(value)) {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' has invalid value '${value}'. Must be one of: ${spec.enum.join(', ')}`);
+        confidenceScore -= 3;
+      }
+      
+      // Range validation
+      if (spec.type === 'number') {
+        if (spec.min !== undefined && value < spec.min) {
+          warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value ${value} is below minimum ${spec.min}`);
+          confidenceScore -= 2;
         }
-    });
-
-    // Ensure gradient fields are handled
-    if (scene.director.gradientColors === undefined) {
-      scene.director.gradientColors = DEFAULT_DIRECTOR_CONFIG.gradientColors;
+        if (spec.max !== undefined && value > spec.max) {
+          warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value ${value} exceeds maximum ${spec.max}`);
+          confidenceScore -= 2;
+        }
+      }
+      
+      // Pattern validation (for hex colors)
+      if (spec.pattern && typeof value === 'string' && !spec.pattern.test(value)) {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value '${value}' doesn't match required pattern`);
+        confidenceScore -= 3;
+      }
     }
-    if (scene.director.gradientDirection === undefined) {
-      scene.director.gradientDirection = DEFAULT_DIRECTOR_CONFIG.gradientDirection;
+
+    // Handle optional gradient fields (nullable)
+    if (scene.director.gradientColors === null) {
+      scene.director.gradientColors = undefined;
+    }
+    if (scene.director.gradientDirection === null) {
+      scene.director.gradientDirection = undefined;
+    }
+    
+    // Validate gradient fields if present
+    if (scene.director.gradientColors !== undefined) {
+      if (!Array.isArray(scene.director.gradientColors)) {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: gradientColors should be array or undefined, got ${typeof scene.director.gradientColors}`);
+        scene.director.gradientColors = undefined;
+        confidenceScore -= 2;
+      } else {
+        // Validate each color is a hex code
+        for (const color of scene.director.gradientColors) {
+          if (!/^#[0-9A-Fa-f]{6}$/.test(color)) {
+            warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Invalid gradient color '${color}' - must be hex code`);
+            confidenceScore -= 2;
+          }
+        }
+      }
     }
 
 
