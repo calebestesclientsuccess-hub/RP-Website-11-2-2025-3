@@ -381,14 +381,17 @@ export default function PortfolioBuilder() {
 
   // Generate portfolio with AI (this function handles both initial generation and refinement)
   const handleGeneratePortfolio = async () => {
-    // Validation for new project
-    if (isNewProject) {
+    // Check if we're in refinement mode (existing scenes loaded)
+    const isRefinementMode = conversationHistory.length > 0 || (existingProjectScenes && existingProjectScenes.length > 0);
+
+    // Validation for new project (only for initial generation)
+    if (isNewProject && !isRefinementMode) {
       if (!newProjectTitle.trim()) { toast({ title: "Error", description: "Please enter a project title", variant: "destructive" }); return; }
       if (!newProjectSlug.trim()) { toast({ title: "Error", description: "Please enter a project slug", variant: "destructive" }); return; }
       if (!newProjectClient.trim()) { toast({ title: "Error", description: "Please enter a client name", variant: "destructive" }); return; }
     }
-    // Validation for existing project
-    else if (!selectedProjectId || selectedProjectId.trim() === "") {
+    // Validation for existing project (only for initial generation)
+    else if (!isNewProject && !selectedProjectId && !isRefinementMode) {
       toast({ title: "Error", description: "Please select an existing project", variant: "destructive" }); return;
     }
 
@@ -399,20 +402,26 @@ export default function PortfolioBuilder() {
       return;
     }
 
-    // Hybrid mode validation (requires manually added scenes)
-    if (mode === "hybrid" && scenes.length === 0) {
+    // Hybrid mode validation (only for initial generation, not refinement)
+    if (!isRefinementMode && mode === "hybrid" && scenes.length === 0) {
       toast({ title: "Error", description: "In Hybrid mode, please add at least one scene manually first.", variant: "destructive" });
       return;
     }
 
-    // Cinematic mode requires sections
-    if (mode === "cinematic" && sections.length === 0) {
+    // Cinematic mode requires sections (only for initial generation, not refinement)
+    if (!isRefinementMode && mode === "cinematic" && sections.length === 0) {
       toast({ title: "Error", description: "In Cinematic mode, please define at least one story section.", variant: "destructive" });
       return;
     }
 
     setIsRefining(true);
     try {
+      // Build conversation history for context
+      const fullConversationHistory = [
+        ...conversationHistory,
+        { role: "user", content: promptToSend }
+      ];
+
       const requestPayload = {
         projectId: isNewProject ? null : selectedProjectId,
         newProjectTitle: isNewProject ? newProjectTitle : undefined,
@@ -422,8 +431,8 @@ export default function PortfolioBuilder() {
         scenes: mode === "hybrid" ? scenes : undefined, // Use manually added scenes in hybrid mode
         sections: mode === "cinematic" ? sections : undefined, // Use defined sections in cinematic mode
         portfolioAiPrompt: portfolioAiPrompt, // Global guidance
-        conversationHistory: conversationHistory, // For iterative refinement
-        currentPrompt: currentPrompt, // The user's latest input in the chat
+        conversationHistory: fullConversationHistory, // Complete conversation thread for context
+        currentPrompt: promptToSend, // The user's latest input
         currentSceneJson: currentSceneJson, // The current state of the generated/refined JSON
         proposedChanges: proposedChanges, // If specific changes are being proposed (e.g., from UI controls)
       };
