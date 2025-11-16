@@ -329,15 +329,24 @@ export default function PortfolioBuilder() {
       const result = await response.json();
       console.log('[Portfolio Builder] Generation successful:', result);
 
+      // Update conversation history
+      setConversationHistory(prev => [
+        ...prev,
+        { role: "user", content: currentPrompt || portfolioAiPrompt },
+        { role: "assistant", content: result.explanation || `Generated ${result.scenes?.length || 0} scenes` }
+      ]);
+
+      // Store current scene JSON for reference
+      setCurrentSceneJson(JSON.stringify(result.scenes, null, 2));
+
       setGeneratedScenes({
         scenes: result.scenes,
         confidenceScore: result.confidenceScore,
         confidenceFactors: result.confidenceFactors,
       });
 
-      // Update conversation history with the AI's response
-      setConversationHistory(prev => [...prev, { role: "assistant", content: JSON.stringify(result.scenes) }]);
-
+      // Clear current prompt for next refinement
+      setCurrentPrompt("");
 
       toast({
         title: "Success!",
@@ -809,6 +818,81 @@ export default function PortfolioBuilder() {
                   </CardContent>
                 </Card>
 
+                {/* Conversational Refinement Interface */}
+                {conversationHistory.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>💬 Refinement Conversation</CardTitle>
+                      <CardDescription>
+                        Chat with Gemini to perfect your scenes
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Conversation History */}
+                      <div className="space-y-3 max-h-[400px] overflow-y-auto border rounded-lg p-4">
+                        {conversationHistory.map((msg, idx) => (
+                          <div
+                            key={idx}
+                            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                          >
+                            <div
+                              className={`max-w-[80%] rounded-lg p-3 ${
+                                msg.role === 'user'
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted'
+                              }`}
+                            >
+                              <div className="text-xs font-medium mb-1">
+                                {msg.role === 'user' ? 'You' : 'Gemini'}
+                              </div>
+                              <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Current Scene Preview */}
+                      {currentSceneJson && (
+                        <div className="border rounded-lg p-4 bg-muted/50">
+                          <div className="text-sm font-medium mb-2">Current Scene JSON:</div>
+                          <pre className="text-xs overflow-auto max-h-[200px]">
+                            {currentSceneJson}
+                          </pre>
+                        </div>
+                      )}
+
+                      {/* Refinement Input */}
+                      <div className="space-y-2">
+                        <Label htmlFor="refinement-prompt">Ask Gemini to refine:</Label>
+                        <Textarea
+                          id="refinement-prompt"
+                          value={currentPrompt}
+                          onChange={(e) => setCurrentPrompt(e.target.value)}
+                          placeholder="Example: Make Scene 3 more dramatic with faster pacing"
+                          rows={3}
+                        />
+                        <Button
+                          onClick={handleGeneratePortfolio}
+                          disabled={isRefining || !currentPrompt.trim()}
+                          className="w-full"
+                        >
+                          {isRefining ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Refining...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4 mr-2" />
+                              Refine Scenes
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Generated Scenes Display */}
                 {generatedScenes && (Array.isArray(generatedScenes) ? generatedScenes.length : generatedScenes.scenes?.length) > 0 && (
                   <Card>
@@ -910,7 +994,6 @@ export default function PortfolioBuilder() {
                                   </div>
                                 )}
                               </div>
-                              {/* TODO: Add edit/delete for generated scenes if needed */}
                             </div>
                           </Card>
                         ))}
