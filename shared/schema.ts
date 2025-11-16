@@ -243,6 +243,7 @@ export const portfolioVersions = pgTable("portfolio_versions", {
   projectId: text("project_id").notNull().references(() => projects.id, { onDelete: 'cascade' }),
   versionNumber: integer("version_number").notNull(),
   scenesJson: jsonb("scenes_json").notNull(),
+  assetMap: jsonb("asset_map").$type<Record<string, string>>(), // Maps placeholder IDs to real asset URLs
   confidenceScore: integer("confidence_score"),
   confidenceFactors: jsonb("confidence_factors"),
   changeDescription: text("change_description"),

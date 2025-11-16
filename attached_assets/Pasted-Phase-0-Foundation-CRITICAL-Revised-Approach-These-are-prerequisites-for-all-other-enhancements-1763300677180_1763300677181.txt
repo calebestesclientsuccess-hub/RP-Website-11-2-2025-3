@@ -1,0 +1,99 @@
+Phase 0: Foundation (CRITICAL - Revised Approach)
+These are prerequisites for all other enhancements. Nothing else can work reliably without these.
+
+1. Static Placeholder & Asset Mapping System
+Priority: P0 (Blocker) Reason: The original plan's reliance on the AI correctly picking from a dynamic user asset list is inherently brittle. A "placeholder" system provides 100% reliability, as the AI's available asset list is static and predefined.
+
+Implementation:
+
+Define a static, fixed asset list in the AI's system prompt (e.g., ["image-1", "image-2", ..., "image-10", "video-1", "video-2", "video-3"]).
+
+The AI will be instructed to only use these placeholder IDs when generating scene JSON.
+
+The UI renderer will be updated to detect these placeholder IDs (e.g., url: "image-1").
+
+Instead of showing a broken link, the UI will render a "Placeholder Slot" component (e.g., a card prompting "Assign asset to [Image 1]").
+
+The user then maps their actual uploaded assets to these required slots.
+
+Acceptance Criteria:
+
+AI only outputs scenes with valid placeholder IDs.
+
+The application never crashes due to a missing asset.
+
+The UI renders a clear, interactive placeholder component for any un-mapped asset slot.
+
+A scene is "complete" only when all its placeholder slots are mapped by the user.
+
+2. Default Config Fallback Logic
+Priority: P0 (Blocker) Reason: Missing director fields from a partial AI response cause rendering failures.
+
+Implementation:
+
+Define a complete DEFAULT_DIRECTOR_CONFIG object with all 40+ fields set to sensible, stable defaults.
+
+When a scene is saved or loaded, perform a deep merge: finalConfig = { ...DEFAULT_DIRECTOR_CONFIG, ...aiGeneratedConfig }.
+
+Validate completeness in scene-validator.ts to ensure no undefined or null values exist where they shouldn't.
+
+Acceptance Criteria:
+
+Every scene in the database has all required director fields.
+
+Scenes render correctly (using defaults) even with a minimal or partial AI output.
+
+3. Conflict Detection Rules Engine
+Priority: P0 (Blocker) Reason: Conflicting animation properties (e.g., parallaxIntensity > 0 and scaleOnScroll: true) can break animations or cause severe performance issues.
+
+Implementation:
+
+Create a CONFLICT_RULES matrix (as defined in the original plan) to check for incompatible property combinations.
+
+Implement an "auto-fix" function that runs before saving, which disables the lower-priority conflicting effect (e.g., fix: (d) => ({ ...d, scaleOnScroll: false })).
+
+(From Phase 1) Surface a "Confidence Factor" warning to the user that a conflict was automatically resolved.
+
+Acceptance Criteria:
+
+No scene can be saved with conflicting animation effects.
+
+The auto-fix logic is applied, and the conflict is logged.
+
+4. Error Boundary Components
+Priority: P0 (Blocker) Reason: A single scene rendering error (e.g., a new, uncaught director bug) currently crashes the entire page.
+
+Implementation:
+
+Wrap the primary <SceneRenderer /> component in a React Error Boundary.
+
+On error, the boundary will catch the crash and render a fallback UI (e.g., "This scene is temporarily unavailable. Please try regenerating.").
+
+Log the error to your analytics service (e.g., Sentry, LogRocket) for debugging.
+
+Acceptance Criteria:
+
+One broken scene does not crash the page or the rest of the portfolio preview.
+
+The user sees a friendly error message for the specific broken scene.
+
+Errors are logged for the development team.
+
+5. Database Schema Migrations
+Priority: P0 (Blocker) Reason: Core features like versioning, conversation history, and asset mapping require database tables to function.
+
+Implementation:
+
+Create the portfolio_versions table to store snapshots and diffs.
+
+Add the conversation_history (JSONB) column to the projects table.
+
+Add the asset_catalog (JSONB) column to the projects table to store user's uploaded media.
+
+Add the asset_map (JSONB) column to the projects table (or portfolio_versions) to store the user's mapping (e.g., {"image-1": "user-asset-uuid-123.jpg"}).
+
+Acceptance Criteria:
+
+Database migrations are written and applied.
+
+The system can successfully save and retrieve versions, conversations, and asset mappings.

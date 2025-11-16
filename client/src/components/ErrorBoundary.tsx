@@ -35,25 +35,36 @@ export class ErrorBoundary extends Component<Props, State> {
       if (this.props.silent) {
         return null;
       }
-      
+
       if (this.props.fallback) {
         return this.props.fallback;
       }
-      
+
       if (process.env.NODE_ENV === 'production') {
         return (
           <div className="min-h-screen flex items-center justify-center p-4">
             <Card className="max-w-md p-8 text-center">
               <h2 className="text-2xl font-bold mb-4">Something went wrong</h2>
               <p className="text-muted-foreground mb-6">
-                We encountered an unexpected error. Please refresh the page to try again.
+                We encountered an unexpected error. You can report this issue or try resetting the scene.
               </p>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-              >
-                Refresh Page
-              </button>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => {
+                    console.error('Error Report:', this.state.error);
+                    alert('Error reported to console. Please check the browser console for details.');
+                  }}
+                  className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
+                >
+                  Report Issue
+                </button>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                >
+                  Reset Scene
+                </button>
+              </div>
             </Card>
           </div>
         );

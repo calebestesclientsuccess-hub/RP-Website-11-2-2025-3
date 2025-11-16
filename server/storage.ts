@@ -1038,6 +1038,7 @@ export class DbStorage implements IStorage {
     projectId: string,
     versionNumber: number,
     scenesJson: any,
+    assetMap?: Record<string, string>,
     confidenceScore?: number,
     confidenceFactors?: string[],
     changeDescription?: string
@@ -1048,6 +1049,7 @@ export class DbStorage implements IStorage {
         projectId,
         versionNumber,
         scenesJson,
+        assetMap: assetMap || null,
         confidenceScore: confidenceScore || null,
         confidenceFactors: confidenceFactors || null,
         changeDescription: changeDescription || null,
