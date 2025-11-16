@@ -1859,31 +1859,63 @@ Your explanation should be conversational and reference specific scene numbers.`
   });
 
   // Enhanced AI Portfolio Generation endpoint (scene-by-scene with per-scene AI prompts)
-  // This endpoint handles both "cinematic" and "hybrid" modes
+  // This endpoint handles both "cinematic" and "hybrid" modes, AND refinement
   app.post("/api/portfolio/generate-enhanced", requireAuth, async (req, res) => {
     const userId = req.session?.userId;
     if (!userId) {
       return res.status(401).json({ error: "Not authenticated" });
     }
 
-    // Basic validation of required fields
-    const { projectId, newProjectTitle, newProjectSlug, newProjectClient, scenes, portfolioAiPrompt, currentPrompt, conversationHistory, currentSceneJson } = req.body;
+    console.log('[Portfolio Enhanced] Request received:', {
+      hasProjectId: !!req.body.projectId,
+      hasScenes: !!req.body.scenes,
+      hasCurrentPrompt: !!req.body.currentPrompt,
+      hasConversationHistory: !!(req.body.conversationHistory?.length),
+      hasCurrentSceneJson: !!req.body.currentSceneJson
+    });
 
-    // In refinement mode (existing conversation), use currentPrompt; otherwise use portfolioAiPrompt
-    const isRefinementMode = (conversationHistory && conversationHistory.length > 0) || currentPrompt || currentSceneJson;
+    // Basic validation of required fields
+    const { 
+      projectId, 
+      newProjectTitle, 
+      newProjectSlug, 
+      newProjectClient, 
+      scenes, 
+      portfolioAiPrompt, 
+      currentPrompt, 
+      conversationHistory = [], 
+      currentSceneJson 
+    } = req.body;
+
+    // Determine if this is refinement mode
+    const isRefinementMode = !!(conversationHistory.length > 0 || currentSceneJson);
+    
+    console.log('[Portfolio Enhanced] Mode detection:', { 
+      isRefinementMode,
+      conversationHistoryLength: conversationHistory.length,
+      hasCurrentSceneJson: !!currentSceneJson 
+    });
+
+    // Validate prompt based on mode
     const promptToValidate = isRefinementMode ? currentPrompt : portfolioAiPrompt;
 
     if (!promptToValidate || !promptToValidate.trim()) {
-      console.error('[Portfolio Enhanced] Missing prompt:', { isRefinementMode, hasCurrentPrompt: !!currentPrompt, hasPortfolioPrompt: !!portfolioAiPrompt });
+      console.error('[Portfolio Enhanced] Missing prompt:', { 
+        isRefinementMode, 
+        hasCurrentPrompt: !!currentPrompt, 
+        hasPortfolioPrompt: !!portfolioAiPrompt 
+      });
       return res.status(400).json({
         error: "Validation failed",
-        details: isRefinementMode ? "Please enter a message to refine your scenes" : "Portfolio AI prompt is required"
+        details: isRefinementMode 
+          ? "Please enter a message to refine your scenes" 
+          : "Portfolio AI prompt is required"
       });
     }
 
-    // In refinement mode, we don't need new project details or scenes array
-    // We're working with existing scenes via currentSceneJson
+    // Validate based on mode
     if (!isRefinementMode) {
+      // Initial generation mode - need project details and scenes
       if (!projectId && (!newProjectTitle || !newProjectSlug)) {
         console.error('[Portfolio Enhanced] Missing project identification');
         return res.status(400).json({
@@ -1896,129 +1928,235 @@ Your explanation should be conversational and reference specific scene numbers.`
         console.error('[Portfolio Enhanced] Missing scenes array');
         return res.status(400).json({
           error: "Validation failed",
-          details: "At least one scene is required"
+          details: "At least one scene is required for initial generation"
+        });
+      }
+    } else {
+      // Refinement mode - need either projectId or currentSceneJson
+      if (!projectId && !currentSceneJson) {
+        console.error('[Portfolio Enhanced] Refinement mode missing context');
+        return res.status(400).json({
+          error: "Validation failed",
+          details: "Refinement requires either a projectId or currentSceneJson"
         });
       }
     }
 
-    console.log(`[Portfolio Enhanced] Generating ${scenes.length} scenes with per-scene AI prompts`);
-
     // Lazy-load Gemini client
-    const { generateSceneWithGemini } = await import("./utils/gemini-client");
+    const { GoogleGenAI, Type } = await import("@google/genai");
+    const aiClient = new GoogleGenAI({
+      apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
+      httpOptions: {
+        apiVersion: "",
+        baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
+      },
+    });
 
-    // Generate each scene with AI
-    const enhancedScenes = [];
-    for (let i = 0; i < scenes.length; i++) {
-      const scene = scenes[i];
-      console.log(`[Portfolio Enhanced] Processing scene ${i + 1}: ${scene.sceneType}`);
+    let enhancedScenes: any[] = [];
+    let aiExplanation = "";
 
-      // Build system instructions from portfolio-level prompt
-      const systemInstructions = `Portfolio Context: ${portfolioAiPrompt}\n\nThis is scene ${i + 1} of ${scenes.length} in the portfolio.`;
+    if (isRefinementMode) {
+      // REFINEMENT MODE: Use conversation API with Gemini
+      console.log('[Portfolio Enhanced] REFINEMENT MODE: Using conversation API');
+      
+      // Parse current scenes
+      let currentScenes: any[] = [];
+      if (currentSceneJson) {
+        try {
+          currentScenes = JSON.parse(currentSceneJson);
+          console.log(`[Portfolio Enhanced] Parsed ${currentScenes.length} scenes from JSON`);
+        } catch (error) {
+          console.error('[Portfolio Enhanced] Failed to parse currentSceneJson:', error);
+          return res.status(400).json({
+            error: "Invalid scene JSON",
+            details: "Could not parse currentSceneJson"
+          });
+        }
+      }
 
-      // Generate AI-enhanced scene config
-      let aiEnhanced;
+      // Build conversation context for Gemini
+      const systemPrompt = `You are a cinematic director helping refine portfolio scenes through conversation.
+
+CURRENT SCENES (JSON):
+${JSON.stringify(currentScenes, null, 2)}
+
+Your job is to:
+1. Listen to the user's refinement request
+2. Explain what changes you're making in plain English
+3. Return the COMPLETE refined scenes array with improvements
+
+SCENE REFERENCE:
+- Users can say "Scene 1", "Scene 2", etc. to reference specific scenes
+- "all scenes" means apply changes globally
+- Be specific about which scenes you're modifying
+
+RESPONSE FORMAT:
+- explanation: Plain English description of changes
+- scenes: Complete refined scenes array`;
+
+      // Build conversation messages
+      const messages = [
+        { role: "user", parts: [{ text: systemPrompt }] },
+        ...conversationHistory.map((msg: any) => ({
+          role: msg.role === "user" ? "user" : "model",
+          parts: [{ text: msg.content }]
+        })),
+        { role: "user", parts: [{ text: currentPrompt }] }
+      ];
+
+      console.log('[Portfolio Enhanced] Sending conversation to Gemini:', {
+        messageCount: messages.length,
+        currentPromptLength: currentPrompt.length
+      });
+
       try {
-        aiEnhanced = await generateSceneWithGemini(
-          scene.aiPrompt,
-          scene.sceneType,
-          systemInstructions
-        );
+        const geminiResponse = await aiClient.models.generateContent({
+          model: "gemini-2.5-pro",
+          contents: messages,
+          config: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                explanation: {
+                  type: Type.STRING,
+                  description: "Plain English explanation of changes made"
+                },
+                scenes: {
+                  type: Type.ARRAY,
+                  description: "Complete refined scenes array",
+                  items: { type: Type.OBJECT }
+                }
+              },
+              required: ["explanation", "scenes"]
+            }
+          }
+        });
+
+        const result = JSON.parse(geminiResponse.text || '{}');
+        enhancedScenes = result.scenes || [];
+        aiExplanation = result.explanation || "Scenes refined successfully";
+
+        console.log(`[Portfolio Enhanced] Gemini refined ${enhancedScenes.length} scenes`);
       } catch (error) {
-        console.error(`[Portfolio Enhanced] Failed to generate scene ${i + 1}:`, error);
-        throw new Error(`Failed to generate scene ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        console.error('[Portfolio Enhanced] Gemini refinement failed:', error);
+        return res.status(500).json({
+          error: "AI refinement failed",
+          details: error instanceof Error ? error.message : "Unknown error"
+        });
+      }
+    } else {
+      // INITIAL GENERATION MODE: Process scenes one-by-one
+      console.log(`[Portfolio Enhanced] INITIAL MODE: Generating ${scenes.length} scenes`);
+      
+      const { generateSceneWithGemini } = await import("./utils/gemini-client");
+
+      for (let i = 0; i < scenes.length; i++) {
+        const scene = scenes[i];
+        console.log(`[Portfolio Enhanced] Processing scene ${i + 1}: ${scene.sceneType}`);
+
+        const systemInstructions = `Portfolio Context: ${portfolioAiPrompt}\n\nThis is scene ${i + 1} of ${scenes.length}.`;
+
+        try {
+          const aiEnhanced = await generateSceneWithGemini(
+            scene.aiPrompt,
+            scene.sceneType,
+            systemInstructions
+          );
+
+          const sceneConfig: any = {
+            type: aiEnhanced.sceneType || scene.sceneType,
+            content: {},
+            director: {
+              ...DEFAULT_DIRECTOR_CONFIG,
+              ...(aiEnhanced.director || {}),
+              ...(scene.director || {})
+            }
+          };
+
+          // Map content based on scene type
+          if (sceneConfig.type === "text") {
+            sceneConfig.content.heading = scene.content.heading || aiEnhanced.headline || "Untitled";
+            sceneConfig.content.body = scene.content.body || aiEnhanced.bodyText || "";
+          } else if (sceneConfig.type === "image") {
+            sceneConfig.content.url = scene.content.url || aiEnhanced.mediaUrl || "";
+            sceneConfig.content.alt = aiEnhanced.alt || "Image";
+          } else if (sceneConfig.type === "quote") {
+            sceneConfig.content.quote = scene.content.quote || aiEnhanced.quote || "";
+            sceneConfig.content.author = scene.content.author || aiEnhanced.author || "";
+          }
+
+          enhancedScenes.push(sceneConfig);
+        } catch (error) {
+          console.error(`[Portfolio Enhanced] Scene ${i + 1} generation failed:`, error);
+          throw new Error(`Failed to generate scene ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
       }
 
-      // Merge user-provided content with AI enhancements
-      const mergedContent: any = { ...aiEnhanced };
-
-      // Override with user-provided values if present
-      if (scene.content.heading) mergedContent.headline = scene.content.heading;
-      if (scene.content.body) mergedContent.bodyText = scene.content.body;
-      if (scene.content.url) mergedContent.mediaUrl = scene.content.url;
-      if (scene.content.media) mergedContent.mediaUrl = scene.content.media;
-      if (scene.content.quote) mergedContent.quote = scene.content.quote;
-      if (scene.content.author) mergedContent.author = scene.content.author;
-
-      // Build final scene config
-      const sceneConfig: any = {
-        type: aiEnhanced.sceneType || scene.sceneType,
-        content: {},
-      };
-
-      // Map content based on scene type
-      if (sceneConfig.type === "text") {
-        sceneConfig.content.heading = mergedContent.headline || mergedContent.heading || "Untitled";
-        sceneConfig.content.body = mergedContent.bodyText || mergedContent.body || "";
-      } else if (sceneConfig.type === "image") {
-        sceneConfig.content.url = mergedContent.mediaUrl || mergedContent.url || "";
-        sceneConfig.content.alt = mergedContent.alt || "Image";
-      } else if (sceneConfig.type === "quote") {
-        sceneConfig.content.quote = mergedContent.quote || "";
-        sceneConfig.content.author = mergedContent.author || "";
-        sceneConfig.content.role = scene.content.role || mergedContent.role;
-      }
-
-      // Merge director config (user settings take precedence)
-      sceneConfig.director = {
-        ...DEFAULT_DIRECTOR_CONFIG,
-        ...(aiEnhanced.director || {}),
-        ...(scene.director || {}),
-      };
-
-      enhancedScenes.push(sceneConfig);
+      aiExplanation = `Generated ${enhancedScenes.length} scenes successfully`;
+      console.log(`[Portfolio Enhanced] All ${enhancedScenes.length} scenes generated`);
     }
 
-    console.log(`[Portfolio Enhanced] All ${enhancedScenes.length} scenes enhanced with AI`);
+    // Save to database (only if we have a project to save to)
+    let finalProjectId = projectId;
+    
+    if (!isRefinementMode || !projectId) {
+      // Create new project if needed
+      if (!newProjectTitle || !newProjectSlug) {
+        return res.status(400).json({
+          error: "Cannot save scenes without project context"
+        });
+      }
 
-    // Create or update project
-    const result_data = await db.transaction(async (tx) => {
-      let finalProjectId: string;
-
-      if (projectId) {
-        // Add to existing project
-        finalProjectId = projectId;
-        console.log(`[Portfolio Enhanced] Adding scenes to existing project ${finalProjectId}`);
-      } else {
-        // Create new project
-        if (!newProjectTitle || !newProjectSlug || !newProjectClient) {
-          throw new Error("New project requires title, slug, and client");
-        }
-
-        const [newProject] = await tx.insert(projects).values({
+      try {
+        const [newProject] = await db.insert(projects).values({
           tenantId: req.tenantId,
           title: newProjectTitle,
           slug: newProjectSlug,
-          client: newProjectClient,
+          clientName: newProjectClient,
           description: `AI-generated portfolio with ${enhancedScenes.length} scenes`,
-          thumbnail: "",
-          status: "draft",
+          thumbnailUrl: "",
         }).returning();
 
         finalProjectId = newProject.id;
         console.log(`[Portfolio Enhanced] Created new project ${finalProjectId}`);
+      } catch (error) {
+        console.error('[Portfolio Enhanced] Project creation failed:', error);
+        return res.status(500).json({
+          error: "Failed to create project",
+          details: error instanceof Error ? error.message : "Unknown error"
+        });
       }
+    }
 
-      // Create all scenes
-      const createdScenes = [];
-      for (let i = 0; i < enhancedScenes.length; i++) {
-        const [scene] = await tx.insert(projectScenes).values({
-          projectId: finalProjectId,
-          sceneConfig: enhancedScenes[i],
-          order: i,
-        }).returning();
-        createdScenes.push(scene);
+    // Return response with conversation context
+    const responseData = {
+      success: true,
+      scenes: enhancedScenes,
+      explanation: aiExplanation,
+      projectId: finalProjectId,
+      // Include conversation data for frontend to update state
+      conversationUpdate: {
+        userMessage: isRefinementMode ? currentPrompt : portfolioAiPrompt,
+        assistantMessage: aiExplanation
+      },
+      // Version data for frontend
+      versionData: {
+        id: `v-${Date.now()}`,
+        timestamp: Date.now(),
+        label: isRefinementMode ? `Iteration ${conversationHistory.length / 2 + 1}` : "Initial Generation",
+        json: JSON.stringify(enhancedScenes, null, 2),
+        changeDescription: isRefinementMode ? currentPrompt : portfolioAiPrompt
       }
+    };
 
-      console.log(`[Portfolio Enhanced] Created ${createdScenes.length} scenes`);
-
-      return {
-        projectId: finalProjectId,
-        scenesCreated: createdScenes.length,
-        scenes: createdScenes,
-      };
+    console.log('[Portfolio Enhanced] Returning response:', {
+      sceneCount: enhancedScenes.length,
+      hasProjectId: !!finalProjectId,
+      isRefinement: isRefinementMode
     });
 
-    return res.status(201).json(result_data);
+    return res.json(responseData);
   });
 
   // CINEMATIC MODE: Full AI Director (4-stage pipeline)

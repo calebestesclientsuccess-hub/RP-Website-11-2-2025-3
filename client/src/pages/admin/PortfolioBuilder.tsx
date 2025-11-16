@@ -197,6 +197,19 @@ export default function PortfolioBuilder() {
   useEffect(() => {
     console.log('[Portfolio Builder] State Check:', {
       isNewProject,
+
+
+  // DEBUG: Log state changes
+  useEffect(() => {
+    console.log('[Portfolio Builder] State update:', {
+      conversationHistoryLength: conversationHistory.length,
+      versionsCount: versions.length,
+      activeVersionId,
+      hasCurrentSceneJson: !!currentSceneJson,
+      currentSceneJsonLength: currentSceneJson?.length || 0
+    });
+  }, [conversationHistory, versions, activeVersionId, currentSceneJson]);
+
       selectedProjectId,
       existingProjectScenes: existingProjectScenes?.length,
       currentSceneJson: currentSceneJson?.length,
@@ -467,34 +480,40 @@ export default function PortfolioBuilder() {
       const result = await response.json();
       console.log('[Portfolio Builder] Generation/Refinement successful:', result);
 
-      // Update conversation history
-      const userMessage = currentPrompt || portfolioAiPrompt;
-      const assistantMessage = result.explanation || `Generated ${result.scenes?.length || 0} scenes.`;
-      
-      setConversationHistory(prev => [
-        ...prev,
-        { role: "user", content: userMessage },
-        { role: "assistant", content: assistantMessage }
-      ]);
+      // Update conversation history from backend response
+      if (result.conversationUpdate) {
+        const { userMessage, assistantMessage } = result.conversationUpdate;
+        
+        setConversationHistory(prev => [
+          ...prev,
+          { role: "user", content: userMessage },
+          { role: "assistant", content: assistantMessage }
+        ]);
+        
+        console.log('[Portfolio Builder] Updated conversation history, new length:', conversationHistory.length + 2);
+      }
 
       // Store the latest scene JSON for reference and editing
-      const newSceneJson = JSON.stringify(result.scenes, null, 2);
+      const newSceneJson = result.versionData?.json || JSON.stringify(result.scenes, null, 2);
       setCurrentSceneJson(newSceneJson);
+      console.log('[Portfolio Builder] Updated currentSceneJson, length:', newSceneJson.length);
 
-      // Create version entry
-      const versionId = `v-${Date.now()}`;
-      const newVersion = {
-        id: versionId,
-        timestamp: Date.now(),
-        label: versions.length === 0 ? "Initial Generation" : `Iteration ${versions.length + 1}`,
-        json: newSceneJson,
-        confidenceScore: result.confidenceScore,
-        changeDescription: userMessage,
-      };
-      
-      setVersions(prev => [...prev, newVersion]);
-      setActiveVersionId(versionId);
+      // Create version entry from backend data
+      if (result.versionData) {
+        const newVersion = {
+          ...result.versionData,
+          confidenceScore: result.confidenceScore
+        };
+        
+        setVersions(prev => {
+          const updated = [...prev, newVersion];
+          console.log('[Portfolio Builder] Added version, total versions:', updated.length);
+          return updated;
+        });
+        setActiveVersionId(result.versionData.id);
+      }
 
+      // Update generated scenes for display
       setGeneratedScenes({
         scenes: result.scenes,
         confidenceScore: result.confidenceScore,
@@ -503,11 +522,11 @@ export default function PortfolioBuilder() {
 
       // Clear current prompt after sending it for refinement
       setCurrentPrompt("");
-      setProposedChanges(""); // Clear proposed changes as well
+      setProposedChanges("");
 
       toast({
         title: "Success!",
-        description: `Generated ${result.scenes?.length || 0} scenes with ${result.confidenceScore !== undefined ? result.confidenceScore + '%' : 'N/A'} confidence.`,
+        description: result.explanation || `Generated ${result.scenes?.length || 0} scenes successfully.`,
       });
 
     } catch (error) {
