@@ -15,6 +15,11 @@ app.use(express.urlencoded({ extended: false }));
 // Apply tenant middleware (must be early in the chain)
 app.use(tenantMiddleware);
 
+// Apply intrusion detection system
+import { blockSuspiciousIPs, detectSuspiciousPatterns, enhancedRateLimiter } from './middleware/intrusion-detection';
+app.use(blockSuspiciousIPs);
+app.use(detectSuspiciousPatterns);
+
 // Apply security headers for SEO trust signals
 app.use(securityHeaders);
 

@@ -984,3 +984,61 @@ export type VideoAsset = z.infer<typeof videoAssetSchema>;
 export type QuoteAsset = z.infer<typeof quoteAssetSchema>;
 export type ContentCatalog = z.infer<typeof contentCatalogSchema>;
 export type PortfolioGenerateRequest = z.infer<typeof portfolioGenerateRequestSchema>;
+// API Keys table for rotation and usage tracking
+export const apiKeys = pgTable("api_keys", {
+  id: varchar("id", { length: 255 }).primaryKey().notNull().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  keyName: text("key_name").notNull(),
+  keyHash: text("key_hash").notNull(), // bcrypt hash of the key
+  keyPrefix: varchar("key_prefix", { length: 8 }).notNull(), // First 8 chars for identification
+  scopes: json("scopes").$type<string[]>().notNull().default(sql`'[]'::json`),
+  expiresAt: timestamp("expires_at"),
+  lastUsedAt: timestamp("last_used_at"),
+  usageCount: integer("usage_count").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdBy: varchar("created_by", { length: 255 }).references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  rotatedAt: timestamp("rotated_at"),
+  rotatedFrom: varchar("rotated_from", { length: 255 }).references(() => apiKeys.id),
+});
+
+export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
+  id: true,
+  createdAt: true,
+  lastUsedAt: true,
+  usageCount: true,
+  rotatedAt: true,
+});
+
+export const apiKeyUsageLogs = pgTable("api_key_usage_logs", {
+  id: varchar("id", { length: 255 }).primaryKey().notNull().default(sql`gen_random_uuid()`),
+  apiKeyId: varchar("api_key_id", { length: 255 }).notNull().references(() => apiKeys.id, { onDelete: 'cascade' }),
+  endpoint: text("endpoint").notNull(),
+  method: varchar("method", { length: 10 }).notNull(),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  statusCode: integer("status_code"),
+  responseTime: integer("response_time"), // milliseconds
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+export const securityEvents = pgTable("security_events", {
+  id: varchar("id", { length: 255 }).primaryKey().notNull().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id", { length: 255 }).references(() => tenants.id, { onDelete: 'cascade' }),
+  eventType: varchar("event_type", { length: 50 }).notNull(), // 'failed_login', 'privilege_escalation', 'suspicious_activity', etc.
+  severity: varchar("severity", { length: 20 }).notNull(), // 'low', 'medium', 'high', 'critical'
+  userId: varchar("user_id", { length: 255 }).references(() => users.id),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  endpoint: text("endpoint"),
+  method: varchar("method", { length: 10 }),
+  details: json("details").$type<Record<string, any>>(),
+  resolved: boolean("resolved").notNull().default(false),
+  resolvedBy: varchar("resolved_by", { length: 255 }).references(() => users.id),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertSecurityEventSchema = createInsertSchema(securityEvents).omit({
+  id: true,
+  createdAt: true,
+});

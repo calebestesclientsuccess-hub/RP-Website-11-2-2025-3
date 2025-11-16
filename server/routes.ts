@@ -280,6 +280,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { username, password } = result.data;
 
+      // Lazy-load security logger
+      const { logFailedLogin } = await import('./utils/security-logger');
+
       // Try to find user by username first, then by email (case-insensitive)
       let user = await storage.getUserByUsername(username);
 
@@ -290,6 +293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!user) {
         recordFailedAttempt(req);
+        await logFailedLogin(req, username, 'User not found');
         const remaining = getRemainingAttempts(req);
         return res.status(401).json({ 
           error: "Invalid credentials",
@@ -301,6 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const valid = await bcrypt.compare(password, user.password);
       if (!valid) {
         recordFailedAttempt(req);
+        await logFailedLogin(req, username, 'Invalid password');
         const remaining = getRemainingAttempts(req);
         return res.status(401).json({ 
           error: "Invalid credentials",
