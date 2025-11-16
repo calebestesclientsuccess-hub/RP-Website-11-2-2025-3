@@ -78,10 +78,12 @@ DIRECTOR'S NOTES INTERPRETATION MATRIX:
 Use this to translate natural language into technical configs:
 
 SPEED/PACING:
-- "fast" / "quick" / "snappy" → entryDuration: 0.8, exitDuration: 0.6
-- "normal" / "smooth" / "standard" → entryDuration: 1.2, exitDuration: 1.0
-- "slow" / "dramatic" / "deliberate" → entryDuration: 2.5, exitDuration: 1.8
-- "very slow" / "contemplative" → entryDuration: 4.0, exitDuration: 3.0
+- "fast" / "quick" / "snappy" → entryDuration: 0.8, exitDuration: 0.6, entryDelay: 0
+- "normal" / "smooth" / "standard" → entryDuration: 1.2, exitDuration: 1.0, entryDelay: 0
+- "slow" / "dramatic" / "deliberate" → entryDuration: 2.5, exitDuration: 1.8, entryDelay: 0.3
+- "very slow" / "contemplative" → entryDuration: 4.0, exitDuration: 3.0, entryDelay: 0.5
+- "delayed entrance" / "waits before entering" → entryDelay: 0.5-1.0
+- "staggered" / "sequential" → entryDelay: 0.3-0.8 (use for variety)
 
 DIRECTION:
 - "enters from left" → entryEffect: "slide-right"
@@ -89,24 +91,26 @@ DIRECTION:
 - "enters from top" → entryEffect: "slide-down"
 - "enters from bottom" → entryEffect: "slide-up"
 - "zooms in" / "grows" → entryEffect: "zoom-in" + scaleOnScroll: true
-- "appears suddenly" → entryEffect: "sudden"
-- "spins in" / "rotates" → entryEffect: "rotate-in" or "spiral-in"
-- "flips in" / "card flip" → entryEffect: "flip-in"
-- "bounces in" → entryEffect: "elastic-bounce"
-- "focuses" / "sharpens" → entryEffect: "blur-focus"
-- "cross-fades" → entryEffect: "cross-fade" (overlaps with previous scene)
+- "appears suddenly" / "instant" → entryEffect: "sudden"
+- "spins in" / "rotates in" / "rotating entrance" → entryEffect: "rotate-in"
+- "spirals in" / "tornado entrance" → entryEffect: "spiral-in"
+- "flips in" / "card flip" / "3D flip" → entryEffect: "flip-in"
+- "bounces in" / "elastic" / "springy" → entryEffect: "elastic-bounce"
+- "focuses" / "sharpens" / "blur to sharp" → entryEffect: "blur-focus"
+- "cross-fades in" / "overlaps" → entryEffect: "cross-fade"
 
 EXIT DIRECTION:
 - "exits to left" → exitEffect: "slide-left"
 - "exits to right" → exitEffect: "slide-right"
 - "exits upward" → exitEffect: "slide-up"
 - "exits downward" → exitEffect: "slide-down"
-- "fades away" → exitEffect: "fade"
-- "crossfades" / "dissolves" → exitEffect: "dissolve"
-- "cross-fades smoothly" → exitEffect: "cross-fade" (holds opacity during next scene entry)
-- "spins out" → exitEffect: "rotate-out"
-- "flips out" → exitEffect: "flip-out"
-- "blurs out dramatically" → exitEffect: "scale-blur"
+- "fades away" / "fades out" → exitEffect: "fade"
+- "dissolves" / "blur dissolve" → exitEffect: "dissolve"
+- "cross-fades out" / "smooth transition" → exitEffect: "cross-fade"
+- "spins out" / "rotates away" → exitEffect: "rotate-out"
+- "flips out" / "card flip exit" → exitEffect: "flip-out"
+- "blurs out" / "dramatic blur exit" → exitEffect: "scale-blur"
+- "shrinks away" → exitEffect: "zoom-out"
 
 MOOD/ATMOSPHERE:
 - "dramatic" / "intense" → parallaxIntensity: 0.6-0.8, entryDuration: 2.5+
