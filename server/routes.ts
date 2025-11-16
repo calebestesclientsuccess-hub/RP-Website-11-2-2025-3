@@ -1886,15 +1886,16 @@ Your explanation should be conversational and reference specific scene numbers.`
   app.post("/api/portfolio/generate-enhanced", requireAuth, async (req, res) => {
     const userId = req.session?.userId;
     if (!userId) {
-      return res.status(401).json({ error: "Not authenticated" });
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
+    // Log for debugging
     console.log('[Portfolio Enhanced] Request received:', {
       hasProjectId: !!req.body.projectId,
       hasScenes: !!req.body.scenes,
       hasCurrentPrompt: !!req.body.currentPrompt,
-      hasConversationHistory: !!(req.body.conversationHistory?.length),
-      hasCurrentSceneJson: !!req.body.currentSceneJson
+      hasConversationHistory: !!req.body.conversationHistory,
+      hasCurrentSceneJson: !!req.body.currentSceneJson,
     });
 
     // Basic validation of required fields
@@ -2020,7 +2021,7 @@ SCENE REFERENCE:
 - When modifying a single scene, keep all other scenes EXACTLY as they are
 
 RESPONSE FORMAT:
-- explanation: Plain English description of changes (which scenes were modified)
+- explanation: Plain English explanation of changes (which scenes were modified)
 - scenes: COMPLETE array of ALL ${currentScenes.length} scenes (modified + unmodified)`;
 
       // Build conversation messages

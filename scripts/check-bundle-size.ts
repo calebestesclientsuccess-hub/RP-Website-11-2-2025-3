@@ -1,8 +1,9 @@
-
 import { statSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { execSync } from 'child_process';
+import { readFileSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,7 +21,7 @@ const budgets: BundleBudget[] = [
 async function getFileSize(pattern: string): Promise<number> {
   const { glob } = await import('glob');
   const files = await glob(join(__dirname, '..', pattern));
-  
+
   if (files.length === 0) {
     console.warn(`⚠️  No files found matching: ${pattern}`);
     return 0;
@@ -64,4 +65,35 @@ async function checkBudgets() {
   }
 }
 
-checkBudgets();
+console.log('📦 Checking bundle size against performance budget...');
+
+const performanceBudget = JSON.parse(readFileSync('performance-budget.json', 'utf-8'));
+
+try {
+  // Build the project
+  execSync('npm run build', { stdio: 'inherit' });
+
+  // Get bundle stats (this assumes vite build outputs stats)
+  const stats = execSync('du -sh dist/assets/*.js').toString();
+
+  console.log('Bundle sizes:', stats);
+
+  // Parse and validate against budget
+  const jsFiles = stats.split('\n').filter(line => line.includes('.js'));
+  const totalSize = jsFiles.reduce((sum, line) => {
+    const size = parseInt(line.split('\t')[0]);
+    return sum + (isNaN(size) ? 0 : size);
+  }, 0);
+
+  const budgetKb = performanceBudget.javascript || 300;
+
+  if (totalSize > budgetKb * 1024) {
+    console.error(`❌ Bundle size ${Math.round(totalSize/1024)}KB exceeds budget of ${budgetKb}KB`);
+    process.exit(1);
+  }
+
+  console.log(`✅ Bundle size ${Math.round(totalSize/1024)}KB within budget of ${budgetKb}KB`);
+} catch (error) {
+  console.error('Bundle size check failed:', error);
+  process.exit(1);
+}

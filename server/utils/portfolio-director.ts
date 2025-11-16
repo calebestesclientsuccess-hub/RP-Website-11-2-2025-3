@@ -387,15 +387,22 @@ export async function generatePortfolioWithAI(
 
   console.log('[Portfolio Director] Starting 6-stage refinement pipeline...');
 
-  // STAGE 1: Initial Generation (Form-Filling)
+  // STAGE 1: Initial Generation (Form-Filling) with retry logic
   const prompt = buildPortfolioPrompt(catalog);
-  const stage1Response = await aiClient.models.generateContent({
+  
+  let stage1Response;
+  let retryCount = 0;
+  const maxRetries = 3;
+  
+  while (retryCount < maxRetries) {
+    try {
+      stage1Response = await aiClient.models.generateContent({
     model: "gemini-2.5-pro", // Pro model for complex cinematic reasoning
-    contents: [{
-      role: "user",
-      parts: [{ text: prompt }]
-    }],
-    config: {
+        contents: [{
+          role: "user",
+          parts: [{ text: prompt }]
+        }],
+        config: {
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -478,8 +485,21 @@ export async function generatePortfolioWithAI(
         },
         required: ["scenes"]
       }
+        }
+      });
+      break; // Success, exit retry loop
+    } catch (error) {
+      retryCount++;
+      console.error(`[Portfolio Director] Stage 1 attempt ${retryCount} failed:`, error);
+      
+      if (retryCount >= maxRetries) {
+        throw new Error(`Failed to generate portfolio after ${maxRetries} attempts: ${error.message}`);
+      }
+      
+      // Exponential backoff
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
     }
-  });
+  }
 
   const responseText = stage1Response.text;
   if (!responseText) {

@@ -204,36 +204,44 @@ export default function PortfolioBuilder() {
     });
   }, [conversationHistory, versions, activeVersionId, currentSceneJson]);
 
-  // Load existing project scenes into the refinement interface when project is selected
+  // UNIFIED scene loading effect - handles all project selection scenarios
   useEffect(() => {
-    console.log('[Portfolio Builder] State Check:', {
-      isNewProject,
-      selectedProjectId,
-      existingProjectScenes: existingProjectScenes?.length,
-      currentSceneJson: currentSceneJson?.length,
-      conversationHistory: conversationHistory?.length
-    });
-
-    if (!isNewProject && selectedProjectId && existingProjectScenes && existingProjectScenes.length > 0) {
-      // Convert scenes to the format we need for display
-      const scenesJson = JSON.stringify(existingProjectScenes.map((scene: any) => scene.sceneConfig), null, 2);
-      setCurrentSceneJson(scenesJson);
-
-      // Initialize conversation to show we loaded existing scenes
-      setConversationHistory([
-        {
-          role: "assistant",
-          content: `✅ Loaded ${existingProjectScenes.length} existing scenes from this project.\n\nYou can now refine them by describing what you'd like to change. For example:\n• "Make Scene 3 more dramatic"\n• "Add smoother transitions between all scenes"\n• "The hero section needs more impact"`
-        }
-      ]);
-      
-      console.log('[Portfolio Builder] Loaded existing scenes, set conversation history');
-    } else if (!isNewProject && selectedProjectId && (!existingProjectScenes || existingProjectScenes.length === 0)) {
-      // If project is selected but has no scenes, clear relevant states
+    if (isNewProject) {
+      // New project mode - clear everything
       setCurrentSceneJson("");
       setConversationHistory([]);
       setGeneratedScenes(null);
-      console.log('[Portfolio Builder] Project has no scenes, cleared states');
+      setVersions([]);
+      return;
+    }
+
+    if (!selectedProjectId) {
+      // No project selected yet
+      return;
+    }
+
+    // Existing project selected
+    if (existingProjectScenes && existingProjectScenes.length > 0) {
+      const scenesJson = JSON.stringify(
+        existingProjectScenes.map((scene: any) => scene.sceneConfig), 
+        null, 
+        2
+      );
+      
+      setCurrentSceneJson(scenesJson);
+      setConversationHistory([
+        {
+          role: "assistant",
+          content: `✅ Loaded ${existingProjectScenes.length} existing scenes.\n\nRefine them by describing changes:\n• "Make Scene 3 more dramatic"\n• "Add smoother transitions"\n• "Increase hero section impact"`
+        }
+      ]);
+      
+      console.log('[Portfolio Builder] Loaded existing project scenes');
+    } else {
+      // Project exists but has no scenes
+      setCurrentSceneJson("");
+      setConversationHistory([]);
+      setGeneratedScenes(null);
     }
   }, [selectedProjectId, existingProjectScenes, isNewProject]);
 
