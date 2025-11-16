@@ -41,6 +41,20 @@ import { format } from "date-fns";
 // Placeholder for FAQSchema component if it's not imported elsewhere
 const FAQSchema = ({ faqs }: { faqs: { question: string; answer: string }[] }) => null;
 
+// Placeholder for BlogPostSkeleton component
+const BlogPostSkeleton = () => (
+  <Card className="p-6" data-testid="skeleton-card">
+    <Skeleton className="h-6 w-3/4 mb-4" />
+    <Skeleton className="h-4 w-full mb-2" />
+    <Skeleton className="h-4 w-full mb-2" />
+    <Skeleton className="h-4 w-2/3 mb-4" />
+    <div className="flex gap-2">
+      <Skeleton className="h-6 w-20" />
+      <Skeleton className="h-6 w-20" />
+    </div>
+  </Card>
+);
+
 type CombinedPost = (BlogPost & { type: 'article' }) | (VideoPost & { type: 'video' });
 
 export default function BlogPage() {
@@ -205,7 +219,7 @@ export default function BlogPage() {
         keywords="hire cold callers, b2b appointment setting services, underperforming sales team, allbound, sales agency, GTM blog, SDR outsourcing, BDR hiring costs, revenue generation system"
         canonical="/blog"
       />
-      
+
       <Helmet>
         <meta property="og:type" content="website" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -520,16 +534,7 @@ export default function BlogPage() {
           <div className="max-w-7xl mx-auto">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <Card key={i} className="p-6" data-testid={`skeleton-card-${i}`}>
-                  <Skeleton className="h-6 w-3/4 mb-4" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-full mb-2" />
-                  <Skeleton className="h-4 w-2/3 mb-4" />
-                  <div className="flex gap-2">
-                    <Skeleton className="h-6 w-20" />
-                    <Skeleton className="h-6 w-20" />
-                  </div>
-                </Card>
+                <BlogPostSkeleton key={i} />
               ))}
             </div>
           </div>

@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { MobileInput } from "@/components/ui/mobile-input";
 
 const auditSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
@@ -79,7 +80,7 @@ export default function AuditPage() {
         <div className="max-w-7xl mx-auto">
           {/* 2-Column Layout */}
           <div className="grid lg:grid-cols-2 gap-12 items-start">
-            
+
             {/* Column 1: The "What & Why" */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -112,7 +113,7 @@ export default function AuditPage() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-3" data-testid="deliverable-blueprint">
                     <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                     <div>
@@ -123,7 +124,7 @@ export default function AuditPage() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-3" data-testid="deliverable-roi">
                     <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                     <div>
@@ -151,7 +152,7 @@ export default function AuditPage() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-3" data-testid="not-demo">
                     <XCircle className="w-6 h-6 text-muted-foreground flex-shrink-0 mt-1" />
                     <div>
@@ -161,7 +162,7 @@ export default function AuditPage() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-3" data-testid="not-sales-rep">
                     <XCircle className="w-6 h-6 text-muted-foreground flex-shrink-0 mt-1" />
                     <div>
@@ -222,11 +223,12 @@ export default function AuditPage() {
                             <FormItem>
                               <FormLabel>Work Email</FormLabel>
                               <FormControl>
-                                <Input 
+                                <MobileInput 
                                   type="email"
+                                  inputMode="email"
                                   placeholder="john@company.com" 
                                   {...field} 
-                                  data-testid="input-work-email"
+                                  data-testid="input-email"
                                 />
                               </FormControl>
                               <FormMessage />

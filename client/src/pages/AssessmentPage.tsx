@@ -34,6 +34,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Link } from "wouter";
+import { SuccessAnimation } from "@/components/ui/success-animation";
 
 // Schema for lead capture form
 const leadSchema = z.object({
@@ -445,7 +446,10 @@ export default function AssessmentPage() {
 
   const handleLeadSubmit = (data: LeadFormData) => {
     console.log('Lead captured:', data);
-    setLeadCaptured(true);
+    // Show success animation briefly before showing results
+    setTimeout(() => {
+      setLeadCaptured(true);
+    }, 1500);
   };
 
   const results = showResults && leadCaptured ? calculateResults() : null;

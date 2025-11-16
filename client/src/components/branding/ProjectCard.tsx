@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { ProgressiveImage } from "@/components/ui/progressive-image";
 
 interface ProjectCardProps {
   project: {
@@ -19,14 +20,14 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
       data-testid={`card-project-${project.id}`}
     >
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img
+        <ProgressiveImage
           src={project.thumbnailImage}
           alt={`${project.clientName} - ${project.projectTitle}`}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        
+
         <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
           <h3 className="text-xl font-bold mb-2" data-testid={`text-client-${project.id}`}>
             {project.clientName}
@@ -34,7 +35,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
           <p className="text-sm text-white/90 mb-3" data-testid={`text-title-${project.id}`}>
             {project.projectTitle}
           </p>
-          
+
           <div className="flex flex-wrap gap-2">
             {project.categories.map((category) => (
               <Badge
