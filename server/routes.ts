@@ -36,7 +36,6 @@ import {
   insertPromptTemplateSchema,
   updatePromptTemplateSchema,
   portfolioGenerateRequestSchema,
-  insertDirectorConfigSchema,
   assessmentResultBuckets,
   type InsertAssessmentResponse,
   projects,
