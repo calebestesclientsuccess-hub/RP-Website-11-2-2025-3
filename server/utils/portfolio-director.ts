@@ -70,7 +70,7 @@ function buildAssetWhitelist(catalog?: ContentCatalog): string[] { // Added cata
   availablePlaceholderIds.forEach(id => {
     if (!availableInCatalog.has(id)) {
       // Add it back if it's a static placeholder and not explicitly used in catalog (e.g., image-1 through image-10 are always available)
-      // This logic needs to be precise: we only want to include placeholders that _could_ be used.
+      // This logic needs to be precise: we only want to add placeholders that _could_ be used.
       // If a placeholder type (like 'image') has zero items in the catalog, we still list all its placeholders.
       const placeholderType = id.split('-')[0]; // e.g., 'image', 'video', 'text', 'quote'
       if (
@@ -2502,7 +2502,7 @@ Critical Context:
   ${catalog.directorNotes}
 
 Original Scene JSON:
-${JSON.stringify(scene, null, 2)}
+${JSON.JSON.stringify(scene, null, 2)}
 
 Key Refinement Goals for Gallery Scenes
 
@@ -2518,6 +2518,18 @@ First, provide the Mandatory Creative Rationale.
 Then, return only the single, refined JSON scene object.
 
 Example output:
+CREATIVE RATIONALE:
+"This gallery scene is Scene 4.
+
+1. Asset Check (MANDATORY): I am validating all assets against the 'Do Not Overdraw' mandate. The user provided 8 images. The scene uses assetIds: ["placeholder-image-3", "placeholder-image-4", "placeholder-image-5"]. The highest index is '5'. This is valid (5 ≤ 8). I am clear to proceed.
+
+2. Refinement 1 (Stagger): A gallery's items must never appear simultaneously. I am setting staggerChildren: 0.2s to create a rapid "waterfall" effect. This serves the 'energetic' vision.
+
+3. Refinement 2 (Pacing): To match this stagger, I am setting entryDuration to 1.1s and using back.out(1.7) easing for a 'peppy' feel.
+
+My refinements are complete."
+
+Example JSON:
 {
   "sceneType": "gallery",
   "assetIds": [
