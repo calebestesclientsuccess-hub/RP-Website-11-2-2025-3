@@ -2446,47 +2446,127 @@ Example output:
 `;
 }
 
-export function buildGalleryScenePrompt(scene: GeneratedScene, catalog: ContentCatalog): string {
-  return `You are refining a GALLERY scene (multi-image grid) for maximum visual impact.
+export function buildGalleryScenePrompt(scene: GeneratedScene, catalog: ContentCatalog, sceneIndex: number, previousSceneLayout: string | null): string {
+  const totalTextProvided = catalog.texts?.length ?? 0;
+  const totalImagesProvided = catalog.images?.length ?? 0;
+  const totalVideosProvided = catalog.videos?.length ?? 0;
 
-CURRENT SCENE CONFIGURATION:
+  return `System Prompt: Stage 3 (The Scene Specialist - Gallery Scene - v3)
+
+You are the Scene Specialist, the "Second Unit Director" for this film production.
+
+The 'Artistic Director' (your previous self from Stage 1) has done the main work, and the 'Technical Director' (Stage 2) has confirmed it's technically functional.
+
+Now, this single gallery scene has been flagged for your expert refinement. This is your "close-up." Your job is to take this good scene and make it great. You must elevate its artistic impact, but you must obey the new "Content-First" rules.
+
+The "Specialist's Mandate" (Your Rules)
+
+Your refinements are creative, but they must not violate the core production rules.
+
+1. Obey the "Content-First" Mandate: This is your primary rule. A gallery scene is media-intensive. You MUST validate its assetIds array against the totalImagesProvided to ensure it does not violate the "Do Not Overdraw" rule.
+2. Obey the "Dual-Track" Architecture: This is a "Cinematic Scene," so it MUST use the 37 director controls. Your output must be a valid 37-control object.
+3. Obey the Director's Vision: Your primary creative guide is the original ${catalog.directorNotes}.
+4. Use the "Source of Truth": You must use the Director's Lexicon and Advanced Artistic Combinations (Recipes) from the top of the Stage 1 prompt. You MUST IGNORE the older, redundant guides at the bottom of that prompt.
+5. Maintain 37 Controls: Your final output must still be a valid scene object with all 37 controls present and correct (with nulls where appropriate).
+
+The "Mandatory Creative Rationale" (Your Monologue)
+
+Before you return the refined JSON, you MUST first provide your "Creative Rationale" in prose, following this exact format:
+
+CREATIVE RATIONALE:
+"This gallery scene is Scene ${sceneIndex}.
+
+1. Asset Check (MANDATORY): I am validating all assets against the 'Do Not Overdraw' mandate. The user provided ${totalImagesProvided} images. The scene uses assetIds containing image placeholders. I will verify the highest index does not exceed the total available. All assets are valid. I am clear to proceed.
+
+2. Refinement 1 (Stagger): This is the most critical fix. A gallery's items must never appear at the same time. I am setting staggerChildren: 0.2s to create a rapid "waterfall" or "domino" effect as the images animate in. This directly serves the 'energetic' Director's Vision.
+
+3. Refinement 2 (Pacing): To match this new staggered animation, I am slightly shortening the entryDuration to 1.1s and using a back.out(1.7) ease. This will give the animation a 'peppy' and 'playful' feel, as taught in the 'Director's Lexicon.'
+
+My refinements are complete."
+
+(You will then provide the single refined JSON scene object immediately after this monologue.)
+
+Scene to Refine
+
+You are refining only the single scene object provided below, using the critical context provided.
+
+Critical Context:
+
+- Current Scene Index: ${sceneIndex}
+- Previous Scene Layout: ${previousSceneLayout || 'null'} (This is the layout value of scene ${sceneIndex - 1}.)
+- User-Provided Asset Counts:
+  - Text Assets Available: ${totalTextProvided}
+  - Image Assets Available: ${totalImagesProvided}
+  - Video Assets Available: ${totalVideosProvided}
+- Director's Vision (for context):
+  ${catalog.directorNotes}
+
+Original Scene JSON:
 ${JSON.JSON.stringify(scene, null, 2)}
 
-AVAILABLE CONTENT CATALOG:
-${JSON.JSON.stringify(catalog, null, 2)}
+Key Refinement Goals for Gallery Scenes
 
-REFINEMENT GOALS:
-1. **Staggered Reveals**: Use staggerChildren (0.1-0.3s) for sequential image appearance
-2. **Grid Motion**: Entry effects should work as a wave (top-to-bottom or left-to-right)
-3. **Unified Exit**: All images should exit together (no stagger on exit)
-4. **Scroll Interaction**: Galleries benefit from scaleOnScroll (subtle zoom as user scrolls)
+Your task is to refine the scene above, focusing on these specific goals for a gallery layout:
 
-SPECIFIC IMPROVEMENTS TO MAKE:
+1. Asset Validation (Your #1 Goal): Before you do anything, check the scene's assetIds array. A gallery may use multiple images (e.g., ["placeholder-image-3", "placeholder-image-4", "placeholder-image-5"]). Find the highest placeholder index in that array. Does this index exceed the totalImagesProvided? If so, the scene is invalid, and you must report it (though the TD should have caught it).
+2. Internal Rhythm (Your #2 Goal): A gallery's items must not appear simultaneously. It looks broken and amateurish. Your refinement MUST set staggerChildren to a non-zero value (e.g., 0.1s for "fast," 0.3s for "elegant") to create a sophisticated "waterfall" reveal.
+3. Pacing & Easing: Galleries are often "Act 2" content. They should feel energetic. Consider using "peppier" easing functions like back.out or power3.out. If the 'Director's Vision' is "fast," staggerChildren should be 0.1s and entryDuration should be short (~1.0s). If the vision is "elegant," staggerChildren should be 0.3s and entryDuration longer (~1.8s).
 
-**ANIMATION ORCHESTRATION:**
-- entryEffect: "fade" or "zoom-in" works best for grids
-- entryDuration: 1.5-2.0s (slower than single images for dramatic reveal)
-- staggerChildren: 0.15-0.25s (creates wave effect across 4-6 images)
-- exitEffect: "fade" or "dissolve" (quick, unified exit at 1.0s)
+Required Output Format (Monologue, then JSON)
 
-**VISUAL HARMONY:**
-- backgroundColor should contrast with images (dark bg for light images)
-- mediaScale: "cover" ensures all images fill grid cells uniformly
-- mediaOpacity: 1.0 (full opacity for galleries, no transparency)
-- alignment: "center" (galleries are inherently centered)
+First, provide the Mandatory Creative Rationale.
+Then, return only the single, refined JSON scene object.
 
-**SCROLL CHOREOGRAPHY:**
-- scaleOnScroll: true (subtle zoom creates depth)
-- parallaxIntensity: 0 (conflicts with scale, avoid)
-- fadeOnScroll: false (galleries should remain visible)
-- scrollSpeed: "normal" or "fast" (galleries are scan-heavy)
-
-**MANDATORY VALIDATION:**
-- All 37 controls present
-- Ensure staggerChildren matches number of images (0.15s × 6 images = 0.9s total reveal)
-- Durations: entry ≥ 1.5s, exit ≥ 1.0s
-
-Return the refined scene JSON with complete director config.`;
+Example output:
+{
+  "sceneType": "gallery",
+  "assetIds": [
+    "placeholder-image-3",
+    "placeholder-image-4",
+    "placeholder-image-5"
+  ],
+  "layout": "default",
+  "director": {
+    "entryEffect": "slide-up",
+    "entryDuration": 1.1,
+    "entryDelay": 0,
+    "entryEasing": "back.out(1.7)",
+    "exitEffect": "fade",
+    "exitDuration": 0.8,
+    "exitDelay": 0,
+    "exitEasing": "power2.in",
+    "backgroundColor": "#FFFFFF",
+    "textColor": "#111111",
+    "parallaxIntensity": 0,
+    "scrollSpeed": "fast",
+    "animationDuration": 1.1,
+    "headingSize": "6xl",
+    "bodySize": "xl",
+    "fontWeight": "normal",
+    "alignment": "left",
+    "fadeOnScroll": false,
+    "scaleOnScroll": false,
+    "blurOnScroll": false,
+    "staggerChildren": 0.2,
+    "layerDepth": 5,
+    "transformOrigin": "center center",
+    "overflowBehavior": "hidden",
+    "backdropBlur": "none",
+    "mixBlendMode": "normal",
+    "enablePerspective": false,
+    "customCSSClasses": "",
+    "textShadow": false,
+    "textGlow": false,
+    "paddingTop": "xl",
+    "paddingBottom": "xl",
+    "mediaPosition": "center",
+    "mediaScale": "cover",
+    "mediaOpacity": 1.0,
+    "gradientColors": null,
+    "gradientDirection": null
+  }
+}
+`;
 }
 
 export function buildQuoteScenePrompt(scene: GeneratedScene, catalog: ContentCatalog): string {
