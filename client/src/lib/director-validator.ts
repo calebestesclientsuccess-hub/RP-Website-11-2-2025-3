@@ -1,4 +1,3 @@
-
 import type { DirectorConfig } from "@shared/schema";
 
 export function validateDirectorConfig(config: Partial<DirectorConfig>, sceneIndex: number): string[] {
@@ -56,13 +55,27 @@ export function validateDirectorConfig(config: Partial<DirectorConfig>, sceneInd
     errors.push(`Scene ${sceneIndex}: parallaxIntensity must be between 0 and 1 (got ${config.parallaxIntensity})`);
   }
 
+  // Validate scrollSpeed
+  if (config.scrollSpeed && !['slow', 'normal', 'fast'].includes(config.scrollSpeed)) {
+    errors.push(`Scene ${sceneIndex}: Invalid scrollSpeed: ${config.scrollSpeed}. Must be 'slow', 'normal', or 'fast'`);
+  }
+
+  // Validate media controls
   if (config.mediaOpacity !== undefined && (config.mediaOpacity < 0 || config.mediaOpacity > 1)) {
     errors.push(`Scene ${sceneIndex}: mediaOpacity must be between 0 and 1 (got ${config.mediaOpacity})`);
   }
 
-  if (config.layerDepth !== undefined && (config.layerDepth < 0 || config.layerDepth > 10)) {
-    errors.push(`Scene ${sceneIndex}: layerDepth must be between 0 and 10 (got ${config.layerDepth})`);
+  // Validate cinematic options
+  if (config.enablePerspective && config.parallaxIntensity && config.parallaxIntensity > 0) {
+    errors.push(`Scene ${sceneIndex}: Combining 3D perspective with parallax may cause visual conflicts`);
   }
+
+  // Check for conflicting scroll effects
+  const scrollEffects = [config.fadeOnScroll, config.scaleOnScroll, config.blurOnScroll].filter(Boolean);
+  if (scrollEffects.length > 2) {
+    errors.push(`Scene ${sceneIndex}: Multiple scroll effects may compete - consider using only 1-2 for clarity`);
+  }
+
 
   return errors;
 }

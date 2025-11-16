@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { DirectorConfig, DEFAULT_DIRECTOR_CONFIG } from "@shared/schema";
+import { validateDirectorConfig } from '@/lib/director-validator';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -159,9 +160,11 @@ export default function BrandingProjectPage() {
     onSuccess: (data) => {
       // Validate director configs in development
       if (import.meta.env.DEV && data) {
-        import('@/lib/director-validator').then(({ logDirectorConfigDiagnostics }) => {
-          logDirectorConfigDiagnostics(data);
-        });
+        // This is where the original code called the validator.
+        // We'll add our validation logic directly in the useEffect below for clarity and to ensure all scenes are processed.
+        // import('@/lib/director-validator').then(({ logDirectorConfigDiagnostics }) => {
+        //   logDirectorConfigDiagnostics(data);
+        // });
       }
     },
   });
@@ -169,6 +172,20 @@ export default function BrandingProjectPage() {
   // Initialize GSAP ScrollTrigger animations
   useEffect(() => {
     if (!scenes || scenes.length === 0 || !scrollContainerRef.current) return;
+
+    // Validate all director configs and display warnings/errors
+    scenes.forEach((scene, index) => {
+      // Assuming scene.sceneConfig.director contains the configuration that needs validation
+      const directorConfigToValidate = scene.sceneConfig.director || {};
+      const validation = validateDirectorConfig(directorConfigToValidate);
+
+      if (!validation.isValid) {
+        console.error(`Director config validation failed for Scene ${index + 1} (${scene.id}):`, validation.errors);
+      }
+      if (validation.warnings.length > 0) {
+        console.warn(`Director config validation warnings for Scene ${index + 1} (${scene.id}):`, validation.warnings);
+      }
+    });
 
     // Detect prefers-reduced-motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -366,7 +383,7 @@ export default function BrandingProjectPage() {
 
         // Apply entry delay - CRITICAL FIX: ensure delay is always respected
         const entryDelayValue = director.entryDelay !== undefined ? director.entryDelay : 0;
-        
+
         gsap.fromTo(
           targetElement,
           fromState,
@@ -487,7 +504,7 @@ export default function BrandingProjectPage() {
 
   // Navigate to a specific scene with visual feedback
   const [isNavigating, setIsNavigating] = useState(false);
-  
+
   const scrollToScene = (index: number) => {
     if (!animationsReady || !scrollContainerRef.current || isNavigating) return;
     if (!scenes || index < 0 || index >= scenes.length) return;
@@ -497,13 +514,13 @@ export default function BrandingProjectPage() {
 
     if (targetScene) {
       setIsNavigating(true);
-      
+
       const sceneTop = targetScene.getBoundingClientRect().top + window.scrollY;
       const viewportHeight = window.innerHeight;
       const scrollTarget = sceneTop - (viewportHeight * 0.4);
 
       window.scrollTo({ top: scrollTarget, behavior: 'smooth' });
-      
+
       // Reset navigation lock after animation completes
       setTimeout(() => setIsNavigating(false), 800);
     }
@@ -513,7 +530,7 @@ export default function BrandingProjectPage() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!scenes || !animationsReady) return;
-      
+
       // Ignore if user is typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
@@ -655,7 +672,7 @@ export default function BrandingProjectPage() {
                 {scenes?.map((scene, index) => {
                   const sceneType = scene.sceneConfig.type;
                   const sceneLabel = `Scene ${index + 1}: ${sceneType}`;
-                  
+
                   return (
                     <div key={index} className="relative group/tooltip">
                       <button
@@ -677,7 +694,7 @@ export default function BrandingProjectPage() {
                           <span className="absolute inset-0 rounded-full bg-red-500/20 animate-ping" />
                         )}
                       </button>
-                      
+
                       {/* Tooltip */}
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover border border-border rounded text-xs whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none">
                         {sceneLabel}
@@ -777,6 +794,9 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
 
   // Merge director config with defaults
   const director = { ...DEFAULT_DIRECTOR_CONFIG, ...(scene.sceneConfig.director || {}) };
+
+  // Use scrollSpeed from director config if available, otherwise default to normal
+  const currentScrollSpeed = scrollSpeedMap[director.scrollSpeed] || scrollSpeedMap.normal;
 
   switch (type) {
     case "text":

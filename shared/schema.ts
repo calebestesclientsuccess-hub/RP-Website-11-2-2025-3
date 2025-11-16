@@ -799,25 +799,11 @@ export const directorConfigSchema = z.object({
   animationDuration: z.number().min(0.5).max(10.0).optional(),
   animationEasing: z.enum(["linear", "ease", "ease-in", "ease-out", "ease-in-out", "power1", "power2", "power3", "power4", "back", "elastic", "bounce"]).optional(),
   blurOnScroll: z.boolean().optional(),
-  fadeOnScroll: z.boolean().optional(),
-  scaleOnScroll: z.boolean().optional(),
-  mediaPosition: z.enum(["center", "top", "bottom", "left", "right"]).optional(),
-  mediaScale: z.enum(["cover", "contain", "fill"]).optional(),
-  mediaOpacity: z.number().min(0).max(1).optional(),
-  textShadow: z.boolean().optional(),
-  textGlow: z.boolean().optional(),
-  paddingTop: z.enum(["none", "sm", "md", "lg", "xl", "2xl"]).optional(),
-  paddingBottom: z.enum(["none", "sm", "md", "lg", "xl", "2xl"]).optional(),
-  overlayOpacity: z.number().min(0).max(1).optional(),
-  overlayColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-  zIndex: z.number().min(0).max(50).optional(),
-  entryEffect: z.enum(["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-in", "zoom-out", "sudden", "cross-fade", "rotate-in", "flip-in", "spiral-in", "elastic-bounce", "blur-focus"]).optional(),
-  exitEffect: z.enum(["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-out", "dissolve", "cross-fade", "rotate-out", "flip-out", "scale-blur"]).optional(),
-  entryEasing: z.enum(["linear", "ease", "ease-in", "ease-out", "ease-in-out", "power1", "power2", "power3", "power4", "back", "elastic", "bounce"]).default("ease-out"), // NEW: GSAP easing
-  exitEasing: z.enum(["linear", "ease", "ease-in", "ease-out", "ease-in-out", "power1", "power2", "power3", "power4", "back", "elastic", "bounce"]).default("ease-in"), // NEW: GSAP easing
-  layerDepth: z.number().min(0).max(10).default(5), // NEW: z-index control for parallax layering
-  staggerChildren: z.number().min(0).max(1).default(0), // NEW: delay between child element animations (0 = simultaneous)
-}).optional();
+  fadeOnScroll: z.boolean().default(false),
+  scaleOnScroll: z.boolean().default(false),
+  blurOnScroll: z.boolean().default(false),
+  scrollSpeed: z.enum(['slow', 'normal', 'fast']).default('normal'),
+});
 
 // Update scene schemas to include optional director config
 const textSceneWithDirectorSchema = textSceneSchema.extend({

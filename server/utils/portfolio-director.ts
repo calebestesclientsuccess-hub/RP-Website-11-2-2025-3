@@ -135,6 +135,7 @@ FOR EACH SCENE, YOU MUST DECIDE:
 13. fadeOnScroll (true/false)
 14. scaleOnScroll (true/false - MUST be false if parallax > 0)
 15. blurOnScroll (true/false - use sparingly)
+16. scrollSpeed (slow, normal, or fast)
 
 NO FIELD MAY BE OMITTED. If you're unsure, use the defaults from the interpretation matrix, but you MUST provide a value.
 
@@ -236,9 +237,13 @@ TRANSITION DESIGN RULES:
    - Start dark (#0a0a0a) → Mid-tone (#1e293b) → Lighter (#334155) → Back to dark
 
 5. SCROLL EFFECTS USAGE (these are ADDITIONAL to entry/exit, use sparingly):
-   - fadeOnScroll: Use on 30% of scenes maximum (subtle effect)
-   - scaleOnScroll: Use ONLY when parallaxIntensity = 0 (they conflict)
-   - blurOnScroll: NEVER use (causes performance issues)
+   - "fadeOnScroll": Fade media as user scrolls (subtle reveal)
+   - "scaleOnScroll": Subtle zoom on scroll (dramatic effect)
+   - "blurOnScroll": Blur effect during scroll (cinematic depth)
+   - "scrollSpeed": Controls the responsiveness of scroll-based effects
+     * "slow" (2x slower): Dramatic, cinematic feel - use for hero sections
+     * "normal" (standard): Balanced, professional - use for most scenes
+     * "fast" (2x faster): Snappy, energetic - use for galleries or data sections
 
 6. ANTI-CONFLICT RULES:
    - If parallaxIntensity > 0, set scaleOnScroll: false
@@ -290,9 +295,30 @@ interface GeneratedScene {
     // Optional fields
     animationDuration?: number;
     entryDelay?: number; // Added entryDelay
+    exitDelay?: number; // Added exitDelay
     fadeOnScroll?: boolean;
     scaleOnScroll?: boolean;
     blurOnScroll?: boolean;
+    scrollSpeed: "slow" | "normal" | "fast"; // Added scrollSpeed
+    animationDuration?: number;
+    entryEasing?: string;
+    exitEasing?: string;
+    fontWeight?: string;
+    staggerChildren?: number;
+    layerDepth?: number;
+    transformOrigin?: string;
+    overflowBehavior?: string;
+    backdropBlur?: string;
+    mixBlendMode?: string;
+    enablePerspective?: boolean;
+    customCSSClasses?: string;
+    textShadow?: boolean;
+    textGlow?: boolean;
+    paddingTop?: string;
+    paddingBottom?: string;
+    mediaPosition?: string;
+    mediaScale?: string;
+    mediaOpacity?: number;
   };
   // Confidence score fields
   confidenceScore?: number;
@@ -305,6 +331,42 @@ interface PortfolioGenerateResponse {
   confidenceScore?: number;
   confidenceFactors?: string[];
 }
+
+const DEFAULT_DIRECTOR_CONFIG = {
+  entryEffect: 'fade',
+  entryDuration: 1.0,
+  entryDelay: 0,
+  exitEffect: 'fade',
+  exitDuration: 1.0,
+  exitDelay: 0,
+  backgroundColor: '#000000',
+  textColor: '#ffffff',
+  parallaxIntensity: 0,
+  animationDuration: 1.0,
+  headingSize: '4xl',
+  bodySize: 'base',
+  alignment: 'center',
+  fontWeight: 'normal',
+  staggerChildren: 0,
+  layerDepth: 5,
+  transformOrigin: 'center center',
+  overflowBehavior: 'visible',
+  backdropBlur: 'none',
+  mixBlendMode: 'normal',
+  enablePerspective: false,
+  customCSSClasses: '',
+  textShadow: false,
+  textGlow: false,
+  paddingTop: 'none',
+  paddingBottom: 'none',
+  mediaPosition: 'center',
+  mediaScale: 'cover',
+  mediaOpacity: 1.0,
+  fadeOnScroll: false,
+  scaleOnScroll: false,
+  blurOnScroll: false,
+  scrollSpeed: 'normal', // Added default scrollSpeed
+};
 
 /**
  * Call Gemini to orchestrate portfolio scenes from content catalog
@@ -368,7 +430,6 @@ export async function generatePortfolioWithAI(
                     textColor: { type: Type.STRING, description: "Hex color code" },
                     parallaxIntensity: { type: Type.NUMBER, description: "0-1, default 0.3" },
                     scrollSpeed: { type: Type.STRING, description: "slow, normal, or fast" },
-                    animationDuration: { type: Type.NUMBER, description: "Overall animation duration in seconds (0.5-10)" },
                     entryEffect: { type: Type.STRING, description: "fade, slide-up, zoom-in, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus, cross-fade, sudden" },
                     exitEffect: { type: Type.STRING, description: "fade, slide-down, zoom-out, dissolve, rotate-out, flip-out, scale-blur, cross-fade" },
                     entryEasing: { type: Type.STRING, description: "linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce" },
@@ -387,6 +448,14 @@ export async function generatePortfolioWithAI(
                     mixBlendMode: { type: Type.STRING, description: "Blend mode: normal, multiply, screen, overlay, difference, exclusion" },
                     customCSSClasses: { type: Type.STRING, description: "Space-separated custom CSS classes" },
                     enablePerspective: { type: Type.BOOLEAN, description: "Enable 3D perspective for rotations" },
+                    textShadow: { type: Type.BOOLEAN },
+                    textGlow: { type: Type.BOOLEAN },
+                    paddingTop: { type: Type.STRING },
+                    paddingBottom: { type: Type.STRING },
+                    mediaPosition: { type: Type.STRING },
+                    mediaScale: { type: Type.STRING },
+                    mediaOpacity: { type: Type.NUMBER },
+                    overflowBehavior: { type: Type.STRING },
                   },
                   required: [
                     "entryDuration", "exitDuration", "entryDelay", "exitDelay",
@@ -431,10 +500,15 @@ export async function generatePortfolioWithAI(
   // Check if all scenes have required fields
   const requiredSceneFields = ['sceneType', 'assetIds'];
   const requiredDirectorFields = [
-    'entryEffect', 'entryDuration', 'entryDelay',
-    'exitEffect', 'exitDuration',
-    'backgroundColor', 'textColor',
-    'headingSize', 'bodySize', 'alignment'
+    'entryEffect', 'entryDuration', 'entryDelay', 'exitEffect', 'exitDuration',
+    'exitDelay', 'backgroundColor', 'textColor', 'parallaxIntensity',
+    'scrollSpeed', 'animationDuration', 'entryEasing', 'exitEasing',
+    'headingSize', 'bodySize', 'fontWeight', 'alignment',
+    'fadeOnScroll', 'scaleOnScroll', 'blurOnScroll', 'staggerChildren',
+    'layerDepth', 'transformOrigin', 'overflowBehavior', 'backdropBlur',
+    'mixBlendMode', 'enablePerspective', 'customCSSClasses',
+    'textShadow', 'textGlow', 'paddingTop', 'paddingBottom',
+    'mediaPosition', 'mediaScale', 'mediaOpacity'
   ];
 
   result.scenes.forEach((scene: GeneratedScene, idx: number) => {
@@ -458,10 +532,6 @@ export async function generatePortfolioWithAI(
         }
       }
     }
-
-    // Check for placeholder/generic content - this check needs to be done *after* content is generated in convertToSceneConfigs
-    // For now, we'll rely on the AI not to use placeholders in its *initial* generation if prompted correctly.
-    // A more robust check would involve comparing generated content against a list of known placeholder strings.
   });
 
   // Bonus points for proper asset selection
@@ -632,13 +702,76 @@ Return:
         // Type conversion - attempt to infer type or use string
         let newValue: any = improvement.newValue;
         try {
-          if (typeof (scene.director as any)[finalField] === 'number' || (finalField === 'entryDuration' || finalField === 'exitDuration' || finalField === 'entryDelay' || finalField === 'parallaxIntensity')) {
+          if (typeof (scene.director as any)[finalField] === 'number' || (finalField === 'entryDuration' || finalField === 'exitDuration' || finalField === 'entryDelay' || finalField === 'parallaxIntensity' || finalField === 'animationDuration' || finalField === 'exitDelay' || finalField === 'staggerChildren' || finalField === 'layerDepth' || finalField === 'mediaOpacity')) {
             newValue = parseFloat(improvement.newValue);
             if (isNaN(newValue)) throw new Error("Not a number");
-          } else if (typeof (scene.director as any)[finalField] === 'boolean' || (finalField === 'fadeOnScroll' || finalField === 'scaleOnScroll' || finalField === 'blurOnScroll')) {
+          } else if (typeof (scene.director as any)[finalField] === 'boolean' || (finalField === 'fadeOnScroll' || finalField === 'scaleOnScroll' || finalField === 'blurOnScroll' || finalField === 'enablePerspective' || finalField === 'textShadow' || finalField === 'textGlow')) {
             newValue = improvement.newValue.toLowerCase() === 'true';
+          } else if (finalField === 'scrollSpeed') {
+             const validScrollSpeeds = ['slow', 'normal', 'fast'];
+             if (validScrollSpeeds.includes(improvement.newValue.toLowerCase())) {
+                 newValue = improvement.newValue.toLowerCase();
+             } else {
+                 throw new Error(`Invalid scrollSpeed value: ${improvement.newValue}`);
+             }
+          } else if (finalField === 'headingSize') {
+             const validSizes = ['4xl', '5xl', '6xl', '7xl', '8xl'];
+             if (validSizes.includes(improvement.newValue)) {
+                 newValue = improvement.newValue;
+             } else {
+                 throw new Error(`Invalid headingSize value: ${improvement.newValue}`);
+             }
+          } else if (finalField === 'bodySize') {
+             const validSizes = ['base', 'lg', 'xl', '2xl'];
+              if (validSizes.includes(improvement.newValue)) {
+                 newValue = improvement.newValue;
+             } else {
+                 throw new Error(`Invalid bodySize value: ${improvement.newValue}`);
+             }
+          } else if (finalField === 'alignment') {
+             const validAlignments = ['left', 'center', 'right'];
+              if (validAlignments.includes(improvement.newValue.toLowerCase())) {
+                 newValue = improvement.newValue.toLowerCase();
+             } else {
+                 throw new Error(`Invalid alignment value: ${improvement.newValue}`);
+             }
+          } else if (finalField === 'mixBlendMode') {
+              const validModes = ['normal', 'multiply', 'screen', 'overlay', 'difference', 'exclusion'];
+              if (validModes.includes(improvement.newValue.toLowerCase())) {
+                  newValue = improvement.newValue.toLowerCase();
+              } else {
+                  throw new Error(`Invalid mixBlendMode value: ${improvement.newValue}`);
+              }
+          } else if (finalField === 'backdropBlur') {
+              const validBlurs = ['none', 'sm', 'md', 'lg', 'xl'];
+               if (validBlurs.includes(improvement.newValue.toLowerCase())) {
+                  newValue = improvement.newValue.toLowerCase();
+              } else {
+                  throw new Error(`Invalid backdropBlur value: ${improvement.newValue}`);
+              }
+          } else if (finalField === 'paddingTop' || finalField === 'paddingBottom') {
+              const validPaddings = ['none', 'sm', 'md', 'lg', 'xl', '2xl'];
+               if (validPaddings.includes(improvement.newValue.toLowerCase())) {
+                  newValue = improvement.newValue.toLowerCase();
+              } else {
+                  throw new Error(`Invalid ${finalField} value: ${improvement.newValue}`);
+              }
+          } else if (finalField === 'mediaPosition') {
+              const validPositions = ['center', 'top', 'bottom', 'left', 'right'];
+               if (validPositions.includes(improvement.newValue.toLowerCase())) {
+                  newValue = improvement.newValue.toLowerCase();
+              } else {
+                  throw new Error(`Invalid mediaPosition value: ${improvement.newValue}`);
+              }
+          } else if (finalField === 'mediaScale') {
+              const validScales = ['cover', 'contain', 'fill'];
+               if (validScales.includes(improvement.newValue.toLowerCase())) {
+                  newValue = improvement.newValue.toLowerCase();
+              } else {
+                  throw new Error(`Invalid mediaScale value: ${improvement.newValue}`);
+              }
           }
-          // Add more type checks as needed (e.g., for hex colors if needed)
+          // Add more specific type checks as needed for other fields
         } catch (e) {
           console.warn(`[Portfolio Director] Warning: Could not convert "${improvement.newValue}" to expected type for field "${finalField}". Using as string. Error: ${e}`);
           newValue = improvement.newValue; // Fallback to string
@@ -697,19 +830,51 @@ Return the complete scenes array with full director configs. Ensure ALL required
                     exitDuration: { type: Type.NUMBER },
                     animationDuration: { type: Type.NUMBER },
                     entryDelay: { type: Type.NUMBER },
+                    exitDelay: { type: Type.NUMBER },
                     backgroundColor: { type: Type.STRING },
                     textColor: { type: Type.STRING },
                     parallaxIntensity: { type: Type.NUMBER },
+                    scrollSpeed: { type: Type.STRING },
                     entryEffect: { type: Type.STRING },
                     exitEffect: { type: Type.STRING },
+                    entryEasing: { type: Type.STRING },
+                    exitEasing: { type: Type.STRING },
                     fadeOnScroll: { type: Type.BOOLEAN },
                     scaleOnScroll: { type: Type.BOOLEAN },
                     blurOnScroll: { type: Type.BOOLEAN },
                     headingSize: { type: Type.STRING },
                     bodySize: { type: Type.STRING },
+                    fontWeight: { type: Type.STRING },
                     alignment: { type: Type.STRING },
+                    staggerChildren: { type: Type.NUMBER },
+                    layerDepth: { type: Type.NUMBER },
+                    transformOrigin: { type: Type.STRING },
+                    overflowBehavior: { type: Type.STRING },
+                    backdropBlur: { type: Type.STRING },
+                    mixBlendMode: { type: Type.STRING },
+                    enablePerspective: { type: Type.BOOLEAN },
+                    customCSSClasses: { type: Type.STRING },
+                    textShadow: { type: Type.BOOLEAN },
+                    textGlow: { type: Type.BOOLEAN },
+                    paddingTop: { type: Type.STRING },
+                    paddingBottom: { type: Type.STRING },
+                    mediaPosition: { type: Type.STRING },
+                    mediaScale: { type: Type.STRING },
+                    mediaOpacity: { type: Type.NUMBER },
                   },
-                  required: ["entryDuration", "exitDuration", "entryDelay", "backgroundColor", "textColor", "parallaxIntensity", "entryEffect", "exitEffect", "headingSize", "bodySize", "alignment"]
+                  required: [
+                    "entryDuration", "exitDuration", "entryDelay", "exitDelay",
+                    "backgroundColor", "textColor", "parallaxIntensity",
+                    "scrollSpeed", "animationDuration",
+                    "entryEffect", "exitEffect", "entryEasing", "exitEasing",
+                    "headingSize", "bodySize", "fontWeight", "alignment",
+                    "fadeOnScroll", "scaleOnScroll", "blurOnScroll",
+                    "staggerChildren", "layerDepth", "transformOrigin",
+                    "overflowBehavior", "backdropBlur", "mixBlendMode",
+                    "enablePerspective", "customCSSClasses",
+                    "textShadow", "textGlow", "paddingTop", "paddingBottom",
+                    "mediaPosition", "mediaScale", "mediaOpacity"
+                  ]
                 }
               },
               required: ["sceneType", "assetIds", "director"]
@@ -759,6 +924,10 @@ Return the complete scenes array with full director configs. Ensure ALL required
         warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ blurOnScroll conflicts with parallax. Auto-fixing blurOnScroll to false.`);
         scene.director.blurOnScroll = false; // Auto-fix
     }
+     if (director.blurOnScroll && director.scaleOnScroll) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ blurOnScroll conflicts with scaleOnScroll. Auto-fixing blurOnScroll to false.`);
+        scene.director.blurOnScroll = false; // Auto-fix
+    }
 
     // Duration checks
     if (director.entryDuration !== undefined && director.entryDuration < 0.5) {
@@ -785,6 +954,10 @@ Return the complete scenes array with full director configs. Ensure ALL required
       warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid or missing entryDelay, defaulting to 0s.`);
       scene.director.entryDelay = 0; // Default
     }
+    if (typeof director.exitDelay !== 'number' || director.exitDelay < 0) {
+      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid or missing exitDelay, defaulting to 0s.`);
+      scene.director.exitDelay = 0; // Default
+    }
     if (typeof director.parallaxIntensity !== 'number' || director.parallaxIntensity < 0 || director.parallaxIntensity > 1) {
       warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid parallaxIntensity (must be 0-1), defaulting to 0.3.`);
       scene.director.parallaxIntensity = 0.3; // Default
@@ -801,8 +974,8 @@ Return the complete scenes array with full director configs. Ensure ALL required
         confidenceScore -= 3;
     }
      if (!director.backgroundColor) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing backgroundColor, defaulting to '#0a0a0a'.`);
-        scene.director.backgroundColor = '#0a0a0a';
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing backgroundColor, defaulting to '#000000'.`);
+        scene.director.backgroundColor = '#000000';
         confidenceScore -= 3;
     }
      if (!director.textColor) {
@@ -811,18 +984,92 @@ Return the complete scenes array with full director configs. Ensure ALL required
         confidenceScore -= 3;
     }
      if (!director.headingSize) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing headingSize, defaulting to '5xl'.`);
-        scene.director.headingSize = '5xl';
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing headingSize, defaulting to '4xl'.`);
+        scene.director.headingSize = '4xl';
         confidenceScore -= 3;
     }
      if (!director.bodySize) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing bodySize, defaulting to 'lg'.`);
-        scene.director.bodySize = 'lg';
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing bodySize, defaulting to 'base'.`);
+        scene.director.bodySize = 'base';
         confidenceScore -= 3;
     }
      if (!director.alignment) {
         warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing alignment, defaulting to 'center'.`);
         scene.director.alignment = 'center';
+        confidenceScore -= 3;
+    }
+    if (!director.fontWeight) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing fontWeight, defaulting to 'normal'.`);
+        scene.director.fontWeight = 'normal';
+        confidenceScore -= 3;
+    }
+     if (director.staggerChildren === undefined || director.staggeredChildren < 0) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid or missing staggerChildren, defaulting to 0.`);
+        scene.director.staggerChildren = 0;
+        confidenceScore -= 3;
+    }
+     if (director.layerDepth === undefined || director.layerDepth < 0 || director.layerDepth > 10) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid layerDepth (must be 0-10), defaulting to 5.`);
+        scene.director.layerDepth = 5;
+        confidenceScore -= 3;
+    }
+     if (!director.transformOrigin) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing transformOrigin, defaulting to 'center center'.`);
+        scene.director.transformOrigin = 'center center';
+        confidenceScore -= 3;
+    }
+     if (!director.overflowBehavior) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing overflowBehavior, defaulting to 'visible'.`);
+        scene.director.overflowBehavior = 'visible';
+        confidenceScore -= 3;
+    }
+     if (!director.backdropBlur) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing backdropBlur, defaulting to 'none'.`);
+        scene.director.backdropBlur = 'none';
+        confidenceScore -= 3;
+    }
+     if (!director.mixBlendMode) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing mixBlendMode, defaulting to 'normal'.`);
+        scene.director.mixBlendMode = 'normal';
+        confidenceScore -= 3;
+    }
+    // Ensure boolean fields are present
+    const booleanFields = ['fadeOnScroll', 'scaleOnScroll', 'blurOnScroll', 'enablePerspective', 'textShadow', 'textGlow'];
+    for (const field of booleanFields) {
+        if (typeof director[field] !== 'boolean') {
+            warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing or invalid ${field}, defaulting to false.`);
+            scene.director[field] = false;
+            confidenceScore -= 3;
+        }
+    }
+     if (!director.paddingTop) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing paddingTop, defaulting to 'none'.`);
+        scene.director.paddingTop = 'none';
+        confidenceScore -= 3;
+    }
+     if (!director.paddingBottom) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing paddingBottom, defaulting to 'none'.`);
+        scene.director.paddingBottom = 'none';
+        confidenceScore -= 3;
+    }
+    if (!director.mediaPosition) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing mediaPosition, defaulting to 'center'.`);
+        scene.director.mediaPosition = 'center';
+        confidenceScore -= 3;
+    }
+     if (!director.mediaScale) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing mediaScale, defaulting to 'cover'.`);
+        scene.director.mediaScale = 'cover';
+        confidenceScore -= 3;
+    }
+    if (typeof director.mediaOpacity !== 'number' || director.mediaOpacity < 0 || director.mediaOpacity > 1) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid mediaOpacity (must be 0-1), defaulting to 1.0.`);
+        scene.director.mediaOpacity = 1.0;
+        confidenceScore -= 3;
+    }
+    if (!director.scrollSpeed) {
+        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing scrollSpeed, defaulting to 'normal'.`);
+        scene.director.scrollSpeed = 'normal';
         confidenceScore -= 3;
     }
 
@@ -865,6 +1112,7 @@ Return the complete scenes array with full director configs. Ensure ALL required
       assets: s.assetIds.length,
       entry: `${s.director.entryEffect} (${s.director.entryDuration}s)`,
       exit: `${s.director.exitEffect} (${s.director.exitDuration}s)`,
+      scrollSpeed: s.director.scrollSpeed
     }))
   });
 
@@ -913,7 +1161,7 @@ export function convertToSceneConfigs(
       type: aiScene.sceneType,
       content: {},
       layout: aiScene.layout || "default",
-      director: aiScene.director, // Now always required by schema
+      director: { ...DEFAULT_DIRECTOR_CONFIG, ...aiScene.director }, // Merge with defaults
     };
 
     // Map asset IDs to actual content based on scene type

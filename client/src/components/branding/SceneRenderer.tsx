@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -39,6 +38,7 @@ interface DirectorConfig {
   mediaPosition?: string;
   mediaScale?: string;
   mediaOpacity?: number;
+  scrollSpeed?: string; // Added scrollSpeed
 }
 
 interface SceneData {
@@ -101,11 +101,20 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
   useEffect(() => {
     if (!sceneRef.current || !contentRef.current) return;
 
-    const { director } = scene;
+    const director = scene.director as DirectorConfig;
+
+    // Map scrollSpeed to GSAP scrub values
+    const scrollSpeedMap = {
+      'slow': 2,      // Slower, more dramatic scroll animations
+      'normal': 1,    // Standard scroll speed
+      'fast': 0.5     // Quick, snappy scroll animations
+    };
+    const scrollScrub = scrollSpeedMap[director.scrollSpeed || 'normal'];
+
     const sceneEl = sceneRef.current;
     const contentEl = contentRef.current;
 
-    // Map easing names to GSAP easing functions
+    // Helper to map easing names to GSAP easing functions
     const getEasing = (easing: string) => {
       const easingMap: Record<string, string> = {
         linear: "none",
@@ -194,14 +203,15 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
       }
     };
 
-    // Create ScrollTrigger animation
+    // Create ScrollTrigger animation for the main content
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: sceneEl,
         start: "top 80%",
         end: "bottom 20%",
         toggleActions: "play none none reverse",
-        scrub: director.fadeOnScroll || director.scaleOnScroll || director.blurOnScroll,
+        // Use scrollScrub here if fade/scale/blur are enabled, otherwise default to false
+        scrub: (director.fadeOnScroll || director.scaleOnScroll || director.blurOnScroll) ? scrollScrub : false,
       },
     });
 
@@ -223,22 +233,14 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
       }
     );
 
-    // Scroll effects (if enabled)
+    // Scroll effects (fade, scale, blur)
     if (director.fadeOnScroll || director.scaleOnScroll || director.blurOnScroll) {
-      // Map scrollSpeed to scrub value
-      const scrollSpeedMap: Record<string, number> = {
-        'slow': 3,
-        'normal': 1.5,
-        'fast': 0.5,
-      };
-      const scrubSpeed = scrollSpeedMap[director.scrollSpeed || 'normal'] || 1.5;
-
       gsap.to(contentEl, {
         scrollTrigger: {
           trigger: sceneEl,
           start: "top center",
           end: "bottom center",
-          scrub: scrubSpeed,
+          scrub: scrollScrub, // Apply scrollScrub here
         },
         opacity: director.fadeOnScroll ? 0.3 : 1,
         scale: director.scaleOnScroll ? 1.1 : 1,
@@ -253,12 +255,33 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
           trigger: sceneEl,
           start: "top bottom",
           end: "bottom top",
-          scrub: true,
+          scrub: scrollScrub, // Apply scrollScrub here
         },
         y: `${director.parallaxIntensity * 100}%`,
       });
     }
+    
+    // Scale effect for media elements
+    if (director.scaleOnScroll) {
+        const mediaElements = contentEl.querySelectorAll('img, video'); // Adjust selector as needed
+        if (mediaElements.length > 0) {
+          ScrollTrigger.create({
+            trigger: sceneEl,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: scrollScrub, // Apply scrollScrub here
+            onUpdate: (self) => {
+              const scale = 1 - (self.progress * 0.02); // Adjust scale factor as needed
+              mediaElements.forEach((el: HTMLElement) => {
+                gsap.set(el, { scale });
+              });
+            },
+          });
+        }
+    }
 
+
+    // Cleanup ScrollTriggers on component unmount
     return () => {
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
     };
