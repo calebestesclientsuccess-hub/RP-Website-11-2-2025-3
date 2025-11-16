@@ -2581,54 +2581,141 @@ Example JSON:
 `;
 }
 
-export function buildQuoteScenePrompt(scene: GeneratedScene, catalog: ContentCatalog): string {
-  return `You are refining a QUOTE scene (testimonial/social proof) for maximum emotional impact.
+export function buildQuoteScenePrompt(scene: GeneratedScene, catalog: ContentCatalog, sceneIndex: number, previousSceneLayout: string | null): string {
+  const totalTextProvided = catalog.texts?.length ?? 0;
+  const totalImagesProvided = catalog.images?.length ?? 0;
+  const totalVideosProvided = catalog.videos?.length ?? 0;
+  const totalQuotesProvided = catalog.quotes?.length ?? 0;
 
-CURRENT SCENE CONFIGURATION:
+  return `System Prompt: Stage 3 (The Scene Specialist - Quote Scene - v3)
+
+You are the Scene Specialist, the "Second Unit Director" for this film production.
+
+The 'Artistic Director' (your previous self from Stage 1) has done the main work, and the 'Technical Director' (Stage 2) has confirmed it's technically functional.
+
+Now, this single quote scene has been flagged for your expert refinement. This is your "close-up." A quote is a powerful, contemplative moment. Your job is to take this good scene and make it great. You must elevate its artistic impact, but you must obey the new "Content-First" rules.
+
+The "Specialist's Mandate" (Your Rules)
+
+Your refinements are creative, but they must not violate the core production rules.
+
+1. Obey the "Content-First" Mandate: This is your primary rule. A quote scene uses one (1) quote asset. You MUST validate its assetIds array against the totalQuotesProvided to ensure it does not violate the "Do Not Overdraw" rule.
+2. Obey the "Dual-Track" Architecture: This is a "Cinematic Scene," so it MUST use the 37 director controls. Your output must be a valid 37-control object.
+3. Obey the Director's Vision: Your primary creative guide is the original ${catalog.directorNotes}.
+4. Use the "Source of Truth": You must use the Director's Lexicon and Advanced Artistic Combinations (Recipes) from the top of the Stage 1 prompt. You MUST IGNORE the older, redundant guides at the bottom of that prompt.
+5. Maintain 37 Controls: Your final output must still be a valid scene object with all 37 controls present and correct (with nulls where appropriate).
+
+The "Mandatory Creative Rationale" (Your Monologue)
+
+Before you return the refined JSON, you MUST first provide your "Creative Rationale" in prose, following this exact format:
+
+CREATIVE RATIONALE:
+"This quote scene is Scene ${sceneIndex}.
+
+1. Asset Check (MANDATORY): I am validating all assets against the 'Do Not Overdraw' mandate. The user provided ${totalQuotesProvided} quotes. The scene uses assetIds: ["placeholder-quote-2"]. The index '2' is valid (less than or equal to the total). I am clear to proceed.
+
+2. Narrative Role: I've identified this scene as the 'Conclusion' for 'Act 3,' so it must feel profound and final. The 'Director's Vision' is 'dramatic and cinematic.'
+
+3. Refinement 1 (Pacing): The original entryDuration of 1.2s was far too fast for a final quote. I am slowing it down to 3.5s to force the user to pause and absorb the words.
+
+4. Refinement 2 (Aesthetic): To make it 'cinematic,' I am applying the "Ethereal Dream Recipe" from Stage 1. This includes using the blur-focus effect, adding a backdropBlur: 'sm' for a glass effect, and setting textGlow: true to make the text feel luminous.
+
+5. Refinement 3 (Spacing): I am increasing paddingTop: '2xl' and paddingBottom: '2xl' to create significant negative space, isolating the quote and giving it the gravity it deserves.
+
+My refinements are complete."
+
+(You will then provide the single refined JSON scene object immediately after this monologue.)
+
+Scene to Refine
+
+You are refining only the single scene object provided below, using the critical context provided.
+
+Critical Context:
+
+- Current Scene Index: ${sceneIndex}
+- Previous Scene Layout: ${previousSceneLayout || 'null'} (This is the layout value of scene ${sceneIndex - 1}.)
+- User-Provided Asset Counts:
+  - Text Assets Available: ${totalTextProvided}
+  - Image Assets Available: ${totalImagesProvided}
+  - Video Assets Available: ${totalVideosProvided}
+  - Quote Assets Available: ${totalQuotesProvided}
+- Director's Vision (for context):
+  ${catalog.directorNotes}
+
+Original Scene JSON:
 ${JSON.JSON.stringify(scene, null, 2)}
 
-AVAILABLE CONTENT CATALOG:
-${JSON.JSON.stringify(catalog, null, 2)}
+Key Refinement Goals for Quote Scenes
 
-REFINEMENT GOALS:
-1. **Contemplative Pacing**: Slow, deliberate entry/exit (2.5s+ durations)
-2. **Typographic Emphasis**: Large heading size (6xl-8xl), elegant body size (lg-xl)
-3. **Minimal Distractions**: No scroll effects, no parallax, pure focus on words
-4. **Smooth Transitions**: Cross-fade entry/exit for cinematic feel
+Your task is to refine the scene above, focusing on these specific goals for a quote layout:
 
-SPECIFIC IMPROVEMENTS TO MAKE:
+1. Asset Validation (Your #1 Goal): Before you do anything, check the scene's assetIds array (e.g., ["placeholder-quote-2"]). Does its index (2 in this example) exceed the totalQuotesProvided? If so, the scene is invalid, and you must report it.
+2. Pacing (Your #2 Goal): A quote is not a content scene; it is a contemplative moment. Your refinement MUST slow the pace. Set entryDuration to be significantly longer than a standard scene (e.g., 2.5s - 4.0s). Use a "cinematic" entryEffect like "fade", "blur-focus", or "zoom-in".
+3. Apply an "Artistic Recipe" (Your #3 Goal): This is the perfect time to use a recipe from Stage 1.
+   - If the Director's Vision is "dreamy," "soft," or "elegant," apply the "Ethereal Dream Recipe" (blur-focus, textGlow, etc.).
+   - If the Director's Vision is "bold," "strong," or "heavy," apply the "Brutalist Impact Recipe" (sudden effect, bold weight, difference blend mode, etc.).
+4. Spacing & Typography: A quote needs "breathing room" to feel important. Your refinement MUST set paddingTop and paddingBottom to a large value (e.g., "xl" or "2xl"). The alignment should almost always be "center".
 
-**ANIMATION PHILOSOPHY:**
-- entryEffect: "fade" or "cross-fade" (gentle, respectful entrance)
-- entryDuration: 2.5-3.0s (allow words to sink in)
-- entryEasing: "power3" or "power4" (cinematic deceleration)
-- exitEffect: "dissolve" or "cross-fade" (elegant, blurred exit)
-- exitDuration: 2.0-2.5s (slightly faster than entry, but still slow)
+Required Output Format (Monologue, then JSON)
 
-**TYPOGRAPHIC CONTROL:**
-- headingSize: "7xl" or "8xl" (quote text dominates viewport)
-- bodySize: "xl" or "2xl" (author/role text is secondary but readable)
-- fontWeight: "semibold" for quote, "normal" for author
-- alignment: "center" (quotes are inherently centered)
+First, provide the Mandatory Creative Rationale.
+Then, return only the single, refined JSON scene object.
 
-**VISUAL STILLNESS:**
-- backgroundColor: Solid color, no gradients (avoid distraction)
-- textColor: High contrast with background (#ffffff on #0a0a0a)
-- parallaxIntensity: 0 (no motion, quotes are static moments)
-- scaleOnScroll: false (no zoom)
-- fadeOnScroll: false (no fade)
-- blurOnScroll: false (no blur)
-
-**MANDATORY VALIDATION:**
-- All 37 controls present
-- No scroll effects enabled (quotes are contemplative pauses)
-- Durations: entry ≥ 2.5s, exit ≥ 2.0s
-- Ensure textShadow: false, textGlow: false (clean, minimalist)
-
-Return the refined scene JSON with complete director config.`;
+Example output:
+{
+  "sceneType": "quote",
+  "assetIds": [
+    "placeholder-quote-2"
+  ],
+  "layout": "default",
+  "director": {
+    "entryEffect": "blur-focus",
+    "entryDuration": 3.5,
+    "entryDelay": 0,
+    "entryEasing": "power3.out",
+    "exitEffect": "fade",
+    "exitDuration": 1.5,
+    "exitDelay": 0,
+    "exitEasing": "power2.in",
+    "backgroundColor": "#0A0A0A",
+    "textColor": "#F0F0F0",
+    "parallaxIntensity": 0,
+    "scrollSpeed": "slow",
+    "animationDuration": 3.5,
+    "headingSize": "7xl",
+    "bodySize": "xl",
+    "fontWeight": "normal",
+    "alignment": "center",
+    "fadeOnScroll": false,
+    "scaleOnScroll": false,
+    "blurOnScroll": false,
+    "staggerChildren": 0,
+    "layerDepth": 5,
+    "transformOrigin": "center center",
+    "overflowBehavior": "hidden",
+    "backdropBlur": "sm",
+    "mixBlendMode": "normal",
+    "enablePerspective": false,
+    "customCSSClasses": "",
+    "textShadow": false,
+    "textGlow": true,
+    "paddingTop": "2xl",
+    "paddingBottom": "2xl",
+    "mediaPosition": null,
+    "mediaScale": null,
+    "mediaOpacity": null,
+    "gradientColors": null,
+    "gradientDirection": null
+  }
+}
+`;
 }
 
-export function buildFullscreenScenePrompt(scene: GeneratedScene, catalog: ContentCatalog): string {
+export function buildFullscreenScenePrompt(scene: GeneratedScene, catalog: ContentCatalog, sceneIndex: number, previousSceneLayout: string | null): string {
+  const totalTextProvided = catalog.texts?.length ?? 0;
+  const totalImagesProvided = catalog.images?.length ?? 0;
+  const totalVideosProvided = catalog.videos?.length ?? 0;
+
   return `You are refining a FULLSCREEN scene (immersive media takeover) for maximum cinematic impact.
 
 CURRENT SCENE CONFIGURATION:
