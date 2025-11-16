@@ -3047,6 +3047,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/campaigns", requireAuth, async (req, res) => {
     try {
       const { zone, page, displayAs, active } = req.query;
+      // TENANT ISOLATION: Only fetch campaigns for authenticated user's tenant
       let campaigns = await storage.getAllCampaigns(req.tenantId);
 
       // Filter by active status
@@ -3085,6 +3086,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/campaigns/:id", requireAuth, async (req, res) => {
     try {
+      // TENANT ISOLATION: Verify campaign belongs to user's tenant
       const campaign = await storage.getCampaignById(req.tenantId, req.params.id);
       if (!campaign) {
         return res.status(404).json({ error: "Campaign not found" });
@@ -3110,6 +3112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const campaignData = result.data;
 
       // Zone conflict validation for inline campaigns
+      // TENANT ISOLATION: Only check conflicts within same tenant
       if (campaignData.displayAs === "inline" && campaignData.targetZone) {
         const allCampaigns = await storage.getAllCampaigns(req.tenantId);
 
@@ -3146,6 +3149,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // TENANT ISOLATION: Automatically assign tenantId from session
       const campaign = await storage.createCampaign(req.tenantId, campaignData);
       return res.status(201).json(campaign);
     } catch (error) {
@@ -3167,7 +3171,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const campaignData = result.data;
 
+      // TENANT ISOLATION: Verify campaign exists and belongs to user's tenant before updating
+      const existingCampaign = await storage.getCampaignById(req.tenantId, req.params.id);
+      if (!existingCampaign) {
+        return res.status(404).json({ error: "Campaign not found or access denied" });
+      }
+
       // Zone conflict validation for inline campaigns
+      // TENANT ISOLATION: Only check conflicts within same tenant
       if (campaignData.displayAs === "inline" && campaignData.targetZone) {
         const allCampaigns = await storage.getAllCampaigns(req.tenantId);
 
@@ -3219,6 +3230,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/campaigns/:id", requireAuth, async (req, res) => {
     try {
+      // TENANT ISOLATION: Verify campaign exists and belongs to user's tenant before deletion
+      const existingCampaign = await storage.getCampaignById(req.tenantId, req.params.id);
+      if (!existingCampaign) {
+        return res.status(404).json({ error: "Campaign not found or access denied" });
+      }
+
       await storage.deleteCampaign(req.tenantId, req.params.id);
       return res.json({ success: true });
     } catch (error) {
@@ -3583,6 +3600,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // TENANT ISOLATION: Automatically assign tenantId from request
       const event = await storage.createEvent(req.tenantId, result.data);
       return res.status(201).json(event);
     } catch (error) {
@@ -3603,6 +3621,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.eventType = req.query.eventType;
       }
 
+      // TENANT ISOLATION: Only fetch events for authenticated user's tenant
       const events = await storage.getAllEvents(req.tenantId, filters);
       return res.json(events);
     } catch (error) {

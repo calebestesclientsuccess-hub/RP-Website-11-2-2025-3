@@ -652,6 +652,29 @@ export class DbStorage implements IStorage {
       .where(and(eq(campaigns.tenantId, tenantId), eq(campaigns.id, id)));
   }
 
+  async createEvent(tenantId: string, insertEvent: { eventType: string; campaignId?: string; payload?: string }): Promise<any> {
+    const [event] = await db.insert(events)
+      .values({ tenantId, ...insertEvent })
+      .returning();
+    return event;
+  }
+
+  async getAllEvents(tenantId: string, filters?: { campaignId?: string; eventType?: string }): Promise<any[]> {
+    const conditions = [eq(events.tenantId, tenantId)];
+
+    if (filters?.campaignId) {
+      conditions.push(eq(events.campaignId, filters.campaignId));
+    }
+
+    if (filters?.eventType) {
+      conditions.push(eq(events.eventType, filters.eventType));
+    }
+
+    return await db.select().from(events)
+      .where(and(...conditions))
+      .orderBy(desc(events.createdAt));
+  }
+
   async createEvent(tenantId: string, insertEvent: InsertEvent): Promise<Event> {
     const [event] = await db.insert(events)
       .values({ tenantId, ...insertEvent })
