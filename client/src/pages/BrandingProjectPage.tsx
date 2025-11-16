@@ -177,13 +177,10 @@ export default function BrandingProjectPage() {
     scenes.forEach((scene, index) => {
       // Assuming scene.sceneConfig.director contains the configuration that needs validation
       const directorConfigToValidate = scene.sceneConfig.director || {};
-      const validation = validateDirectorConfig(directorConfigToValidate);
+      const errors = validateDirectorConfig(directorConfigToValidate, index);
 
-      if (!validation.isValid) {
-        console.error(`Director config validation failed for Scene ${index + 1} (${scene.id}):`, validation.errors);
-      }
-      if (validation.warnings.length > 0) {
-        console.warn(`Director config validation warnings for Scene ${index + 1} (${scene.id}):`, validation.warnings);
+      if (errors.length > 0) {
+        console.error(`Director config validation failed for Scene ${index + 1} (${scene.id}):`, errors);
       }
     });
 
