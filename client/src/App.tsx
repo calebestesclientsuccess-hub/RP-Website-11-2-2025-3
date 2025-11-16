@@ -45,7 +45,7 @@ import AssessmentResult from "@/pages/AssessmentResult";
 import NotFound from "@/pages/not-found";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { useEffect, lazy, Suspense, useState } from "react";
+import { useEffect, lazy, Suspense, useState, useCallback, useMemo } from "react";
 import { CampaignBootstrap } from "@/lib/campaignCache";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useKeyboardShortcuts, GLOBAL_SHORTCUTS } from "@/hooks/use-keyboard-shortcuts";
@@ -227,14 +227,21 @@ function Router() {
 function App() {
   const [showShortcuts, setShowShortcuts] = useState(false);
 
-  // Set up global keyboard shortcuts
-  useKeyboardShortcuts([
-    ...GLOBAL_SHORTCUTS.map(shortcut => 
+  // Set up global keyboard shortcuts with memoized handler
+  const handleShowShortcuts = useCallback(() => {
+    setShowShortcuts(true);
+  }, []);
+
+  const shortcuts = useMemo(() => 
+    GLOBAL_SHORTCUTS.map(shortcut => 
       shortcut.key === '?' 
-        ? { ...shortcut, action: () => setShowShortcuts(true) }
+        ? { ...shortcut, action: handleShowShortcuts }
         : shortcut
     ),
-  ]);
+    [handleShowShortcuts]
+  );
+
+  useKeyboardShortcuts(shortcuts);
 
   return (
     <QueryClientProvider client={queryClient}>
