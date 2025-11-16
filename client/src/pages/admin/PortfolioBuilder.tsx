@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, X, Sparkles, Loader2, Edit, ArrowUp, ArrowDown, Trash2, ChevronDown } from "lucide-react";
+import { Plus, X, Sparkles, Loader2, Edit, ArrowUp, ArrowDown, Trash2, ChevronDown, Send } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Project } from "@shared/schema";
 import {
@@ -33,6 +33,11 @@ import { DirectorConfigForm } from "@/components/DirectorConfigForm";
 import { DEFAULT_DIRECTOR_CONFIG } from "@shared/schema";
 import { useForm } from "react-hook-form";
 import { Form } from "@/components/ui/form";
+import { ChatMessage } from "@/components/admin/ChatMessage";
+import { VersionTimeline } from "@/components/admin/VersionTimeline";
+import { LivePreviewPanel } from "@/components/admin/LivePreviewPanel";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SceneBuilder {
   id: string;
@@ -110,6 +115,20 @@ export default function PortfolioBuilder() {
     "More cinematic feel",
     "Simplify the flow"
   ]);
+
+  // Version history state
+  const [versions, setVersions] = useState<Array<{
+    id: string;
+    timestamp: number;
+    label: string;
+    json: string;
+    confidenceScore?: number;
+    changeDescription: string;
+  }>>([]);
+  const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
+
+  // Live preview state
+  const [livePreviewEnabled, setLivePreviewEnabled] = useState(false);
 
   // --- Form State for Scene Editor ---
   const form = useForm({
@@ -391,14 +410,32 @@ export default function PortfolioBuilder() {
       console.log('[Portfolio Builder] Generation/Refinement successful:', result);
 
       // Update conversation history
+      const userMessage = currentPrompt || portfolioAiPrompt;
+      const assistantMessage = result.explanation || `Generated ${result.scenes?.length || 0} scenes.`;
+      
       setConversationHistory(prev => [
         ...prev,
-        { role: "user", content: currentPrompt || portfolioAiPrompt }, // Use currentPrompt for chat, fallback to portfolioAiPrompt if it's the first interaction
-        { role: "assistant", content: result.explanation || `Generated ${result.scenes?.length || 0} scenes.` }
+        { role: "user", content: userMessage },
+        { role: "assistant", content: assistantMessage }
       ]);
 
       // Store the latest scene JSON for reference and editing
-      setCurrentSceneJson(JSON.stringify(result.scenes, null, 2));
+      const newSceneJson = JSON.stringify(result.scenes, null, 2);
+      setCurrentSceneJson(newSceneJson);
+
+      // Create version entry
+      const versionId = `v-${Date.now()}`;
+      const newVersion = {
+        id: versionId,
+        timestamp: Date.now(),
+        label: versions.length === 0 ? "Initial Generation" : `Iteration ${versions.length + 1}`,
+        json: newSceneJson,
+        confidenceScore: result.confidenceScore,
+        changeDescription: userMessage,
+      };
+      
+      setVersions(prev => [...prev, newVersion]);
+      setActiveVersionId(versionId);
 
       setGeneratedScenes({
         scenes: result.scenes,
@@ -798,82 +835,145 @@ export default function PortfolioBuilder() {
 
                 {/* Show refinement mode if we have existing scenes OR generated scenes */}
                 {(currentSceneJson || (existingProjectScenes && existingProjectScenes.length > 0)) ? (
-                  // REFINEMENT MODE
-                  <Card className="border-2 border-primary/20">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="flex items-center gap-2">
-                            💬 Iterative Refinement Mode
-                            {conversationHistory.length > 0 && (
-                              <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
-                                {Math.floor(conversationHistory.length / 2)} iterations
-                              </span>
-                            )}
-                          </CardTitle>
-                          <CardDescription>
-                            Refine your scenes by chatting with Gemini. Reference specific scenes by number (e.g., "Make Scene 3 more dramatic")
-                          </CardDescription>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            if (confirm("Start over? This will clear all generated scenes and conversation history.")) {
-                              setConversationHistory([]);
-                              setCurrentSceneJson("");
-                              setGeneratedScenes(null);
-                              setCurrentPrompt("");
-                            }
-                          }}
-                        >
-                          Start Over
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      {/* Scene Overview - Quick Reference */}
-                      {currentSceneJson && (() => {
-                        try {
-                          const scenes = JSON.parse(currentSceneJson);
-                          return (
-                            <div className="space-y-2">
-                              <Label className="text-base font-semibold">Scene Overview</Label>
-                              <div className="grid gap-2">
-                                {scenes.map((scene: any, idx: number) => (
-                                  <div key={idx} className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
-                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm">
-                                      {idx + 1}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <div className="text-sm font-medium">{scene.sceneType}</div>
-                                      <div className="text-xs text-muted-foreground truncate">
-                                        Entry: {scene.director?.entryEffect} ({scene.director?.entryDuration}s) |
-                                        Exit: {scene.director?.exitEffect} ({scene.director?.exitDuration}s)
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                              <p className="text-xs text-muted-foreground">
-                                💡 Reference scenes by number in your prompts (e.g., "Make Scene {scenes.length > 2 ? '3' : '1'} more dramatic")
-                              </p>
+                  // REFINEMENT MODE - NEW CHAT INTERFACE
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Main Chat Column (2/3 width on large screens) */}
+                    <div className="lg:col-span-2 space-y-6">
+                      <Card className="border-2 border-primary/20">
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <CardTitle className="flex items-center gap-2">
+                                💬 Gemini Director Chat
+                                {conversationHistory.length > 0 && (
+                                  <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
+                                    {Math.floor(conversationHistory.length / 2)} iterations
+                                  </span>
+                                )}
+                              </CardTitle>
+                              <CardDescription>
+                                Refine your scenes conversationally. Reference scenes by number (e.g., "Make Scene 3 more dramatic")
+                              </CardDescription>
                             </div>
-                          );
-                        } catch {
-                          return null;
-                        }
-                      })()}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                if (confirm("Start over? This will clear all conversation history and versions.")) {
+                                  setConversationHistory([]);
+                                  setCurrentSceneJson("");
+                                  setGeneratedScenes(null);
+                                  setCurrentPrompt("");
+                                  setVersions([]);
+                                  setActiveVersionId(null);
+                                }
+                              }}
+                            >
+                              Start Over
+                            </Button>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {/* Chat Messages */}
+                          <ScrollArea className="h-[400px] pr-4">
+                            <div className="space-y-4">
+                              {conversationHistory.length === 0 ? (
+                                <div className="text-center text-muted-foreground py-12">
+                                  <Sparkles className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                  <p className="text-sm">Start the conversation below</p>
+                                  <p className="text-xs mt-1">Gemini will help you refine your portfolio scenes</p>
+                                </div>
+                              ) : (
+                                conversationHistory.map((msg, idx) => (
+                                  <ChatMessage
+                                    key={idx}
+                                    role={msg.role as "user" | "assistant"}
+                                    content={msg.content}
+                                    timestamp={Date.now() - (conversationHistory.length - idx) * 60000}
+                                    onCopy={() => {
+                                      navigator.clipboard.writeText(msg.content);
+                                      toast({ title: "Copied to clipboard" });
+                                    }}
+                                    onFeedback={(type) => {
+                                      toast({ 
+                                        title: type === "positive" ? "Thanks for the feedback!" : "We'll try to do better",
+                                        description: "Your feedback helps improve Gemini"
+                                      });
+                                    }}
+                                  />
+                                ))
+                              )}
+                              {isRefining && (
+                                <ChatMessage
+                                  role="assistant"
+                                  content="Analyzing your request and refining scenes..."
+                                  timestamp={Date.now()}
+                                  isTyping={true}
+                                />
+                              )}
+                            </div>
+                          </ScrollArea>
 
-                      {/* Current Scene JSON - ALWAYS VISIBLE AND EDITABLE */}
-                      <Collapsible>
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" className="w-full justify-between">
-                            <span className="text-base font-semibold">View/Edit Complete Scene JSON</span>
-                            <ChevronDown className="h-4 w-4" />
-                          </Button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="space-y-2 pt-2">
+                          {/* Chat Input */}
+                          <div className="space-y-3 border-t pt-4">
+                            <div className="flex gap-2">
+                              <Textarea
+                                value={currentPrompt}
+                                onChange={(e) => setCurrentPrompt(e.target.value)}
+                                placeholder="Type your refinement request... (e.g., 'Make Scene 3 more dramatic with faster pacing')"
+                                rows={2}
+                                className="resize-none"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    if (currentPrompt.trim() && !isRefining) {
+                                      handleGeneratePortfolio();
+                                    }
+                                  }
+                                }}
+                              />
+                              <Button
+                                onClick={handleGeneratePortfolio}
+                                disabled={isRefining || !currentPrompt.trim()}
+                                size="icon"
+                                className="flex-shrink-0"
+                              >
+                                {isRefining ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <Send className="w-4 h-4" />
+                                )}
+                              </Button>
+                            </div>
+
+                            {/* Quick Prompts */}
+                            <div className="flex flex-wrap gap-2">
+                              {quickPrompts.map((prompt) => (
+                                <Button
+                                  key={prompt}
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setCurrentPrompt(prompt)}
+                                  disabled={isRefining}
+                                  className="text-xs h-7"
+                                >
+                                  {prompt}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* JSON Editor/Viewer */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base">Scene JSON Editor</CardTitle>
+                          <CardDescription>
+                            View and manually edit the generated JSON. Changes here will be used in the next refinement.
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="outline"
@@ -904,134 +1004,106 @@ export default function PortfolioBuilder() {
                           <Textarea
                             value={currentSceneJson}
                             onChange={(e) => setCurrentSceneJson(e.target.value)}
-                            className="font-mono text-xs min-h-[400px] resize-y"
+                            className="font-mono text-xs min-h-[300px] resize-y"
                             placeholder="Scene JSON will appear here after generation..."
                           />
-                          <p className="text-xs text-muted-foreground">
-                            💡 This JSON is the foundation for all refinements. Gemini uses this as context.
-                          </p>
-                        </CollapsibleContent>
-                      </Collapsible>
+                        </CardContent>
+                      </Card>
+                    </div>
 
-                      {/* Conversation History */}
-                      {conversationHistory.length > 0 && (
-                        <div className="space-y-2">
-                          <Label className="text-base font-semibold">Conversation History</Label>
-                          <div className="space-y-3 max-h-[300px] overflow-y-auto border rounded-lg p-4 bg-muted/30">
-                            {conversationHistory.map((msg, idx) => (
-                              <div
-                                key={idx}
-                                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                              >
-                                <div
-                                  className={`max-w-[80%] rounded-lg p-3 ${
-                                    msg.role === 'user'
-                                      ? 'bg-primary text-primary-foreground'
-                                      : 'bg-background border'
-                                  }`}
-                                >
-                                  <div className="text-xs font-medium mb-1 opacity-70">
-                                    {msg.role === 'user' ? '👤 You' : '🤖 Gemini'}
+                    {/* Sidebar Column (1/3 width on large screens) */}
+                    <div className="space-y-6">
+                      {/* Tabs for Version History and Live Preview */}
+                      <Card>
+                        <Tabs defaultValue="versions" className="w-full">
+                          <CardHeader className="pb-3">
+                            <TabsList className="grid w-full grid-cols-2">
+                              <TabsTrigger value="versions">Versions</TabsTrigger>
+                              <TabsTrigger value="preview">Preview</TabsTrigger>
+                            </TabsList>
+                          </CardHeader>
+                          <CardContent>
+                            <TabsContent value="versions" className="mt-0">
+                              <VersionTimeline
+                                versions={versions}
+                                activeVersionId={activeVersionId}
+                                onRestore={(versionId) => {
+                                  const version = versions.find(v => v.id === versionId);
+                                  if (version) {
+                                    setCurrentSceneJson(version.json);
+                                    setActiveVersionId(versionId);
+                                    try {
+                                      const scenes = JSON.parse(version.json);
+                                      setGeneratedScenes({
+                                        scenes,
+                                        confidenceScore: version.confidenceScore,
+                                      });
+                                      toast({ title: "Version restored", description: version.label });
+                                    } catch (error) {
+                                      toast({ title: "Failed to restore version", variant: "destructive" });
+                                    }
+                                  }
+                                }}
+                                onCompare={(versionIds) => {
+                                  toast({ title: "Compare feature coming soon!" });
+                                }}
+                                onExport={() => {
+                                  const exportData = JSON.stringify(versions, null, 2);
+                                  navigator.clipboard.writeText(exportData);
+                                  toast({ title: "Version history exported to clipboard" });
+                                }}
+                              />
+                            </TabsContent>
+                            <TabsContent value="preview" className="mt-0">
+                              <LivePreviewPanel
+                                scenes={generatedScenes?.scenes || []}
+                                enabled={livePreviewEnabled}
+                                onToggle={() => setLivePreviewEnabled(!livePreviewEnabled)}
+                              />
+                            </TabsContent>
+                          </CardContent>
+                        </Tabs>
+                      </Card>
+
+                      {/* Scene Overview */}
+                      {currentSceneJson && (() => {
+                        try {
+                          const scenes = JSON.parse(currentSceneJson);
+                          return (
+                            <Card>
+                              <CardHeader>
+                                <CardTitle className="text-base">Scene Overview</CardTitle>
+                                <CardDescription>
+                                  Quick reference for all {scenes.length} scenes
+                                </CardDescription>
+                              </CardHeader>
+                              <CardContent>
+                                <ScrollArea className="h-[300px]">
+                                  <div className="space-y-2 pr-4">
+                                    {scenes.map((scene: any, idx: number) => (
+                                      <div key={idx} className="flex items-start gap-3 p-3 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm">
+                                          {idx + 1}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <div className="text-sm font-medium">{scene.sceneType}</div>
+                                          <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                            {scene.content?.heading || scene.aiPrompt || 'No description'}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
                                   </div>
-                                  <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
-                                </div>
-                              </div>
-                            ))}
-                            {isRefining && (
-                              <div className="flex justify-start">
-                                <div className="bg-background border rounded-lg p-3">
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    Gemini is thinking...
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Refinement Input */}
-                      <div className="space-y-2">
-                        <Label htmlFor="refinement-prompt" className="text-base font-semibold">
-                          {conversationHistory.length === 0 ? "Start the conversation:" : "Continue refining:"}
-                        </Label>
-                        <Textarea
-                          id="refinement-prompt"
-                          value={currentPrompt}
-                          onChange={(e) => setCurrentPrompt(e.target.value)}
-                          placeholder="Examples:&#10;• Make Scene 3 more dramatic with faster pacing&#10;• Add a fade transition between Scene 1 and 2&#10;• The hero section needs more impact&#10;• Slow down the exit animation on Scene 5"
-                          rows={4}
-                          className="resize-none"
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={handleGeneratePortfolio}
-                            disabled={isRefining || !currentPrompt.trim()}
-                            className="flex-1"
-                          >
-                            {isRefining ? (
-                              <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Refining...
-                              </>
-                            ) : (
-                              <>
-                                <Sparkles className="w-4 h-4 mr-2" />
-                                {conversationHistory.length === 0 ? "Start Conversation" : "Refine Scenes"}
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => setCurrentPrompt("")}
-                            disabled={!currentPrompt.trim()}
-                          >
-                            Clear
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Smart Quick Prompts */}
-                      <div className="space-y-2 pt-2 border-t">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-xs text-muted-foreground">Quick prompts:</Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              // Rotate to different prompt suggestions
-                              const alternativePrompts = [
-                                "Faster entry animations",
-                                "Stronger color contrast",
-                                "Better flow between scenes",
-                                "More impactful hero section",
-                                "Smoother exit transitions"
-                              ];
-                              setQuickPrompts(alternativePrompts);
-                            }}
-                            className="h-6 text-xs"
-                          >
-                            Refresh
-                          </Button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {quickPrompts.map((prompt) => (
-                            <Button
-                              key={prompt}
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setCurrentPrompt(prompt)}
-                              disabled={isRefining}
-                              className="text-xs h-7"
-                            >
-                              {prompt}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                                </ScrollArea>
+                              </CardContent>
+                            </Card>
+                          );
+                        } catch {
+                          return null;
+                        }
+                      })()}
+                    </div>
+                  </div>
                 ) : (
                   // INITIAL GENERATION MODE
                   <Card>
