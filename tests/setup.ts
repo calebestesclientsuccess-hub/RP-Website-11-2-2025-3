@@ -11,6 +11,13 @@ process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE
 // Ensure we're using a test database
 if (!process.env.DATABASE_URL?.includes('test')) {
   console.warn('⚠️  Warning: Not using a dedicated test database!');
+  console.warn('💡 Tip: Set TEST_DATABASE_URL in your environment to use a separate test database');
+}
+
+// Disable console logs during tests (optional, can be enabled with VERBOSE_TESTS=true)
+if (!process.env.VERBOSE_TESTS) {
+  console.log = () => {};
+  console.debug = () => {};
 }
 
 beforeAll(async () => {
@@ -58,7 +65,7 @@ global.testUtils = {
         DO $$ DECLARE
           r RECORD;
         BEGIN
-          FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename != 'drizzle_migrations')
+          FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename != 'drizzle_migrations' AND tablename != 'session')
           LOOP
             EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' RESTART IDENTITY CASCADE';
           END LOOP;
@@ -71,12 +78,17 @@ global.testUtils = {
   },
   
   async createTestTenant(id: string = 'test-tenant') {
-    const { tenants } = await import('@shared/schema');
-    const [tenant] = await db.insert(tenants).values({
-      id,
-      name: 'Test Tenant',
-      slug: 'test-tenant',
-    }).returning();
-    return tenant;
+    const { tenants } = await import('../shared/schema');
+    try {
+      const [tenant] = await db.insert(tenants).values({
+        id,
+        name: 'Test Tenant',
+        slug: id,
+      }).returning();
+      return tenant;
+    } catch (error) {
+      console.error('Failed to create test tenant:', error);
+      throw error;
+    }
   },
 };
