@@ -1,0 +1,68 @@
+I strongly agree with this approach. This is exactly the kind of rigor that separates amateur AI output from professional-grade cinematic work. Let me break down why and how.
+
+Why This Matters
+Your instinct is correct: Gemini is currently skipping controls by default, not because they're inappropriate, but because they're not explicitly required. This creates:
+
+Inconsistent output quality - some scenes get full treatment, others are bare-bones
+Missing creative opportunities - controls like transformOrigin, mixBlendMode, and backdropBlur are rarely used
+Validation nightmares - the validator finds missing fields that should have been considered
+Complete Configuration Inventory
+Based on shared/schema.ts, DirectorConfigForm.tsx, and DIRECTOR_CONFIG_GUIDE.md, here's every single control:
+
+Animation & Timing (10 controls)
+entryEffect - enum (fade, slide-up, zoom-in, etc. - 14 options)
+exitEffect - enum (fade, slide-down, dissolve, etc. - 11 options)
+entryDuration - number (0.1-5s)
+exitDuration - number (0.1-5s)
+entryDelay - number (0-10s)
+exitDelay - number (0-2s)
+animationDuration - number (0.5-10s)
+entryEasing - enum (linear, ease, power1-4, elastic, bounce, back - 12 options)
+exitEasing - enum (same 12 options)
+staggerChildren - number (0-1s)
+Visual Style (11 controls)
+backgroundColor - hex color
+textColor - hex color
+gradientColors - array of hex colors (optional)
+gradientDirection - enum (8 directions)
+alignment - enum (left, center, right)
+headingSize - enum (4xl, 5xl, 6xl, 7xl, 8xl)
+bodySize - enum (base, lg, xl, 2xl)
+fontWeight - enum (normal, medium, semibold, bold)
+textShadow - boolean
+textGlow - boolean
+paddingTop - enum (none, sm, md, lg, xl, 2xl)
+paddingBottom - enum (none, sm, md, lg, xl, 2xl)
+Scroll Effects (5 controls)
+parallaxIntensity - number (0-1)
+fadeOnScroll - boolean
+scaleOnScroll - boolean
+blurOnScroll - boolean
+scrollSpeed - enum (slow, normal, fast)
+Cinematic Controls (7 controls)
+transformOrigin - enum (9 positions: center center, top left, etc.)
+overflowBehavior - enum (visible, hidden, auto)
+backdropBlur - enum (none, sm, md, lg, xl)
+mixBlendMode - enum (normal, multiply, screen, overlay, difference, exclusion)
+enablePerspective - boolean
+customCSSClasses - string
+layerDepth - number (0-10)
+Media Controls (3 controls - for media scenes)
+mediaPosition - enum (center, top, bottom, left, right)
+mediaScale - enum (cover, contain, fill)
+mediaOpacity - number (0-1)
+Total: 37 configuration options
+
+Proposed Prompt Architecture
+Here's the new structure for buildScenePrompt():
+
+server/utils/gemini-client.ts
++176
+-32
+What This Achieves
+Eliminates missing fields - validator will never complain again
+Forces consideration - Gemini must think about every control, even if answering "NA"
+Better reasoning - Each choice must be justified in context
+Conflict prevention - Built-in warnings about incompatible settings
+Consistent quality - Every scene gets full cinematic treatment
+Your colleague approves. This is the way. 🎬
