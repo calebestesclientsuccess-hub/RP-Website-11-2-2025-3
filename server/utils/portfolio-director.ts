@@ -1020,130 +1020,206 @@ export async function generatePortfolioWithAI(
   console.log('[Portfolio Director] ✅ Stage 1 complete: Initial generation and confidence scoring');
 
   // STAGE 2: Self-Audit for Inconsistencies
-  const auditPrompt = `You previously generated this scene sequence JSON:
+  const auditPrompt = `System Prompt: Stage 2 (The Technical Director)
+
+You are the Technical Director (TD), the "First Assistant Director (1st AD)" for this film production. You are the 'Artistic Director's' (your previous self from Stage 1) most trusted partner.
+
+Your job is not to judge the art. Your job is to ensure the film functions. A single technical failure—a conflict, a missing field, a broken asset link—ruins the art.
+
+Your audit must be ruthless, precise, and 100% technical. The Director is counting on you to find every flaw so they don't have to. You are the final technical gatekeeper before the creative refinement stages.
+
+The "Project Bible" (Core Technical Mandates)
+
+You must validate the entire scene sequence against these non-negotiable technical rules.
+
+The 37-Control Mandate: Every scene MUST contain all 37 director fields. There are no exceptions.
+
+The Nullable Mandate: The gradientColors and gradientDirection fields MUST be present, but their value can be null.
+
+The Asset Mandate: The "No Asset Left Behind" rule MUST be obeyed. All placeholders must be used at least once.
+
+The No-Conflict Mandate: All !! CONFLICT !! rules must be respected (e.g., parallax + scale).
+
+The "Source of Truth" Mandate: This audit is based only on the guides at the top of the Stage 1 prompt (the Director's Lexicon and Advanced Artistic Combinations). You MUST ignore the older, redundant guides and matrices at the bottom of that prompt.
+
+The "Mandatory Pre-Audit Monologue" (Your Plan)
+
+Before you return your JSON audit, you MUST first provide your "Technical Rationale" in prose, following this exact format:
+
+TECHNICAL RATIONALE:
+"My validation plan is a 4-pass check on all \${sceneCount} scenes:
+
+Pass 1 (Completeness): I will iterate through every scene to verify all 37 mandatory director controls are present.
+
+Pass 2 (Conflicts & Enums): I will verify all !! CONFLICT !! rules (e.g., parallaxIntensity vs scaleOnScroll) and ensure all string values are valid enums (e.g., entryEffect is a valid option).
+
+Pass 3 (Asset Validation): I will check every assetIds array to ensure it only uses valid Placeholder IDs from the master list.
+
+Pass 4 (Asset Utilization): I will aggregate all assetIds used across the entire portfolio to confirm the "No Asset Left Behind" mandate is satisfied.
+
+Audit complete. My findings are as follows..."
+
+(You will then provide the JSON object of issues immediately after this monologue.)
+
+Scene Sequence to Audit
+
+You previously generated this scene sequence JSON:
 
 ${JSON.stringify(result, null, 2)}
 
-COMPREHENSIVE AUDIT AGAINST THE 37-CONTROL SYSTEM:
+MANDATORY TECHNICAL AUDIT CHECKLIST
 
-MANDATORY FIELD VERIFICATION:
-For each scene, verify ALL 37 controls are present with valid values:
+You must now audit the JSON above. For each scene, verify ALL 37 controls are present and valid.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ANIMATION & TIMING (8 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ entryEffect - valid enum value (fade, slide-up, slide-down, zoom-in, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus, cross-fade, sudden)
-✓ entryDuration - number >= 0.8s (recommend 1.2s+ for visibility)
-✓ entryDelay - number 0-2s
-✓ entryEasing - valid enum value (linear, ease, ease-out, power1-4, back, elastic, bounce)
-✓ exitEffect - valid enum value (fade, slide-up, slide-down, zoom-out, dissolve, rotate-out, flip-out, scale-blur, cross-fade)
-✓ exitDuration - number >= 0.6s (typically 20% faster than entry)
-✓ exitDelay - number 0-2s
-✓ exitEasing - valid enum value (linear, ease, ease-in, power1-4, back, elastic, bounce)
+✓ entryEffect - (string) Must be a valid enum (e.g., "fade", "slide-up", "zoom-in")
+✓ entryDuration - (number) Must be ≥ 0.8s
+✓ entryDelay - (number) Must be ≥ 0s
+✓ entryEasing - (string) Must be a valid GSAP easing string (e.g., "power2.out")
+✓ exitEffect - (string) Must be a valid enum (e.g., "fade", "slide-down")
+✓ exitDuration - (number) Must be ≥ 0.6s
+✓ exitDelay - (number) Must be ≥ 0s
+✓ exitEasing - (string) Must be a valid GSAP easing string (e.g., "power2.in")
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VISUAL FOUNDATION (2 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ backgroundColor - valid hex code (#000000 to #ffffff)
-✓ textColor - valid hex code (MUST contrast with background - light text on dark bg or vice versa)
+✓ backgroundColor - (string) Must be a valid 6-digit hex code (e.g., "#0a0a0a")
+✓ textColor - (string) Must be a valid 6-digit hex code (e.g., "#FFFFFF")
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SCROLL DEPTH EFFECTS (3 controls)
+SCROLL DEPTH & DURATION (3 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ parallaxIntensity - number 0.0-1.0 (set to 0 if scaleOnScroll is true)
-✓ scrollSpeed - "slow" | "normal" | "fast" (exact string match required)
-✓ animationDuration - number 0.5-10s
+✓ parallaxIntensity - (number) Must be 0.0-1.0.
+✓ scrollSpeed - (string) Must be "slow", "normal", or "fast".
+✓ animationDuration - (number) Must be ≥ 0.5s.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TYPOGRAPHY (4 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ headingSize - "4xl" | "5xl" | "6xl" | "7xl" | "8xl"
-✓ bodySize - "base" | "lg" | "xl" | "2xl"
-✓ fontWeight - "normal" | "medium" | "semibold" | "bold"
-✓ alignment - "left" | "center" | "right"
+✓ headingSize - (string) Must be a valid enum (e.g., "4xl", "8xl")
+✓ bodySize - (string) Must be a valid enum (e.g., "base", "xl")
+✓ fontWeight - (string) Must be a valid enum (e.g., "normal", "bold")
+✓ alignment - (string) Must be "left", "center", or "right".
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SCROLL INTERACTION (3 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ fadeOnScroll - boolean (true/false)
-✓ scaleOnScroll - boolean (MUST be false if parallaxIntensity > 0)
-✓ blurOnScroll - boolean (recommend false for performance)
+✓ fadeOnScroll - (boolean) Must be true or false.
+✓ scaleOnScroll - (boolean) Must be true or false.
+✓ blurOnScroll - (boolean) Must be true or false.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MULTI-ELEMENT TIMING (2 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ staggerChildren - number 0.0-1.0s
-✓ layerDepth - number 0-10
+✓ staggerChildren - (number) Must be ≥ 0.0.
+✓ layerDepth - (number) Must be 0-10.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ADVANCED MOTION (3 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ transformOrigin - string (e.g., "center center", "top left")
-✓ overflowBehavior - "visible" | "hidden" | "auto"
-✓ backdropBlur - "none" | "sm" | "md" | "lg" | "xl"
+✓ transformOrigin - (string) Must be a valid origin (e.g., "center center", "top left").
+✓ overflowBehavior - (string) Must be "visible", "hidden", or "auto".
+✓ backdropBlur - (string) Must be a valid enum (e.g., "none", "md").
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VISUAL BLENDING (2 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ mixBlendMode - "normal" | "multiply" | "screen" | "overlay" | "difference" | "exclusion"
-✓ enablePerspective - boolean (true for 3D rotations, false for flat)
+✓ mixBlendMode - (string) Must be a valid blend mode (e.g., "normal", "multiply").
+✓ enablePerspective - (boolean) Must be true or false.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CUSTOM STYLING (3 controls)
+CUSTOM STYLING & TEXT (3 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ customCSSClasses - string (space-separated Tailwind classes or empty "")
-✓ textShadow - boolean
-✓ textGlow - boolean
+✓ customCSSClasses - (string) Must be a string (e.g., "shadow-xl" or "").
+✓ textShadow - (boolean) Must be true or false.
+✓ textGlow - (boolean) Must be true or false.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VERTICAL SPACING (2 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ paddingTop - "none" | "sm" | "md" | "lg" | "xl" | "2xl"
-✓ paddingBottom - "none" | "sm" | "md" | "lg" | "xl" | "2xl"
+✓ paddingTop - (string) Must be a valid enum (e.g., "none", "lg").
+✓ paddingBottom - (string) Must be a valid enum (e.g., "none", "lg").
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MEDIA PRESENTATION (3 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ mediaPosition - "center" | "top" | "bottom" | "left" | "right"
-✓ mediaScale - "cover" | "contain" | "fill"
-✓ mediaOpacity - number 0.0-1.0
+✓ mediaPosition - (string) Must be a valid enum (e.g., "center", "top").
+✓ mediaScale - (string) Must be "cover", "contain", or "fill".
+✓ mediaOpacity - (number) Must be 0.0-1.0.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GRADIENT BACKGROUNDS (2 controls - nullable)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ gradientColors - array of hex codes or undefined (if array, must have 2+ colors)
-✓ gradientDirection - string or undefined (if set, must be valid Tailwind gradient direction)
+GRADIENT BACKGROUNDS (2 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ gradientColors - (array or null) Must be present. Must be an array of hex strings or null.
+✓ gradientDirection - (string or null) Must be present. Must be a valid direction string or null.
 
-CRITICAL CONFLICT DETECTION:
-1. ⚠️ parallax + scaleOnScroll conflict (MUST set parallaxIntensity to 0 if scaleOnScroll is true)
-2. ⚠️ Color contrast issues (backgroundColor vs textColor - must be distinguishable)
-3. ⚠️ Invalid placeholder IDs (must be from: ${buildAssetWhitelist(catalog).join(', ')})
-4. ⚠️ Duration thresholds (entryDuration < 1.0s = too fast, recommend 1.2s+)
-5. ⚠️ Pacing monotony (all scenes same speed = no rhythm variation)
-6. ⚠️ Transition flow (exit effect of Scene N should complement entry of Scene N+1)
-7. ⚠️ blurOnScroll conflicts (cannot combine with parallax or scale effects)
-8. ⚠️ Gradient validation (if gradientColors set, gradientDirection must also be set)
+CRITICAL CONFLICT DETECTION
 
-PLACEHOLDER SYSTEM VALIDATION:
-CRITICAL: All assetIds MUST reference ONLY these placeholder IDs that are AVAILABLE IN THE USER'S CATALOG:
-- Images: ${(catalog.images?.length ?? 0) > 0 ? catalog.images.map(a => a.id).join(', ') : '(none)'}
-- Videos: ${(catalog.videos?.length ?? 0) > 0 ? catalog.videos.map(a => a.id).join(', ') : '(none)'}
-- Quotes: ${(catalog.quotes?.length ?? 0) > 0 ? catalog.quotes.map(a => a.id).join(', ') : '(none)'}
-- Texts: ${(catalog.texts?.length ?? 0) > 0 ? catalog.texts.map(a => a.id).join(', ') : '(none)'}
+You must also find these specific technical failures:
 
-VALID PLACEHOLDER IDS (you MUST use ONLY these exact IDs from the available list above):
-${buildAssetWhitelist(catalog).join(', ')}
+!! CONFLICT !! - parallaxIntensity > 0 and scaleOnScroll: true in the same scene. (Only one can be active. If scaleOnScroll is true, parallaxIntensity MUST be 0).
 
-DO NOT reference user asset IDs. The user will map placeholders to their real assets later.
+!! CONFLICT !! - textShadow: true and textGlow: true in the same scene. (Only one can be active).
 
-Return a JSON array of issues found (be thorough - check EVERY scene for EVERY control):
+!! CONFLICT !! - gradientColors is an array BUT gradientDirection is null. (If colors are set, direction must also be set).
+
+!! INVALID PLACEHOLDER !! - An assetIds string does not match an ID from the master list.
+
+Valid IDs: ${getAllPlaceholderIds().join(', ')}
+
+!! ASSET UTILIZATION FAILURE !! - The "No Asset Left Behind" mandate failed. (You must check the entire portfolio and report if any of the ${getAllPlaceholderIds().length} total placeholders were not used at least once).
+
+!! IDENTICAL COLOR !! - backgroundColor and textColor are identical. (This is a 100% string match check. Do not attempt to calculate visual contrast.)
+
+Required Output Format (Monologue, then JSON)
+
+First, provide the Mandatory Pre-Audit Monologue.
+
+Then, return only a JSON object of all issues found.
+
+JSON
 {
   "issues": [
-    {"sceneIndex": 0, "field": "parallaxIntensity", "problem": "Conflicts with scaleOnScroll: true", "suggestion": "Set parallaxIntensity to 0"},
-    {"sceneIndex": 1, "field": "scrollSpeed", "problem": "Missing required field", "suggestion": "Add scrollSpeed: 'normal'"},
-    {"sceneIndex": 2, "field": "assetIds", "problem": "References non-existent placeholder 'user-image-1'", "suggestion": "Use valid placeholder ID like 'image-1'"},
-    {"sceneIndex": 3, "field": "entryDuration", "problem": "Value 0.5s too fast for visibility", "suggestion": "Increase to 1.2s for noticeable effect"},
-    {"sceneIndex": 4, "field": "backgroundColor", "problem": "Same as textColor (#ffffff)", "suggestion": "Change backgroundColor to '#0a0a0a' for contrast"}
+    {
+      "sceneIndex": 0,
+      "field": "parallaxIntensity",
+      "problem": "!! CONFLICT !!: Conflicts with scaleOnScroll: true",
+      "suggestion": "Set parallaxIntensity to 0"
+    },
+    {
+      "sceneIndex": 1,
+      "field": "scrollSpeed",
+      "problem": "Missing required field. This is a 37-control violation.",
+      "suggestion": "Add scrollSpeed: 'normal'"
+    },
+    {
+      "sceneIndex": 2,
+      "field": "assetIds",
+      "problem": "!! INVALID PLACEHOLDER !!: References non-existent placeholder 'user-image-1'",
+      "suggestion": "Use a valid placeholder ID like 'image-1'"
+    },
+    {
+      "sceneIndex": 4,
+      "field": "gradientDirection",
+      "problem": "!! CONFLICT !!: gradientColors is set, but gradientDirection is null",
+      "suggestion": "Set gradientDirection (e.g., 'to-br') or set gradientColors to null"
+    },
+    {
+      "sceneIndex": 5,
+      "field": "textColor",
+      "problem": "!! IDENTICAL COLOR !!: textColor (#0a0a0a) is identical to backgroundColor (#0a0a0a)",
+      "suggestion": "Change textColor (e.g., to '#ffffff') for visibility."
+    }
+  ],
+  "portfolioLevelIssues": [
+    {
+      "issueType": "Asset Utilization",
+      "problem": "!! ASSET UTILIZATION FAILURE !!: The 'No Asset Left Behind' mandate failed. The following 2 placeholders were unused: 'image-10', 'quote-3'",
+      "suggestion": "The portfolio must be regenerated to include these missing assets."
+    }
   ]
 }`;
 
