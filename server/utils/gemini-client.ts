@@ -10,7 +10,7 @@ const ai = new GoogleGenAI({
   apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
   httpOptions: {
     apiVersion: "",
-    baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
+    baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASEURL || "",
   },
 });
 
@@ -52,7 +52,7 @@ export interface GeneratedSceneConfig {
 
 /**
  * Generate a scene configuration using Gemini Pro with structured JSON output
- * 
+ *
  * @param prompt - The user's creative direction for the scene
  * @param sceneType - Optional scene type constraint (e.g., 'hero', 'testimonial')
  * @param systemInstructions - Additional system-level guidance for the AI
@@ -76,27 +76,27 @@ export async function generateSceneWithGemini(
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          sceneType: { 
+          sceneType: {
             type: Type.STRING,
             description: "Type of scene. MUST be one of: 'text', 'image', 'video', 'split', 'gallery', 'quote', 'fullscreen'"
           },
-          headline: { 
+          headline: {
             type: Type.STRING,
             description: "Main headline text (H1 or H2)"
           },
-          subheadline: { 
+          subheadline: {
             type: Type.STRING,
             description: "Supporting subheadline text"
           },
-          bodyText: { 
+          bodyText: {
             type: Type.STRING,
             description: "Body copy or description text (can be markdown)"
           },
-          mediaUrl: { 
+          mediaUrl: {
             type: Type.STRING,
             description: "Primary image or video URL"
           },
-          mediaType: { 
+          mediaType: {
             type: Type.STRING,
             description: "Primary media type: 'image' or 'video'"
           },
@@ -114,11 +114,11 @@ export async function generateSceneWithGemini(
               required: ["url", "type"]
             }
           },
-          backgroundColor: { 
+          backgroundColor: {
             type: Type.STRING,
             description: "Hex color code for background (e.g., '#0a0a0a')"
           },
-          textColor: { 
+          textColor: {
             type: Type.STRING,
             description: "Hex color code for text (e.g., '#ffffff')"
           },
@@ -137,7 +137,7 @@ export async function generateSceneWithGemini(
               entryEasing: { type: Type.STRING, description: "linear, ease, power1-4, elastic, etc." },
               exitEasing: { type: Type.STRING, description: "linear, ease, power1-4, elastic, etc." },
               staggerChildren: { type: Type.NUMBER, description: "0-1 seconds" },
-              
+
               // Visual Style (11 controls)
               backgroundColor: { type: Type.STRING, description: "Hex color" },
               textColor: { type: Type.STRING, description: "Hex color" },
@@ -151,14 +151,14 @@ export async function generateSceneWithGemini(
               textGlow: { type: Type.BOOLEAN, description: "Luminous text effect" },
               paddingTop: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
               paddingBottom: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
-              
+
               // Scroll Effects (5 controls)
               parallaxIntensity: { type: Type.NUMBER, description: "0-1" },
               fadeOnScroll: { type: Type.BOOLEAN, description: "Enable fade during scroll" },
               scaleOnScroll: { type: Type.BOOLEAN, description: "Enable scale during scroll" },
               blurOnScroll: { type: Type.BOOLEAN, description: "Enable blur during scroll" },
               scrollSpeed: { type: Type.STRING, description: "slow, normal, fast" },
-              
+
               // Cinematic Controls (7 controls)
               transformOrigin: { type: Type.STRING, description: "center center, top left, etc." },
               overflowBehavior: { type: Type.STRING, description: "visible, hidden, auto" },
@@ -167,7 +167,7 @@ export async function generateSceneWithGemini(
               enablePerspective: { type: Type.BOOLEAN, description: "Enable 3D transforms" },
               customCSSClasses: { type: Type.STRING, description: "Custom Tailwind classes" },
               layerDepth: { type: Type.NUMBER, description: "0-10 z-index" },
-              
+
               // Media Controls (3 controls - nullable for text-only scenes)
               mediaPosition: { type: Type.STRING, description: "center, top, bottom, left, right", nullable: true },
               mediaScale: { type: Type.STRING, description: "cover, contain, fill", nullable: true },
@@ -352,7 +352,7 @@ CATEGORY 4: CINEMATIC CONTROLS (7 controls)
     Consider: Stacking context, depth hierarchy
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CATEGORY 5: MEDIA CONTROLS (3 controls - required for image/video scenes)
+CATEGORY 5: MEDIA CONTROLS (3 controls - nullable for text-only scenes)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 35. mediaPosition - Choose from: center, top, bottom, left, right

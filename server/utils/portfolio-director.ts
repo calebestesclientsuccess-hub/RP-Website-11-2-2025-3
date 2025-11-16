@@ -272,19 +272,64 @@ SCENE COUNT GUIDELINES:
 - 6-7 scenes: Standard portfolio (3-5 min scroll)
 - 8+ scenes: Epic narrative (5+ min scroll)
 
-Output Requirements:
-1. EVERY scene MUST have ALL director config fields (no omissions)
-2. ONLY use asset IDs from the placeholder list (e.g., "placeholder-image-1")
-         - Use these IDs EXACTLY as written
-         - The user will assign their real assets to these placeholders later
-         - Never use actual URLs or file paths
-3. DO NOT fabricate new content or IDs
-4. Timings MUST be in SECONDS (not milliseconds)
-5. Colors MUST be valid hex format (#RRGGBB)
-6. Ensure smooth narrative flow across all scenes
-7. Create complementary transitions between consecutive scenes
+BEFORE GENERATING OUTPUT, VERIFY:
+✓ Every scene has ALL 37 director fields with concrete values
+✓ No field is set to "default", "auto", or left as null (except gradientColors/gradientDirection/mediaPosition/mediaScale when appropriate)
+✓ All durations are ≥ 0.8s for visibility
+✓ All colors are valid hex codes
+✓ No conflicts (parallax + scaleOnScroll, textShadow + textGlow, etc.)
 
-Generate the scene sequence now with COMPLETE director configs.`;
+REQUIRED OUTPUT FORMAT (JSON only, no markdown):
+{
+  "sceneType": "text" | "image" | "video" | "split" | "gallery" | "quote" | "fullscreen",
+  "assetIds": string[], // MUST reference valid placeholder IDs ONLY
+  "layout": "default" | "reverse", // Optional, primarily for split scenes
+  "director": {
+    // Required fields (37 total - ALL MUST BE PRESENT AND VALID)
+    "entryEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-in" | "zoom-out" | "sudden" | "cross-fade" | "rotate-in" | "flip-in" | "spiral-in" | "elastic-bounce" | "blur-focus",
+    "entryDuration": number, // seconds, min 0.8
+    "entryDelay": number, // seconds, 0-2
+    "entryEasing": "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "power1" | "power2" | "power3" | "power4" | "back" | "elastic" | "bounce",
+    "exitEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-out" | "dissolve" | "cross-fade" | "rotate-out" | "flip-out" | "scale-blur",
+    "exitDuration": number, // seconds, min 0.6
+    "exitDelay": number, // seconds, 0-2
+    "exitEasing": "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "power1" | "power2" | "power3" | "power4" | "back" | "elastic" | "bounce",
+    "backgroundColor": string, // hex code, e.g., "#0a0a0a"
+    "textColor": string, // hex code, e.g., "#ffffff"
+    "parallaxIntensity": number, // 0.0-1.0 (set to 0 if scaleOnScroll is true)
+    "scrollSpeed": "slow" | "normal" | "fast",
+    "animationDuration": number, // seconds, 0.5-10
+    "headingSize": "4xl" | "5xl" | "6xl" | "7xl" | "8xl",
+    "bodySize": "base" | "lg" | "xl" | "2xl",
+    "fontWeight": "normal" | "medium" | "semibold" | "bold",
+    "alignment": "left" | "center" | "right",
+    "fadeOnScroll": boolean,
+    "scaleOnScroll": boolean, // MUST be false if parallaxIntensity > 0
+    "blurOnScroll": boolean, // Recommended false for performance
+    "staggerChildren": number, // 0.0-1.0
+    "layerDepth": number, // 0-10
+    "transformOrigin": "center center" | "top left" | "top center" | "top right" | "center left" | "center right" | "bottom left" | "bottom center" | "bottom right",
+    "overflowBehavior": "visible" | "hidden" | "auto",
+    "backdropBlur": "none" | "sm" | "md" | "lg" | "xl",
+    "mixBlendMode": "normal" | "multiply" | "screen" | "overlay" | "difference" | "exclusion",
+    "enablePerspective": boolean, // true for 3D rotations
+    "customCSSClasses": string, // space-separated Tailwind classes
+    "textShadow": boolean,
+    "textGlow": boolean,
+    "paddingTop": "none" | "sm" | "md" | "lg" | "xl" | "2xl",
+    "paddingBottom": "none" | "sm" | "md" | "lg" | "xl" | "2xl",
+    "mediaPosition": "center" | "top" | "bottom" | "left" | "right", // Optional, for image/video scenes
+    "mediaScale": "cover" | "contain" | "fill", // Optional, for image/video scenes
+    "mediaOpacity": number, // 0.0-1.0
+
+    // Optional fields (can be null or omitted if not applicable/desired, but defaults will be applied if missing)
+    "gradientColors"?: string[], // Array of hex colors, e.g., ["#ff0000", "#0000ff"]
+    "gradientDirection"?: string, // e.g., "to-r", "to-br"
+  }
+}
+
+Generate the scene sequence NOW using the above format. Ensure ONLY valid placeholder IDs are used.
+`;
 }
 
 interface GeneratedScene {
@@ -482,8 +527,7 @@ export async function generatePortfolioWithAI(
                   required: [
                     "entryDuration", "exitDuration", "entryDelay", "exitDelay",
                     "backgroundColor", "textColor", "parallaxIntensity",
-                    "scrollSpeed", "animationDuration",
-                    "entryEffect", "exitEffect", "entryEasing", "exitEasing",
+                    "scrollSpeed", "animationDuration", "entryEffect", "exitEffect", "entryEasing", "exitEasing",
                     "headingSize", "bodySize", "fontWeight", "alignment",
                     "fadeOnScroll", "scaleOnScroll", "blurOnScroll",
                     "staggerChildren", "layerDepth", "transformOrigin",
@@ -885,7 +929,65 @@ Generate the final, polished scene sequence incorporating ALL improvements and f
 5. Pacing has musical rhythm (varied speeds)
 6. Asset selection tells compelling story
 
-Return the complete scenes array with full director configs. Ensure ALL required director fields are present for each scene.`;
+Return the complete scenes array with full director configs. Ensure ALL required director fields are present for each scene.
+
+BEFORE GENERATING OUTPUT, VERIFY:
+✓ Every scene has ALL 37 director fields with concrete values
+✓ No field is set to "default", "auto", or left as null (except gradientColors/gradientDirection/mediaPosition/mediaScale when appropriate)
+✓ All durations are ≥ 0.8s for visibility
+✓ All colors are valid hex codes
+✓ No conflicts (parallax + scaleOnScroll, textShadow + textGlow, etc.)
+
+REQUIRED OUTPUT FORMAT (JSON only, no markdown):
+{
+  "sceneType": "text" | "image" | "video" | "split" | "gallery" | "quote" | "fullscreen",
+  "assetIds": string[], // MUST reference valid placeholder IDs ONLY
+  "layout": "default" | "reverse", // Optional, primarily for split scenes
+  "director": {
+    // Required fields (37 total - ALL MUST BE PRESENT AND VALID)
+    "entryEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-in" | "zoom-out" | "sudden" | "cross-fade" | "rotate-in" | "flip-in" | "spiral-in" | "elastic-bounce" | "blur-focus",
+    "entryDuration": number, // seconds, min 0.8
+    "entryDelay": number, // seconds, 0-2
+    "entryEasing": "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "power1" | "power2" | "power3" | "power4" | "back" | "elastic" | "bounce",
+    "exitEffect": "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-out" | "dissolve" | "cross-fade" | "rotate-out" | "flip-out" | "scale-blur",
+    "exitDuration": number, // seconds, min 0.6
+    "exitDelay": number, // seconds, 0-2
+    "exitEasing": "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out" | "power1" | "power2" | "power3" | "power4" | "back" | "elastic" | "bounce",
+    "backgroundColor": string, // hex code, e.g., "#0a0a0a"
+    "textColor": string, // hex code, e.g., "#ffffff"
+    "parallaxIntensity": number, // 0.0-1.0 (set to 0 if scaleOnScroll is true)
+    "scrollSpeed": "slow" | "normal" | "fast",
+    "animationDuration": number, // seconds, 0.5-10
+    "headingSize": "4xl" | "5xl" | "6xl" | "7xl" | "8xl",
+    "bodySize": "base" | "lg" | "xl" | "2xl",
+    "fontWeight": "normal" | "medium" | "semibold" | "bold",
+    "alignment": "left" | "center" | "right",
+    "fadeOnScroll": boolean,
+    "scaleOnScroll": boolean, // MUST be false if parallaxIntensity > 0
+    "blurOnScroll": boolean, // Recommended false for performance
+    "staggerChildren": number, // 0.0-1.0
+    "layerDepth": number, // 0-10
+    "transformOrigin": "center center" | "top left" | "top center" | "top right" | "center left" | "center right" | "bottom left" | "bottom center" | "bottom right",
+    "overflowBehavior": "visible" | "hidden" | "auto",
+    "backdropBlur": "none" | "sm" | "md" | "lg" | "xl",
+    "mixBlendMode": "normal" | "multiply" | "screen" | "overlay" | "difference" | "exclusion",
+    "enablePerspective": boolean, // true for 3D rotations
+    "customCSSClasses": string, // space-separated Tailwind classes
+    "textShadow": boolean,
+    "textGlow": boolean,
+    "paddingTop": "none" | "sm" | "md" | "lg" | "xl" | "2xl",
+    "paddingBottom": "none" | "sm" | "md" | "lg" | "xl" | "2xl",
+    "mediaPosition": "center" | "top" | "bottom" | "left" | "right", // Optional, for image/video scenes
+    "mediaScale": "cover" | "contain" | "fill", // Optional, for image/video scenes
+    "mediaOpacity": number, // 0.0-1.0
+
+    // Optional fields (can be null or omitted if not applicable/desired, but defaults will be applied if missing)
+    "gradientColors"?: string[], // Array of hex colors, e.g., ["#ff0000", "#0000ff"]
+    "gradientDirection"?: string, // e.g., "to-r", "to-br"
+  }
+}
+
+`;
 
   const finalResponse = await aiClient.models.generateContent({
     model: "gemini-2.5-pro",
@@ -947,8 +1049,7 @@ Return the complete scenes array with full director configs. Ensure ALL required
                   required: [
                     "entryDuration", "exitDuration", "entryDelay", "exitDelay",
                     "backgroundColor", "textColor", "parallaxIntensity",
-                    "scrollSpeed", "animationDuration",
-                    "entryEffect", "exitEffect", "entryEasing", "exitEasing",
+                    "scrollSpeed", "animationDuration", "entryEffect", "exitEffect", "entryEasing", "exitEasing",
                     "headingSize", "bodySize", "fontWeight", "alignment",
                     "fadeOnScroll", "scaleOnScroll", "blurOnScroll",
                     "staggerChildren", "layerDepth", "transformOrigin",
