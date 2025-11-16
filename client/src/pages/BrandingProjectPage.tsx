@@ -268,23 +268,6 @@ export default function BrandingProjectPage() {
       // Get scrub speed based on director config
       const scrubSpeed = scrollSpeedMap[director.scrollSpeed] || 1.5;
       
-      // Parallax effect on images within the scene (if enabled)
-      if (!prefersReducedMotion && director.parallaxIntensity > 0) {
-        const images = element.querySelectorAll('img, video');
-        images.forEach((img) => {
-          gsap.to(img, {
-            yPercent: 20 * director.parallaxIntensity, // Scale parallax by intensity (0-1)
-            ease: "none",
-            scrollTrigger: {
-              trigger: element,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: scrubSpeed,
-            }
-          });
-        });
-      }
-
       // Track active scene (throttled state updates)
       let sceneUpdateTimeout: NodeJS.Timeout;
       ScrollTrigger.create({
@@ -311,9 +294,9 @@ export default function BrandingProjectPage() {
         // Simplified animation for accessibility - just fade in/out
         gsap.fromTo(
           element,
-          { autoAlpha: 0 },
+          { opacity: 0 },
           {
-            autoAlpha: 1,
+            opacity: 1,
             duration: 0.3,
             delay: director.entryDelay || 0,
             scrollTrigger: {
@@ -324,25 +307,26 @@ export default function BrandingProjectPage() {
           }
         );
       } else {
-        // Entry animation - trigger when scene enters viewport
-        // Build 'from' state with autoAlpha instead of opacity
-        const fromState = { ...entryEffect.from };
-        if ('opacity' in fromState) {
-          fromState.autoAlpha = fromState.opacity;
-          delete fromState.opacity;
-        }
+        // SEPARATE background and foreground animations to prevent conflicts
+        const contentWrapper = element.querySelector('[data-scene-content]');
+        const mediaElements = element.querySelectorAll('[data-media-opacity]');
         
-        // Build 'to' state with autoAlpha instead of opacity
-        const toState = { ...entryEffect.to };
-        if ('opacity' in toState) {
-          toState.autoAlpha = toState.opacity;
-          delete toState.opacity;
-        }
+        // Entry animation - BUILD STATE WITHOUT autoAlpha (prevents flash)
+        const fromState = { ...entryEffect.from, opacity: 0 };
+        const toState = { ...entryEffect.to, opacity: 1 };
         
-        // Animate section element with time-based animation (not scroll-driven)
-        // This allows smooth transitions that play over the configured duration
+        // Remove opacity if it exists (we set it explicitly above)
+        if ('opacity' in entryEffect.from) delete fromState.opacity;
+        if ('opacity' in entryEffect.to) delete toState.opacity;
+        
+        // Re-add it
+        fromState.opacity = 0;
+        toState.opacity = 1;
+        
+        // Animate the CONTENT WRAPPER (not the section background)
+        const targetElement = contentWrapper || element;
         gsap.fromTo(
-          element,
+          targetElement,
           fromState,
           {
             ...toState,
@@ -351,99 +335,82 @@ export default function BrandingProjectPage() {
             ease: "power3.out",
             scrollTrigger: {
               trigger: element,
-              start: "top bottom",
-              end: "center center",
+              start: "top 80%", // Start earlier for smoother reveal
               toggleActions: "play none none reverse",
             }
           }
         );
         
-        // Also animate media elements inside the scene (images/videos with data-media-opacity)
-        const mediaElements = element.querySelectorAll('[data-media-opacity]');
-        mediaElements.forEach((media) => {
-          const targetOpacity = parseFloat((media as HTMLElement).dataset.mediaOpacity || '1');
-          gsap.fromTo(
-            media,
-            { opacity: 0 },
-            {
-              opacity: targetOpacity,
-              duration: entryDuration,
-              delay: director.entryDelay || 0,
-              ease: "power3.out",
+        // Parallax effect ONLY on media (not on section), and ONLY if no conflicting animations
+        if (!prefersReducedMotion && director.parallaxIntensity > 0 && !director.scaleOnScroll) {
+          mediaElements.forEach((media) => {
+            gsap.to(media, {
+              yPercent: 15 * director.parallaxIntensity,
+              ease: "none",
               scrollTrigger: {
                 trigger: element,
                 start: "top bottom",
-                toggleActions: "play none none reverse",
+                end: "bottom top",
+                scrub: scrubSpeed,
               }
-            }
-          );
-        });
+            });
+          });
+        }
         
-        // Exit animation - trigger when scene leaves viewport (if configured)
+        // Exit animation - USE OPACITY ONLY (not autoAlpha)
         if (exitEffect) {
-          // Build exit state with autoAlpha instead of opacity
           const exitState = { ...exitEffect };
+          
+          // Convert to opacity-only (prevents flash)
           if ('opacity' in exitState) {
-            exitState.autoAlpha = exitState.opacity;
-            delete exitState.opacity;
+            // Keep opacity
+          } else {
+            exitState.opacity = 0;
           }
           
-          // Use time-based exit animation instead of scroll-driven
-          gsap.to(element, {
+          gsap.to(targetElement, {
             ...exitState,
             duration: exitDuration,
             ease: "power2.in",
             scrollTrigger: {
               trigger: element,
-              start: "bottom center",
-              end: "bottom top",
+              start: "bottom 40%", // Start earlier
               toggleActions: "play none none reverse",
               onEnterBack: () => {
-                // Reset to visible state when scrolling back (batch updates)
-                gsap.to(element, {
-                  autoAlpha: 1,
+                // Reset to visible state when scrolling back
+                gsap.to(targetElement, {
+                  opacity: 1,
                   y: 0,
                   x: 0,
                   scale: 1,
                   filter: 'blur(0px)',
                   duration: 0.3,
                 });
-                
-                const mediaElements = element.querySelectorAll('[data-media-opacity]');
-                if (mediaElements.length > 0) {
-                  mediaElements.forEach((media) => {
-                    const targetOpacity = parseFloat((media as HTMLElement).dataset.mediaOpacity || '1');
-                    gsap.to(media, {
-                      opacity: targetOpacity,
-                      duration: 0.3,
-                    });
-                  });
-                }
               },
             }
           });
         }
         
-        // Optional: Fade on scroll effect
+        // Optional: Fade on scroll effect (on section background, not content)
         if (director.fadeOnScroll) {
           gsap.to(element, {
-            opacity: 0.7,
+            opacity: 0.85,
             scrollTrigger: {
               trigger: element,
-              start: "center center",
+              start: "top top",
               end: "bottom top",
               scrub: scrubSpeed,
             }
           });
         }
         
-        // Optional: Scale on scroll effect
-        if (director.scaleOnScroll) {
-          gsap.to(element, {
-            scale: 0.95,
+        // Optional: Scale on scroll effect (on content, subtle)
+        if (director.scaleOnScroll && !director.parallaxIntensity) {
+          gsap.to(targetElement, {
+            scale: 0.98,
             scrollTrigger: {
               trigger: element,
-              start: "center center",
+              start: "top top",
               end: "bottom top",
               scrub: scrubSpeed,
             }
@@ -599,13 +566,10 @@ export default function BrandingProjectPage() {
                 className="min-h-screen flex items-center justify-center px-4 py-24"
                 data-testid={`scene-${index}`}
                 style={{ 
-                  opacity: 0, 
-                  visibility: 'hidden', 
-                  willChange: 'opacity, transform',
                   backgroundColor: director.backgroundColor 
                 }}
               >
-                <div className="container mx-auto max-w-4xl">
+                <div className="container mx-auto max-w-4xl" data-scene-content style={{ opacity: 0 }}>
                   {/* Render scene based on sceneConfig type */}
                   <SceneRenderer scene={scene} />
                 </div>

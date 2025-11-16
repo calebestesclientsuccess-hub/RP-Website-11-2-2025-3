@@ -121,18 +121,26 @@ TRANSITION DESIGN RULES:
 2. PACING RHYTHM: Vary speeds to create musical flow
    - Hero (slow 2.5s) → Content (medium 1.2s) → Image (fast 0.8s) → Quote (slow 1.8s)
 
-3. PARALLAX DISTRIBUTION:
-   - Text scenes: 0.0-0.2 (minimal or none)
-   - Image scenes: 0.4-0.6 (moderate to strong)
-   - Video/Fullscreen: 0.3-0.5 (moderate)
+3. PARALLAX DISTRIBUTION (USE SPARINGLY - conflicts with other effects):
+   - Text scenes: 0.0 (NO parallax on text)
+   - Image scenes: 0.3-0.5 (moderate only)
+   - Video/Fullscreen: 0.2-0.4 (subtle)
+   - NEVER use parallax with scaleOnScroll (they conflict)
 
 4. COLOR PROGRESSION: Gradually shift backgrounds across scenes
    - Start dark (#0a0a0a) → Mid-tone (#1e293b) → Lighter (#334155) → Back to dark
 
-5. SCROLL EFFECTS USAGE:
-   - fadeOnScroll: Use on 50% of scenes for smooth transitions
-   - scaleOnScroll: Use sparingly on image/video scenes (20-30%)
-   - blurOnScroll: Use rarely for dramatic effect (10% of scenes)
+5. SCROLL EFFECTS USAGE (these are ADDITIONAL to entry/exit, use sparingly):
+   - fadeOnScroll: Use on 30% of scenes maximum (subtle effect)
+   - scaleOnScroll: Use ONLY when parallaxIntensity = 0 (they conflict)
+   - blurOnScroll: NEVER use (causes performance issues)
+
+6. ANTI-CONFLICT RULES:
+   - If parallaxIntensity > 0, set scaleOnScroll: false
+   - If scaleOnScroll: true, set parallaxIntensity: 0
+   - Keep fadeOnScroll subtle (max 30% of scenes)
+   - Longer durations (2.5s+) = more noticeable, use for hero moments
+   - Shorter durations (0.8-1.2s) = quick reveals, use for content
 
 ASSET SELECTION STRATEGY:
 1. START STRONG: First scene should use the most impactful headline
