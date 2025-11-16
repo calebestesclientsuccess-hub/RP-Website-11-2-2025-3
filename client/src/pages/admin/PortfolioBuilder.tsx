@@ -839,7 +839,7 @@ export default function PortfolioBuilder() {
                                     <div className="flex-1 min-w-0">
                                       <div className="text-sm font-medium">{scene.sceneType}</div>
                                       <div className="text-xs text-muted-foreground truncate">
-                                        Entry: {scene.director?.entryEffect} ({scene.director?.entryDuration}s) | 
+                                        Entry: {scene.director?.entryEffect} ({scene.director?.entryDuration}s) |
                                         Exit: {scene.director?.exitEffect} ({scene.director?.exitDuration}s)
                                       </div>
                                     </div>
@@ -1106,29 +1106,27 @@ export default function PortfolioBuilder() {
                         </div>
                       </div>
                     )}
-                  <Button
-                          onClick={handleGeneratePortfolio}
-                          disabled={isRefining || (isNewProject && (!newProjectTitle.trim() || !newProjectSlug.trim() || !newProjectClient.trim())) || (!isNewProject && !selectedProjectId)}
-                          size="lg"
-                          className="w-full"
-                          data-testid="button-generate-portfolio"
-                        >
-                          {isRefining ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Generating Portfolio...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="w-4 h-4 mr-2" />
-                              Generate Portfolio with AI
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                    <Button
+                      onClick={handleGeneratePortfolio}
+                      disabled={isRefining || (isNewProject && (!newProjectTitle.trim() || !newProjectSlug.trim() || !newProjectClient.trim())) || (!isNewProject && !selectedProjectId)}
+                      size="lg"
+                      className="w-full"
+                      data-testid="button-generate-portfolio"
+                    >
+                      {isRefining ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Generating Portfolio...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Generate Portfolio with AI
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
 
                 {/* OLD REFINEMENT UI - REMOVED, NOW INTEGRATED ABOVE */}
                 {false && conversationHistory.length > 0 && (
