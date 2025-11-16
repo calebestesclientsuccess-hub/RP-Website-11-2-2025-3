@@ -1271,6 +1271,8 @@ export default function PortfolioBuilder() {
                                 scenes={generatedScenes?.scenes || []}
                                 enabled={livePreviewEnabled}
                                 onToggle={() => setLivePreviewEnabled(!livePreviewEnabled)}
+                                assetMap={assetMap}
+                                onOpenAssetMapper={handleOpenAssetMapper}
                               />
                             </TabsContent>
                           </CardContent>

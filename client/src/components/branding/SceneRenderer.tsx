@@ -1,24 +1,36 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useAnimation } from "framer-motion"; // Assuming useAnimation is needed
-import { useInView } from "react-intersection-observer"; // Assuming useInView is needed
+import type { SceneConfig } from "@shared/schema";
+import { Card, CardContent } from "@/components/ui/card";
+import { useInView } from "react-intersection-observer";
+import { PlaceholderSlot } from "./PlaceholderSlot";
+import type { PlaceholderId } from "@shared/placeholder-config";
 
-// Assuming ProgressiveImage and SceneConfig are defined elsewhere or will be defined
+gsap.registerPlugin(ScrollTrigger);
+
+interface SceneRendererProps {
+  scenes: SceneConfig[];
+  className?: string;
+  assetMap?: Record<string, string>;
+  onOpenAssetMapper?: (placeholderId: PlaceholderId) => void;
+  isEditMode?: boolean;
+}
+
 // Placeholder for ProgressiveImage component
 const ProgressiveImage: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className }) => (
   <img src={src} alt={alt} className={className} />
 );
 
 // Placeholder for SceneConfig interface
-interface SceneConfig {
-  type: string;
-  content: any;
-  layout?: string;
-  director: DirectorConfig;
-  sceneType?: string; // Added sceneType for image rendering logic
-  imageUrl?: string; // Added imageUrl for image rendering logic
-}
+// interface SceneConfig { // This is now imported from @shared/schema
+//   type: string;
+//   content: any;
+//   layout?: string;
+//   director: DirectorConfig;
+//   sceneType?: string; // Added sceneType for image rendering logic
+//   imageUrl?: string; // Added imageUrl for image rendering logic
+// }
 
 
 gsap.registerPlugin(ScrollTrigger);
@@ -69,23 +81,23 @@ interface SceneData {
   imageUrl?: string; // Added imageUrl for image rendering logic
 }
 
-interface SceneRendererProps {
-  scene: SceneConfig;
-  index: number;
-  assetMap?: Record<string, string>;
-}
+// interface SceneRendererProps { // This is now defined above
+//   scene: SceneConfig;
+//   index: number;
+//   assetMap?: Record<string, string>;
+// }
 
 // PlaceholderSlot component (assuming it exists elsewhere or will be defined)
 // This is a placeholder for the actual component implementation.
-const PlaceholderSlot: React.FC<{ placeholderId: string; type: string; onAssignAsset: (id: string) => void }> = ({ placeholderId, type, onAssignAsset }) => {
-  return (
-    <div className="placeholder-slot flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg w-full h-full" onClick={() => onAssignAsset(placeholderId)}>
-      <span className="text-gray-500 text-lg">
-        {type === 'image' ? `Image Slot: ${placeholderId}` : `Placeholder: ${placeholderId}`}
-      </span>
-    </div>
-  );
-};
+// const PlaceholderSlot: React.FC<{ placeholderId: string; type: string; onAssignAsset: (id: string) => void }> = ({ placeholderId, type, onAssignAsset }) => {
+//   return (
+//     <div className="placeholder-slot flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg w-full h-full" onClick={() => onAssignAsset(placeholderId)}>
+//       <span className="text-gray-500 text-lg">
+//         {type === 'image' ? `Image Slot: ${placeholderId}` : `Placeholder: ${placeholderId}`}
+//       </span>
+//     </div>
+//   );
+// };
 
 
 // Helper to map heading/body sizes to Tailwind classes
@@ -129,7 +141,13 @@ const paddingBottomMap: Record<string, string> = {
   "2xl": "pb-24",
 };
 
-export function SceneRenderer({ scene, index, assetMap = {} }: SceneRendererProps) {
+export function SceneRenderer({
+  scenes,
+  className = "",
+  assetMap = {},
+  onOpenAssetMapper,
+  isEditMode = false
+}: SceneRendererProps) {
   const controls = useAnimation();
   const [ref, inView] = useInView({
     triggerOnce: false,
@@ -138,15 +156,147 @@ export function SceneRenderer({ scene, index, assetMap = {} }: SceneRendererProp
   const sceneRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Resolve placeholder IDs to real asset URLs
-  const resolveAsset = (assetId: string): string => {
-    // If assetId is a placeholder and we have a mapping, use it
-    if (assetMap[assetId]) {
-      return assetMap[assetId];
-    }
-    // Otherwise return as-is (could be a real URL already)
-    return assetId;
+  // Helper to check if a value is a placeholder ID
+  const isPlaceholderId = (value: string): value is PlaceholderId => {
+    return typeof value === 'string' && value.startsWith('placeholder-');
   };
+
+  // Helper to resolve asset from placeholder or return actual URL
+  const resolveAsset = (value: string): string => {
+    if (isPlaceholderId(value) && assetMap[value]) {
+      return assetMap[value];
+    }
+    return value;
+  };
+
+  const renderSceneContent = (scene: SceneConfig, index: number) => {
+    const config = scene as any;
+
+    switch (config.type) {
+      case "text":
+        return (
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            {config.content?.heading && (
+              <h2
+                className={`font-bold leading-tight ${
+                  config.director?.headingSize === "8xl" ? "text-5xl md:text-8xl" :
+                  config.director?.headingSize === "7xl" ? "text-4xl md:text-7xl" :
+                  config.director?.headingSize === "6xl" ? "text-3xl md:text-6xl" :
+                  config.director?.headingSize === "5xl" ? "text-2xl md:text-5xl" :
+                  "text-xl md:text-4xl"
+                }`}
+              >
+                {config.content.heading}
+              </h2>
+            )}
+            {config.content?.body && (
+              <p
+                className={`${
+                  config.director?.bodySize === "2xl" ? "text-lg md:text-2xl" :
+                  config.director?.bodySize === "xl" ? "text-base md:text-xl" :
+                  config.director?.bodySize === "lg" ? "text-sm md:text-lg" :
+                  "text-sm md:text-base"
+                } opacity-90 max-w-3xl mx-auto`}
+              >
+                {config.content.body}
+              </p>
+            )}
+          </div>
+        );
+
+      case "image":
+        const imageUrl = config.content?.url || "";
+        const isImagePlaceholder = isPlaceholderId(imageUrl);
+
+        if (isEditMode && isImagePlaceholder) {
+          return (
+            <div className="w-full max-w-5xl mx-auto">
+              <PlaceholderSlot
+                placeholderId={imageUrl}
+                currentMapping={assetMap[imageUrl]}
+                onAssignAsset={onOpenAssetMapper || (() => {})}
+              />
+            </div>
+          );
+        }
+
+        return (
+          <div className="w-full max-w-5xl mx-auto">
+            <img
+              src={resolveAsset(imageUrl)}
+              alt={config.content?.alt || ""}
+              className="w-full h-full object-cover"
+              style={{ opacity: config.director?.mediaOpacity || 1 }}
+            />
+          </div>
+        );
+
+      case "video":
+        const videoUrl = config.content?.url || "";
+        const isVideoPlaceholder = isPlaceholderId(videoUrl);
+
+        if (isEditMode && isVideoPlaceholder) {
+          return (
+            <div className="w-full max-w-5xl mx-auto aspect-video">
+              <PlaceholderSlot
+                placeholderId={videoUrl}
+                currentMapping={assetMap[videoUrl]}
+                onAssignAsset={onOpenAssetMapper || (() => {})}
+              />
+            </div>
+          );
+        }
+
+        return (
+          <div className="w-full max-w-5xl mx-auto aspect-video">
+            <video
+              src={resolveAsset(videoUrl)}
+              className="w-full h-full rounded-lg shadow-2xl object-cover"
+              controls
+              playsInline
+              style={{ opacity: config.director?.mediaOpacity || 1 }}
+            />
+          </div>
+        );
+
+      case "quote":
+        const quoteText = config.content?.quote || "";
+        const isQuotePlaceholder = isPlaceholderId(quoteText);
+
+        if (isEditMode && isQuotePlaceholder) {
+          return (
+            <div className="max-w-3xl mx-auto">
+              <PlaceholderSlot
+                placeholderId={quoteText}
+                currentMapping={assetMap[quoteText]}
+                onAssignAsset={onOpenAssetMapper || (() => {})}
+              />
+            </div>
+          );
+        }
+
+        return (
+          <div className="max-w-3xl mx-auto text-center space-y-4">
+            <blockquote className="text-2xl md:text-4xl font-serif italic">
+              "{quoteText}"
+            </blockquote>
+            {config.content?.author && (
+              <cite className="text-lg md:text-xl opacity-80 not-italic">
+                — {config.content.author}
+              </cite>
+            )}
+          </div>
+        );
+
+      default:
+        return (
+          <div className="text-center text-muted-foreground">
+            Unsupported scene type: {config.type}
+          </div>
+        );
+    }
+  };
+
 
   useEffect(() => {
     if (!sceneRef.current || !contentRef.current) return;
@@ -382,53 +532,13 @@ export function SceneRenderer({ scene, index, assetMap = {} }: SceneRendererProp
           mixBlendMode: director.mixBlendMode || "normal",
         }}
       >
-        {type === "text" && (
-          <div className="container mx-auto px-4">
-            <h1 className={`${headingSizeMap[director.headingSize]} ${fontWeightMap[director.fontWeight || "bold"]} mb-4`}>
-              {content.heading}
-            </h1>
-            {content.body && (
-              <p className={`${bodySizeMap[director.bodySize]}`}>{content.body}</p>
-            )}
-          </div>
-        )}
-
-        {type === "image" && (
-          <div className="relative w-full h-full">
-            {scene.imageUrl?.startsWith('placeholder-') ? (
-              <PlaceholderSlot
-                placeholderId={scene.imageUrl}
-                type="image"
-                onAssignAsset={(id) => {
-                  // This will open the asset picker modal (implement in next step)
-                  console.log('Assign asset to:', id);
-                }}
-              />
-            ) : scene.imageUrl ? (
-              <ProgressiveImage
-                src={resolveAsset(scene.imageUrl || "")}
-                alt={scene.content.alt || "Scene image"}
-                className="w-full h-full object-cover"
-                style={{ opacity: director.mediaOpacity || 1 }}
-              />
-            ) : null}
-          </div>
-        )}
-
-        {type === "quote" && (
-          <div className="container mx-auto px-4 max-w-4xl">
-            <blockquote className={`${headingSizeMap[director.headingSize]} font-serif italic mb-6`}>
-              "{content.quote}"
-            </blockquote>
-            <cite className={`${bodySizeMap[director.bodySize]} not-italic`}>
-              — {content.author}
-              {content.role && <span className="opacity-70">, {content.role}</span>}
-            </cite>
-          </div>
-        )}
-
-        {/* Add more scene type renderers as needed */}
+        {renderSceneContent(scene, index)}
       </div>
     </div>
   );
 }
+
+// Re-exporting SceneRenderer to maintain existing import paths if needed.
+// If this component is part of a larger file with multiple components,
+// this export might need adjustment.
+export { SceneRenderer };

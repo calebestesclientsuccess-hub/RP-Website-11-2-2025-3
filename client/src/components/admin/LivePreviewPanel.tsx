@@ -1,21 +1,24 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, Maximize2, RefreshCw } from "lucide-react";
 import { SceneRenderer } from "@/components/branding/SceneRenderer";
+import type { SceneConfig } from "@shared/schema";
+import type { PlaceholderId } from "@shared/placeholder-config";
 
 interface LivePreviewPanelProps {
-  scenes: any[];
+  scenes: SceneConfig[];
   enabled: boolean;
   onToggle: () => void;
+  assetMap?: Record<string, string>;
+  onOpenAssetMapper?: (placeholderId: PlaceholderId) => void;
 }
 
-export function LivePreviewPanel({ scenes, enabled, onToggle }: LivePreviewPanelProps) {
+export function LivePreviewPanel({ scenes, enabled, onToggle, assetMap, onOpenAssetMapper }: LivePreviewPanelProps) {
   const [previewScale, setPreviewScale] = useState(0.5);
   const [selectedSceneIndex, setSelectedSceneIndex] = useState(0);
-  
+
   if (!enabled) {
     return (
       <Card>
@@ -32,7 +35,7 @@ export function LivePreviewPanel({ scenes, enabled, onToggle }: LivePreviewPanel
       </Card>
     );
   }
-  
+
   return (
     <Card>
       <CardHeader>
@@ -80,11 +83,11 @@ export function LivePreviewPanel({ scenes, enabled, onToggle }: LivePreviewPanel
               </Button>
             ))}
           </div>
-          
+
           {/* Preview Container */}
-          <div 
+          <div
             className="border rounded-lg overflow-hidden bg-black"
-            style={{ 
+            style={{
               transform: `scale(${previewScale})`,
               transformOrigin: 'top left',
               width: `${100 / previewScale}%`,
@@ -92,13 +95,16 @@ export function LivePreviewPanel({ scenes, enabled, onToggle }: LivePreviewPanel
             }}
           >
             {scenes[selectedSceneIndex] && (
-              <SceneRenderer 
-                scene={scenes[selectedSceneIndex]} 
-                index={selectedSceneIndex}
+              <SceneRenderer
+                scenes={scenes}
+                className="bg-background"
+                assetMap={assetMap}
+                onOpenAssetMapper={onOpenAssetMapper}
+                isEditMode={true}
               />
             )}
           </div>
-          
+
           <p className="text-xs text-muted-foreground text-center">
             ⚠️ Preview is experimental and may not reflect final animations
           </p>
