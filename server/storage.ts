@@ -998,9 +998,8 @@ export class DbStorage implements IStorage {
       throw new Error('Prompt template not found or access denied');
     }
   }
-}
 
-// Portfolio Conversations
+  // Portfolio Conversations
   async createConversationMessage(
     projectId: string,
     role: 'user' | 'assistant',
