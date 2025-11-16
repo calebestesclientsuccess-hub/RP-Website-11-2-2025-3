@@ -16,8 +16,10 @@
     "test:e2e": "playwright test",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
+    "test:coverage:report": "vitest run --coverage && open coverage/index.html",
     "test:ui": "vitest --ui",
-    "playwright:ui": "playwright test --ui"
+    "playwright:ui": "playwright test --ui",
+    "test:ci": "vitest run --coverage --reporter=json --reporter=default && playwright test"
   },
   "dependencies": {
     "@google/genai": "^1.29.1",
