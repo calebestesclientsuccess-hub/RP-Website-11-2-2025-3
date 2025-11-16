@@ -1916,11 +1916,17 @@ Your explanation should be conversational and reference specific scene numbers.`
       const systemInstructions = `Portfolio Context: ${portfolioAiPrompt}\n\nThis is scene ${i + 1} of ${scenes.length} in the portfolio.`;
 
       // Generate AI-enhanced scene config
-      const aiEnhanced = await generateSceneWithGemini(
-        scene.aiPrompt,
-        scene.sceneType,
-        systemInstructions
-      );
+      let aiEnhanced;
+      try {
+        aiEnhanced = await generateSceneWithGemini(
+          scene.aiPrompt,
+          scene.sceneType,
+          systemInstructions
+        );
+      } catch (error) {
+        console.error(`[Portfolio Enhanced] Failed to generate scene ${i + 1}:`, error);
+        throw new Error(`Failed to generate scene ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
 
       // Merge user-provided content with AI enhancements
       const mergedContent: any = { ...aiEnhanced };

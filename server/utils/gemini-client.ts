@@ -272,13 +272,15 @@ function validateSceneConfig(config: GeneratedSceneConfig): void {
     }
   }
 
-  // Validate hex colors
+  // Validate and fix hex colors
   if (config.backgroundColor && !isValidHexColor(config.backgroundColor)) {
-    throw new Error("backgroundColor must be a valid hex color");
+    console.warn(`Invalid backgroundColor: ${config.backgroundColor}, defaulting to #0a0a0a`);
+    config.backgroundColor = '#0a0a0a';
   }
 
   if (config.textColor && !isValidHexColor(config.textColor)) {
-    throw new Error("textColor must be a valid hex color");
+    console.warn(`Invalid textColor: ${config.textColor}, defaulting to #ffffff`);
+    config.textColor = '#ffffff';
   }
 
   // Validate media type
