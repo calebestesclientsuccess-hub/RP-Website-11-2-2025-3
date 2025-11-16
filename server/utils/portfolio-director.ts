@@ -72,48 +72,184 @@ Create a scene sequence by FILLING OUT A COMPLETE FORM for each scene. You MUST 
 
 Think of this as filling out a structured form where blank fields are not allowed. Each scene requires all these decisions:
 
-MANDATORY FIELD CHECKLIST - YOU MUST PROVIDE ALL OF THESE FOR EACH SCENE:
-☐ sceneType (text, image, video, quote, split, gallery, or fullscreen)
-☐ assetIds (array of valid IDs from the catalog - MUST reference existing IDs only)
-☐ entryEffect (fade, slide-up, slide-down, slide-left, slide-right, zoom-in, zoom-out, sudden, cross-fade, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus)
-☐ entryDuration (number in seconds, minimum 0.8s recommended, 1.2s+ for noticeable effects)
-☐ entryDelay (number in seconds, 0-2, use 0 if unsure - this is WHEN the animation starts after scroll trigger)
-☐ entryEasing (linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce)
-☐ exitEffect (fade, slide-up, slide-down, slide-left, slide-right, zoom-out, dissolve, cross-fade, rotate-out, flip-out, scale-blur)
-☐ exitDuration (number in seconds, minimum 0.6s recommended)
-☐ exitDelay (number in seconds, 0-2, use 0 if unsure - this is WHEN the exit animation starts)
-☐ exitEasing (linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce)
-☐ backgroundColor (exact hex code like #0a0a0a or #1e293b)
-☐ textColor (exact hex code like #ffffff or #f1f5f9)
-☐ parallaxIntensity (number 0.0-1.0, use 0 if scaleOnScroll is true)
-☐ scrollSpeed (slow, normal, or fast - controls scroll animation speed)
-☐ animationDuration (number in seconds, 0.5-10, overall animation timing)
-☐ headingSize (4xl, 5xl, 6xl, 7xl, or 8xl)
-☐ bodySize (base, lg, xl, or 2xl)
-☐ fontWeight (normal, medium, semibold, or bold)
-☐ alignment (left, center, or right)
-☐ fadeOnScroll (boolean: true or false)
-☐ scaleOnScroll (boolean: true or false - MUST be false if parallaxIntensity > 0)
-☐ blurOnScroll (boolean: true or false - recommended false for performance)
-☐ layerDepth (number 0-10, default 5 - controls z-index for parallax layering)
-☐ staggerChildren (number 0.0-1.0, default 0 - delay between child element animations in seconds)
-☐ transformOrigin (center center, top left, top center, top right, center left, center right, bottom left, bottom center, or bottom right)
-☐ overflowBehavior (visible, hidden, or auto)
-☐ backdropBlur (none, sm, md, lg, or xl)
-☐ mixBlendMode (normal, multiply, screen, overlay, difference, or exclusion)
-☐ enablePerspective (boolean: true for 3D rotations, false otherwise)
-☐ customCSSClasses (string of space-separated Tailwind classes, empty string if none)
-☐ textShadow (boolean: true or false)
-☐ textGlow (boolean: true or false)
-☐ paddingTop (none, sm, md, lg, xl, or 2xl)
-☐ paddingBottom (none, sm, md, lg, xl, or 2xl)
-☐ mediaPosition (center, top, bottom, left, or right - for image/video scenes)
-☐ mediaScale (cover, contain, or fill - for image/video scenes)
-☐ mediaOpacity (number 0.0-1.0, default 1.0 - for image/video scenes)
+=== THE 37 DIRECTOR CONTROLS: COMPLETE REFERENCE ===
 
+CONTROL 1-2: ENTRY ANIMATION
+☐ entryEffect: HOW the scene appears on screen
+   Options: fade, slide-up, slide-down, slide-left, slide-right, zoom-in, zoom-out, sudden, cross-fade, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus
+   Use: "fade" for smooth reveals, "zoom-in" for dramatic focus, "slide-up" for upward motion, "blur-focus" for dreamy transitions
+   
+☐ entryDuration: HOW LONG the entry animation takes (seconds)
+   Range: 0.8-5.0 seconds
+   Guidelines: 0.8s = quick/snappy, 1.2-1.9s = smooth/cinematic (RECOMMENDED), 2.5s+ = dramatic/hero moments
+   Critical: Anything below 1.0s feels rushed. Use 1.2s+ for noticeable effects.
+
+CONTROL 3-4: ENTRY TIMING
+☐ entryDelay: WHEN the animation starts after scroll trigger (seconds)
+   Range: 0-2 seconds
+   Use: 0 = immediate (default), 0.3-0.8 = staggered reveals, 1.0+ = delayed dramatic entrance
+   
+☐ entryEasing: The ACCELERATION CURVE of entry motion
+   Options: linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce
+   Guidelines: "ease-out" = natural/smooth (most common), "power3"/"power4" = cinematic, "elastic"/"bounce" = playful, "back" = overshoot effect
+
+CONTROL 5-6: EXIT ANIMATION  
+☐ exitEffect: HOW the scene disappears
+   Options: fade, slide-up, slide-down, slide-left, slide-right, zoom-out, dissolve, cross-fade, rotate-out, flip-out, scale-blur
+   Use: Should complement next scene's entry. "cross-fade" for smooth transitions, "dissolve" for cinematic blur, "scale-blur" for dramatic zoom-out
+   
+☐ exitDuration: HOW LONG the exit animation takes (seconds)
+   Range: 0.6-5.0 seconds
+   Guidelines: Typically 20% faster than entry. 0.6s = quick, 1.0s = smooth (RECOMMENDED), 1.8s+ = slow/deliberate
+
+CONTROL 7-8: EXIT TIMING
+☐ exitDelay: WHEN the exit starts (seconds)
+   Range: 0-2 seconds
+   Use: Usually 0 for immediate exit. Use delays only for staggered multi-element exits.
+   
+☐ exitEasing: The DECELERATION CURVE of exit motion
+   Options: Same as entryEasing
+   Guidelines: "ease-in" = smooth exits (most common), "power2" = faster exits, "elastic" = bouncy exits
+
+CONTROL 9-10: COLOR FOUNDATION
+☐ backgroundColor: Scene background color (EXACT hex code)
+   Format: "#000000" to "#ffffff" (must include # symbol)
+   Examples: "#0a0a0a" = deep black, "#1e293b" = dark slate, "#f8fafc" = soft white
+   Critical: Must contrast with textColor to avoid invisible text
+   
+☐ textColor: Text color (EXACT hex code)
+   Format: "#000000" to "#ffffff" (must include # symbol)  
+   Examples: "#ffffff" = white, "#f1f5f9" = off-white, "#0a0a0a" = near-black
+   Critical: MUST contrast with backgroundColor
+
+CONTROL 11-13: SCROLL DEPTH EFFECTS
+☐ parallaxIntensity: Depth layering strength (0.0 = none, 1.0 = maximum)
+   Range: 0.0-1.0
+   Guidelines: 0.0 = no parallax (use with scaleOnScroll), 0.2-0.3 = subtle, 0.5-0.8 = dramatic
+   CONFLICT: If > 0, you MUST set scaleOnScroll to false
+   
+☐ scrollSpeed: How fast scroll-based effects respond
+   Options: "slow" (2x slower, cinematic), "normal" (balanced), "fast" (2x faster, snappy)
+   Use: "slow" for hero sections, "normal" for most scenes, "fast" for galleries
+   
+☐ animationDuration: Overall animation timing (seconds)
+   Range: 0.5-10 seconds
+   Use: Controls GSAP timeline duration. Usually matches or slightly exceeds entry/exit durations.
+
+CONTROL 14-17: TYPOGRAPHY HIERARCHY
+☐ headingSize: Heading scale
+   Options: "4xl" (smallest), "5xl", "6xl", "7xl", "8xl" (largest)
+   Guidelines: "6xl"/"7xl" for heroes, "5xl" for section headings, "4xl" for subtitles
+   
+☐ bodySize: Body text scale
+   Options: "base" (smallest), "lg", "xl", "2xl" (largest)
+   Guidelines: "base" for dense content, "lg" for comfortable reading (RECOMMENDED), "xl"/"2xl" for emphasis
+   
+☐ fontWeight: Text weight
+   Options: "normal" (400), "medium" (500), "semibold" (600), "bold" (700)
+   Use: "semibold" for headings (RECOMMENDED), "normal" for body text, "bold" for strong emphasis
+   
+☐ alignment: Text alignment
+   Options: "left", "center", "right"
+   Guidelines: "center" for heroes/quotes, "left" for readable paragraphs, "right" for artistic effects
+
+CONTROL 18-20: SCROLL INTERACTION EFFECTS (use sparingly)
+☐ fadeOnScroll: Fade media as user scrolls (boolean)
+   Values: true/false
+   Use: true = subtle reveal effect, false = static (RECOMMENDED for most scenes)
+   
+☐ scaleOnScroll: Subtle zoom during scroll (boolean)
+   Values: true/false
+   Use: true = dramatic zoom effect, false = static
+   CONFLICT: If true, you MUST set parallaxIntensity to 0
+   
+☐ blurOnScroll: Blur effect during scroll (boolean)
+   Values: true/false
+   Use: false = better performance (RECOMMENDED), true = cinematic depth (use max 1-2 scenes per portfolio)
+
+CONTROL 21-22: MULTI-ELEMENT TIMING
+☐ staggerChildren: Delay between child element animations (seconds)
+   Range: 0.0-1.0
+   Use: 0 = all elements animate together, 0.1-0.3 = subtle stagger (RECOMMENDED for galleries), 0.5+ = dramatic sequential reveal
+   
+☐ layerDepth: Z-index for parallax layering
+   Range: 0-10
+   Use: 5 = default, higher = closer to viewer, lower = further from viewer
+   Only matters when parallaxIntensity > 0
+
+CONTROL 23-25: ADVANCED MOTION CONTROLS
+☐ transformOrigin: Pivot point for rotations/scales
+   Options: "center center", "top left", "top center", "top right", "center left", "center right", "bottom left", "bottom center", "bottom right"
+   Use: "center center" = default (RECOMMENDED), "top left" = rotate from corner, etc.
+   Critical for rotate-in, flip-in, zoom-in effects
+   
+☐ overflowBehavior: Content clipping
+   Options: "visible", "hidden", "auto"
+   Use: "visible" = no clipping (default), "hidden" = clip overflow (RECOMMENDED for most), "auto" = scrollable if needed
+   
+☐ backdropBlur: Glass morphism effect
+   Options: "none", "sm", "md", "lg", "xl"
+   Use: "none" = no blur (RECOMMENDED for most), "sm"/"md" = subtle glass effect, "lg"/"xl" = strong blur
+
+CONTROL 26-27: VISUAL BLENDING
+☐ mixBlendMode: Photoshop-style color blending
+   Options: "normal", "multiply", "screen", "overlay", "difference", "exclusion"
+   Use: "normal" = no blending (RECOMMENDED for most), "screen" = lighten, "multiply" = darken, "overlay" = contrast boost
+   
+☐ enablePerspective: Enable 3D depth for rotations (boolean)
+   Values: true/false
+   Use: true = 3D perspective (required for flip-in, rotate-in to look 3D), false = flat 2D
+
+CONTROL 28-29: CUSTOM STYLING
+☐ customCSSClasses: Space-separated Tailwind utility classes
+   Format: String like "shadow-2xl ring-4 ring-purple-500" or empty string ""
+   Use: "" = no custom classes (RECOMMENDED), add classes only for advanced customization
+   
+☐ textShadow: Drop shadow on text (boolean)
+   Values: true/false
+   Use: false = clean text (RECOMMENDED), true = shadow for depth (use on light backgrounds)
+
+CONTROL 30: TEXT EFFECTS
+☐ textGlow: Luminous text effect (boolean)
+   Values: true/false
+   Use: false = standard text (RECOMMENDED), true = glowing effect (use sparingly, max 1-2 scenes)
+
+CONTROL 31-32: VERTICAL SPACING
+☐ paddingTop: Top spacing
+   Options: "none", "sm", "md", "lg", "xl", "2xl"
+   Use: "none" = tight (default), "md" = comfortable (RECOMMENDED for most), "xl"/"2xl" = spacious
+   
+☐ paddingBottom: Bottom spacing
+   Options: "none", "sm", "md", "lg", "xl", "2xl"
+   Use: Same as paddingTop. Usually match top/bottom for symmetry.
+
+CONTROL 33-35: MEDIA PRESENTATION (for image/video scenes)
+☐ mediaPosition: Focal point for media
+   Options: "center", "top", "bottom", "left", "right"
+   Use: "center" = balanced (RECOMMENDED), "top" = focus top of image, "bottom" = focus bottom
+   
+☐ mediaScale: How media fits the container
+   Options: "cover" (fill, may crop), "contain" (fit all, may letterbox), "fill" (stretch to fit)
+   Use: "cover" = full bleed (RECOMMENDED for most), "contain" = show full image, "fill" = distort to fit (avoid)
+   
+☐ mediaOpacity: Media transparency
+   Range: 0.0 (invisible) to 1.0 (fully opaque)
+   Use: 1.0 = solid (RECOMMENDED), 0.7-0.9 = subtle transparency, 0.3-0.6 = background overlay
+
+CONTROL 36-37: GRADIENT BACKGROUNDS (optional)
+☐ gradientColors: Array of hex color codes for gradient (nullable)
+   Format: ["#ff0000", "#0000ff"] or null
+   Use: null = solid background (RECOMMENDED), array = gradient overlay
+   
+☐ gradientDirection: Gradient direction (nullable)
+   Options: "to-r", "to-l", "to-t", "to-b", "to-br", "to-bl", "to-tr", "to-tl" or null
+   Use: null = no gradient (RECOMMENDED), "to-r" = left to right, "to-br" = diagonal bottom-right, etc.
+
+=== VALIDATION REQUIREMENTS ===
 IF YOU SKIP ANY FIELD, THE SCENE WILL FAIL VALIDATION.
 IF YOU USE AN INVALID VALUE, THE SCENE WILL FAIL VALIDATION.
 IF YOU REFERENCE A NON-EXISTENT ASSET ID, THE SCENE WILL FAIL VALIDATION.
+ALL 37 CONTROLS MUST HAVE CONCRETE VALUES (except gradientColors/gradientDirection which can be null).
 
 SCENE TYPES (choose based on content):
 - "text": Headlines and body copy (use for hero sections, chapter openers)
