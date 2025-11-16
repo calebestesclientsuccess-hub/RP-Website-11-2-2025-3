@@ -331,6 +331,7 @@ export default function AssessmentPage() {
 
   const currentQ = questions[currentQuestion];
   const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const totalQuestions = questions.length;
 
   const handleAnswer = (value: string, score: number) => {
     setSelectedOption(value);
@@ -516,7 +517,7 @@ export default function AssessmentPage() {
                 <div className="mb-8">
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-muted-foreground">
-                      Question {currentQuestion + 1} of {questions.length}
+                      Question {currentQuestion + 1} of {totalQuestions}
                     </span>
                     <span className="text-muted-foreground">
                       {Math.round(progress)}% Complete

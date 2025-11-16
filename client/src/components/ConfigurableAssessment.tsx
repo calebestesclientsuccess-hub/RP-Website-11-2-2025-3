@@ -349,13 +349,10 @@ export function ConfigurableAssessment({ configSlug, mode = "standalone" }: Conf
           return (
             <Button
               key={answer.id}
+              onClick={() => handleAnswerClick(currentQuestion.id, answer.id)}
               variant="outline"
               size="lg"
               className="w-full justify-between text-left h-auto py-4 px-6"
-              onClick={() => {
-                handleAnswerClick(currentQuestion.id, answer.id);
-                announce(`Selected answer: ${answerText}.`);
-              }}
               data-testid={`button-answer-${answer.id}`}
               role="radio"
               aria-checked={answers[currentQuestion.id] === answer.id}

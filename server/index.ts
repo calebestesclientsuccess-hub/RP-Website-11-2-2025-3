@@ -7,6 +7,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { sessionPool } from "./db";
 import { securityHeaders } from "./middleware/security-headers";
 import { tenantMiddleware } from "./middleware/tenant";
+import { sessionTimeoutMiddleware } from './middleware/session-timeout'; // Import session timeout middleware
 
 const app = express();
 app.use(express.json());
@@ -20,12 +21,9 @@ import { blockSuspiciousIPs, detectSuspiciousPatterns, enhancedRateLimiter } fro
 app.use(blockSuspiciousIPs);
 app.use(detectSuspiciousPatterns);
 
-// Apply security headers for SEO trust signals
-app.use(securityHeaders);
-
 // Session configuration
 const PgSession = connectPgSimple(session);
-const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes of inactivity
+const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours of inactivity
 
 app.use(
   session({
@@ -55,31 +53,7 @@ app.use(
 );
 
 // Session timeout middleware
-app.use((req: Request, res: Response, next: NextFunction) => {
-  if (req.session && req.session.userId) {
-    const now = Date.now();
-    const lastActivity = (req.session as any).lastActivity || now;
-    
-    if (now - lastActivity > SESSION_TIMEOUT) {
-      // Session expired due to inactivity
-      req.session.destroy((err) => {
-        if (err) console.error('Session destruction error:', err);
-      });
-      res.clearCookie('connect.sid');
-      
-      // Return 401 for API requests
-      if (req.path.startsWith('/api')) {
-        return res.status(401).json({ error: 'Session expired due to inactivity' });
-      }
-      
-      return res.redirect('/admin/login?timeout=1');
-    }
-    
-    // Update last activity timestamp
-    (req.session as any).lastActivity = now;
-  }
-  next();
-});
+app.use(sessionTimeoutMiddleware);
 
 // Comprehensive security headers middleware
 app.use((req, res, next) => {

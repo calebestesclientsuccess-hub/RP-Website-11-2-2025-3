@@ -187,6 +187,14 @@ export default function AuditPage() {
                   Select a Time to Build Your Blueprint
                 </h2>
 
+                <div 
+                  aria-live="polite" 
+                  aria-atomic="true" 
+                  className="sr-only"
+                >
+                  {submitted ? "Form submitted successfully" : ""}
+                </div>
+
                 {!submitted ? (
                   <>
                     {/* Placeholder for Calendly Embed */}
@@ -197,7 +205,7 @@ export default function AuditPage() {
 
                     {/* Form */}
                     <Form {...form}>
-                      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4" aria-label="GTM audit request form">
                         <FormField
                           control={form.control}
                           name="fullName"
@@ -304,6 +312,7 @@ export default function AuditPage() {
                           className="w-full" 
                           size="lg"
                           data-testid="button-submit-audit"
+                          aria-label="Confirm My GTM Audit"
                         >
                           Confirm My GTM Audit
                         </Button>
@@ -318,7 +327,7 @@ export default function AuditPage() {
                     data-testid="confirmation-message"
                   >
                     <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold mb-2">Request Received!</h3>
+                    <h3 className="text-2xl font-bold mb-2" id="confirmation-heading">Request Received!</h3>
                     <p className="text-muted-foreground">
                       A GTM Architect will send a personal confirmation and prep materials within 
                       one business day.

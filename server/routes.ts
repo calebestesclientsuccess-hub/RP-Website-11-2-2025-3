@@ -554,6 +554,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Password strength check endpoint
+  app.post('/api/auth/check-password-strength', (req, res) => {
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+
+    const result = validatePasswordStrength(password);
+    res.json(result);
+  });
+
   // PDF Upload endpoint (Cloudinary)
   app.post("/api/upload/pdf", requireAuth, pdfUpload.single('pdf'), async (req, res) => {
     try {
