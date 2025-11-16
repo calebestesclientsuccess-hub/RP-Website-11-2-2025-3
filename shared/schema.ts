@@ -801,7 +801,6 @@ export const directorConfigSchema = z.object({
   fadeOnScroll: z.boolean().default(false),
   scaleOnScroll: z.boolean().default(false),
   blurOnScroll: z.boolean().default(false),
-  scrollSpeed: z.enum(['slow', 'normal', 'fast']).default('normal'),
 });
 
 // Update scene schemas to include optional director config
@@ -906,9 +905,9 @@ export const DEFAULT_DIRECTOR_CONFIG = {
   fadeOnScroll: false,
   scaleOnScroll: false,
   blurOnScroll: false,
+  scrollSpeed: "normal" as const,
   layerDepth: 5,
   staggerChildren: 0,
-  scrollSpeed: "normal",
   animationDuration: 2.0,
   mediaPosition: "center",
   mediaScale: "cover",
