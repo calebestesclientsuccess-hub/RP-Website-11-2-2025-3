@@ -1,0 +1,107 @@
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+10:42:48 AM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 13 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+10:43:01 AM [express] GET /api/public/feature-flags/high-contrast-mode 304 in 295ms :: {"enabled":tru…
+10:43:01 AM [express] GET /api/public/feature-flags/theme-toggle 304 in 304ms :: {"enabled":false}
+10:43:01 AM [express] GET /api/public/feature-flags/revenue-architecture-playbook 304 in 249ms :: {"e…
+10:43:01 AM [express] GET /api/public/campaigns 304 in 253ms :: []
+10:43:01 AM [express] GET /api/widget-config 304 in 50ms :: {"id":"a2ab5447-2a7b-406a-803c-55486022b0…
+10:43:01 AM [express] GET /api/testimonials 304 in 216ms :: [{"id":"6f5a514b-14f7-4488-81d3-69d1f1938…
+10:43:01 AM [express] GET /api/widget-config 304 in 131ms :: {"id":"a2ab5447-2a7b-406a-803c-55486022b…
+10:43:01 AM [express] GET /api/public/feature-flags/high-contrast-mode 304 in 101ms :: {"enabled":tru…
+10:43:01 AM [express] GET /api/public/campaigns 304 in 100ms :: []
+10:43:01 AM [express] GET /api/public/feature-flags/theme-toggle 304 in 95ms :: {"enabled":false}
+10:43:01 AM [express] GET /api/auth/session 304 in 219ms :: {"user":{"id":"c2265118-f762-41b7-b522-e2…
+10:43:01 AM [express] GET /api/auth/session 304 in 223ms :: {"user":{"id":"c2265118-f762-41b7-b522-e2…
+10:43:01 AM [express] POST /api/analytics/web-vitals 200 in 248ms
+10:43:01 AM [express] POST /api/analytics/web-vitals 200 in 99ms
+10:43:01 AM [express] POST /api/analytics/web-vitals 200 in 44ms
+10:43:02 AM [express] GET /api/projects 304 in 74ms :: [{"id":"013f768a-8163-4e47-bf7f-617068b54438",…
+10:43:02 AM [express] POST /api/analytics/web-vitals 200 in 28ms
+10:43:06 AM [express] POST /api/analytics/web-vitals 200 in 31ms
+10:43:08 AM [express] GET /api/projects/013f768a-8163-4e47-bf7f-617068b54438 200 in 47ms :: {"id":"01…
+10:44:40 AM [express] POST /api/analytics/web-vitals 200 in 37ms
+10:44:40 AM [express] POST /api/analytics/web-vitals 200 in 37ms
+10:44:43 AM [express] GET /api/public/feature-flags/high-contrast-mode 304 in 189ms :: {"enabled":tru…
+10:44:43 AM [express] GET /api/public/feature-flags/theme-toggle 304 in 193ms :: {"enabled":false}
+10:44:43 AM [express] GET /api/widget-config 304 in 176ms :: {"id":"a2ab5447-2a7b-406a-803c-55486022b…
+10:44:43 AM [express] GET /api/public/campaigns 304 in 205ms :: []
+10:44:43 AM [express] GET /api/auth/session 304 in 198ms :: {"user":{"id":"c2265118-f762-41b7-b522-e2…
+10:44:43 AM [express] POST /api/analytics/web-vitals 200 in 34ms
+10:44:43 AM [express] POST /api/analytics/web-vitals 200 in 27ms
+10:44:44 AM [express] GET /api/projects 304 in 70ms :: [{"id":"013f768a-8163-4e47-bf7f-617068b54438",…
+10:44:46 AM [express] POST /api/analytics/web-vitals 200 in 26ms
+10:44:48 AM [vite] hmr update /src/pages/admin/PortfolioBuilder.tsx, /src/index.css?v=kfgBKr1aqJQQ_XgdGZ6LI
+10:44:48 AM [vite] Internal server error: /home/runner/workspace/client/src/pages/admin/PortfolioBuilder.tsx: Expected corresponding JSX closing tag for <CardContent>. (1128:22)
+
+  1126 |                           )}
+  1127 |                         </Button>
+> 1128 |                       </div>
+       |                       ^
+  1129 |                     </CardContent>
+  1130 |                   </Card>
+  1131 |                 )}
+  Plugin: vite:react-babel
+  File: /home/runner/workspace/client/src/pages/admin/PortfolioBuilder.tsx:1128:22
+  1126|                            )}
+  1127|                          </Button>
+  1128|                        </div>
+     |                        ^
+  1129|                      </CardContent>
+  1130|                    </Card>
+      at toParseError (/home/runner/workspace/node_modules/@babel/parser/src/parse-error.ts:95:45)
+      at raise (/home/runner/workspace/node_modules/@babel/parser/src/tokenizer/index.ts:1507:19)
+      at jsxParseElementAt (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:527:18)
+      at jsxParseElementAt (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:483:34)
+      at jsxParseElement (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:559:19)
+      at parseExprAtom (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:573:21)
+      at parseExprSubscripts (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+      at parseUpdate (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+      at parseMaybeUnary (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+      at parseMaybeUnary (/home/runner/workspace/node_modules/@babel/parser/src/plugins/typescript/index.ts:3876:20)
+      at parseMaybeUnaryOrPrivate (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+      at parseExprOps (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+      at parseMaybeConditional (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+      at parseMaybeAssign (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+      at fn (/home/runner/workspace/node_modules/@babel/parser/src/plugins/typescript/index.ts:3728:23)
+      at tryParse (/home/runner/workspace/node_modules/@babel/parser/src/parser/util.ts:174:20)
+      at parseMaybeAssign (/home/runner/workspace/node_modules/@babel/parser/src/plugins/typescript/index.ts:3727:20)
+      at callback (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:257:12)
+      at allowInAnd (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:3202:12)
+      at parseMaybeAssignAllowIn (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:256:17)
+      at parseMaybeAssignAllowInOrVoidPattern (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:3316:17)
+      at parseParenAndDistinguishExpression (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:1822:16)
+      at parseExprAtom (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:1170:21)
+      at parseExprAtom (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:583:22)
+      at parseExprSubscripts (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:742:23)
+      at parseUpdate (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:721:21)
+      at parseMaybeUnary (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:683:23)
+      at parseMaybeUnary (/home/runner/workspace/node_modules/@babel/parser/src/plugins/typescript/index.ts:3876:20)
+      at parseMaybeUnaryOrPrivate (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:417:14)
+      at parseExprOps (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:429:23)
+      at parseMaybeConditional (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:384:23)
+      at parseMaybeAssign (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+      at parseMaybeAssign (/home/runner/workspace/node_modules/@babel/parser/src/plugins/typescript/index.ts:3747:22)
+      at parseConditional (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:405:29)
+      at parseConditional (/home/runner/workspace/node_modules/@babel/parser/src/plugins/typescript/index.ts:3396:20)
+      at parseMaybeConditional (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:390:17)
+      at parseMaybeAssign (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:301:21)
+      at parseMaybeAssign (/home/runner/workspace/node_modules/@babel/parser/src/plugins/typescript/index.ts:3747:22)
+      at parseExpressionBase (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:226:23)
+      at callback (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:217:39)
+      at allowInAnd (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:3202:12)
+      at parseExpression (/home/runner/workspace/node_modules/@babel/parser/src/parser/expression.ts:217:17)
+      at jsxParseExpressionContainer (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:376:33)
+      at jsxParseElementAt (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:500:24)
+      at jsxParseElementAt (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:483:34)
+      at jsxParseElementAt (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:483:34)
+      at jsxParseElementAt (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:483:34)
+      at jsxParseElementAt (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:483:34)
+      at jsxParseElementAt (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:483:34)
+      at jsxParseElement (/home/runner/workspace/node_modules/@babel/parser/src/plugins/jsx/index.ts:559:19)
