@@ -2601,7 +2601,7 @@ Your refinements are creative, but they must not violate the core production rul
 
 1. Obey the "Content-First" Mandate: This is your primary rule. A quote scene uses one (1) quote asset. You MUST validate its assetIds array against the totalQuotesProvided to ensure it does not violate the "Do Not Overdraw" rule.
 2. Obey the "Dual-Track" Architecture: This is a "Cinematic Scene," so it MUST use the 37 director controls. Your output must be a valid 37-control object.
-3. Obey the Director's Vision: Your primary creative guide is the original ${catalog.directorNotes}.
+3. Obey the Director's Vision: Your primary creative guide is the original Director's Notes below.
 4. Use the "Source of Truth": You must use the Director's Lexicon and Advanced Artistic Combinations (Recipes) from the top of the Stage 1 prompt. You MUST IGNORE the older, redundant guides at the bottom of that prompt.
 5. Maintain 37 Controls: Your final output must still be a valid scene object with all 37 controls present and correct (with nulls where appropriate).
 
@@ -2612,15 +2612,19 @@ Before you return the refined JSON, you MUST first provide your "Creative Ration
 CREATIVE RATIONALE:
 "This quote scene is Scene ${sceneIndex}.
 
-1. Asset Check (MANDATORY): I am validating all assets against the 'Do Not Overdraw' mandate. The user provided ${totalQuotesProvided} quotes. The scene uses assetIds: ["placeholder-quote-2"]. The index '2' is valid (less than or equal to the total). I am clear to proceed.
+1. Asset Check (MANDATORY): I am validating all assets against the 'Do Not Overdraw' mandate. The user provided ${totalQuotesProvided} quotes. The scene uses assetIds: ["placeholder-quote-X"]. The index 'X' is valid (≤ ${totalQuotesProvided}). I am clear to proceed.
 
-2. Narrative Role: I've identified this scene as the 'Conclusion' for 'Act 3,' so it must feel profound and final. The 'Director's Vision' is 'dramatic and cinematic.'
+2. Narrative Role: I've identified this scene as the [Act 1 Hook / Act 2 Pause / Act 3 Conclusion], so it must feel [powerful/contemplative/final]. The 'Director's Vision' is '${catalog.directorNotes}'.
 
-3. Refinement 1 (Pacing): The original entryDuration of 1.2s was far too fast for a final quote. I am slowing it down to 3.5s to force the user to pause and absorb the words.
+3. Refinement 1 (Pacing): The original entryDuration of X.Xs was [too fast/appropriate]. I am [adjusting/maintaining] it to X.Xs to [force the user to pause/create impact/etc.].
 
-4. Refinement 2 (Aesthetic): To make it 'cinematic,' I am applying the "Ethereal Dream Recipe" from Stage 1. This includes using the blur-focus effect, adding a backdropBlur: 'sm' for a glass effect, and setting textGlow: true to make the text feel luminous.
+4. Refinement 2 (Aesthetic - RECIPE APPLICATION): To match the vision, I am applying the [Recipe Name] from Stage 1. This includes:
+   - entryEffect: [effect]
+   - backdropBlur: [value]
+   - textGlow: [true/false]
+   - [other recipe controls]
 
-5. Refinement 3 (Spacing): I am increasing paddingTop: '2xl' and paddingBottom: '2xl' to create significant negative space, isolating the quote and giving it the gravity it deserves.
+5. Refinement 3 (Spacing): I am setting paddingTop: '[value]' and paddingBottom: '[value]' to create [describe the effect].
 
 My refinements are complete."
 
@@ -2643,7 +2647,7 @@ Critical Context:
   ${catalog.directorNotes}
 
 Original Scene JSON:
-${JSON.JSON.stringify(scene, null, 2)}
+${JSON.stringify(scene, null, 2)}
 
 Key Refinement Goals for Quote Scenes
 
@@ -2662,6 +2666,26 @@ First, provide the Mandatory Creative Rationale.
 Then, return only the single, refined JSON scene object.
 
 Example output:
+CREATIVE RATIONALE:
+"This quote scene is Scene 5.
+
+1. Asset Check (MANDATORY): I am validating all assets against the 'Do Not Overdraw' mandate. The user provided 3 quotes. The scene uses assetIds: ["placeholder-quote-2"]. The index '2' is valid (2 ≤ 3). I am clear to proceed.
+
+2. Narrative Role: I've identified this scene as the 'Conclusion' for 'Act 3,' so it must feel profound and final. The 'Director's Vision' is 'dramatic and cinematic.'
+
+3. Refinement 1 (Pacing): The original entryDuration of 1.2s was far too fast for a final quote. I am slowing it down to 3.5s to force the user to pause and absorb the words.
+
+4. Refinement 2 (Aesthetic - RECIPE APPLICATION): To make it 'cinematic,' I am applying the 'Ethereal Dream Recipe' from Stage 1. This includes:
+   - entryEffect: 'blur-focus'
+   - backdropBlur: 'sm' (for glass morphism)
+   - textGlow: true (for luminous text)
+   - gradientColors: soft pastels for dreamy atmosphere
+
+5. Refinement 3 (Spacing): I am setting paddingTop: '2xl' and paddingBottom: '2xl' to create significant negative space, isolating the quote and giving it the gravity it deserves.
+
+My refinements are complete."
+
+Example JSON:
 {
   "sceneType": "quote",
   "assetIds": [
