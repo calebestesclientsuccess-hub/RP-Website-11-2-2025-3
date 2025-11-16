@@ -477,21 +477,73 @@ export default function BrandingProjectPage() {
     };
   }, [scenes]);
 
-  // Navigate to a specific scene
+  // Navigate to a specific scene with visual feedback
+  const [isNavigating, setIsNavigating] = useState(false);
+  
   const scrollToScene = (index: number) => {
-    if (!animationsReady || !scrollContainerRef.current) return;
+    if (!animationsReady || !scrollContainerRef.current || isNavigating) return;
+    if (!scenes || index < 0 || index >= scenes.length) return;
 
     const sceneElements = scrollContainerRef.current.querySelectorAll('[data-scene]');
     const targetScene = sceneElements[index] as HTMLElement;
 
     if (targetScene) {
+      setIsNavigating(true);
+      
       const sceneTop = targetScene.getBoundingClientRect().top + window.scrollY;
       const viewportHeight = window.innerHeight;
       const scrollTarget = sceneTop - (viewportHeight * 0.4);
 
       window.scrollTo({ top: scrollTarget, behavior: 'smooth' });
+      
+      // Reset navigation lock after animation completes
+      setTimeout(() => setIsNavigating(false), 800);
     }
   };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!scenes || !animationsReady) return;
+      
+      // Ignore if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          e.preventDefault();
+          scrollToScene(Math.min(activeSceneIndex + 1, scenes.length - 1));
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault();
+          scrollToScene(Math.max(activeSceneIndex - 1, 0));
+          break;
+        case 'Home':
+          e.preventDefault();
+          scrollToScene(0);
+          break;
+        case 'End':
+          e.preventDefault();
+          scrollToScene(scenes.length - 1);
+          break;
+        default:
+          // Number keys 1-9 for direct navigation
+          const num = parseInt(e.key);
+          if (!isNaN(num) && num >= 1 && num <= 9 && num <= scenes.length) {
+            e.preventDefault();
+            scrollToScene(num - 1);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeSceneIndex, scenes, animationsReady, isNavigating]);
 
   const isLoading = isLoadingProject || isLoadingScenes;
 
@@ -502,12 +554,41 @@ export default function BrandingProjectPage() {
           <title>Loading... | Revenue Party</title>
         </Helmet>
 
-        <div className="container mx-auto px-4 py-12">
-          <Skeleton className="h-8 w-32 mb-8" />
-          <Skeleton className="h-96 w-full mb-8" />
-          <Skeleton className="h-64 w-full mb-8" />
-          <Skeleton className="h-64 w-full" />
+        {/* Nav skeleton */}
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+            <Skeleton className="h-8 w-32" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="w-32 h-1" />
+              <div className="flex gap-2">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-3 w-3 rounded-full" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        {/* Hero skeleton */}
+        <div className="min-h-screen flex items-center justify-center pt-24 pb-12 px-4">
+          <div className="container mx-auto text-center">
+            <Skeleton className="h-16 md:h-24 w-3/4 mx-auto mb-6" />
+            <Skeleton className="h-8 w-1/2 mx-auto mb-8" />
+            <Skeleton className="h-3 w-3 rounded-full mx-auto" />
+          </div>
         </div>
+
+        {/* Scene skeletons */}
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="min-h-screen flex items-center justify-center px-4 py-24">
+            <div className="container mx-auto max-w-4xl space-y-8">
+              <Skeleton className="h-12 w-3/4" />
+              <Skeleton className="h-96 w-full" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-5/6" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -561,26 +642,42 @@ export default function BrandingProjectPage() {
                 <span className="text-xs text-muted-foreground">{Math.round(scrollProgress)}%</span>
               </div>
 
-              {/* Scene indicators */}
+              {/* Scene indicators with tooltips */}
               <div className="flex items-center gap-2">
-                {scenes?.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => scrollToScene(index)}
-                    disabled={!animationsReady}
-                    className="group hover-elevate active-elevate-2 p-1 rounded-full transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                    data-testid={`button-scene-${index}`}
-                    aria-label={`Go to scene ${index + 1}`}
-                  >
-                    <Circle
-                      className={`transition-all ${
-                        activeSceneIndex === index
-                          ? "w-3 h-3 fill-red-500 text-red-500"
-                          : "w-2 h-2 fill-muted-foreground text-muted-foreground group-hover:fill-red-400 group-hover:text-red-400"
-                      }`}
-                    />
-                  </button>
-                ))}
+                {scenes?.map((scene, index) => {
+                  const sceneType = scene.sceneConfig.type;
+                  const sceneLabel = `Scene ${index + 1}: ${sceneType}`;
+                  
+                  return (
+                    <div key={index} className="relative group/tooltip">
+                      <button
+                        onClick={() => scrollToScene(index)}
+                        disabled={!animationsReady || isNavigating}
+                        className="group hover-elevate active-elevate-2 p-1 rounded-full transition-all disabled:opacity-30 disabled:cursor-not-allowed relative"
+                        data-testid={`button-scene-${index}`}
+                        aria-label={sceneLabel}
+                      >
+                        <Circle
+                          className={`transition-all ${
+                            activeSceneIndex === index
+                              ? "w-3 h-3 fill-red-500 text-red-500"
+                              : "w-2 h-2 fill-muted-foreground text-muted-foreground group-hover:fill-red-400 group-hover:text-red-400 group-hover:w-2.5 group-hover:h-2.5"
+                          }`}
+                        />
+                        {/* Pulse animation for active scene */}
+                        {activeSceneIndex === index && (
+                          <span className="absolute inset-0 rounded-full bg-red-500/20 animate-ping" />
+                        )}
+                      </button>
+                      
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover border border-border rounded text-xs whitespace-nowrap opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none">
+                        {sceneLabel}
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-4 border-transparent border-t-popover" />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
