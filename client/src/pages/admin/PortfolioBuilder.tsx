@@ -443,102 +443,259 @@ export default function PortfolioBuilder() {
                   </CardContent>
                 </Card>
 
-                {/* Scene Builder */}
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle>2. Build Scenes</CardTitle>
-                        <CardDescription>
-                          Add scenes one-by-one with AI guidance for each
-                        </CardDescription>
+                {/* Hybrid Mode: Scene Builder */}
+                {mode === "hybrid" && (
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle>2. Build Scenes (Hybrid Mode)</CardTitle>
+                          <CardDescription>
+                            Add scenes one-by-one with AI guidance for each
+                          </CardDescription>
+                        </div>
+                        <Button
+                          onClick={() => {
+                            setEditingSceneId(null);
+                            form.reset({
+                              sceneType: "text",
+                              aiPrompt: "",
+                              director: DEFAULT_DIRECTOR_CONFIG,
+                            });
+                            setIsSceneDialogOpen(true);
+                          }}
+                          data-testid="button-add-scene"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Scene
+                        </Button>
                       </div>
-                      <Button
-                        onClick={() => {
-                          setEditingSceneId(null);
-                          form.reset({
-                            sceneType: "text",
-                            aiPrompt: "",
-                            director: DEFAULT_DIRECTOR_CONFIG,
-                          });
-                          setIsSceneDialogOpen(true);
-                        }}
-                        data-testid="button-add-scene"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Scene
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {scenes.length === 0 ? (
-                      <div className="text-center text-muted-foreground py-8">
-                        No scenes yet. Click "Add Scene" to get started.
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {scenes.map((scene, index) => (
-                          <Card key={scene.id} className="p-4">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className="font-medium">Scene {index + 1}</span>
-                                  <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded">
-                                    {scene.sceneType}
-                                  </span>
-                                </div>
-                                <div className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                                  <strong>AI Prompt:</strong> {scene.aiPrompt}
-                                </div>
-                                {scene.content.heading && (
-                                  <div className="text-xs text-muted-foreground">
-                                    Heading: {scene.content.heading}
+                    </CardHeader>
+                    <CardContent>
+                      {scenes.length === 0 ? (
+                        <div className="text-center text-muted-foreground py-8">
+                          No scenes yet. Click "Add Scene" to get started.
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {scenes.map((scene, index) => (
+                            <Card key={scene.id} className="p-4">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="font-medium">Scene {index + 1}</span>
+                                    <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded">
+                                      {scene.sceneType}
+                                    </span>
                                   </div>
-                                )}
+                                  <div className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                                    <strong>AI Prompt:</strong> {scene.aiPrompt}
+                                  </div>
+                                  {scene.content.heading && (
+                                    <div className="text-xs text-muted-foreground">
+                                      Heading: {scene.content.heading}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex gap-1">
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => handleMoveScene(scene.id, "up")}
+                                    disabled={index === 0}
+                                    data-testid={`button-move-up-${scene.id}`}
+                                  >
+                                    <ArrowUp className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => handleMoveScene(scene.id, "down")}
+                                    disabled={index === scenes.length - 1}
+                                    data-testid={`button-move-down-${scene.id}`}
+                                  >
+                                    <ArrowDown className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => handleEditScene(scene)}
+                                    data-testid={`button-edit-${scene.id}`}
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => handleDeleteScene(scene.id)}
+                                    data-testid={`button-delete-${scene.id}`}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="flex gap-1">
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => handleMoveScene(scene.id, "up")}
-                                  disabled={index === 0}
-                                  data-testid={`button-move-up-${scene.id}`}
-                                >
-                                  <ArrowUp className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => handleMoveScene(scene.id, "down")}
-                                  disabled={index === scenes.length - 1}
-                                  data-testid={`button-move-down-${scene.id}`}
-                                >
-                                  <ArrowDown className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => handleEditScene(scene)}
-                                  data-testid={`button-edit-${scene.id}`}
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => handleDeleteScene(scene.id)}
-                                  data-testid={`button-delete-${scene.id}`}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </Card>
-                        ))}
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Cinematic Mode: Section Builder */}
+                {mode === "cinematic" && (
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle>2. Build Story Sections (Cinematic Mode)</CardTitle>
+                          <CardDescription>
+                            Define narrative sections with per-section prompts and assets
+                          </CardDescription>
+                        </div>
+                        <Button
+                          onClick={() => {
+                            const newSection = {
+                              id: `section-${Date.now()}`,
+                              sectionType: "hero" as const,
+                              sectionPrompt: "",
+                              assetIds: [],
+                            };
+                            setSections([...sections, newSection]);
+                          }}
+                          data-testid="button-add-section"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Section
+                        </Button>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    </CardHeader>
+                    <CardContent>
+                      {sections.length === 0 ? (
+                        <div className="text-center text-muted-foreground py-8">
+                          No sections yet. Click "Add Section" to define your story structure.
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {sections.map((section, index) => (
+                            <Card key={section.id} className="p-4 border-2 border-primary/20">
+                              <div className="space-y-4">
+                                <div className="flex items-start justify-between gap-4">
+                                  <div className="flex-1 space-y-3">
+                                    <div className="flex items-center gap-2">
+                                      <Label className="text-base font-semibold">
+                                        Section {index + 1}
+                                      </Label>
+                                      <Select
+                                        value={section.sectionType}
+                                        onValueChange={(value) => {
+                                          const updated = [...sections];
+                                          updated[index].sectionType = value as any;
+                                          setSections(updated);
+                                        }}
+                                      >
+                                        <SelectTrigger className="w-48">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="hero">🎬 Hero</SelectItem>
+                                          <SelectItem value="problem">⚠️ Problem</SelectItem>
+                                          <SelectItem value="solution">✨ Solution</SelectItem>
+                                          <SelectItem value="proof">📊 Proof</SelectItem>
+                                          <SelectItem value="testimonial">💬 Testimonial</SelectItem>
+                                          <SelectItem value="closing">🎯 Closing</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label htmlFor={`section-prompt-${section.id}`}>
+                                        Cinematic Direction for This Section
+                                      </Label>
+                                      <Textarea
+                                        id={`section-prompt-${section.id}`}
+                                        value={section.sectionPrompt}
+                                        onChange={(e) => {
+                                          const updated = [...sections];
+                                          updated[index].sectionPrompt = e.target.value;
+                                          setSections(updated);
+                                        }}
+                                        placeholder="Example: Open with slow dramatic rise from darkness. Use the crisis imagery to build tension (fast cuts, red tones). Overlay bold typography that fades in word-by-word. End with a hard cut to black."
+                                        rows={3}
+                                        className="resize-none"
+                                      />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label>Assets to Use (comma-separated IDs or keywords)</Label>
+                                      <Input
+                                        value={section.assetIds.join(", ")}
+                                        onChange={(e) => {
+                                          const updated = [...sections];
+                                          updated[index].assetIds = e.target.value
+                                            .split(",")
+                                            .map(id => id.trim())
+                                            .filter(Boolean);
+                                          setSections(updated);
+                                        }}
+                                        placeholder="e.g., hero-image-1, video-intro, crisis-graph"
+                                      />
+                                      <p className="text-xs text-muted-foreground">
+                                        Reference assets from Content Library by ID or keyword
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex gap-1">
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() => {
+                                        if (index === 0) return;
+                                        const updated = [...sections];
+                                        [updated[index], updated[index - 1]] = [updated[index - 1], updated[index]];
+                                        setSections(updated);
+                                      }}
+                                      disabled={index === 0}
+                                      data-testid={`button-move-section-up-${section.id}`}
+                                    >
+                                      <ArrowUp className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() => {
+                                        if (index === sections.length - 1) return;
+                                        const updated = [...sections];
+                                        [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+                                        setSections(updated);
+                                      }}
+                                      disabled={index === sections.length - 1}
+                                      data-testid={`button-move-section-down-${section.id}`}
+                                    >
+                                      <ArrowDown className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() => {
+                                        setSections(sections.filter(s => s.id !== section.id));
+                                        toast({ title: "Section removed" });
+                                      }}
+                                      data-testid={`button-delete-section-${section.id}`}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Portfolio-Level AI Orchestration */}
                 <Card>
@@ -547,56 +704,95 @@ export default function PortfolioBuilder() {
                       <div>
                         <CardTitle>3. Portfolio Orchestration</CardTitle>
                         <CardDescription>
-                          Choose how AI assists with your portfolio creation
+                          Choose your creative workflow mode
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-2">
-                        <label className="text-sm font-medium">AI Director Mode</label>
                         <Button
-                          variant={useAiDirector ? "default" : "outline"}
+                          variant={mode === "hybrid" ? "default" : "outline"}
                           size="sm"
-                          onClick={() => setUseAiDirector(!useAiDirector)}
-                          data-testid="toggle-ai-director-mode"
+                          onClick={() => setMode("hybrid")}
+                          data-testid="toggle-hybrid-mode"
                         >
-                          {useAiDirector ? "Full AI" : "Hybrid"}
+                          ✏️ Hybrid
+                        </Button>
+                        <Button
+                          variant={mode === "cinematic" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setMode("cinematic")}
+                          data-testid="toggle-cinematic-mode"
+                        >
+                          🎬 Cinematic
                         </Button>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {useAiDirector ? (
+                    {mode === "cinematic" ? (
                       <div className="space-y-3">
-                        <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-                          <h4 className="font-medium mb-2">🎬 Full AI Director Mode</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Gemini will orchestrate the ENTIRE portfolio: scene selection, ordering, timing, transitions, and effects.
-                            You provide content + vision, AI handles cinematic execution.
+                        <div className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
+                          <h4 className="font-medium mb-2 flex items-center gap-2">
+                            🎬 Cinematic Mode
+                            <span className="text-xs px-2 py-0.5 bg-purple-500/20 rounded">Film Director</span>
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Gemini becomes a film director. You define story sections (hero, problem, solution, etc.) with cinematic directions.
+                            AI orchestrates the visual storytelling: camera movements, pacing, transitions, effects.
+                          </p>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <div>• Define sections above with narrative intent</div>
+                            <div>• Provide per-section cinematic directions</div>
+                            <div>• Reference assets from Content Library</div>
+                            <div>• AI handles scene generation, timing, and choreography</div>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="global-cinematic-prompt">Global Cinematic Vision</Label>
+                          <Textarea
+                            id="global-cinematic-prompt"
+                            value={portfolioAiPrompt}
+                            onChange={(e) => setPortfolioAiPrompt(e.target.value)}
+                            placeholder="Example: This portfolio tells a transformation story. Open with darkness and crisis (fast, tense). Transition to hope with slow confident movements. Build to proof with energetic reveals. Close contemplatively with a fade to black. Maintain high contrast, cinematic color grading throughout."
+                            rows={6}
+                            data-testid="textarea-portfolio-ai-prompt"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Overarching creative direction that guides all sections
                           </p>
                         </div>
-                        <Textarea
-                          value={portfolioAiPrompt}
-                          onChange={(e) => setPortfolioAiPrompt(e.target.value)}
-                          placeholder="Example: Create a dramatic transformation narrative. Start with the crisis (dark, fast), transition to the solution (slow, authoritative), showcase proof with energy (fast zooms, bright), then close contemplatively (slow fade to black). Use the entire content catalog to tell this story."
-                          rows={6}
-                          data-testid="textarea-portfolio-ai-prompt"
-                        />
                       </div>
                     ) : (
                       <div className="space-y-3">
                         <div className="p-4 bg-secondary/50 rounded-lg border">
-                          <h4 className="font-medium mb-2">✏️ Hybrid Mode (Current)</h4>
-                          <p className="text-sm text-muted-foreground">
-                            You manually build scenes above, AI enhances each one individually based on your per-scene prompts.
-                            You control structure, AI refines execution.
+                          <h4 className="font-medium mb-2 flex items-center gap-2">
+                            ✏️ Hybrid Mode
+                            <span className="text-xs px-2 py-0.5 bg-secondary rounded">Manual + AI</span>
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            You manually build scenes above with full control over structure and content.
+                            AI enhances each scene individually based on your per-scene prompts.
+                          </p>
+                          <div className="text-xs text-muted-foreground space-y-1">
+                            <div>• Add scenes manually with scene-level AI prompts</div>
+                            <div>• AI refines each scene's execution independently</div>
+                            <div>• You control order, types, and content</div>
+                            <div>• Global prompt provides overall aesthetic guidance</div>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="global-hybrid-prompt">Global Enhancement Guidance</Label>
+                          <Textarea
+                            id="global-hybrid-prompt"
+                            value={portfolioAiPrompt}
+                            onChange={(e) => setPortfolioAiPrompt(e.target.value)}
+                            placeholder="Example: Create smooth transitions between scenes. Use crossfades for emotional moments, quick cuts for energy. Maintain a dark, cinematic aesthetic throughout."
+                            rows={4}
+                            data-testid="textarea-portfolio-ai-prompt"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Overall aesthetic and transition guidance for all scenes
                           </p>
                         </div>
-                        <Textarea
-                          value={portfolioAiPrompt}
-                          onChange={(e) => setPortfolioAiPrompt(e.target.value)}
-                          placeholder="Example: Create smooth transitions between scenes. Use crossfades for emotional moments, quick cuts for energy. Maintain a dark, cinematic aesthetic throughout."
-                          rows={4}
-                          data-testid="textarea-portfolio-ai-prompt"
-                        />
                       </div>
                     )}
                   </CardContent>
