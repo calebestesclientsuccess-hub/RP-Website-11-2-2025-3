@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from "wouter";
 import { Moon, Sun, Menu, X, Contrast } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
@@ -26,6 +26,17 @@ export function Navbar() {
     shouldRender: !themeToggleLoading && themeToggleEnabled
   });
 
+  // Close menu on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [mobileMenuOpen]);
+
   const isActivePath = (path: string) => {
     if (path === "/") return location === "/";
     return location.startsWith(path);
@@ -44,6 +55,8 @@ export function Navbar() {
         )}
         onFocus={() => setIsSkipLinkFocused(true)}
         onBlur={() => setIsSkipLinkFocused(false)}
+        role="link"
+        aria-label="Skip to main content"
       >
         Skip to main content
       </a>
@@ -53,7 +66,7 @@ export function Navbar() {
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
             <div className="flex items-center justify-between h-20 md:h-22">
               {/* Logo */}
-              <Link href="/" className="flex items-center gap-2 hover-elevate rounded-md px-2 py-1 transition-all" data-testid="link-home">
+              <Link href="/" className="flex items-center gap-2 hover-elevate rounded-md px-2 py-1 transition-all" data-testid="link-home" role="link" aria-label="Go to homepage">
                 <img
                   src={theme === "dark" ? logoWhite : logoBlack}
                   alt="Revenue Party Logo"
@@ -65,7 +78,7 @@ export function Navbar() {
               </Link>
 
               {/* Desktop Navigation */}
-              <div className="hidden md:flex items-center gap-6">
+              <div className="hidden md:flex items-center gap-6" role="list">
                 <Link
                   href="/problem"
                   className={`px-4 py-2 text-sm font-medium transition-colors ${
@@ -74,6 +87,7 @@ export function Navbar() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                   data-testid="link-problem"
+                  role="listitem"
                 >
                   The Problem
                 </Link>
@@ -85,6 +99,7 @@ export function Navbar() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                   data-testid="link-gtm-engine"
+                  role="listitem"
                 >
                   The Solution
                 </Link>
@@ -96,6 +111,7 @@ export function Navbar() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                   data-testid="link-results"
+                  role="listitem"
                 >
                   Results & Case Studies
                 </Link>
@@ -107,6 +123,7 @@ export function Navbar() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                   data-testid="link-why-us"
+                  role="listitem"
                 >
                   Why Party?
                 </Link>
@@ -118,6 +135,7 @@ export function Navbar() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                   data-testid="link-pricing"
+                  role="listitem"
                 >
                   Pricing
                 </Link>
@@ -129,6 +147,7 @@ export function Navbar() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                   data-testid="link-blog"
+                  role="listitem"
                 >
                   Articles
                 </Link>
@@ -140,6 +159,7 @@ export function Navbar() {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                   data-testid="link-branding"
+                  role="listitem"
                 >
                   Branding
                 </Link>
@@ -147,7 +167,7 @@ export function Navbar() {
 
               {/* Right Side - CTA & Theme Toggle */}
               <div className="flex items-center gap-2">
-                <Link href="/audit">
+                <Link href="/audit" role="link" aria-label="Schedule a GTM Audit">
                   <Button
                     size="default"
                     className="hidden md:inline-flex"
@@ -226,7 +246,7 @@ export function Navbar() {
             >
               <div className="px-4 py-4 space-y-2" style={{
                 animation: mobileMenuOpen ? 'slideDown 0.4s ease-out' : 'none'
-              }}>
+              }} role="list">
                 <Link
                   href="/problem"
                   className={`block px-4 py-3 rounded-md text-base font-medium transition-all duration-200 touch-target-button ${
@@ -236,6 +256,7 @@ export function Navbar() {
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid="mobile-link-problem"
+                  role="listitem"
                 >
                   The Problem
                 </Link>
@@ -248,6 +269,7 @@ export function Navbar() {
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid="mobile-link-gtm-engine"
+                  role="listitem"
                 >
                   The Solution
                 </Link>
@@ -260,6 +282,7 @@ export function Navbar() {
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid="mobile-link-results"
+                  role="listitem"
                 >
                   Results & Case Studies
                 </Link>
@@ -272,6 +295,7 @@ export function Navbar() {
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid="mobile-link-why-us"
+                  role="listitem"
                 >
                   Why Party?
                 </Link>
@@ -284,6 +308,7 @@ export function Navbar() {
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid="mobile-link-pricing"
+                  role="listitem"
                 >
                   Pricing
                 </Link>
@@ -296,6 +321,7 @@ export function Navbar() {
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid="mobile-link-blog"
+                  role="listitem"
                 >
                   Articles
                 </Link>
@@ -308,11 +334,12 @@ export function Navbar() {
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid="mobile-link-branding"
+                  role="listitem"
                 >
                   Branding
                 </Link>
 
-                <Link href="/audit" onClick={() => setMobileMenuOpen(false)} className="block mt-4">
+                <Link href="/audit" onClick={() => setMobileMenuOpen(false)} className="block mt-4" role="listitem" aria-label="Schedule a GTM Audit">
                   <Button
                     size="default"
                     className="w-full touch-target-button"

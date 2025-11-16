@@ -471,15 +471,32 @@
 
 @layer base {
   * {
-    border-color: hsl(var(--border));
+    @apply border-border;
   }
 
   body {
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    @apply bg-background text-foreground;
+  }
+
+  /* Keyboard focus indicators - WCAG 2.1 Success Criterion 2.4.7 */
+  *:focus {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+
+  /* Exception for mouse users */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Enhanced focus for interactive elements */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 3px solid hsl(var(--primary));
+    outline-offset: 2px;
   }
 
   /* Global body text color rule - white in dark mode, black in light mode */
@@ -747,7 +764,7 @@ button:focus-visible,
 a:focus-visible {
   outline: 3px solid hsl(var(--primary));
   outline-offset: 3px;
-  box-shadow: 
+  box-shadow:
     0 0 0 3px hsl(var(--background)),
     0 0 0 6px hsl(var(--primary));
 }
@@ -767,10 +784,10 @@ select:focus-visible {
     outline-width: 4px;
     outline-offset: 3px;
   }
-  
+
   button:focus-visible,
   a:focus-visible {
-    box-shadow: 
+    box-shadow:
       0 0 0 4px hsl(var(--background)),
       0 0 0 8px hsl(var(--primary));
   }
@@ -1629,7 +1646,7 @@ html:not(.dark) .badge-texture[class*="bg-destructive"] {
   animation: watercolor-drift 15s ease-in-out infinite;
 }
 
-/* Apply soft watercolor to cards with subtle animation */
+/* Apply watercolor to cards with subtle animation */
 html:not(.dark) .shadcn-card {
   background: linear-gradient(
     135deg,

@@ -50,6 +50,7 @@ import { CampaignBootstrap } from "@/lib/campaignCache";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useKeyboardShortcuts, GLOBAL_SHORTCUTS } from "@/hooks/use-keyboard-shortcuts";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
+import { SkipLink } from "./components/SkipLink";
 
 // Lazy load admin pages (reduces initial bundle by ~300KB)
 const LoginPageLazy = lazy(() => import("@/pages/admin/LoginPage"));
@@ -243,15 +244,7 @@ function App() {
             <TooltipProvider>
               <CampaignBootstrap>
                 <ErrorBoundary>
-                  {/* Skip to content link for accessibility */}
-                  <a
-                    href="#main-content"
-                    className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg"
-                    data-testid="skip-to-content"
-                  >
-                    Skip to main content
-                  </a>
-
+                  <SkipLink />
                   <div className="min-h-screen bg-background text-foreground">
                     <Navbar />
                     <main id="main-content" role="main" aria-label="Main content region">
