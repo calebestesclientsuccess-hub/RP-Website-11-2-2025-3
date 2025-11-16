@@ -933,49 +933,114 @@ For each scene, verify ALL 37 controls are present with valid values:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ANIMATION & TIMING (8 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ entryEffect - valid enum value
-✓ entryDuration - number >= 0.8
-✓ entryDelay - number 0-2
-✓ entryEasing - valid enum value
-✓ exitEffect - valid enum value
-✓ exitDuration - number >= 0.6
-✓ exitDelay - number 0-2
-✓ exitEasing - valid enum value
+✓ entryEffect - valid enum value (fade, slide-up, slide-down, zoom-in, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus, cross-fade, sudden)
+✓ entryDuration - number >= 0.8s (recommend 1.2s+ for visibility)
+✓ entryDelay - number 0-2s
+✓ entryEasing - valid enum value (linear, ease, ease-out, power1-4, back, elastic, bounce)
+✓ exitEffect - valid enum value (fade, slide-up, slide-down, zoom-out, dissolve, rotate-out, flip-out, scale-blur, cross-fade)
+✓ exitDuration - number >= 0.6s (typically 20% faster than entry)
+✓ exitDelay - number 0-2s
+✓ exitEasing - valid enum value (linear, ease, ease-in, power1-4, back, elastic, bounce)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VISUAL FOUNDATION (2 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ backgroundColor - valid hex code
-✓ textColor - valid hex code (contrasts with background)
+✓ backgroundColor - valid hex code (#000000 to #ffffff)
+✓ textColor - valid hex code (MUST contrast with background - light text on dark bg or vice versa)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SCROLL DEPTH EFFECTS (3 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ parallaxIntensity - number 0-1
-✓ scrollSpeed - "slow" | "normal" | "fast"
-✓ animationDuration - number 0.5-10
+✓ parallaxIntensity - number 0.0-1.0 (set to 0 if scaleOnScroll is true)
+✓ scrollSpeed - "slow" | "normal" | "fast" (exact string match required)
+✓ animationDuration - number 0.5-10s
 
-[Continue for all 37 controls...]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPOGRAPHY (4 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ headingSize - "4xl" | "5xl" | "6xl" | "7xl" | "8xl"
+✓ bodySize - "base" | "lg" | "xl" | "2xl"
+✓ fontWeight - "normal" | "medium" | "semibold" | "bold"
+✓ alignment - "left" | "center" | "right"
 
-CONFLICT DETECTION:
-1. parallax + scaleOnScroll conflict (MUST set parallaxIntensity to 0 if scaleOnScroll is true)
-2. Color contrast issues (backgroundColor vs textColor)
-3. Invalid asset IDs (must be from placeholder list)
-4. Duration thresholds (entryDuration < 1.0s may be too fast for visibility)
-5. Pacing issues (all scenes same speed = no rhythm)
-6. Transition flow (exit effect of Scene N should complement entry of Scene N+1)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCROLL INTERACTION (3 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ fadeOnScroll - boolean (true/false)
+✓ scaleOnScroll - boolean (MUST be false if parallaxIntensity > 0)
+✓ blurOnScroll - boolean (recommend false for performance)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MULTI-ELEMENT TIMING (2 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ staggerChildren - number 0.0-1.0s
+✓ layerDepth - number 0-10
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADVANCED MOTION (3 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ transformOrigin - string (e.g., "center center", "top left")
+✓ overflowBehavior - "visible" | "hidden" | "auto"
+✓ backdropBlur - "none" | "sm" | "md" | "lg" | "xl"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VISUAL BLENDING (2 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ mixBlendMode - "normal" | "multiply" | "screen" | "overlay" | "difference" | "exclusion"
+✓ enablePerspective - boolean (true for 3D rotations, false for flat)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CUSTOM STYLING (3 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ customCSSClasses - string (space-separated Tailwind classes or empty "")
+✓ textShadow - boolean
+✓ textGlow - boolean
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VERTICAL SPACING (2 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ paddingTop - "none" | "sm" | "md" | "lg" | "xl" | "2xl"
+✓ paddingBottom - "none" | "sm" | "md" | "lg" | "xl" | "2xl"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MEDIA PRESENTATION (3 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ mediaPosition - "center" | "top" | "bottom" | "left" | "right"
+✓ mediaScale - "cover" | "contain" | "fill"
+✓ mediaOpacity - number 0.0-1.0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GRADIENT BACKGROUNDS (2 controls - nullable)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ gradientColors - array of hex codes or undefined (if array, must have 2+ colors)
+✓ gradientDirection - string or undefined (if set, must be valid Tailwind gradient direction)
+
+CRITICAL CONFLICT DETECTION:
+1. ⚠️ parallax + scaleOnScroll conflict (MUST set parallaxIntensity to 0 if scaleOnScroll is true)
+2. ⚠️ Color contrast issues (backgroundColor vs textColor - must be distinguishable)
+3. ⚠️ Invalid placeholder IDs (must be from: ${getAllPlaceholderIds().join(', ')})
+4. ⚠️ Duration thresholds (entryDuration < 1.0s = too fast, recommend 1.2s+)
+5. ⚠️ Pacing monotony (all scenes same speed = no rhythm variation)
+6. ⚠️ Transition flow (exit effect of Scene N should complement entry of Scene N+1)
+7. ⚠️ blurOnScroll conflicts (cannot combine with parallax or scale effects)
+8. ⚠️ Gradient validation (if gradientColors set, gradientDirection must also be set)
 
 PLACEHOLDER SYSTEM VALIDATION:
-✓ All assetIds reference valid placeholder IDs (image-1 through image-10, video-1 through video-5, etc.)
-✓ No references to user asset IDs (those come later via asset mapping)
+CRITICAL: All assetIds MUST reference ONLY these placeholder IDs:
+- Images: ${PLACEHOLDER_CONFIG.images.join(', ')}
+- Videos: ${PLACEHOLDER_CONFIG.videos.join(', ')}
+- Quotes: ${PLACEHOLDER_CONFIG.quotes.join(', ')}
 
-Return a JSON array of issues found:
+DO NOT reference user asset IDs. The user will map their real content to these placeholders later.
+
+Return a JSON array of issues found (be thorough - check EVERY scene for EVERY control):
 {
   "issues": [
     {"sceneIndex": 0, "field": "parallaxIntensity", "problem": "Conflicts with scaleOnScroll: true", "suggestion": "Set parallaxIntensity to 0"},
     {"sceneIndex": 1, "field": "scrollSpeed", "problem": "Missing required field", "suggestion": "Add scrollSpeed: 'normal'"},
-    {"sceneIndex": 2, "field": "assetIds", "problem": "References non-existent asset 'user-image-1'", "suggestion": "Use placeholder ID like 'image-1'"},
-    ...
+    {"sceneIndex": 2, "field": "assetIds", "problem": "References non-existent placeholder 'user-image-1'", "suggestion": "Use valid placeholder ID like 'image-1'"},
+    {"sceneIndex": 3, "field": "entryDuration", "problem": "Value 0.5s too fast for visibility", "suggestion": "Increase to 1.2s for noticeable effect"},
+    {"sceneIndex": 4, "field": "backgroundColor", "problem": "Same as textColor (#ffffff)", "suggestion": "Change backgroundColor to '#0a0a0a' for contrast"}
   ]
 }`;
 
