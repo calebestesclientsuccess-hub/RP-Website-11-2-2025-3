@@ -1824,31 +1824,54 @@ Your explanation should be conversational and reference specific scene numbers.`
             properties: {
               explanation: {
                 type: Type.STRING,
-                description: "Plain English explanation of what changes you made and why"
+                description: "Plain English explanation of changes made"
               },
-              refinedScenes: {
+              scenes: {
                 type: Type.ARRAY,
-                description: "The complete refined scenes array with your improvements",
+                description: "Complete refined scenes array with ALL original structure preserved",
                 items: {
                   type: Type.OBJECT,
                   properties: {
-                    id: { type: Type.STRING },
-                    sceneType: { type: Type.STRING },
-                    aiPrompt: { type: Type.STRING },
+                    type: { type: Type.STRING },
                     content: { type: Type.OBJECT },
-                    director: { type: Type.OBJECT }
-                  }
+                    director: { type: Type.OBJECT },
+                    layout: { type: Type.STRING }
+                  },
+                  required: ["type", "content", "director"]
                 }
               }
             },
-            required: ["explanation", "refinedScenes"]
+            required: ["explanation", "scenes"]
           }
         }
       });
 
       const result = JSON.parse(geminiResponse.text || '{}');
+      enhancedScenes = result.scenes || [];
+      aiExplanation = result.explanation || "Scenes refined successfully";
 
-      return res.json(result);
+      console.log(`[Portfolio Enhanced] Gemini refined ${enhancedScenes.length} scenes`);
+
+      // CRITICAL VALIDATION: Check if scenes are actually populated
+      if (enhancedScenes.length > 0) {
+        const firstScene = enhancedScenes[0];
+        if (!firstScene.type || !firstScene.content || !firstScene.director) {
+          console.error('[Portfolio Enhanced] ❌ CRITICAL ERROR: Gemini returned empty scene objects!');
+          console.error('[Portfolio Enhanced] First scene structure:', JSON.stringify(firstScene, null, 2));
+          console.error('[Portfolio Enhanced] Full Gemini response:', geminiResponse.text?.substring(0, 1000));
+
+          // FALLBACK: Use original scenes and warn the user
+          enhancedScenes = parsedScenes; // Use parsedScenes here
+          aiExplanation = "⚠️ AI refinement encountered an error and returned invalid data. Your original scenes have been preserved. Please try rephrasing your request or contact support if this persists.";
+
+          console.log('[Portfolio Enhanced] 🔄 Falling back to original scenes to prevent data loss');
+        }
+      }
+
+      return res.json({
+        explanation: aiExplanation,
+        scenes: enhancedScenes,
+      });
     } catch (error) {
       console.error("Conversational refinement error:", error);
       return res.status(500).json({
@@ -1875,40 +1898,40 @@ Your explanation should be conversational and reference specific scene numbers.`
     });
 
     // Basic validation of required fields
-    const { 
-      projectId, 
-      newProjectTitle, 
-      newProjectSlug, 
-      newProjectClient, 
-      scenes, 
-      portfolioAiPrompt, 
-      currentPrompt, 
-      conversationHistory = [], 
-      currentSceneJson 
+    const {
+      projectId,
+      newProjectTitle,
+      newProjectSlug,
+      newProjectClient,
+      scenes,
+      portfolioAiPrompt,
+      currentPrompt,
+      conversationHistory = [],
+      currentSceneJson
     } = req.body;
 
     // Determine if this is refinement mode
     const isRefinementMode = !!(conversationHistory.length > 0 || currentSceneJson);
-    
-    console.log('[Portfolio Enhanced] Mode detection:', { 
+
+    console.log('[Portfolio Enhanced] Mode detection:', {
       isRefinementMode,
       conversationHistoryLength: conversationHistory.length,
-      hasCurrentSceneJson: !!currentSceneJson 
+      hasCurrentSceneJson: !!currentSceneJson
     });
 
     // Validate prompt based on mode
     const promptToValidate = isRefinementMode ? currentPrompt : portfolioAiPrompt;
 
     if (!promptToValidate || !promptToValidate.trim()) {
-      console.error('[Portfolio Enhanced] Missing prompt:', { 
-        isRefinementMode, 
-        hasCurrentPrompt: !!currentPrompt, 
-        hasPortfolioPrompt: !!portfolioAiPrompt 
+      console.error('[Portfolio Enhanced] Missing prompt:', {
+        isRefinementMode,
+        hasCurrentPrompt: !!currentPrompt,
+        hasPortfolioPrompt: !!portfolioAiPrompt
       });
       return res.status(400).json({
         error: "Validation failed",
-        details: isRefinementMode 
-          ? "Please enter a message to refine your scenes" 
+        details: isRefinementMode
+          ? "Please enter a message to refine your scenes"
           : "Portfolio AI prompt is required"
       });
     }
@@ -1954,13 +1977,13 @@ Your explanation should be conversational and reference specific scene numbers.`
 
     let enhancedScenes: any[] = [];
     let aiExplanation = "";
+    let currentScenes: any[] = []; // Define currentScenes here
 
     if (isRefinementMode) {
       // REFINEMENT MODE: Use conversation API with Gemini
       console.log('[Portfolio Enhanced] REFINEMENT MODE: Using conversation API');
-      
+
       // Parse current scenes
-      let currentScenes: any[] = [];
       if (currentSceneJson) {
         try {
           currentScenes = JSON.parse(currentSceneJson);
@@ -2015,57 +2038,63 @@ RESPONSE FORMAT:
         currentPromptLength: currentPrompt.length
       });
 
-      try {
-        const geminiResponse = await aiClient.models.generateContent({
-          model: "gemini-2.5-pro",
-          contents: messages,
-          config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                explanation: {
-                  type: Type.STRING,
-                  description: "Plain English explanation of changes made"
-                },
-                scenes: {
-                  type: Type.ARRAY,
-                  description: "Complete refined scenes array",
-                  items: { type: Type.OBJECT }
-                }
+      const geminiResponse = await aiClient.models.generateContent({
+        model: "gemini-2.5-pro",
+        contents: messages,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              explanation: {
+                type: Type.STRING,
+                description: "Plain English explanation of changes made"
               },
-              required: ["explanation", "scenes"]
-            }
+              scenes: {
+                type: Type.ARRAY,
+                description: "Complete refined scenes array with ALL original structure preserved",
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    type: { type: Type.STRING },
+                    content: { type: Type.OBJECT },
+                    director: { type: Type.OBJECT },
+                    layout: { type: Type.STRING }
+                  },
+                  required: ["type", "content", "director"]
+                }
+              }
+            },
+            required: ["explanation", "scenes"]
           }
-        });
-
-        const result = JSON.parse(geminiResponse.text || '{}');
-        enhancedScenes = result.scenes || [];
-        aiExplanation = result.explanation || "Scenes refined successfully";
-
-        console.log(`[Portfolio Enhanced] Gemini refined ${enhancedScenes.length} scenes`);
-        
-        // VALIDATION: Ensure Gemini returned ALL scenes
-        if (enhancedScenes.length !== currentScenes.length) {
-          console.error(`[Portfolio Enhanced] ❌ VALIDATION ERROR: Expected ${currentScenes.length} scenes, got ${enhancedScenes.length}`);
-          console.error('[Portfolio Enhanced] This is a critical error - Gemini did not return the complete scene array');
-          
-          return res.status(500).json({
-            error: "AI refinement error",
-            details: `Expected ${currentScenes.length} scenes but received ${enhancedScenes.length}. Please try again with a more specific request.`
-          });
         }
-      } catch (error) {
-        console.error('[Portfolio Enhanced] Gemini refinement failed:', error);
-        return res.status(500).json({
-          error: "AI refinement failed",
-          details: error instanceof Error ? error.message : "Unknown error"
-        });
+      });
+
+      const result = JSON.parse(geminiResponse.text || '{}');
+      enhancedScenes = result.scenes || [];
+      aiExplanation = result.explanation || "Scenes refined successfully";
+
+      console.log(`[Portfolio Enhanced] Gemini refined ${enhancedScenes.length} scenes`);
+
+      // CRITICAL VALIDATION: Check if scenes are actually populated
+      if (enhancedScenes.length > 0) {
+        const firstScene = enhancedScenes[0];
+        if (!firstScene.type || !firstScene.content || !firstScene.director) {
+          console.error('[Portfolio Enhanced] ❌ CRITICAL ERROR: Gemini returned empty scene objects!');
+          console.error('[Portfolio Enhanced] First scene structure:', JSON.stringify(firstScene, null, 2));
+          console.error('[Portfolio Enhanced] Full Gemini response:', geminiResponse.text?.substring(0, 1000));
+
+          // FALLBACK: Use original scenes and warn the user
+          enhancedScenes = currentScenes;
+          aiExplanation = "⚠️ AI refinement encountered an error and returned invalid data. Your original scenes have been preserved. Please try rephrasing your request or contact support if this persists.";
+
+          console.log('[Portfolio Enhanced] 🔄 Falling back to original scenes to prevent data loss');
+        }
       }
     } else {
       // INITIAL GENERATION MODE: Process scenes one-by-one
       console.log(`[Portfolio Enhanced] INITIAL MODE: Generating ${scenes.length} scenes`);
-      
+
       const { generateSceneWithGemini } = await import("./utils/gemini-client");
 
       for (let i = 0; i < scenes.length; i++) {
@@ -2097,7 +2126,7 @@ RESPONSE FORMAT:
             sceneConfig.content.body = scene.content.body || aiEnhanced.bodyText || "";
           } else if (sceneConfig.type === "image") {
             sceneConfig.content.url = scene.content.url || aiEnhanced.mediaUrl || "";
-            sceneConfig.content.alt = aiEnhanced.alt || "Image";
+            sceneConfig.content.alt = scene.content.alt || aiEnhanced.alt || "Image";
           } else if (sceneConfig.type === "quote") {
             sceneConfig.content.quote = scene.content.quote || aiEnhanced.quote || "";
             sceneConfig.content.author = scene.content.author || aiEnhanced.author || "";
@@ -2116,7 +2145,7 @@ RESPONSE FORMAT:
 
     // Save to database (only if we have a project to save to)
     let finalProjectId = projectId;
-    
+
     if (!isRefinementMode || !projectId) {
       // Create new project if needed
       if (!newProjectTitle || !newProjectSlug) {
