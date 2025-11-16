@@ -561,7 +561,7 @@ TRANSITION DESIGN RULES:
 1. CONTINUITY: Exit effect of Scene N should complement entry effect of Scene N+1
    - fade → fade (smooth)
    - slide-up → slide-up (maintaining direction)
-   - dissolve → fade (cinematic transition)
+   - dissolve → cross-fade (cinematic transition)
 
 2. PACING RHYTHM: Vary speeds to create musical flow
    - Hero (slow 2.5s) → Content (medium 1.2s) → Image (fast 0.8s) → Quote (slow 1.8s)
@@ -792,95 +792,175 @@ export async function generatePortfolioWithAI(
 
   while (retryCount < maxRetries) {
     try {
+      // This is the responseSchema for the Stage 1 'Artistic Director'
+      // (buildPortfolioPrompt) - PERFECTED ENFORCER
       stage1Response = await aiClient.models.generateContent({
-    model: "gemini-2.5-pro", // Pro model for complex cinematic reasoning
+        model: 'gemini-2.0-flash-exp', // Changed model to a more suitable one for this task
         contents: [{
-          role: "user",
+          role: 'user',
           parts: [{ text: prompt }]
         }],
         config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          scenes: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                sceneType: {
-                  type: Type.STRING,
-                  description: "Must be: text, image, video, quote, split, gallery, or fullscreen"
-                },
-                assetIds: {
-                  type: Type.ARRAY,
-                  items: { type: Type.STRING },
-                  description: "Asset IDs from the provided catalog. MUST reference existing IDs only."
-                },
-                layout: {
-                  type: Type.STRING,
-                  description: "Optional layout: default or reverse (for split scenes)"
-                },
-                director: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              scenes: {
+                type: Type.ARRAY,
+                items: {
                   type: Type.OBJECT,
                   properties: {
-                    entryDuration: { type: Type.NUMBER, description: "Entry animation duration in seconds (0.1-5)" },
-                    exitDuration: { type: Type.NUMBER, description: "Exit animation duration in seconds (0.1-5)" },
-                    animationDuration: { type: Type.NUMBER, description: "Main animation duration in seconds (0.1-10)" },
-                    entryDelay: { type: Type.NUMBER, description: "Entry delay in seconds (0-2)" },
-                    exitDelay: { type: Type.NUMBER, description: "Exit delay in seconds (0-2)" },
-                    backgroundColor: { type: Type.STRING, description: "Hex color code" },
-                    textColor: { type: Type.STRING, description: "Hex color code" },
-                    parallaxIntensity: { type: Type.NUMBER, description: "0-1, default 0.3" },
-                    scrollSpeed: { type: Type.STRING, description: "slow, normal, or fast" },
-                    entryEffect: { type: Type.STRING, description: "fade, slide-up, zoom-in, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus, cross-fade, sudden" },
-                    exitEffect: { type: Type.STRING, description: "fade, slide-up, slide-down, slide-left, slide-right, zoom-out, dissolve, rotate-out, flip-out, scale-blur, cross-fade" },
-                    entryEasing: { type: Type.STRING, description: "linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce" },
-                    exitEasing: { type: Type.STRING, description: "linear, ease, ease-in, ease-out, ease-in-out, power1, power2, power3, power4, back, elastic, bounce" },
-                    fadeOnScroll: { type: Type.BOOLEAN, description: "Enable fade effect during scroll" },
-                    scaleOnScroll: { type: Type.BOOLEAN, description: "Enable scale effect during scroll" },
-                    blurOnScroll: { type: Type.BOOLEAN, description: "Enable blur effect during scroll" },
-                    headingSize: { type: Type.STRING, description: "4xl, 5xl, 6xl, 7xl, or 8xl" },
-                    bodySize: { type: Type.STRING, description: "base, lg, xl, or 2xl" },
-                    fontWeight: { type: Type.STRING, description: "normal, medium, semibold, or bold" },
-                    alignment: { type: Type.STRING, description: "left, center, or right" },
-                    staggerChildren: { type: Type.NUMBER, description: "Delay between child animations in seconds (0-1)" },
-                    layerDepth: { type: Type.NUMBER, description: "Z-index for parallax layering (0-10)" },
-                    transformOrigin: { type: Type.STRING, description: "Transform origin: center center, top left, etc." },
-                    overflowBehavior: { type: Type.STRING, description: "visible, hidden, or auto" },
-                    backdropBlur: { type: Type.STRING, description: "Backdrop blur: none, sm, md, lg, xl" },
-                    mixBlendMode: { type: Type.STRING, description: "Blend mode: normal, multiply, screen, overlay, difference, exclusion" },
-                    customCSSClasses: { type: Type.STRING, description: "Space-separated custom CSS classes" },
-                    textShadow: { type: Type.BOOLEAN },
-                    textGlow: { type: Type.BOOLEAN },
-                    paddingTop: { type: Type.STRING },
-                    paddingBottom: { type: Type.STRING },
-                    mediaPosition: { type: Type.STRING, description: "center, top, bottom, left, right", nullable: true },
-                    mediaScale: { type: Type.STRING, description: "cover, contain, fill", nullable: true },
-                    mediaOpacity: { type: Type.NUMBER, description: "0.0-1.0, default 1.0" },
-                    gradientColors: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Array of hex colors", nullable: true },
-                    gradientDirection: { type: Type.STRING, description: "to-r, to-l, to-t, to-b, etc.", nullable: true },
+                    sceneType: {
+                      type: Type.STRING,
+                      description: "Must be: text, image, video, quote, split, gallery, or fullscreen"
+                    },
+                    assetIds: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING },
+                      description: "Array of valid placeholder IDs (e.g., ['placeholder-image-1'])."
+                    },
+                    layout: {
+                      type: Type.STRING,
+                      description: "Optional layout: default or reverse (for split scenes)."
+                    },
+                    director: {
+                      type: Type.OBJECT,
+                      properties: {
+                        // --- ANIMATION & TIMING (8 controls) ---
+                        entryEffect: { type: Type.STRING, description: "e.g., fade, slide-up, zoom-in" },
+                        entryDuration: { type: Type.NUMBER, description: "seconds, min 0.8" },
+                        entryDelay: { type: Type.NUMBER, description: "seconds, min 0" },
+                        entryEasing: { type: Type.STRING, description: "e.g., power2.out" },
+                        exitEffect: { type: Type.STRING, description: "e.g., fade, slide-down" },
+                        exitDuration: { type: Type.NUMBER, description: "seconds, min 0.6" },
+                        exitDelay: { type: Type.NUMBER, description: "seconds, min 0" },
+                        exitEasing: { type: Type.STRING, description: "e.g., power2.in" },
+
+                        // --- VISUAL FOUNDATION (2 controls) ---
+                        backgroundColor: { type: Type.STRING, description: "Hex code, e.g., #0a0a0a" },
+                        textColor: { type: Type.STRING, description: "Hex code, e.g., #ffffff" },
+
+                        // --- SCROLL DEPTH & DURATION (3 controls) ---
+                        parallaxIntensity: { type: Type.NUMBER, description: "0.0-1.0. Set to 0 if scaleOnScroll is true" },
+                        scrollSpeed: { type: Type.STRING, description: "slow, normal, or fast" },
+                        animationDuration: { type: Type.NUMBER, description: "seconds, min 0.5" },
+
+                        // --- TYPOGRAPHY (4 controls) ---
+                        headingSize: { type: Type.STRING, description: "4xl, 5xl, 6xl, 7xl, or 8xl" },
+                        bodySize: { type: Type.STRING, description: "base, lg, xl, or 2xl" },
+                        fontWeight: { type: Type.STRING, description: "normal, medium, semibold, or bold" },
+                        alignment: { type: Type.STRING, description: "left, center, or right" },
+
+                        // --- SCROLL INTERACTION (3 controls) ---
+                        fadeOnScroll: { type: Type.BOOLEAN },
+                        scaleOnScroll: { type: Type.BOOLEAN },
+                        blurOnScroll: { type: Type.BOOLEAN },
+
+                        // --- MULTI-ELEMENT TIMING (2 controls) ---
+                        staggerChildren: { type: Type.NUMBER, description: "seconds, min 0.0" },
+                        layerDepth: { type: Type.NUMBER, description: "0-10" },
+
+                        // --- ADVANCED MOTION (3 controls) ---
+                        transformOrigin: { type: Type.STRING, description: "e.g., center center" },
+                        overflowBehavior: { type: Type.STRING, description: "visible, hidden, or auto" },
+                        backdropBlur: { type: Type.STRING, description: "none, sm, md, lg, xl" },
+
+                        // --- VISUAL BLENDING (2 controls) ---
+                        mixBlendMode: { type: Type.STRING, description: "e.g., normal, multiply" },
+                        enablePerspective: { type: Type.BOOLEAN },
+
+                        // --- CUSTOM STYLING & TEXT (3 controls) ---
+                        customCSSClasses: { type: Type.STRING, description: "e.g., 'shadow-xl' or ''" },
+                        textShadow: { type: Type.BOOLEAN },
+                        textGlow: { type: Type.BOOLEAN },
+
+                        // --- VERTICAL SPACING (2 controls) ---
+                        paddingTop: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
+                        paddingBottom: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
+
+                        // --- MEDIA PRESENTATION (3 controls) ---
+                        // These are now required BUT nullable to allow for 'text' scenes
+                        mediaPosition: {
+                          type: Type.STRING,
+                          description: "center, top, bottom, left, right, or null for text scenes",
+                          nullable: true
+                        },
+                        mediaScale: {
+                          type: Type.STRING,
+                          description: "cover, contain, fill, or null for text scenes",
+                          nullable: true
+                        },
+                        mediaOpacity: {
+                          type: Type.NUMBER,
+                          description: "0.0-1.0, or null for text scenes",
+                          nullable: true
+                        },
+
+                        // --- GRADIENT BACKGROUNDS (2 controls) ---
+                        // These are required BUT nullable
+                        gradientColors: {
+                          type: Type.ARRAY,
+                          items: { type: Type.STRING },
+                          description: "Array of hex colors or null",
+                          nullable: true
+                        },
+                        gradientDirection: {
+                          type: Type.STRING,
+                          description: "e.g., to-r, to-br, or null",
+                          nullable: true
+                        },
+                      },
+                      //
+                      // --- THE 37-CONTROL ENFORCER ---
+                      // This 'required' array now matches the 37-control mandate.
+                      // All 37 fields must be present.
+                      //
+                      required: [
+                        // Animation & Timing (8)
+                        "entryEffect", "entryDuration", "entryDelay", "entryEasing",
+                        "exitEffect", "exitDuration", "exitDelay", "exitEasing",
+
+                        // Visual Foundation (2)
+                        "backgroundColor", "textColor",
+
+                        // Scroll Depth & Duration (3)
+                        "parallaxIntensity", "scrollSpeed", "animationDuration",
+
+                        // Typography (4)
+                        "headingSize", "bodySize", "fontWeight", "alignment",
+
+                        // Scroll Interaction (3)
+                        "fadeOnScroll", "scaleOnScroll", "blurOnScroll",
+
+                        // Multi-Element Timing (2)
+                        "staggerChildren", "layerDepth",
+
+                        // Advanced Motion (3)
+                        "transformOrigin", "overflowBehavior", "backdropBlur",
+
+                        // Visual Blending (2)
+                        "mixBlendMode", "enablePerspective",
+
+                        // Custom Styling & Text (3)
+                        "customCSSClasses", "textShadow", "textGlow",
+
+                        // Vertical Spacing (2)
+                        "paddingTop", "paddingBottom",
+
+                        // Media Presentation (3) - NOW REQUIRED (but nullable)
+                        "mediaPosition", "mediaScale", "mediaOpacity",
+
+                        // Gradient Backgrounds (2) - NOW REQUIRED (but nullable)
+                        "gradientColors", "gradientDirection"
+                      ]
+                    }
                   },
-                  required: [
-                    "entryDuration", "exitDuration", "entryDelay", "exitDelay",
-                    "backgroundColor", "textColor", "parallaxIntensity",
-                    "scrollSpeed", "animationDuration", "entryEffect", "exitEffect", "entryEasing", "exitEasing",
-                    "headingSize", "bodySize", "fontWeight", "alignment",
-                    "fadeOnScroll", "scaleOnScroll", "blurOnScroll",
-                    "staggerChildren", "layerDepth", "transformOrigin",
-                    "overflowBehavior", "backdropBlur", "mixBlendMode",
-                    "enablePerspective", "customCSSClasses",
-                    "textShadow", "textGlow", "paddingTop", "paddingBottom",
-                    "mediaPosition", "mediaScale", "mediaOpacity"
-                  ]
+                  required: ["sceneType", "assetIds", "director"]
                 }
-              },
-              required: ["sceneType", "assetIds", "director"]
-            }
+              }
+            },
+            required: ["scenes"]
           }
-        },
-        required: ["scenes"]
-      }
         }
       });
       break; // Success, exit retry loop
@@ -909,55 +989,6 @@ export async function generatePortfolioWithAI(
     throw new Error('Invalid response structure from AI: missing scenes array');
   }
 
-  // Check for undefined fields in director config and add defaults if missing
-  result.scenes.forEach((scene: GeneratedScene) => {
-    if (!scene.director) {
-      scene.director = {}; // Initialize if completely missing
-    }
-    // Ensure all required fields from the schema are present, even if they are nullable and not provided by AI
-    const requiredDirectorFields = [
-      "entryDuration", "exitDuration", "entryDelay", "exitDelay",
-      "backgroundColor", "textColor", "parallaxIntensity",
-      "scrollSpeed", "animationDuration", "entryEffect", "exitEffect", "entryEasing", "exitEasing",
-      "headingSize", "bodySize", "fontWeight", "alignment",
-      "fadeOnScroll", "scaleOnScroll", "blurOnScroll",
-      "staggerChildren", "layerDepth", "transformOrigin",
-      "overflowBehavior", "backdropBlur", "mixBlendMode",
-      "enablePerspective", "customCSSClasses",
-      "textShadow", "textGlow", "paddingTop", "paddingBottom",
-      "mediaPosition", "mediaScale", "mediaOpacity"
-    ];
-    requiredDirectorFields.forEach(field => {
-      if (scene.director[field] === undefined || scene.director[field] === null) {
-        // Assign default values from DEFAULT_DIRECTOR_CONFIG or a sensible fallback
-        // Note: This part might need refinement based on specific field defaults
-        // For simplicity, we'll assign undefined if not present in DEFAULT_DIRECTOR_CONFIG for nullable fields
-        if (DEFAULT_DIRECTOR_CONFIG.hasOwnProperty(field)) {
-          scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field];
-        } else {
-          // Fallback for fields not explicitly in DEFAULT_DIRECTOR_CONFIG but required by schema
-          // This might require more specific handling based on field type
-          if (typeof field === 'boolean') scene.director[field] = false;
-          else if (typeof field === 'number') scene.director[field] = 0;
-          else scene.director[field] = ''; // Fallback to empty string for others
-        }
-      }
-    });
-
-    // Ensure gradient fields are handled if they were not explicitly set and are nullable
-    if (scene.director.gradientColors === undefined) {
-      scene.director.gradientColors = DEFAULT_DIRECTOR_CONFIG.gradientColors;
-    }
-    if (scene.director.gradientDirection === undefined) {
-      scene.director.gradientDirection = DEFAULT_DIRECTOR_CONFIG.gradientDirection;
-    }
-  });
-
-
-  // Calculate confidence score based on completeness
-  let confidenceScore = 100;
-  let confidenceFactors: string[] = [];
-
   // Check if all scenes have required fields
   const requiredSceneFields = ['sceneType', 'assetIds'];
   const requiredDirectorFields = [
@@ -972,6 +1003,30 @@ export async function generatePortfolioWithAI(
     'mediaPosition', 'mediaScale', 'mediaOpacity'
   ];
 
+  // Ensure all default values are applied if fields are missing from AI response
+  result.scenes.forEach((scene: GeneratedScene) => {
+    if (!scene.director) {
+      scene.director = {}; // Initialize if completely missing
+    }
+    // Apply defaults for all fields present in DEFAULT_DIRECTOR_CONFIG
+    for (const field in DEFAULT_DIRECTOR_CONFIG) {
+      if (scene.director[field] === undefined) {
+        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field];
+      }
+    }
+
+    // Explicitly handle nullable fields that might be set to null by AI
+    if (scene.director.mediaPosition === null) scene.director.mediaPosition = undefined;
+    if (scene.director.mediaScale === null) scene.director.mediaScale = undefined;
+    if (scene.director.mediaOpacity === null) scene.director.mediaOpacity = undefined;
+    if (scene.director.gradientColors === null) scene.director.gradientColors = undefined;
+    if (scene.director.gradientDirection === null) scene.director.gradientDirection = undefined;
+  });
+
+  // Calculate confidence score based on completeness
+  let confidenceScore = 100;
+  let confidenceFactors: string[] = [];
+
   result.scenes.forEach((scene: GeneratedScene, idx: number) => {
     // Check scene structure
     for (const field of requiredSceneFields) {
@@ -981,7 +1036,7 @@ export async function generatePortfolioWithAI(
       }
     }
 
-    // Check director configuration
+    // Check director configuration completeness against the 37 controls
     if (!scene.director) {
       confidenceScore -= 10;
       confidenceFactors.push(`Scene ${idx}: missing director config`);
@@ -1034,7 +1089,7 @@ You must validate the entire scene sequence against these non-negotiable technic
 
 The 37-Control Mandate: Every scene MUST contain all 37 director fields. There are no exceptions.
 
-The Nullable Mandate: The gradientColors and gradientDirection fields MUST be present, but their value can be null.
+The Nullable Mandate: The gradientColors and gradientDirection fields MUST be present, but their value can be null (represented as undefined in JSON). The mediaPosition, mediaScale, and mediaOpacity fields MUST also be present but can be null/undefined if not applicable (e.g., for text scenes).
 
 The Asset Mandate: The "No Asset Left Behind" rule MUST be obeyed. All placeholders must be used at least once.
 
@@ -1146,15 +1201,15 @@ VERTICAL SPACING (2 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MEDIA PRESENTATION (3 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ mediaPosition - (string) Must be a valid enum (e.g., "center", "top").
-✓ mediaScale - (string) Must be "cover", "contain", or "fill".
-✓ mediaOpacity - (number) Must be 0.0-1.0.
+✓ mediaPosition - (string | null) Must be a valid enum (e.g., "center", "top"), or null.
+✓ mediaScale - (string | null) Must be "cover", "contain", or "fill", or null.
+✓ mediaOpacity - (number | null) Must be 0.0-1.0, or null.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 GRADIENT BACKGROUNDS (2 controls)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ gradientColors - (array or null) Must be present. Must be an array of hex strings or null.
-✓ gradientDirection - (string or null) Must be present. Must be a valid direction string or null.
+✓ gradientColors - (array | null) Must be present. Must be an array of hex strings or null.
+✓ gradientDirection - (string | null) Must be present. Must be a valid direction string or null.
 
 CRITICAL CONFLICT DETECTION
 
@@ -1164,7 +1219,7 @@ You must also find these specific technical failures:
 
 !! CONFLICT !! - textShadow: true and textGlow: true in the same scene. (Only one can be active).
 
-!! CONFLICT !! - gradientColors is an array BUT gradientDirection is null. (If colors are set, direction must also be set).
+!! CONFLICT !! - gradientColors is an array (even empty) BUT gradientDirection is null or undefined. (If colors are set, direction must also be set).
 
 !! INVALID PLACEHOLDER !! - An assetIds string does not match an ID from the master list.
 
@@ -1185,31 +1240,31 @@ JSON
   "issues": [
     {
       "sceneIndex": 0,
-      "field": "parallaxIntensity",
+      "field": "director.parallaxIntensity",
       "problem": "!! CONFLICT !!: Conflicts with scaleOnScroll: true",
-      "suggestion": "Set parallaxIntensity to 0"
+      "suggestion": "Set scaleOnScroll to false"
     },
     {
       "sceneIndex": 1,
-      "field": "scrollSpeed",
+      "field": "director.animationDuration",
       "problem": "Missing required field. This is a 37-control violation.",
-      "suggestion": "Add scrollSpeed: 'normal'"
+      "suggestion": "Add animationDuration: 1.0"
     },
     {
       "sceneIndex": 2,
       "field": "assetIds",
-      "problem": "!! INVALID PLACEHOLDER !!: References non-existent placeholder 'user-image-1'",
+      "problem": "!! INVALID PLACEHOLDER !!: References non-existent placeholder 'image-10'",
       "suggestion": "Use a valid placeholder ID like 'image-1'"
     },
     {
       "sceneIndex": 4,
-      "field": "gradientDirection",
+      "field": "director.gradientDirection",
       "problem": "!! CONFLICT !!: gradientColors is set, but gradientDirection is null",
       "suggestion": "Set gradientDirection (e.g., 'to-br') or set gradientColors to null"
     },
     {
       "sceneIndex": 5,
-      "field": "textColor",
+      "field": "director.textColor",
       "problem": "!! IDENTICAL COLOR !!: textColor (#0a0a0a) is identical to backgroundColor (#0a0a0a)",
       "suggestion": "Change textColor (e.g., to '#ffffff') for visibility."
     }
@@ -1243,14 +1298,26 @@ JSON
               },
               required: ["sceneIndex", "field", "problem", "suggestion"]
             }
+          },
+          portfolioLevelIssues: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                issueType: { type: Type.STRING },
+                problem: { type: Type.STRING },
+                suggestion: { type: Type.STRING }
+              },
+              required: ["issueType", "problem", "suggestion"]
+            }
           }
         },
-        required: ["issues"]
+        required: ["issues", "portfolioLevelIssues"]
       }
     }
   });
 
-  const auditResult = JSON.parse(auditResponse.text || '{"issues":[]}');
+  const auditResult = JSON.parse(auditResponse.text || '{"issues":[], "portfolioLevelIssues":[]}');
   console.log(`[Portfolio Director] ✅ Stage 2 complete: Found ${auditResult.issues.length} issues`);
 
   // STAGE 3: Generate 10 Improvements
@@ -1365,7 +1432,7 @@ Return:
 
   // STAGE 3.5: Scene Type-Specific Refinement
   console.log('[Portfolio Director] 🎬 Stage 3.5: Running scene-type-specific refinements...');
-  const sceneTypeImprovements: any[] = [];
+  const sceneTypeImprovements: string[] = [];
 
   for (let i = 0; i < result.scenes.length; i++) {
     const scene = result.scenes[i];
@@ -1440,9 +1507,9 @@ Return:
                         textGlow: { type: Type.BOOLEAN },
                         paddingTop: { type: Type.STRING },
                         paddingBottom: { type: Type.STRING },
-                        mediaPosition: { type: Type.STRING },
-                        mediaScale: { type: Type.STRING },
-                        mediaOpacity: { type: Type.NUMBER },
+                        mediaPosition: { type: Type.STRING, nullable: true },
+                        mediaScale: { type: Type.STRING, nullable: true },
+                        mediaOpacity: { type: Type.NUMBER, nullable: true },
                         gradientColors: { type: Type.ARRAY, items: { type: Type.STRING }, nullable: true },
                         gradientDirection: { type: Type.STRING, nullable: true },
                       }
@@ -1613,6 +1680,7 @@ ${appliedImprovements.join('\n')}
 
 AUDIT ISSUES FIXED:
 ${auditResult.issues.map((issue: any) => `- Scene ${issue.sceneIndex}: ${issue.field} - ${issue.suggestion}`).join('\n')}
+${auditResult.portfolioLevelIssues.map((issue: any) => `- Portfolio Level: ${issue.issueType} - ${issue.problem}`).join('\n')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MANDATORY 37-CONTROL VERIFICATION CHECKLIST
@@ -1620,42 +1688,18 @@ MANDATORY 37-CONTROL VERIFICATION CHECKLIST
 
 YOU MUST PROVIDE ALL 37 CONTROLS FOR EVERY SCENE. NO EXCEPTIONS.
 
-ANIMATION & TIMING (8 controls):
-✓ entryEffect, entryDuration, entryDelay, entryEasing
-✓ exitEffect, exitDuration, exitDelay, exitEasing
-
-VISUAL FOUNDATION (2 controls):
-✓ backgroundColor, textColor
-
-SCROLL DEPTH EFFECTS (3 controls):
-✓ parallaxIntensity, scrollSpeed, animationDuration
-
-TYPOGRAPHY (4 controls):
-✓ headingSize, bodySize, fontWeight, alignment
-
-SCROLL INTERACTION (3 controls):
-✓ fadeOnScroll, scaleOnScroll, blurOnScroll
-
-MULTI-ELEMENT TIMING (2 controls):
-✓ staggerChildren, layerDepth
-
-ADVANCED MOTION (3 controls):
-✓ transformOrigin, overflowBehavior, backdropBlur
-
-VISUAL BLENDING (2 controls):
-✓ mixBlendMode, enablePerspective
-
-CUSTOM STYLING (3 controls):
-✓ customCSSClasses, textShadow, textGlow
-
-VERTICAL SPACING (2 controls):
-✓ paddingTop, paddingBottom
-
-MEDIA PRESENTATION (3 controls):
-✓ mediaPosition, mediaScale, mediaOpacity
-
-GRADIENT BACKGROUNDS (2 controls - nullable):
-✓ gradientColors, gradientDirection
+ANIMATION & TIMING (8): entryEffect, entryDuration, entryDelay, entryEasing, exitEffect, exitDuration, exitDelay, exitEasing
+VISUAL FOUNDATION (2): backgroundColor, textColor
+SCROLL DEPTH EFFECTS (3): parallaxIntensity, scrollSpeed, animationDuration
+TYPOGRAPHY (4): headingSize, bodySize, fontWeight, alignment
+SCROLL INTERACTION (3): fadeOnScroll, scaleOnScroll, blurOnScroll
+MULTI-ELEMENT TIMING (2): staggerChildren, layerDepth
+ADVANCED MOTION (3): transformOrigin, overflowBehavior, backdropBlur
+VISUAL BLENDING (2): mixBlendMode, enablePerspective
+CUSTOM STYLING (3): customCSSClasses, textShadow, textGlow
+VERTICAL SPACING (2): paddingTop, paddingBottom
+MEDIA PRESENTATION (3): mediaPosition, mediaScale, mediaOpacity (nullable)
+GRADIENT BACKGROUNDS (2): gradientColors, gradientDirection (nullable)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -1678,6 +1722,7 @@ BEFORE GENERATING OUTPUT, VERIFY:
 ✓ No field is set to "default", "auto", or left as undefined
 ✓ gradientColors is either an array of hex codes OR undefined (not null)
 ✓ gradientDirection is either a string OR undefined (not null)
+✓ mediaPosition, mediaScale, mediaOpacity are handled correctly (undefined if not applicable, or valid value)
 ✓ All durations are ≥ 0.8s for visibility
 ✓ All colors are valid hex codes with # prefix
 ✓ No conflicts (parallaxIntensity = 0 when scaleOnScroll = true)
@@ -1730,9 +1775,9 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     "textGlow": boolean,
     "paddingTop": string,
     "paddingBottom": string,
-    "mediaPosition": string,
-    "mediaScale": string,
-    "mediaOpacity": number,
+    "mediaPosition": string | null, // Nullable
+    "mediaScale": string | null, // Nullable
+    "mediaOpacity": number | null, // Nullable
     "gradientColors"?: string[] | undefined, // Optional: array or undefined
     "gradientDirection"?: string | undefined // Optional: string or undefined
   }
@@ -1793,7 +1838,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
                     paddingBottom: { type: Type.STRING },
                     mediaPosition: { type: Type.STRING, nullable: true },
                     mediaScale: { type: Type.STRING, nullable: true },
-                    mediaOpacity: { type: Type.NUMBER },
+                    mediaOpacity: { type: Type.NUMBER, nullable: true },
                     gradientColors: { type: Type.ARRAY, items: { type: Type.STRING }, nullable: true },
                     gradientDirection: { type: Type.STRING, nullable: true },
                   },
@@ -1828,6 +1873,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 
   const coherencePrompt = buildPortfolioCoherencePrompt(finalResult.scenes, catalog);
 
+  let coherenceResult;
   try {
     const coherenceResponse = await aiClient.models.generateContent({
       model: "gemini-2.5-pro",
@@ -1856,8 +1902,8 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
                 properties: {
                   sceneIndex: { type: Type.NUMBER },
                   field: { type: Type.STRING },
-                  currentValue: { type: Type.STRING },
-                  newValue: { type: Type.STRING },
+                  currentValue: { type: Type.ANY }, // Allow any type for current value
+                  newValue: { type: Type.ANY }, // Allow any type for new value
                   reason: { type: Type.STRING }
                 }
               }
@@ -1868,7 +1914,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
       }
     });
 
-    const coherenceResult = JSON.parse(coherenceResponse.text || '{"isCoherent":true,"issues":[],"improvements":[],"overallScore":100}');
+    coherenceResult = JSON.parse(coherenceResponse.text || '{"isCoherent":true,"issues":[],"improvements":[],"overallScore":100}');
 
     console.log(`[Portfolio Director] 📊 Coherence Score: ${coherenceResult.overallScore}/100`);
     console.log(`[Portfolio Director] 🔍 Found ${coherenceResult.issues.length} coherence issues`);
@@ -1895,13 +1941,18 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 
           // Type conversion
           try {
+            // Attempt to convert to number if the original field is a number
             if (typeof (scene.director as any)[finalField] === 'number') {
               newValue = parseFloat(improvement.newValue);
+              if (isNaN(newValue)) throw new Error("Not a number");
             } else if (typeof (scene.director as any)[finalField] === 'boolean') {
               newValue = improvement.newValue.toLowerCase() === 'true';
             }
+            // Add more specific type conversions if needed based on field definitions
           } catch (e) {
-            console.warn(`[Portfolio Director] Type conversion warning for ${improvement.field}`);
+            console.warn(`[Portfolio Director] Type conversion warning for ${improvement.field}: ${e}`);
+            // If conversion fails, it might remain a string, or we might default
+            // For simplicity here, we'll keep the original string value if conversion fails
           }
 
           (target as any)[finalField] = newValue;
@@ -1975,105 +2026,136 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     paddingBottom: { type: 'string', enum: ['none', 'sm', 'md', 'lg', 'xl', '2xl'] },
 
     // MEDIA PRESENTATION (3)
-    mediaPosition: { type: 'string', enum: ['center', 'top', 'bottom', 'left', 'right'] },
-    mediaScale: { type: 'string', enum: ['cover', 'contain', 'fill'] },
-    mediaOpacity: { type: 'number', min: 0, max: 1 }
+    mediaPosition: { type: 'string', enum: ['center', 'top', 'bottom', 'left', 'right'] }, // Note: This will be validated as string, nulls handled separately
+    mediaScale: { type: 'string', enum: ['cover', 'contain', 'fill'] }, // Note: This will be validated as string, nulls handled separately
+    mediaOpacity: { type: 'number', min: 0, max: 1 } // Note: This will be validated as number, nulls handled separately
   };
 
   for (const scene of finalResult.scenes) {
-    // Ensure director object exists
+    // Ensure director object exists and has all default values applied first
     if (!scene.director) {
         scene.director = {};
-        warnings.push(`Scene missing director object - initializing with defaults`);
-        confidenceScore -= 10;
     }
+    for (const field in DEFAULT_DIRECTOR_CONFIG) {
+        if (scene.director[field] === undefined) {
+            scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field];
+        }
+    }
+
+    // Handle nullable fields explicitly for validation logic
+    const mediaPosition = scene.director.mediaPosition === null ? undefined : scene.director.mediaPosition;
+    const mediaScale = scene.director.mediaScale === null ? undefined : scene.director.mediaScale;
+    const mediaOpacity = scene.director.mediaOpacity === null ? undefined : scene.director.mediaOpacity;
+    const gradientColors = scene.director.gradientColors === null ? undefined : scene.director.gradientColors;
+    const gradientDirection = scene.director.gradientDirection === null ? undefined : scene.director.gradientDirection;
+
 
     // Validate all 37 required controls
     for (const [field, spec] of Object.entries(requiredDirectorControls)) {
-    const value = scene.director[field];
+      // Get the value, considering that nullable fields might be undefined
+      const value = scene.director[field];
 
-      // Check if field is missing
+      // Check if field is missing (undefined or null if it's supposed to be non-nullable)
       if (value === undefined || value === null) {
-        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Missing required field '${field}' - applying default`);
-        // Use DEFAULT_DIRECTOR_CONFIG for default values
-        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? (spec.type === 'boolean' ? false : spec.type === 'number' ? 0 : '');
-        confidenceScore -= 3;
-        continue;
+        // Check if the field is explicitly allowed to be null/undefined (nullable fields)
+        const isNullableField = ['mediaPosition', 'mediaScale', 'mediaOpacity', 'gradientColors', 'gradientDirection'].includes(field);
+
+        if (!isNullableField) {
+          warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Missing required field '${field}' - applying default`);
+          scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? (spec.type === 'boolean' ? false : spec.type === 'number' ? 0 : '');
+          confidenceScore -= 3;
+          continue;
+        }
+        // If it's a nullable field and missing, we don't warn unless it causes a conflict later
       }
 
       // Type validation
       if (spec.type === 'number' && typeof value !== 'number') {
-        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be number, got ${typeof value}`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be number, got ${typeof value}. Applying default.`);
+        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? 0; // Default to 0 for numbers
         confidenceScore -= 2;
-      }
-
-      if (spec.type === 'string' && typeof value !== 'string') {
-        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be string, got ${typeof value}`);
+      } else if (spec.type === 'string' && typeof value !== 'string') {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be string, got ${typeof value}. Applying default.`);
+        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? ''; // Default to empty string
         confidenceScore -= 2;
-      }
-
-      if (spec.type === 'boolean' && typeof value !== 'boolean') {
-        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be boolean, got ${typeof value}`);
+      } else if (spec.type === 'boolean' && typeof value !== 'boolean') {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be boolean, got ${typeof value}. Applying default.`);
+        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? false; // Default to false
         confidenceScore -= 2;
       }
 
       // Enum validation
-      if (spec.enum && !spec.enum.includes(value)) {
-        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' has invalid value '${value}'. Must be one of: ${spec.enum.join(', ')}`);
+      if (spec.enum && typeof value === 'string' && !spec.enum.includes(value)) {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' has invalid value '${value}'. Must be one of: ${spec.enum.join(', ')}. Applying default.`);
+        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? spec.enum[0]; // Default to first enum value
         confidenceScore -= 3;
       }
 
       // Range validation
       if (spec.type === 'number') {
         if (spec.min !== undefined && value < spec.min) {
-          warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value ${value} is below minimum ${spec.min}`);
+          warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value ${value} is below minimum ${spec.min}. Applying default.`);
+          scene.director[field] = Math.max(value, spec.min); // Clamp to min
           confidenceScore -= 2;
         }
         if (spec.max !== undefined && value > spec.max) {
-          warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value ${value} exceeds maximum ${spec.max}`);
+          warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value ${value} exceeds maximum ${spec.max}. Applying default.`);
+          scene.director[field] = Math.min(value, spec.max); // Clamp to max
           confidenceScore -= 2;
         }
       }
 
       // Pattern validation (for hex colors)
       if (spec.pattern && typeof value === 'string' && !spec.pattern.test(value)) {
-        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value '${value}' doesn't match required pattern`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value '${value}' doesn't match required pattern. Applying default.`);
+        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? '#000000'; // Default to black
         confidenceScore -= 3;
       }
     }
 
-    // Handle optional gradient fields (nullable)
-    if (scene.director.gradientColors === null) {
-      scene.director.gradientColors = undefined;
+    // Validate nullable fields specifically
+    if (mediaPosition !== undefined && mediaPosition !== null && !['center', 'top', 'bottom', 'left', 'right'].includes(mediaPosition)) {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Invalid mediaPosition '${mediaPosition}'. Setting to null.`);
+        scene.director.mediaPosition = null;
+        confidenceScore -= 2;
     }
-    if (scene.director.gradientDirection === null) {
-      scene.director.gradientDirection = undefined;
+    if (mediaScale !== undefined && mediaScale !== null && !['cover', 'contain', 'fill'].includes(mediaScale)) {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Invalid mediaScale '${mediaScale}'. Setting to null.`);
+        scene.director.mediaScale = null;
+        confidenceScore -= 2;
+    }
+    if (mediaOpacity !== undefined && mediaOpacity !== null && (typeof mediaOpacity !== 'number' || mediaOpacity < 0 || mediaOpacity > 1)) {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Invalid mediaOpacity '${mediaOpacity}'. Setting to null.`);
+        scene.director.mediaOpacity = null;
+        confidenceScore -= 2;
     }
 
     // Validate gradient fields if present
-    if (scene.director.gradientColors !== undefined) {
-      if (!Array.isArray(scene.director.gradientColors)) {
-        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: gradientColors should be array or undefined, got ${typeof scene.director.gradientColors}`);
+    if (gradientColors !== undefined && gradientColors !== null) {
+      if (!Array.isArray(gradientColors)) {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: gradientColors should be array or null/undefined, got ${typeof gradientColors}. Setting to undefined.`);
         scene.director.gradientColors = undefined;
         confidenceScore -= 2;
-      } else if (scene.director.gradientColors.length === 0) {
-        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: gradientColors array is empty, setting to undefined`);
+      } else if (gradientColors.length === 0) {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: gradientColors array is empty, setting to undefined.`);
         scene.director.gradientColors = undefined;
       } else {
         // Validate each color is a hex code
-        for (const color of scene.director.gradientColors) {
+        for (const color of gradientColors) {
           if (!/^#[0-9A-Fa-f]{6}$/.test(color)) {
-            warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Invalid gradient color '${color}' - must be hex code`);
+            warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Invalid gradient color '${color}' - must be hex code. Setting gradientColors to undefined.`);
+            scene.director.gradientColors = undefined;
             confidenceScore -= 2;
+            break; // Stop checking colors if one is invalid
           }
         }
       }
     }
 
     // Validate gradientDirection is set if gradientColors is set
-    if (scene.director.gradientColors !== undefined && !scene.director.gradientDirection) {
-      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: gradientColors set but gradientDirection missing, defaulting to 'to-br'`);
-      scene.director.gradientDirection = 'to-br';
+    if (scene.director.gradientColors !== undefined && scene.director.gradientColors !== null && (scene.director.gradientDirection === undefined || scene.director.gradientDirection === null)) {
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: gradientColors set but gradientDirection missing, setting to 'to-br'`);
+      scene.director.gradientDirection = 'to-br'; // Default direction
       confidenceScore -= 1;
     }
 
@@ -2091,127 +2173,126 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 
     // Validate director fields and conflicts
     const director = scene.director;
-    if (!director) {
-      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing director config.`);
-      confidenceScore -= 10;
-      continue; // Skip further director checks if config is missing
-    }
 
     // Conflict checks
     if (director.parallaxIntensity > 0 && director.scaleOnScroll) {
-      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ parallax + scaleOnScroll conflict detected. Auto-fixing scaleOnScroll to false.`);
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ parallax + scaleOnScroll conflict detected. Auto-fixing scaleOnScroll to false.`);
       scene.director.scaleOnScroll = false; // Auto-fix
     }
     if (director.blurOnScroll && director.parallaxIntensity > 0) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ blurOnScroll conflicts with parallax. Auto-fixing blurOnScroll to false.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ blurOnScroll conflicts with parallax. Auto-fixing blurOnScroll to false.`);
         scene.director.blurOnScroll = false; // Auto-fix
     }
      if (director.blurOnScroll && director.scaleOnScroll) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ blurOnScroll conflicts with scaleOnScroll. Auto-fixing blurOnScroll to false.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ blurOnScroll conflicts with scaleOnScroll. Auto-fixing blurOnScroll to false.`);
         scene.director.blurOnScroll = false; // Auto-fix
+    }
+    if (director.textShadow && director.textGlow) {
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ textShadow and textGlow conflict. Auto-fixing textGlow to false.`);
+        scene.director.textGlow = false;
     }
 
     // Duration checks
     if (director.entryDuration !== undefined && director.entryDuration < 0.5) {
-      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Entry duration ${director.entryDuration}s may be too subtle.`);
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Entry duration ${director.entryDuration}s may be too subtle.`);
       confidenceScore -= 2;
     }
     if (director.exitDuration !== undefined && director.exitDuration < 0.4) {
-      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Exit duration ${director.exitDuration}s may be too abrupt.`);
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Exit duration ${director.exitDuration}s may be too abrupt.`);
       confidenceScore -= 2;
     }
 
-    // Required field presence and basic validity
+    // Required field presence and basic validity (re-check after defaults are applied)
     if (typeof director.entryDuration !== 'number' || director.entryDuration < 0.1) {
-      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid or missing entryDuration, defaulting to 1.2s.`);
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Invalid or missing entryDuration, defaulting to 1.2s.`);
       scene.director.entryDuration = 1.2; // Default
       confidenceScore -= 3;
     }
     if (typeof director.exitDuration !== 'number' || director.exitDuration < 0.1) {
-      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid or missing exitDuration, defaulting to 1.0s.`);
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Invalid or missing exitDuration, defaulting to 1.0s.`);
       scene.director.exitDuration = 1.0; // Default
       confidenceScore -= 3;
     }
     if (typeof director.entryDelay !== 'number' || director.entryDelay < 0) {
-      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid or missing entryDelay, defaulting to 0s.`);
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Invalid or missing entryDelay, defaulting to 0s.`);
       scene.director.entryDelay = 0; // Default
     }
     if (typeof director.exitDelay !== 'number' || director.exitDelay < 0) {
-      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid or missing exitDelay, defaulting to 0s.`);
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Invalid or missing exitDelay, defaulting to 0s.`);
       scene.director.exitDelay = 0; // Default
     }
     if (typeof director.parallaxIntensity !== 'number' || director.parallaxIntensity < 0 || director.parallaxIntensity > 1) {
-      warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid parallaxIntensity (must be 0-1), defaulting to 0.3.`);
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Invalid parallaxIntensity (must be 0-1), defaulting to 0.3.`);
       scene.director.parallaxIntensity = 0.3; // Default
       confidenceScore -= 3;
     }
     if (!director.entryEffect) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing entryEffect, defaulting to 'fade'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing entryEffect, defaulting to 'fade'.`);
         scene.director.entryEffect = 'fade';
         confidenceScore -= 3;
     }
     if (!director.exitEffect) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing exitEffect, defaulting to 'fade'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing exitEffect, defaulting to 'fade'.`);
         scene.director.exitEffect = 'fade';
         confidenceScore -= 3;
     }
      if (!director.backgroundColor) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing backgroundColor, defaulting to '#000000'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing backgroundColor, defaulting to '#000000'.`);
         scene.director.backgroundColor = '#000000';
         confidenceScore -= 3;
     }
      if (!director.textColor) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing textColor, defaulting to '#ffffff'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing textColor, defaulting to '#ffffff'.`);
         scene.director.textColor = '#ffffff';
         confidenceScore -= 3;
     }
      if (!director.headingSize) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing headingSize, defaulting to '4xl'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing headingSize, defaulting to '4xl'.`);
         scene.director.headingSize = '4xl';
         confidenceScore -= 3;
     }
      if (!director.bodySize) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing bodySize, defaulting to 'base'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing bodySize, defaulting to 'base'.`);
         scene.director.bodySize = 'base';
         confidenceScore -= 3;
     }
      if (!director.alignment) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing alignment, defaulting to 'center'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing alignment, defaulting to 'center'.`);
         scene.director.alignment = 'center';
         confidenceScore -= 3;
     }
     if (!director.fontWeight) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing fontWeight, defaulting to 'normal'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing fontWeight, defaulting to 'normal'.`);
         scene.director.fontWeight = 'normal';
         confidenceScore -= 3;
     }
      if (director.staggerChildren === undefined || director.staggeredChildren < 0) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid or missing staggerChildren, defaulting to 0.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Invalid or missing staggerChildren, defaulting to 0.`);
         scene.director.staggerChildren = 0;
         confidenceScore -= 3;
     }
      if (director.layerDepth === undefined || director.layerDepth < 0 || director.layerDepth > 10) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid layerDepth (must be 0-10), defaulting to 5.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Invalid layerDepth (must be 0-10), defaulting to 5.`);
         scene.director.layerDepth = 5;
         confidenceScore -= 3;
     }
      if (!director.transformOrigin) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing transformOrigin, defaulting to 'center center'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing transformOrigin, defaulting to 'center center'.`);
         scene.director.transformOrigin = 'center center';
         confidenceScore -= 3;
     }
      if (!director.overflowBehavior) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing overflowBehavior, defaulting to 'visible'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing overflowBehavior, defaulting to 'visible'.`);
         scene.director.overflowBehavior = 'visible';
         confidenceScore -= 3;
     }
      if (!director.backdropBlur) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing backdropBlur, defaulting to 'none'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing backdropBlur, defaulting to 'none'.`);
         scene.director.backdropBlur = 'none';
         confidenceScore -= 3;
     }
      if (!director.mixBlendMode) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing mixBlendMode, defaulting to 'normal'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing mixBlendMode, defaulting to 'normal'.`);
         scene.director.mixBlendMode = 'normal';
         confidenceScore -= 3;
     }
@@ -2219,38 +2300,38 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     const booleanFields = ['fadeOnScroll', 'scaleOnScroll', 'blurOnScroll', 'enablePerspective', 'textShadow', 'textGlow'];
     for (const field of booleanFields) {
         if (typeof director[field] !== 'boolean') {
-            warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing or invalid ${field}, defaulting to false.`);
+            warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing or invalid ${field}, defaulting to false.`);
             scene.director[field] = false;
             confidenceScore -= 3;
         }
     }
      if (!director.paddingTop) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing paddingTop, defaulting to 'none'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing paddingTop, defaulting to 'none'.`);
         scene.director.paddingTop = 'none';
         confidenceScore -= 3;
     }
      if (!director.paddingBottom) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing paddingBottom, defaulting to 'none'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing paddingBottom, defaulting to 'none'.`);
         scene.director.paddingBottom = 'none';
         confidenceScore -= 3;
     }
     if (!director.mediaPosition) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing mediaPosition, defaulting to 'center'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing mediaPosition, defaulting to 'center'.`);
         scene.director.mediaPosition = 'center';
         confidenceScore -= 3;
     }
      if (!director.mediaScale) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing mediaScale, defaulting to 'cover'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing mediaScale, defaulting to 'cover'.`);
         scene.director.mediaScale = 'cover';
         confidenceScore -= 3;
     }
     if (typeof director.mediaOpacity !== 'number' || director.mediaOpacity < 0 || director.mediaOpacity > 1) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Invalid mediaOpacity (must be 0-1), defaulting to 1.0.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Invalid mediaOpacity (must be 0-1), defaulting to 1.0.`);
         scene.director.mediaOpacity = 1.0;
         confidenceScore -= 3;
     }
     if (!director.scrollSpeed) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Missing scrollSpeed, defaulting to 'normal'.`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Missing scrollSpeed, defaulting to 'normal'.`);
         scene.director.scrollSpeed = 'normal';
         confidenceScore -= 3;
     }
@@ -2262,7 +2343,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
       const textLower = director.textColor.toLowerCase();
 
       if (bgLower === textLower) {
-        warnings.push(`Scene with assets [${scene.assetIds.join(', ')}]: ⚠️ Text and background colors are identical - text will be invisible!`);
+        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ Text and background colors are identical - text will be invisible!`);
         confidenceScore -= 5;
         const isDarkBg = bgLower.includes('#0') || bgLower.includes('#1') || bgLower === '#000000';
         scene.director.textColor = isDarkBg ? '#ffffff' : '#0a0a0a';
@@ -2286,7 +2367,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     stage3_5: `Applied ${sceneTypeImprovements.length} scene-type refinements`,
     stage4: `Applied ${appliedImprovements.length} improvements`,
     stage5: 'Final regeneration with all fixes',
-    stage5_5: `Coherence validated (${coherenceResult.overallScore}/100)`,
+    stage5_5: `Coherence validated (${coherenceResult?.overallScore ?? 'N/A'}/100)`,
     stage6: warnings.length > 0 ? `${warnings.length} validation warnings` : 'All validations passed',
     appliedImprovements: appliedImprovements.length > 0 ? appliedImprovements : 'none',
     warnings: warnings.length > 0 ? warnings : 'none',
@@ -2567,7 +2648,7 @@ Every scene MUST have ALL 37 director controls with valid values:
 - VISUAL BLENDING (2): mixBlendMode, enablePerspective
 - CUSTOM STYLING (3): customCSSClasses, textShadow, textGlow
 - VERTICAL SPACING (2): paddingTop, paddingBottom
-- MEDIA PRESENTATION (3): mediaPosition, mediaScale, mediaOpacity
+- MEDIA PRESENTATION (3): mediaPosition, mediaScale, mediaOpacity (nullable)
 - GRADIENT BACKGROUNDS (2): gradientColors, gradientDirection (nullable)
 
 **YOUR TASK:**
@@ -2620,11 +2701,29 @@ export function convertToSceneConfigs(
   }
 
   for (const aiScene of aiScenes) {
+    // Ensure default values are applied before merging AI scene director config
+    const mergedDirectorConfig = { ...DEFAULT_DIRECTOR_CONFIG };
+    // Overwrite defaults with AI-generated values, handling potential nulls correctly
+    if (aiScene.director) {
+      for (const key in aiScene.director) {
+        // Assign if the value from AI is not undefined. Treat null as potentially valid if the field allows it.
+        // For nullable fields, we might want to explicitly assign undefined if AI returned null and it's not desired.
+        if (aiScene.director[key] !== undefined) {
+          // If the field is nullable and AI returned null, keep it null (or undefined if preferred)
+          if (['mediaPosition', 'mediaScale', 'mediaOpacity', 'gradientColors', 'gradientDirection'].includes(key) && aiScene.director[key] === null) {
+             mergedDirectorConfig[key] = undefined; // Prefer undefined over null for consistency
+          } else {
+             mergedDirectorConfig[key] = aiScene.director[key];
+          }
+        }
+      }
+    }
+
     const sceneConfig: any = {
       type: aiScene.sceneType,
       content: {},
       layout: aiScene.layout || "default",
-      director: { ...DEFAULT_DIRECTOR_CONFIG, ...aiScene.director }, // Merge with defaults
+      director: mergedDirectorConfig,
     };
 
     // Map asset IDs to actual content based on scene type
