@@ -1,0 +1,33 @@
+client:495 [vite] connecting...
+client:618 [vite] connected.
+chunk-RPCDYKBN.js?v=94d079ca:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+Navbar.tsx:22 🎨 Theme Toggle Debug: Object
+Navbar.tsx:22 🎨 Theme Toggle Debug: Object
+web-vitals.ts:41 [Web Vitals] TTFB: Object
+web-vitals.ts:41 [Web Vitals] FCP: Object
+Navbar.tsx:22 🎨 Theme Toggle Debug: Object
+Navbar.tsx:22 🎨 Theme Toggle Debug: Object
+PortfolioBuilder.tsx:864 [Portfolio Builder] Render Check: Object
+PortfolioBuilder.tsx:864 [Portfolio Builder] Render Check: Object
+PortfolioBuilder.tsx:191 [Portfolio Builder] State Check: Object
+PortfolioBuilder.tsx:191 [Portfolio Builder] State Check: Object
+PortfolioBuilder.tsx:864 [Portfolio Builder] Render Check: Object
+PortfolioBuilder.tsx:864 [Portfolio Builder] Render Check: Object
+PortfolioBuilder.tsx:864 [Portfolio Builder] Render Check: Object
+PortfolioBuilder.tsx:864 [Portfolio Builder] Render Check: Object
+PortfolioBuilder.tsx:191 [Portfolio Builder] State Check: Object
+web-vitals.ts:41 [Web Vitals] LCP: Object
+PortfolioBuilder.tsx:864 [Portfolio Builder] Render Check: Object
+PortfolioBuilder.tsx:864 [Portfolio Builder] Render Check: Object
+PortfolioBuilder.tsx:176 [Portfolio Builder] Project Query Status: Object
+PortfolioBuilder.tsx:191 [Portfolio Builder] State Check: Object
+PortfolioBuilder.tsx:218 [Portfolio Builder] Project has no scenes, cleared states
+PortfolioBuilder.tsx:864 [Portfolio Builder] Render Check: Object
+PortfolioBuilder.tsx:864 [Portfolio Builder] Render Check: Object
+PortfolioBuilder.tsx:864 [Portfolio Builder] Render Check: Object
+PortfolioBuilder.tsx:864 [Portfolio Builder] Render Check: Object
+PortfolioBuilder.tsx:176 [Portfolio Builder] Project Query Status: Object
+portfolio-builder:1 The resource https://886d242e-c154-4486-9b83-c33bd79c8ade-00-2z0qhd8fjcfmg.riker.replit.dev/fonts/jetbrains-mono-var.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+portfolio-builder:1 The resource https://886d242e-c154-4486-9b83-c33bd79c8ade-00-2z0qhd8fjcfmg.riker.replit.dev/fonts/inter-var.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+portfolio-builder:1 The resource https://886d242e-c154-4486-9b83-c33bd79c8ade-00-2z0qhd8fjcfmg.riker.replit.dev/fonts/jetbrains-mono-var.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+portfolio-builder:1 The resource https://886d242e-c154-4486-9b83-c33bd79c8ade-00-2z0qhd8fjcfmg.riker.replit.dev/fonts/inter-var.woff2 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
