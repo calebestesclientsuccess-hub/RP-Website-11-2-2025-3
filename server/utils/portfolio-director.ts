@@ -551,7 +551,7 @@ Valid Values: string[] (e.g., ["#ff0000", "#0000ff"]) or null if no gradient.
 37. gradientDirection
 Purpose: The direction of the gradient.
 Artistic Choice: to-br (top-left to bottom-right) is common.
-Valid Values: string (e.g., "to-t", "to-r", "to-br") or null if no gradient.
+Valid Values: string (e.g., "to-r", "to-br") or null if no gradient.
 
 7. The "Component" Toolkit (The Content Schema)
 
@@ -1084,7 +1084,7 @@ The "Project Bible" (Core Technical Mandates)
 
 You must validate the entire scene sequence against these non-negotiable technical rules.
 
-The 37-Control Mandate: Every scene MUST contain all 37 director fields. There are no exceptions.
+The 37-Control Mandate: Every scene MUST contain all 37 director                   fields. There are no exceptions.
 
 The Nullable Mandate: The gradientColors and gradientDirection fields MUST be present, but their value can be null (represented as undefined in JSON). The mediaPosition, mediaScale, and mediaOpacity fields MUST also be present but can be null/undefined if not applicable (e.g., for text scenes).
 
@@ -1117,163 +1117,75 @@ Scene Sequence to Audit
 
 You previously generated this scene sequence JSON:
 
-${JSON.stringify(result, null, 2)}
+${JSON.JSON.stringify(result, null, 2)}
 
-MANDATORY TECHNICAL AUDIT CHECKLIST
+MANDATORY TECHNICAL AUDIT CHECKLIST (DUAL-TRACK)
 
-You must now audit the JSON above. For each scene, verify ALL 37 controls are present and valid.
+You must now audit the JSON above using this conditional logic.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ANIMATION & TIMING (8 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ entryEffect - (string) Must be a valid enum (e.g., "fade", "slide-up", "zoom-in")
-✓ entryDuration - (number) Must be ≥ 0.8s
-✓ entryDelay - (number) Must be ≥ 0s
-✓ entryEasing - (string) Must be a valid GSAP easing string (e.g., "power2.out")
-✓ exitEffect - (string) Must be a valid enum (e.g., "fade", "slide-down")
-✓ exitDuration - (number) Must be ≥ 0.6s
-✓ exitDelay - (number) Must be ≥ 0s
-✓ exitEasing - (string) Must be a valid GSAP easing string (e.g., "power2.in")
+Audit Path A: For "Cinematic" Scenes
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-VISUAL FOUNDATION (2 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ backgroundColor - (string) Must be a valid 6-digit hex code (e.g., "#0a0a0a")
-✓ textColor - (string) Must be a valid 6-digit hex code (e.g., "#FFFFFF")
+(IF sceneType is "text", "image", "video", "quote", "split", "gallery", or "fullscreen")
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SCROLL DEPTH & DURATION (3 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ parallaxIntensity - (number) Must be 0.0-1.0.
-✓ scrollSpeed - (string) Must be "slow", "normal", or "fast".
-✓ animationDuration - (number) Must be ≥ 0.5s.
+You MUST validate all 37 of the following controls:
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TYPOGRAPHY (4 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ headingSize - (string) Must be a valid enum (e.g., "4xl", "8xl")
-✓ bodySize - (string) Must be a valid enum (e.g., "base", "xl")
-✓ fontWeight - (string) Must be a valid enum (e.g., "normal", "bold")
-✓ alignment - (string) Must be "left", "center", or "right".
+(8) Animation & Timing: entryEffect, entryDuration (>=0.8), entryDelay (>=0), entryEasing, exitEffect, exitDuration (>=0.6), exitDelay (>=0), exitEasing
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SCROLL INTERACTION (3 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ fadeOnScroll - (boolean) Must be true or false.
-✓ scaleOnScroll - (boolean) Must be true or false.
-✓ blurOnScroll - (boolean) Must be true or false.
+(2) Visual Foundation: backgroundColor (hex), textColor (hex)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MULTI-ELEMENT TIMING (2 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ staggerChildren - (number) Must be ≥ 0.0.
-✓ layerDepth - (number) Must be 0-10.
+(3) Scroll Depth & Duration: parallaxIntensity (0-1), scrollSpeed ("slow"|"normal"|"fast"), animationDuration (>=0.5)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ADVANCED MOTION (3 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ transformOrigin - (string) Must be a valid origin (e.g., "center center", "top left").
-✓ overflowBehavior - (string) Must be "visible", "hidden", or "auto".
-✓ backdropBlur - (string) Must be a valid enum (e.g., "none", "md").
+(4) Typography: headingSize, bodySize, fontWeight, alignment
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-VISUAL BLENDING (2 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ mixBlendMode - (string) Must be a valid blend mode (e.g., "normal", "multiply").
-✓ enablePerspective - (boolean) Must be true or false.
+(3) Scroll Interaction: fadeOnScroll (bool), scaleOnScroll (bool), blurOnScroll (bool)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CUSTOM STYLING & TEXT (3 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ customCSSClasses - (string) Must be a string (e.g., "shadow-xl" or "").
-✓ textShadow - (boolean) Must be true or false.
-✓ textGlow - (boolean) Must be true or false.
+(2) Multi-Element Timing: staggerChildren (>=0), layerDepth (0-10)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-VERTICAL SPACING (2 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ paddingTop - (string) Must be a valid enum (e.g., "none", "lg").
-✓ paddingBottom - (string) Must be a valid enum (e.g., "none", "lg").
+(3) Advanced Motion: transformOrigin, overflowBehavior, backdropBlur
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MEDIA PRESENTATION (3 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ mediaPosition - (string | null) Must be a valid enum (e.g., "center", "top"), or null.
-✓ mediaScale - (string | null) Must be "cover", "contain", or "fill", or null.
-✓ mediaOpacity - (number | null) Must be 0.0-1.0, or null.
+(2) Visual Blending: mixBlendMode, enablePerspective (bool)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GRADIENT BACKGROUNDS (2 controls)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ gradientColors - (array | null) Must be present. Must be an array of hex strings or null.
-✓ gradientDirection - (string | null) Must be present. Must be a valid direction string or null.
+(3) Custom Styling & Text: customCSSClasses (string), textShadow (bool), textGlow (bool)
+
+(2) Vertical Spacing: paddingTop, paddingBottom
+
+(3) Media Presentation (Must be null for "text" scenes): mediaPosition (string|null), mediaScale (string|null), mediaOpacity (number|null)
+
+(2) Gradient Backgrounds (Must be null or valid): gradientColors (array|null), gradientDirection (string|null)
+
+Audit Path B: For "Component" Scenes
+
+(IF sceneType is "component")
+
+You MUST validate the content object:
+
+✓ content object MUST be present.
+✓ director object MUST NOT be present.
+✓ content.componentType - (string) Must be a valid component (e.g., "metric-card", "timeline").
+✓ content.heading - (string) Must be present.
+✓ content.subheading - (string) Must be present.
+✓ content.props - (object) Must be present.
 
 CRITICAL CONFLICT DETECTION
 
 You must also find these specific technical failures:
 
-!! CONFLICT !! - parallaxIntensity > 0 and scaleOnScroll: true in the same scene. (Only one can be active. If scaleOnScroll is true, parallaxIntensity MUST be 0).
+!! MEDIA OVERDRAW !! - A scene uses a placeholder index greater than the total assets provided (e.g., assetIds contains "placeholder-image-5" when totalImagesProvided is 3).
 
-!! CONFLICT !! - textShadow: true and textGlow: true in the same scene. (Only one can be active).
+!! CONFLICT (CINEMATIC) !! - parallaxIntensity > 0 and scaleOnScroll: true in the same scene. (Only one can be active).
 
-!! CONFLICT !! - gradientColors is an array (even empty) BUT gradientDirection is null or undefined. (If colors are set, direction must also be set).
+!! CONFLICT (CINEMATIC) !! - textShadow: true and textGlow: true in the same scene. (Only one can be active).
+
+!! CONFLICT (CINEMATIC) !! - gradientColors is an array BUT gradientDirection is null. (If colors are set, direction must also be set).
+
+!! CONFLICT (TEXT SCENE) !! - sceneType: "text" but mediaPosition, mediaScale, or mediaOpacity are not null. (Text scenes cannot have media properties).
+
+!! IDENTICAL COLOR !! - backgroundColor and textColor are identical. (100% string match check only).
 
 !! INVALID PLACEHOLDER !! - An assetIds string does not match an ID from the master list.
 
 Valid IDs: ${getAllPlaceholderIds().join(', ')}
-
-!! ASSET UTILIZATION FAILURE !! - The "No Asset Left Behind" mandate failed. (You must check the entire portfolio and report if any of the ${getAllPlaceholderIds().length} total placeholders were not used at least once).
-
-!! IDENTICAL COLOR !! - backgroundColor and textColor are identical. (This is a 100% string match check. Do not attempt to calculate visual contrast.)
-
-Required Output Format (Monologue, then JSON)
-
-First, provide the Mandatory Pre-Audit Monologue.
-
-Then, return only a JSON object of all issues found.
-
-JSON
-{
-  "issues": [
-    {
-      "sceneIndex": 0,
-      "field": "director.parallaxIntensity",
-      "problem": "!! CONFLICT !!: Conflicts with scaleOnScroll: true",
-      "suggestion": "Set scaleOnScroll to false"
-    },
-    {
-      "sceneIndex": 1,
-      "field": "director.animationDuration",
-      "problem": "Missing required field. This is a 37-control violation.",
-      "suggestion": "Add animationDuration: 1.0"
-    },
-    {
-      "sceneIndex": 2,
-      "field": "assetIds",
-      "problem": "!! INVALID PLACEHOLDER !!: References non-existent placeholder 'image-10'",
-      "suggestion": "Use a valid placeholder ID like 'image-1'"
-    },
-    {
-      "sceneIndex": 4,
-      "field": "director.gradientDirection",
-      "problem": "!! CONFLICT !!: gradientColors is set, but gradientDirection is null",
-      "suggestion": "Set gradientDirection (e.g., 'to-br') or set gradientColors to null"
-    },
-    {
-      "sceneIndex": 5,
-      "field": "director.textColor",
-      "problem": "!! IDENTICAL COLOR !!: textColor (#0a0a0a) is identical to backgroundColor (#0a0a0a)",
-      "suggestion": "Change textColor (e.g., to '#ffffff') for visibility."
-    }
-  ],
-  "portfolioLevelIssues": [
-    {
-      "issueType": "Asset Utilization",
-      "problem": "!! ASSET UTILIZATION FAILURE !!: The 'No Asset Left Behind' mandate failed. The following 2 placeholders were unused: 'image-10', 'quote-3'",
-      "suggestion": "The portfolio must be regenerated to include these missing assets."
-    }
-  ]
-}`;
+`;
 
   const auditResponse = await aiClient.models.generateContent({
     model: "gemini-2.5-pro",
@@ -1320,7 +1232,7 @@ JSON
   // STAGE 3: Generate 10 Improvements
   const improvementsPrompt = `You previously generated this scene sequence:
 
-${JSON.stringify(result, null, 2)}
+${JSON.JSON.stringify(result, null, 2)}
 
 User requirements from director notes:
 ${catalog.directorNotes}
@@ -2450,10 +2362,10 @@ Previous Scene Layout: ${previousSceneLayout || 'null'} (This is the layout valu
 Director's Vision (for context): ${catalog.directorNotes}
 
 Original Scene JSON:
-${JSON.stringify(scene, null, 2)}
+${JSON.JSON.stringify(scene, null, 2)}
 
 AVAILABLE CONTENT CATALOG:
-${JSON.stringify(catalog, null, 2)}
+${JSON.JSON.stringify(catalog, null, 2)}
 
 REFINEMENT GOALS:
 1. **Layout Balance**: Ensure left/right content creates visual harmony
@@ -2490,10 +2402,10 @@ export function buildGalleryScenePrompt(scene: GeneratedScene, catalog: ContentC
   return `You are refining a GALLERY scene (multi-image grid) for maximum visual impact.
 
 CURRENT SCENE CONFIGURATION:
-${JSON.stringify(scene, null, 2)}
+${JSON.JSON.stringify(scene, null, 2)}
 
 AVAILABLE CONTENT CATALOG:
-${JSON.stringify(catalog, null, 2)}
+${JSON.JSON.stringify(catalog, null, 2)}
 
 REFINEMENT GOALS:
 1. **Staggered Reveals**: Use staggerChildren (0.1-0.3s) for sequential image appearance
@@ -2522,7 +2434,7 @@ SPECIFIC IMPROVEMENTS TO MAKE:
 - scrollSpeed: "normal" or "fast" (galleries are scan-heavy)
 
 **MANDATORY VALIDATION:**
-- Verify all 37 controls present
+- All 37 controls present
 - Ensure staggerChildren matches number of images (0.15s × 6 images = 0.9s total reveal)
 - Durations: entry ≥ 1.5s, exit ≥ 1.0s
 
@@ -2533,10 +2445,10 @@ export function buildQuoteScenePrompt(scene: GeneratedScene, catalog: ContentCat
   return `You are refining a QUOTE scene (testimonial/social proof) for maximum emotional impact.
 
 CURRENT SCENE CONFIGURATION:
-${JSON.stringify(scene, null, 2)}
+${JSON.JSON.stringify(scene, null, 2)}
 
 AVAILABLE CONTENT CATALOG:
-${JSON.stringify(catalog, null, 2)}
+${JSON.JSON.stringify(catalog, null, 2)}
 
 REFINEMENT GOALS:
 1. **Contemplative Pacing**: Slow, deliberate entry/exit (2.5s+ durations)
@@ -2580,10 +2492,10 @@ export function buildFullscreenScenePrompt(scene: GeneratedScene, catalog: Conte
   return `You are refining a FULLSCREEN scene (immersive media takeover) for maximum cinematic impact.
 
 CURRENT SCENE CONFIGURATION:
-${JSON.stringify(scene, null, 2)}
+${JSON.JSON.stringify(scene, null, 2)}
 
 AVAILABLE CONTENT CATALOG:
-${JSON.stringify(catalog, null, 2)}
+${JSON.JSON.stringify(catalog, null, 2)}
 
 REFINEMENT GOALS:
 1. **Immersive Entry**: Dramatic zoom-in or dissolve (2.5s+ duration)
@@ -2635,7 +2547,7 @@ export function buildPortfolioCoherencePrompt(scenes: GeneratedScene[], catalog:
   return `You are performing a FINAL COHERENCE CHECK on a complete portfolio sequence.
 
 FULL SCENE SEQUENCE:
-${JSON.stringify(scenes, null, 2)}
+${JSON.JSON.stringify(scenes, null, 2)}
 
 DIRECTOR'S VISION:
 ${catalog.directorNotes}
@@ -2802,7 +2714,7 @@ export function convertToSceneConfigs(
             body: "",
           };
         }
-        
+
         // Text scenes MUST set all 5 nullable media/gradient controls to undefined
         sceneConfig.director.mediaPosition = undefined;
         sceneConfig.director.mediaScale = undefined;
