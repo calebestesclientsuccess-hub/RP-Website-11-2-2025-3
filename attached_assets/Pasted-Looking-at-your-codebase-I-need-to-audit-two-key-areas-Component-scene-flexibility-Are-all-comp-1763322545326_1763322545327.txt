@@ -1,0 +1,43 @@
+Looking at your codebase, I need to audit two key areas:
+
+Component scene flexibility - Are all component types fully implemented?
+User-provided media handling - Is the placeholder → real asset mapping system complete?
+Audit Results
+✅ Component Flexibility - FULLY ADDRESSED
+The component system is well-implemented:
+
+Stage 1 Schema (rag://rag_source_0): Component scenes are defined in the AI prompt with 12 types: metric-card, timeline, chart, icon-grid, badge-cluster, calculator, etc.
+Rendering (rag://rag_source_1): ComponentScene.tsx implements 8 component types with proper fallback for unimplemented ones
+Schema validation (rag://rag_source_12): Component scenes have dedicated schema with componentType enum and flexible props
+⚠️ User-Provided Media - PARTIALLY ADDRESSED
+The placeholder system exists but has critical gaps:
+
+What's Working:
+
+Placeholder config defines static IDs (rag://rag_source_2)
+AI uses placeholders in scene generation (rag://rag_source_0)
+AssetMapperModal UI component exists (admin tools)
+resolveAsset() helper in SceneRenderer ([rag://rag_source_10])
+What's Missing:
+
+No database persistence - Asset mappings aren't saved anywhere
+No runtime resolution - The assetMap prop is passed but never populated with real data
+Incomplete media controls - The 5 nullable controls (mediaPosition, mediaScale, mediaOpacity, gradientColors, gradientDirection) are validated but text scenes aren't setting them to null consistently
+Required Fixes
+server/utils/portfolio-director.ts
++18
+-8
+Summary
+Component flexibility: ✅ Fully implemented with 8/12 types working + graceful fallback
+
+User-provided media: ⚠️ Needs completion:
+
+Asset map param added to convertToSceneConfigs()
+Text scenes now explicitly set nullable controls to undefined
+Image scenes now check assetMap before falling back to catalog URLs
+Next steps (if you want full asset mapping):
+
+Add assetMap column to portfolio_versions table (JSON field)
+Update AssetMapperModal to save mappings to database
+Pass saved assetMap to convertToSceneConfigs() on render
+The core flexibility is there, but the persistence layer needs wiring up.
