@@ -194,38 +194,182 @@ CRITICAL SEO CONSTRAINTS:
 - Body text MUST be at least 50 characters for quality content
 - NEVER use generic alt text like "image" or "photo"
 
-DIRECTOR CONFIG GUIDELINES:
-Use these to create cinematic transitions:
+DIRECTOR CONFIG REQUIREMENTS:
+You MUST answer ALL 37 configuration questions for EVERY scene. Use "NA" or default values if intentionally abstaining.
 
-SPEED/PACING:
-- "fast" / "snappy" → entryDuration: 0.8, exitDuration: 0.6
-- "normal" / "smooth" → entryDuration: 1.2, exitDuration: 1.0
-- "slow" / "dramatic" → entryDuration: 2.5, exitDuration: 1.8
+=== ANIMATION & TIMING (10 REQUIRED) ===
+1. entryEffect: CHOOSE ONE (fade | slide-up | slide-down | slide-left | slide-right | zoom-in | zoom-out | sudden | cross-fade | rotate-in | flip-in | spiral-in | elastic-bounce | blur-focus)
+   - Reasoning: Why this effect for THIS scene's entrance?
 
-DIRECTION:
-- "enters from left" → entryEffect: "slide-right"
-- "enters from right" → entryEffect: "slide-left"
-- "enters from top" → entryEffect: "slide-down"
-- "enters from bottom" → entryEffect: "slide-up"
-- "zooms in" → entryEffect: "zoom-in" + scaleOnScroll: true
-- "fades in" → entryEffect: "fade"
+2. exitEffect: CHOOSE ONE (fade | slide-up | slide-down | slide-left | slide-right | zoom-out | dissolve | cross-fade | rotate-out | flip-out | scale-blur)
+   - Reasoning: How does this transition to the NEXT scene?
 
-EXIT EFFECTS:
-- "exits to left" → exitEffect: "slide-left"
-- "exits upward" → exitEffect: "slide-up"
-- "fades away" → exitEffect: "fade"
-- "dissolves" → exitEffect: "dissolve"
+3. entryDuration: NUMBER (0.1-5 seconds)
+   - Reasoning: Why this pacing? (fast <1s, normal 1-1.5s, dramatic 2.5s+)
 
-MOOD/ATMOSPHERE:
-- "dramatic" → parallaxIntensity: 0.6-0.8, entryDuration: 2.5+
-- "subtle" → parallaxIntensity: 0.2-0.3, fadeOnScroll: true
-- "energetic" → scaleOnScroll: true, entryDuration: 0.8-1.0
-- "cinematic" → blurOnScroll: true, parallaxIntensity: 0.5+
+4. exitDuration: NUMBER (0.1-5 seconds)
+   - Reasoning: Exit should be 20% faster than entry unless intentional
 
-COLOR GUIDELINES:
-- Use dark backgrounds (#0a0a0a, #1a1a1a) for drama
-- Use light backgrounds (#f8fafc, #f1f5f9) for brightness
-- Ensure high contrast between text and background`;
+5. entryDelay: NUMBER (0-10 seconds)
+   - Reasoning: Should this scene wait? For dramatic pause or content loading?
+
+6. exitDelay: NUMBER (0-2 seconds)
+   - Reasoning: Stagger exit timing for layered effects?
+
+7. animationDuration: NUMBER (0.5-10 seconds)
+   - Reasoning: How long should the main animation loop?
+
+8. entryEasing: CHOOSE ONE (linear | ease | ease-in | ease-out | ease-in-out | power1 | power2 | power3 | power4 | back | elastic | bounce)
+   - Reasoning: What motion quality fits this entrance?
+
+9. exitEasing: CHOOSE ONE (same 12 options)
+   - Reasoning: Typically ease-in for exits, but justify if different
+
+10. staggerChildren: NUMBER (0-1 seconds)
+    - Reasoning: Should child elements animate sequentially or simultaneously?
+
+=== VISUAL STYLE (12 REQUIRED) ===
+11. backgroundColor: HEX CODE (#000000 - #ffffff)
+    - Reasoning: Why this color? Consider narrative flow and contrast
+
+12. textColor: HEX CODE (#000000 - #ffffff)
+    - Reasoning: Contrast ratio must be 4.5:1 minimum (WCAG AA)
+
+13. gradientColors: ARRAY of HEX CODES or null
+    - Reasoning: Single color or gradient? If gradient, why these colors?
+
+14. gradientDirection: CHOOSE ONE (to-top | to-bottom | to-left | to-right | to-top-right | to-bottom-right | to-top-left | to-bottom-left) or "NA"
+    - Reasoning: If using gradient, which direction enhances the scene?
+
+15. alignment: CHOOSE ONE (left | center | right)
+    - Reasoning: How does alignment serve the content hierarchy?
+
+16. headingSize: CHOOSE ONE (4xl | 5xl | 6xl | 7xl | 8xl)
+    - Reasoning: What emphasis does this headline need?
+
+17. bodySize: CHOOSE ONE (base | lg | xl | 2xl)
+    - Reasoning: Balance readability with visual impact
+
+18. fontWeight: CHOOSE ONE (normal | medium | semibold | bold)
+    - Reasoning: How much typographic authority?
+
+19. textShadow: BOOLEAN (true | false)
+    - Reasoning: Does text need depth/legibility boost?
+
+20. textGlow: BOOLEAN (true | false)
+    - Reasoning: Luminous effect for emphasis? (conflicts with textShadow)
+
+21. paddingTop: CHOOSE ONE (none | sm | md | lg | xl | 2xl)
+    - Reasoning: Vertical breathing room at top
+
+22. paddingBottom: CHOOSE ONE (none | sm | md | lg | xl | 2xl)
+    - Reasoning: Vertical breathing room at bottom
+
+=== SCROLL EFFECTS (5 REQUIRED) ===
+23. parallaxIntensity: NUMBER (0.0-1.0)
+    - Reasoning: Depth layering strength (CONFLICTS with scaleOnScroll if >0)
+
+24. fadeOnScroll: BOOLEAN (true | false)
+    - Reasoning: Should scene fade as user scrolls?
+
+25. scaleOnScroll: BOOLEAN (true | false)
+    - Reasoning: Zoom effect during scroll? (CONFLICTS with parallax if true)
+
+26. blurOnScroll: BOOLEAN (true | false)
+    - Reasoning: Motion blur effect? (use sparingly, conflicts with parallax)
+
+27. scrollSpeed: CHOOSE ONE (slow | normal | fast)
+    - Reasoning: How quickly should scene respond to scroll?
+
+=== CINEMATIC CONTROLS (7 REQUIRED) ===
+28. transformOrigin: CHOOSE ONE (center center | top left | top center | top right | center left | center right | bottom left | bottom center | bottom right)
+    - Reasoning: Pivot point for rotations/scales - where should effects originate?
+
+29. overflowBehavior: CHOOSE ONE (visible | hidden | auto)
+    - Reasoning: Should content outside bounds be visible or clipped?
+
+30. backdropBlur: CHOOSE ONE (none | sm | md | lg | xl)
+    - Reasoning: Glass morphism effect strength?
+
+31. mixBlendMode: CHOOSE ONE (normal | multiply | screen | overlay | difference | exclusion)
+    - Reasoning: Photoshop-style layer blending?
+
+32. enablePerspective: BOOLEAN (true | false)
+    - Reasoning: Enable 3D depth for rotate effects? (conflicts with parallax)
+
+33. customCSSClasses: STRING or ""
+    - Reasoning: Any custom Tailwind classes needed? (space-separated)
+
+34. layerDepth: NUMBER (0-10)
+    - Reasoning: Z-index for parallax layering (5 = default)
+
+=== MEDIA CONTROLS (3 REQUIRED - for image/video/fullscreen/split scenes only) ===
+35. mediaPosition: CHOOSE ONE (center | top | bottom | left | right) or "NA"
+    - Reasoning: Where should media focal point be?
+
+36. mediaScale: CHOOSE ONE (cover | contain | fill) or "NA"
+    - Reasoning: How should media fit its container?
+
+37. mediaOpacity: NUMBER (0.0-1.0) or "NA"
+    - Reasoning: Media transparency level?
+
+=== CONFLICT WARNINGS - GEMINI MUST CHECK ===
+- parallaxIntensity > 0 + scaleOnScroll = true → CONFLICT (choose one)
+- parallaxIntensity > 0 + blurOnScroll = true → CONFLICT (disable one)
+- enablePerspective = true + parallaxIntensity > 0 → MAY CONFLICT (visual confusion)
+- textShadow = true + textGlow = true → CONFLICT (choose one)
+- More than 2 scroll effects enabled → MAY COMPETE (simplify)
+
+=== OUTPUT FORMAT ===
+EVERY director config field MUST be present in JSON output.
+Use these default values ONLY if intentionally abstaining:
+- Strings: "NA" or ""
+- Numbers: Use middle of range (e.g., entryDuration: 1.2)
+- Booleans: false
+- Enums: Use "NA" or most conservative option
+
+Example required structure:
+{
+  "director": {
+    "entryEffect": "fade",
+    "exitEffect": "fade",
+    "entryDuration": 1.2,
+    "exitDuration": 1.0,
+    "entryDelay": 0,
+    "exitDelay": 0,
+    "animationDuration": 2.0,
+    "entryEasing": "ease-out",
+    "exitEasing": "ease-in",
+    "staggerChildren": 0,
+    "backgroundColor": "#0a0a0a",
+    "textColor": "#ffffff",
+    "gradientColors": null,
+    "gradientDirection": "NA",
+    "alignment": "center",
+    "headingSize": "6xl",
+    "bodySize": "lg",
+    "fontWeight": "bold",
+    "textShadow": false,
+    "textGlow": false,
+    "paddingTop": "md",
+    "paddingBottom": "md",
+    "parallaxIntensity": 0.3,
+    "fadeOnScroll": false,
+    "scaleOnScroll": false,
+    "blurOnScroll": false,
+    "scrollSpeed": "normal",
+    "transformOrigin": "center center",
+    "overflowBehavior": "hidden",
+    "backdropBlur": "none",
+    "mixBlendMode": "normal",
+    "enablePerspective": false,
+    "customCSSClasses": "",
+    "layerDepth": 5,
+    "mediaPosition": "center",
+    "mediaScale": "cover",
+    "mediaOpacity": 1.0
+  }
+}`;
 
   const sceneTypeConstraint = sceneType 
     ? `\n\nREQUIRED: Set sceneType to "${sceneType}"` 
