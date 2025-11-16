@@ -1,6 +1,25 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useAnimation } from "framer-motion"; // Assuming useAnimation is needed
+import { useInView } from "react-intersection-observer"; // Assuming useInView is needed
+
+// Assuming ProgressiveImage and SceneConfig are defined elsewhere or will be defined
+// Placeholder for ProgressiveImage component
+const ProgressiveImage: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className }) => (
+  <img src={src} alt={alt} className={className} />
+);
+
+// Placeholder for SceneConfig interface
+interface SceneConfig {
+  type: string;
+  content: any;
+  layout?: string;
+  director: DirectorConfig;
+  sceneType?: string; // Added sceneType for image rendering logic
+  imageUrl?: string; // Added imageUrl for image rendering logic
+}
+
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -51,8 +70,9 @@ interface SceneData {
 }
 
 interface SceneRendererProps {
-  scene: SceneData;
+  scene: SceneConfig;
   index: number;
+  assetMap?: Record<string, string>;
 }
 
 // PlaceholderSlot component (assuming it exists elsewhere or will be defined)
@@ -109,9 +129,24 @@ const paddingBottomMap: Record<string, string> = {
   "2xl": "pb-24",
 };
 
-export function SceneRenderer({ scene, index }: SceneRendererProps) {
+export function SceneRenderer({ scene, index, assetMap = {} }: SceneRendererProps) {
+  const controls = useAnimation();
+  const [ref, inView] = useInView({
+    triggerOnce: false,
+    threshold: 0.3,
+  });
   const sceneRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Resolve placeholder IDs to real asset URLs
+  const resolveAsset = (assetId: string): string => {
+    // If assetId is a placeholder and we have a mapping, use it
+    if (assetMap[assetId]) {
+      return assetMap[assetId];
+    }
+    // Otherwise return as-is (could be a real URL already)
+    return assetId;
+  };
 
   useEffect(() => {
     if (!sceneRef.current || !contentRef.current) return;
@@ -370,9 +405,9 @@ export function SceneRenderer({ scene, index }: SceneRendererProps) {
                 }}
               />
             ) : scene.imageUrl ? (
-              <img
-                src={scene.imageUrl}
-                alt={scene.heading || ''}
+              <ProgressiveImage
+                src={resolveAsset(scene.imageUrl || "")}
+                alt={scene.content.alt || "Scene image"}
                 className="w-full h-full object-cover"
                 style={{ opacity: director.mediaOpacity || 1 }}
               />

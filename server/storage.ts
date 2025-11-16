@@ -1075,6 +1075,55 @@ export class DbStorage implements IStorage {
       .limit(1);
     return versions[0] || null;
   }
+
+  // Asset Map Management
+  async saveAssetMap(projectId: string, assetMap: Record<string, string>) {
+    // Save to the latest version, or create new version if none exists
+    const latestVersion = await this.getLatestPortfolioVersion(projectId);
+    
+    if (latestVersion) {
+      // Update existing version
+      const [updated] = await db
+        .update(portfolioVersions)
+        .set({ assetMap })
+        .where(eq(portfolioVersions.id, latestVersion.id))
+        .returning();
+      return updated;
+    } else {
+      // Create initial version with asset map only (no scenes yet)
+      const [newVersion] = await db
+        .insert(portfolioVersions)
+        .values({
+          projectId,
+          versionNumber: 1,
+          scenesJson: [],
+          assetMap,
+          changeDescription: "Initial asset mapping"
+        })
+        .returning();
+      return newVersion;
+    }
+  }
+
+  async getAssetMap(projectId: string): Promise<Record<string, string>> {
+    const latestVersion = await this.getLatestPortfolioVersion(projectId);
+    return latestVersion?.assetMap || {};
+  }
+
+  async updateAssetMapping(projectId: string, placeholderId: string, assetId: string) {
+    const currentMap = await this.getAssetMap(projectId);
+    const updatedMap = {
+      ...currentMap,
+      [placeholderId]: assetId
+    };
+    return this.saveAssetMap(projectId, updatedMap);
+  }
+
+  async removeAssetMapping(projectId: string, placeholderId: string) {
+    const currentMap = await this.getAssetMap(projectId);
+    const { [placeholderId]: _, ...updatedMap } = currentMap;
+    return this.saveAssetMap(projectId, updatedMap);
+  }
 }
 
 export const storage = new DbStorage();

@@ -220,6 +220,7 @@ export default function PortfolioBuilder() {
       setGeneratedScenes(null);
       setVersions([]);
       setActiveVersionId(null);
+      setAssetMap({});
       return;
     }
 
@@ -262,6 +263,14 @@ export default function PortfolioBuilder() {
             setActiveVersionId(dbVersions[dbVersions.length - 1].id);
             console.log('[Portfolio Builder] Loaded version history from DB:', dbVersions.length, 'versions');
           }
+        }
+
+        // Load asset map
+        const assetMapResponse = await apiRequest("GET", `/api/projects/${selectedProjectId}/asset-map`);
+        if (assetMapResponse.ok) {
+          const dbAssetMap = await assetMapResponse.json();
+          setAssetMap(dbAssetMap || {});
+          console.log('[Portfolio Builder] Loaded asset map from DB:', Object.keys(dbAssetMap || {}).length, 'mappings');
         }
       } catch (error) {
         console.error('[Portfolio Builder] Failed to load project data from DB:', error);
@@ -400,12 +409,39 @@ export default function PortfolioBuilder() {
     setIsAssetMapperOpen(true);
   };
 
-  const handleSaveAssetMapping = (placeholderId: PlaceholderId, assetId: string) => {
+  const handleSaveAssetMapping = async (placeholderId: PlaceholderId, assetId: string) => {
+    // Optimistic update
     setAssetMap(prev => ({
       ...prev,
       [placeholderId]: assetId
     }));
-    toast({ title: "Asset mapped", description: `${placeholderId} → ${assetId}` });
+
+    // Persist to database if we have a project selected
+    if (!isNewProject && selectedProjectId) {
+      try {
+        const response = await apiRequest(
+          "PUT",
+          `/api/projects/${selectedProjectId}/asset-map/${placeholderId}`,
+          { assetId }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to save asset mapping");
+        }
+
+        toast({ title: "Asset mapped", description: `${placeholderId} → ${assetId}` });
+      } catch (error) {
+        console.error("Failed to save asset mapping:", error);
+        toast({
+          title: "Save failed",
+          description: "Asset mapping saved locally but not persisted to database",
+          variant: "destructive"
+        });
+      }
+    } else {
+      // For new projects, just show local save confirmation
+      toast({ title: "Asset mapped", description: `${placeholderId} → ${assetId} (will save with project)` });
+    }
   };
 
   // --- AI Generation and Refinement Handlers ---

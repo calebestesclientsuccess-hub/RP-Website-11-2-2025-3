@@ -2030,6 +2030,62 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
+  // Asset Mapping API
+  app.get("/api/projects/:projectId/asset-map", requireAuth, async (req, res) => {
+    try {
+      const assetMap = await storage.getAssetMap(req.params.projectId);
+      return res.json(assetMap);
+    } catch (error) {
+      console.error("Error fetching asset map:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/asset-map", requireAuth, async (req, res) => {
+    try {
+      const { assetMap } = req.body;
+      if (!assetMap || typeof assetMap !== 'object') {
+        return res.status(400).json({ error: "Invalid asset map format" });
+      }
+      const updated = await storage.saveAssetMap(req.params.projectId, assetMap);
+      return res.json({ success: true, assetMap: updated.assetMap });
+    } catch (error) {
+      console.error("Error saving asset map:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/projects/:projectId/asset-map/:placeholderId", requireAuth, async (req, res) => {
+    try {
+      const { assetId } = req.body;
+      if (!assetId) {
+        return res.status(400).json({ error: "assetId is required" });
+      }
+      const updated = await storage.updateAssetMapping(
+        req.params.projectId,
+        req.params.placeholderId,
+        assetId
+      );
+      return res.json({ success: true, assetMap: updated.assetMap });
+    } catch (error) {
+      console.error("Error updating asset mapping:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/projects/:projectId/asset-map/:placeholderId", requireAuth, async (req, res) => {
+    try {
+      const updated = await storage.removeAssetMapping(
+        req.params.projectId,
+        req.params.placeholderId
+      );
+      return res.json({ success: true, assetMap: updated.assetMap });
+    } catch (error) {
+      console.error("Error removing asset mapping:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
         try {
           currentScenes = JSON.parse(currentSceneJson);
           console.log(`[Portfolio Enhanced] Parsed ${currentScenes.length} scenes from JSON`);

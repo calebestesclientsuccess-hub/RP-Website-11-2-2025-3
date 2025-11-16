@@ -194,6 +194,11 @@ export function AssetMapperModal({
               <DialogTitle>Assign Asset to {placeholderId}</DialogTitle>
               <DialogDescription>
                 Select a {placeholderType} from your content library ({getAssetCount()} available)
+                {currentMapping && (
+                  <span className="block mt-1 text-xs text-primary">
+                    Currently mapped: {currentMapping}
+                  </span>
+                )}
               </DialogDescription>
             </div>
           </div>
