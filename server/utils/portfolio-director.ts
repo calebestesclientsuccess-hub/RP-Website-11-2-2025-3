@@ -72,7 +72,109 @@ Create a scene sequence by FILLING OUT A COMPLETE FORM for each scene. You MUST 
 
 Think of this as filling out a structured form where blank fields are not allowed. Each scene requires all these decisions:
 
-=== THE 37 DIRECTOR CONTROLS: COMPLETE REFERENCE ===
+=== THE 37 DIRECTOR CONTROLS: MANDATORY CHECKLIST ===
+
+YOU MUST PROVIDE A VALUE FOR EVERY SINGLE ONE OF THESE 37 CONTROLS.
+NO CONTROL MAY BE SKIPPED OR SET TO "default" OR "auto".
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ANIMATION & TIMING (8 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. entryEffect - HOW scene appears (fade, slide-up, zoom-in, rotate-in, flip-in, spiral-in, elastic-bounce, blur-focus, cross-fade, sudden)
+2. entryDuration - HOW LONG entry takes (0.8-5.0s, recommend 1.2-1.9s for cinematic)
+3. entryDelay - WHEN entry starts after scroll trigger (0-2s, usually 0)
+4. entryEasing - Acceleration curve (ease-out, power3, elastic, bounce, etc.)
+5. exitEffect - HOW scene disappears (fade, slide-down, zoom-out, dissolve, rotate-out, flip-out, scale-blur, cross-fade)
+6. exitDuration - HOW LONG exit takes (0.6-5.0s, typically 20% faster than entry)
+7. exitDelay - WHEN exit starts (0-2s, usually 0)
+8. exitEasing - Deceleration curve (ease-in, power2, etc.)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VISUAL FOUNDATION (2 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+9. backgroundColor - Scene background EXACT hex code (e.g., "#0a0a0a")
+10. textColor - Text color EXACT hex code (e.g., "#ffffff") - MUST contrast with background
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCROLL DEPTH EFFECTS (3 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+11. parallaxIntensity - Depth layering (0.0-1.0, set to 0 if using scaleOnScroll)
+12. scrollSpeed - Response speed ("slow", "normal", or "fast")
+13. animationDuration - Overall GSAP timeline (0.5-10s)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPOGRAPHY (4 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+14. headingSize - Heading scale ("4xl", "5xl", "6xl", "7xl", "8xl")
+15. bodySize - Body text scale ("base", "lg", "xl", "2xl")
+16. fontWeight - Text weight ("normal", "medium", "semibold", "bold")
+17. alignment - Text alignment ("left", "center", "right")
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCROLL INTERACTION (3 controls - use sparingly)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+18. fadeOnScroll - Fade media during scroll (true/false, recommend false)
+19. scaleOnScroll - Zoom during scroll (true/false, CONFLICTS with parallax if true)
+20. blurOnScroll - Blur during scroll (true/false, recommend false for performance)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MULTI-ELEMENT TIMING (2 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+21. staggerChildren - Delay between child animations (0.0-1.0s)
+22. layerDepth - Z-index for parallax layering (0-10, default 5)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADVANCED MOTION (3 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+23. transformOrigin - Pivot point ("center center", "top left", "bottom right", etc.)
+24. overflowBehavior - Content clipping ("visible", "hidden", "auto")
+25. backdropBlur - Glass morphism ("none", "sm", "md", "lg", "xl")
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VISUAL BLENDING (2 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+26. mixBlendMode - Color blending ("normal", "multiply", "screen", "overlay", "difference", "exclusion")
+27. enablePerspective - 3D depth for rotations (true/false, required for flip-in/rotate-in to look 3D)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CUSTOM STYLING (3 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+28. customCSSClasses - Tailwind utilities (string, e.g., "shadow-2xl ring-4" or empty "")
+29. textShadow - Drop shadow on text (true/false, recommend false)
+30. textGlow - Luminous text effect (true/false, recommend false)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VERTICAL SPACING (2 controls)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+31. paddingTop - Top spacing ("none", "sm", "md", "lg", "xl", "2xl")
+32. paddingBottom - Bottom spacing ("none", "sm", "md", "lg", "xl", "2xl")
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MEDIA PRESENTATION (3 controls - for image/video scenes)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+33. mediaPosition - Focal point ("center", "top", "bottom", "left", "right")
+34. mediaScale - Fit behavior ("cover", "contain", "fill")
+35. mediaOpacity - Transparency (0.0-1.0, default 1.0)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GRADIENT BACKGROUNDS (2 controls - OPTIONAL, can be null)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+36. gradientColors - Array of hex codes (e.g., ["#ff0000", "#0000ff"] or null)
+37. gradientDirection - Direction ("to-r", "to-br", etc. or null)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 CONTROL 1-2: ENTRY ANIMATION
 ☐ entryEffect: HOW the scene appears on screen
