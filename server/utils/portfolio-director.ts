@@ -311,7 +311,6 @@ interface GeneratedScene {
     scaleOnScroll?: boolean;
     blurOnScroll?: boolean;
     scrollSpeed: "slow" | "normal" | "fast"; // Added scrollSpeed
-    animationDuration?: number;
     entryEasing?: string;
     exitEasing?: string;
     fontWeight?: string;
@@ -330,6 +329,8 @@ interface GeneratedScene {
     mediaPosition?: string;
     mediaScale?: string;
     mediaOpacity?: number;
+    gradientColors?: string[]; // Added gradientColors
+    gradientDirection?: string; // Added gradientDirection
   };
   // Confidence score fields
   confidenceScore?: number;
@@ -377,6 +378,8 @@ const DEFAULT_DIRECTOR_CONFIG = {
   scaleOnScroll: false,
   blurOnScroll: false,
   scrollSpeed: 'normal', // Added default scrollSpeed
+  gradientColors: undefined, // Default to undefined
+  gradientDirection: undefined, // Default to undefined
 };
 
 /**
@@ -462,17 +465,19 @@ export async function generatePortfolioWithAI(
                     staggerChildren: { type: Type.NUMBER, description: "Delay between child animations in seconds (0-1)" },
                     layerDepth: { type: Type.NUMBER, description: "Z-index for parallax layering (0-10)" },
                     transformOrigin: { type: Type.STRING, description: "Transform origin: center center, top left, etc." },
+                    overflowBehavior: { type: Type.STRING, description: "visible, hidden, or auto" },
                     backdropBlur: { type: Type.STRING, description: "Backdrop blur: none, sm, md, lg, xl" },
                     mixBlendMode: { type: Type.STRING, description: "Blend mode: normal, multiply, screen, overlay, difference, exclusion" },
                     customCSSClasses: { type: Type.STRING, description: "Space-separated custom CSS classes" },
-                    enablePerspective: { type: Type.BOOLEAN, description: "Enable 3D perspective for rotations" },
                     textShadow: { type: Type.BOOLEAN },
                     textGlow: { type: Type.BOOLEAN },
                     paddingTop: { type: Type.STRING },
                     paddingBottom: { type: Type.STRING },
-                    mediaPosition: { type: Type.STRING },
-                    mediaScale: { type: Type.STRING },
-                    mediaOpacity: { type: Type.NUMBER },
+                    mediaPosition: { type: Type.STRING, description: "center, top, bottom, left, right", nullable: true },
+                    mediaScale: { type: Type.STRING, description: "cover, contain, fill", nullable: true },
+                    mediaOpacity: { type: Type.NUMBER, description: "0.0-1.0, default 1.0" },
+                    gradientColors: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Array of hex colors", nullable: true },
+                    gradientDirection: { type: Type.STRING, description: "to-r, to-l, to-t, to-b, etc.", nullable: true },
                   },
                   required: [
                     "entryDuration", "exitDuration", "entryDelay", "exitDelay",
@@ -522,6 +527,51 @@ export async function generatePortfolioWithAI(
   if (!result.scenes || !Array.isArray(result.scenes)) {
     throw new Error('Invalid response structure from AI: missing scenes array');
   }
+
+  // Check for undefined fields in director config and add defaults if missing
+  result.scenes.forEach((scene: GeneratedScene) => {
+    if (!scene.director) {
+      scene.director = {}; // Initialize if completely missing
+    }
+    // Ensure all required fields from the schema are present, even if they are nullable and not provided by AI
+    const requiredDirectorFields = [
+      "entryDuration", "exitDuration", "entryDelay", "exitDelay",
+      "backgroundColor", "textColor", "parallaxIntensity",
+      "scrollSpeed", "animationDuration", "entryEffect", "exitEffect", "entryEasing", "exitEasing",
+      "headingSize", "bodySize", "fontWeight", "alignment",
+      "fadeOnScroll", "scaleOnScroll", "blurOnScroll",
+      "staggerChildren", "layerDepth", "transformOrigin",
+      "overflowBehavior", "backdropBlur", "mixBlendMode",
+      "enablePerspective", "customCSSClasses",
+      "textShadow", "textGlow", "paddingTop", "paddingBottom",
+      "mediaPosition", "mediaScale", "mediaOpacity"
+    ];
+    requiredDirectorFields.forEach(field => {
+      if (scene.director[field] === undefined || scene.director[field] === null) {
+        // Assign default values from DEFAULT_DIRECTOR_CONFIG or a sensible fallback
+        // Note: This part might need refinement based on specific field defaults
+        // For simplicity, we'll assign undefined if not present in DEFAULT_DIRECTOR_CONFIG for nullable fields
+        if (DEFAULT_DIRECTOR_CONFIG.hasOwnProperty(field)) {
+          scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field];
+        } else {
+          // Fallback for fields not explicitly in DEFAULT_DIRECTOR_CONFIG but required by schema
+          // This might require more specific handling based on field type
+          if (typeof field === 'boolean') scene.director[field] = false;
+          else if (typeof field === 'number') scene.director[field] = 0;
+          else scene.director[field] = ''; // Fallback to empty string for others
+        }
+      }
+    });
+
+    // Ensure gradient fields are handled if they were not explicitly set and are nullable
+    if (scene.director.gradientColors === undefined) {
+      scene.director.gradientColors = DEFAULT_DIRECTOR_CONFIG.gradientColors;
+    }
+    if (scene.director.gradientDirection === undefined) {
+      scene.director.gradientDirection = DEFAULT_DIRECTOR_CONFIG.gradientDirection;
+    }
+  });
+
 
   // Calculate confidence score based on completeness
   let confidenceScore = 100;
@@ -888,9 +938,11 @@ Return the complete scenes array with full director configs. Ensure ALL required
                     textGlow: { type: Type.BOOLEAN },
                     paddingTop: { type: Type.STRING },
                     paddingBottom: { type: Type.STRING },
-                    mediaPosition: { type: Type.STRING },
-                    mediaScale: { type: Type.STRING },
+                    mediaPosition: { type: Type.STRING, nullable: true },
+                    mediaScale: { type: Type.STRING, nullable: true },
                     mediaOpacity: { type: Type.NUMBER },
+                    gradientColors: { type: Type.ARRAY, items: { type: Type.STRING }, nullable: true },
+                    gradientDirection: { type: Type.STRING, nullable: true },
                   },
                   required: [
                     "entryDuration", "exitDuration", "entryDelay", "exitDelay",
@@ -926,6 +978,44 @@ Return the complete scenes array with full director configs. Ensure ALL required
   const warnings: string[] = [];
 
   for (const scene of finalResult.scenes) {
+    // Ensure director object exists and all fields are populated with defaults if necessary
+    if (!scene.director) {
+        scene.director = {};
+    }
+     const requiredDirectorFields = [
+      "entryDuration", "exitDuration", "entryDelay", "exitDelay",
+      "backgroundColor", "textColor", "parallaxIntensity",
+      "scrollSpeed", "animationDuration", "entryEffect", "exitEffect", "entryEasing", "exitEasing",
+      "headingSize", "bodySize", "fontWeight", "alignment",
+      "fadeOnScroll", "scaleOnScroll", "blurOnScroll",
+      "staggerChildren", "layerDepth", "transformOrigin",
+      "overflowBehavior", "backdropBlur", "mixBlendMode",
+      "enablePerspective", "customCSSClasses",
+      "textShadow", "textGlow", "paddingTop", "paddingBottom",
+      "mediaPosition", "mediaScale", "mediaOpacity"
+    ];
+    requiredDirectorFields.forEach(field => {
+        if (scene.director[field] === undefined || scene.director[field] === null) {
+            if (DEFAULT_DIRECTOR_CONFIG.hasOwnProperty(field)) {
+                scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field];
+            } else {
+                // Fallback for fields not explicitly in DEFAULT_DIRECTOR_CONFIG but required by schema
+                if (typeof field === 'boolean') scene.director[field] = false;
+                else if (typeof field === 'number') scene.director[field] = 0;
+                else scene.director[field] = ''; // Fallback to empty string for others
+            }
+        }
+    });
+
+    // Ensure gradient fields are handled
+    if (scene.director.gradientColors === undefined) {
+      scene.director.gradientColors = DEFAULT_DIRECTOR_CONFIG.gradientColors;
+    }
+    if (scene.director.gradientDirection === undefined) {
+      scene.director.gradientDirection = DEFAULT_DIRECTOR_CONFIG.gradientDirection;
+    }
+
+
     // Validate asset IDs against static placeholders
     for (const assetId of scene.assetIds) {
       if (!finalValidAssetIds.includes(assetId)) {
