@@ -327,6 +327,9 @@ export default function BrandingProjectPage() {
         const fromState = { ...entryEffect.from };
         const toState = { ...entryEffect.to };
         
+        // Store original filter for blur-focus restoration
+        const hasBlurEffect = director.entryEffect === 'blur-focus';
+        
         // Replace opacity with autoAlpha (controls both opacity and visibility)
         if ('opacity' in fromState) {
           fromState.autoAlpha = fromState.opacity;
@@ -342,7 +345,7 @@ export default function BrandingProjectPage() {
           toState.autoAlpha = 1;
         }
         
-        // Animate the CONTENT WRAPPER (not the section background)
+        // Animate the CONTENT WRAPPER ONLY (never the section background)
         const targetElement = contentWrapper || element;
         
         // Main entry/exit animation with FULL REVERSIBILITY
@@ -381,10 +384,10 @@ export default function BrandingProjectPage() {
               },
               onEnterBack: () => {
                 // When scrolling UP back into this scene, reverse exit and restore entry
-                // Preserve blur-focus effect if it's the entry animation
                 const restoreState = { ...toState };
-                if (director.entryEffect !== 'blur-focus') {
-                  restoreState.filter = 'blur(0px)';
+                // Only add filter reset if it wasn't part of the original animation
+                if (!hasBlurEffect && 'filter' in restoreState) {
+                  delete restoreState.filter;
                 }
                 gsap.to(targetElement, {
                   ...restoreState,
@@ -394,10 +397,10 @@ export default function BrandingProjectPage() {
               },
               onLeaveBack: () => {
                 // When scrolling UP past this scene, reverse to initial hidden state
-                // Keep entry blur if it's a blur-focus effect
                 const exitState = { ...fromState };
-                if (director.entryEffect !== 'blur-focus') {
-                  exitState.filter = 'blur(0px)';
+                // Preserve blur animations, remove filter from non-blur effects
+                if (!hasBlurEffect && 'filter' in exitState) {
+                  delete exitState.filter;
                 }
                 gsap.to(targetElement, {
                   ...exitState,
@@ -425,7 +428,7 @@ export default function BrandingProjectPage() {
           });
         }
         
-        // Optional: Fade on scroll effect (on section background, not content) - FULLY REVERSIBLE
+        // Optional: Fade on scroll effect ONLY on section background (never content wrapper)
         if (director.fadeOnScroll) {
           gsap.to(element, {
             opacity: 0.85,
@@ -434,22 +437,23 @@ export default function BrandingProjectPage() {
               start: "top top",
               end: "bottom top",
               scrub: scrubSpeed,
-              // Scrub automatically handles reversibility
             }
           });
         }
         
-        // Optional: Scale on scroll effect (on content, subtle) - FULLY REVERSIBLE
-        if (director.scaleOnScroll && !director.parallaxIntensity) {
-          gsap.to(targetElement, {
-            scale: 0.98,
-            scrollTrigger: {
-              trigger: element,
-              start: "top top",
-              end: "bottom top",
-              scrub: scrubSpeed,
-              // Scrub automatically handles reversibility
-            }
+        // Optional: Scale on scroll effect ONLY on media elements (never full content)
+        // This prevents conflict with entry/exit animations
+        if (director.scaleOnScroll && !director.parallaxIntensity && mediaElements.length > 0) {
+          mediaElements.forEach((media) => {
+            gsap.to(media, {
+              scale: 0.98,
+              scrollTrigger: {
+                trigger: element,
+                start: "top top",
+                end: "bottom top",
+                scrub: scrubSpeed,
+              }
+            });
           });
         }
       }
