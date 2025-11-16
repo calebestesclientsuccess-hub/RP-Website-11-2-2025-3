@@ -64,7 +64,7 @@ import sitemapRouter from './routes/sitemap';
 import internalLinkingRouter from './routes/internal-linking';
 import relatedContentRouter from './routes/related-content';
 import analyticsRouter from './routes/analytics';
-import { aiPromptTemplates } from "@db/schema";
+import { aiPromptTemplates } from "@shared/schema";
 
 
 // Define default director configuration for new scenes
