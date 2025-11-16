@@ -24,9 +24,10 @@ import {
   type Project, type InsertProject,
   type ProjectScene, type InsertProjectScene,
   type PromptTemplate, type InsertPromptTemplate,
+  type PortfolioPrompt, type InsertPortfolioPrompt, type UpdatePortfolioPrompt,
   users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens,
   assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants, leads, featureFlags, insertLeadSchema,
-  projects, projectScenes, promptTemplates, portfolioConversations, portfolioVersions, contentAssets
+  projects, projectScenes, promptTemplates, portfolioPrompts, portfolioConversations, portfolioVersions, contentAssets
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, ilike, sql } from "drizzle-orm";
