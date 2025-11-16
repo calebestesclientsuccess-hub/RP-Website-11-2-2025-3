@@ -722,7 +722,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               src={content.url}
               alt={content.alt || "Scene image"}
               className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
-              data-media-opacity={director.mediaOpacity}
+              style={{ opacity: director.mediaOpacity }}
               loading="lazy"
             />
           </div>
@@ -753,7 +753,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               src={content.url}
               controls
               className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
-              data-media-opacity={director.mediaOpacity}
+              style={{ opacity: director.mediaOpacity }}
             />
           </div>
           {content.caption && (
@@ -794,14 +794,14 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 src={content.media}
                 controls
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
-                data-media-opacity={director.mediaOpacity}
+                style={{ opacity: director.mediaOpacity }}
               />
             ) : (
               <img
                 src={content.media}
                 alt={content.alt || "Scene media"}
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
-                data-media-opacity={director.mediaOpacity}
+                style={{ opacity: director.mediaOpacity }}
                 loading="lazy"
               />
             )}
