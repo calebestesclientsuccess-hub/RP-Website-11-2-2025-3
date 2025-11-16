@@ -1433,103 +1433,113 @@ Return:
 
   for (let i = 0; i < result.scenes.length; i++) {
     const scene = result.scenes[i];
+    const previousSceneLayout = i > 0 ? result.scenes[i - 1].layout : null;
     let scenePrompt = '';
 
     switch (scene.sceneType) {
       case 'split':
-        scenePrompt = buildSplitScenePrompt(scene, catalog);
+        scenePrompt = buildSplitScenePrompt(scene, catalog, i, previousSceneLayout);
         break;
       case 'gallery':
-        scenePrompt = buildGalleryScenePrompt(scene, catalog);
+        scenePrompt = buildGalleryScenePrompt(scene, catalog, i, previousSceneLayout);
         break;
       case 'quote':
-        scenePrompt = buildQuoteScenePrompt(scene, catalog);
+        scenePrompt = buildQuoteScenePrompt(scene, catalog, i, previousSceneLayout);
         break;
       case 'fullscreen':
-        scenePrompt = buildFullscreenScenePrompt(scene, catalog);
+        scenePrompt = buildFullscreenScenePrompt(scene, catalog, i, previousSceneLayout);
         break;
       default:
         // Skip refinement for basic scene types (text, image, video) and 'component'
-        if (scene.sceneType === 'component') {
-            // Special handling for component scenes if needed, but for now, skip
-            console.log(`[Portfolio Director] Stage 3.5 skipping refinement for 'component' scene type (index ${i}).`);
-        }
         continue;
     }
 
-    if (scenePrompt) {
-      try {
-        const sceneRefinementResponse = await aiClient.models.generateContent({
-          model: "gemini-2.5-pro",
-          contents: [{ role: "user", parts: [{ text: scenePrompt }] }],
-          config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                scene: {
-                  type: Type.OBJECT,
-                  properties: {
-                    sceneType: { type: Type.STRING },
-                    assetIds: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    layout: { type: Type.STRING },
-                    director: {
-                      type: Type.OBJECT,
-                      properties: {
-                        entryDuration: { type: Type.NUMBER },
-                        exitDuration: { type: Type.NUMBER },
-                        animationDuration: { type: Type.NUMBER },
-                        entryDelay: { type: Type.NUMBER },
-                        exitDelay: { type: Type.NUMBER },
-                        backgroundColor: { type: Type.STRING },
-                        textColor: { type: Type.STRING },
-                        parallaxIntensity: { type: Type.NUMBER },
-                        scrollSpeed: { type: Type.STRING },
-                        entryEffect: { type: Type.STRING },
-                        exitEffect: { type: Type.STRING },
-                        entryEasing: { type: Type.STRING },
-                        exitEasing: { type: Type.STRING },
-                        fadeOnScroll: { type: Type.BOOLEAN },
-                        scaleOnScroll: { type: Type.BOOLEAN },
-                        blurOnScroll: { type: Type.BOOLEAN },
-                        headingSize: { type: Type.STRING },
-                        bodySize: { type: Type.STRING },
-                        fontWeight: { type: Type.STRING },
-                        alignment: { type: Type.STRING },
-                        staggerChildren: { type: Type.NUMBER },
-                        layerDepth: { type: Type.NUMBER },
-                        transformOrigin: { type: Type.STRING },
-                        overflowBehavior: { type: Type.STRING },
-                        backdropBlur: { type: Type.STRING },
-                        mixBlendMode: { type: Type.STRING },
-                        enablePerspective: { type: Type.BOOLEAN },
-                        customCSSClasses: { type: Type.STRING },
-                        textShadow: { type: Type.BOOLEAN },
-                        textGlow: { type: Type.BOOLEAN },
-                        paddingTop: { type: Type.STRING },
-                        paddingBottom: { type: Type.STRING },
-                        mediaPosition: { type: Type.STRING, nullable: true },
-                        mediaScale: { type: Type.STRING, nullable: true },
-                        mediaOpacity: { type: Type.NUMBER, nullable: true },
-                        gradientColors: { type: Type.ARRAY, items: { type: Type.STRING }, nullable: true },
-                        gradientDirection: { type: Type.STRING, nullable: true },
-                      }
-                    }
+    // Apply refinement if prompt was generated
+    try {
+      const sceneRefinementResponse = await aiClient.models.generateContent({
+        model: "gemini-2.5-pro",
+        contents: [{ role: "user", parts: [{ text: scenePrompt }] }],
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              scene: {
+                type: Type.OBJECT,
+                properties: {
+                  sceneType: { type: Type.STRING },
+                  assetIds: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  layout: { type: Type.STRING },
+                  director: {
+                    type: Type.OBJECT,
+                    properties: {
+                      entryDuration: { type: Type.NUMBER },
+                      exitDuration: { type: Type.NUMBER },
+                      animationDuration: { type: Type.NUMBER },
+                      entryDelay: { type: Type.NUMBER },
+                      exitDelay: { type: Type.NUMBER },
+                      backgroundColor: { type: Type.STRING },
+                      textColor: { type: Type.STRING },
+                      parallaxIntensity: { type: Type.NUMBER },
+                      scrollSpeed: { type: Type.STRING },
+                      entryEffect: { type: Type.STRING },
+                      exitEffect: { type: Type.STRING },
+                      entryEasing: { type: Type.STRING },
+                      exitEasing: { type: Type.STRING },
+                      fadeOnScroll: { type: Type.BOOLEAN },
+                      scaleOnScroll: { type: Type.BOOLEAN },
+                      blurOnScroll: { type: Type.BOOLEAN },
+                      headingSize: { type: Type.STRING },
+                      bodySize: { type: Type.STRING },
+                      fontWeight: { type: Type.STRING },
+                      alignment: { type: Type.STRING },
+                      staggerChildren: { type: Type.NUMBER },
+                      layerDepth: { type: Type.NUMBER },
+                      transformOrigin: { type: Type.STRING },
+                      overflowBehavior: { type: Type.STRING },
+                      backdropBlur: { type: Type.STRING },
+                      mixBlendMode: { type: Type.STRING },
+                      enablePerspective: { type: Type.BOOLEAN },
+                      customCSSClasses: { type: Type.STRING },
+                      textShadow: { type: Type.BOOLEAN },
+                      textGlow: { type: Type.BOOLEAN },
+                      paddingTop: { type: Type.STRING },
+                      paddingBottom: { type: Type.STRING },
+                      mediaPosition: { type: Type.STRING, nullable: true },
+                      mediaScale: { type: Type.STRING, nullable: true },
+                      mediaOpacity: { type: Type.NUMBER, nullable: true },
+                      gradientColors: { type: Type.ARRAY, items: { type: Type.STRING }, nullable: true },
+                      gradientDirection: { type: Type.STRING, nullable: true },
+                    },
+                    required: [
+                      "entryDuration", "exitDuration", "entryDelay", "exitDelay",
+                      "backgroundColor", "textColor", "parallaxIntensity",
+                      "scrollSpeed", "animationDuration", "entryEffect", "exitEffect", "entryEasing", "exitEasing",
+                      "headingSize", "bodySize", "fontWeight", "alignment",
+                      "fadeOnScroll", "scaleOnScroll", "blurOnScroll",
+                      "staggerChildren", "layerDepth", "transformOrigin",
+                      "overflowBehavior", "backdropBlur", "mixBlendMode",
+                      "enablePerspective", "customCSSClasses",
+                      "textShadow", "textGlow", "paddingTop", "paddingBottom",
+                      "mediaPosition", "mediaScale", "mediaOpacity"
+                    ]
                   }
-                }
+                },
+                required: ["sceneType", "assetIds", "director"]
               }
-            }
+            },
+            required: ["scene"]
           }
-        });
-
-        const refinedScene = JSON.parse(sceneRefinementResponse.text || '{}');
-        if (refinedScene.scene) {
-          result.scenes[i] = refinedScene.scene;
-          sceneTypeImprovements.push(`Scene ${i} (${scene.sceneType}): Applied type-specific refinement`);
         }
-      } catch (error) {
-        console.warn(`[Portfolio Director] Stage 3.5 failed for scene ${i}:`, error);
+      });
+
+      const refinedScene = JSON.parse(sceneRefinementResponse.text || '{}');
+      if (refinedScene.scene) {
+        result.scenes[i] = refinedScene.scene;
+        sceneTypeImprovements.push(`Scene ${i} (${scene.sceneType}): Applied type-specific refinement`);
       }
+    } catch (error) {
+      console.warn(`[Portfolio Director] Stage 3.5 failed for scene ${i}:`, error);
     }
   }
 
@@ -2394,10 +2404,52 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
  * These prompts refine individual scene types based on the 37-control framework
  */
 
-export function buildSplitScenePrompt(scene: GeneratedScene, catalog: ContentCatalog): string {
-  return `You are refining a SPLIT scene (side-by-side layout) for maximum cinematic impact.
+export function buildSplitScenePrompt(scene: GeneratedScene, catalog: ContentCatalog, sceneIndex: number, previousSceneLayout: string | null): string {
+  return `System Prompt: Stage 3 (The Scene Specialist - Split Scene)
+You are the Scene Specialist, the "Second Unit Director" for this film production.
 
-CURRENT SCENE CONFIGURATION:
+The 'Artistic Director' (your previous self from Stage 1) has done the main work, and the 'Technical Director' (Stage 2) has confirmed it's technically functional.
+
+Now, this single split scene has been flagged for your expert refinement. This is your "close-up." Your job is to take this good scene and make it great. You must elevate its artistic impact.
+
+The "Specialist's Mandate" (Your Rules)
+Your refinements are creative, but they must not violate the core production rules.
+
+Obey the Director's Vision: Your primary guide is the original ${catalog.directorNotes}. Your changes must amplify this vision, not contradict it.
+
+Obey the Narrative Arc: Your refinement must be consistent with the scene's place in the "Principle of Narrative Arc" (e.g., an "Act 2" content block should feel different from an "Act 1" hook).
+
+Use the "Source of Truth": You must use the Director's Lexicon and Advanced Artistic Combinations (Recipes) from the top of the Stage 1 prompt. You MUST IGNORE the older, redundant guides at the bottom of that prompt.
+
+Maintain 37 Controls: Your final output must still be a valid scene object with all 37 controls present and correct.
+
+The "Mandatory Creative Rationale" (Your Monologue)
+Before you return the refined JSON, you MUST first provide your "Creative Rationale" in prose, following this exact format:
+
+CREATIVE RATIONALE: "This split scene is Scene ${sceneIndex}, a core content block in 'Act 2.' The original generation was functional but lacked rhythm.
+
+Refinement 1 (Layout): The previousSceneLayout was '${previousSceneLayout || 'null'}'. To create the intended 'zig-zag' flow and prevent visual monotony, I am setting this scene's layout: '${previousSceneLayout === 'default' ? 'reverse' : 'default'}'.
+
+Refinement 2 (Stagger): To make the scene feel more alive, I am adding a subtle staggerChildren: 0.15s. This will animate the text in just before the media, guiding the user's eye.
+
+Refinement 3 (Pacing): I am slightly increasing the entryDuration to 1.4s to give the user time to register both elements, enhancing its 'elegant'-themed Director's Note.
+
+My refinements are complete."
+
+(You will then provide the single refined JSON scene object immediately after this monologue.)
+
+Scene to Refine
+You are refining only the single scene object provided below, using the critical context provided.
+
+Critical Context:
+
+Current Scene Index: ${sceneIndex}
+
+Previous Scene Layout: ${previousSceneLayout || 'null'} (This is the layout value of scene ${sceneIndex - 1}. null means this is the first scene.)
+
+Director's Vision (for context): ${catalog.directorNotes}
+
+Original Scene JSON:
 ${JSON.stringify(scene, null, 2)}
 
 AVAILABLE CONTENT CATALOG:
