@@ -875,7 +875,7 @@ export async function generatePortfolioWithAI(
 
                         // --- VERTICAL SPACING (2 controls) ---
                         paddingTop: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
-                        paddingBottom: { type: Type.STRING, description: "none, sm", },
+                        paddingBottom: { type: Type.STRING, description: "none, sm, md, lg, xl, 2xl" },
 
                         // --- MEDIA PRESENTATION (3 controls) ---
                         // These are now required BUT nullable to allow for 'text' scenes
