@@ -283,19 +283,18 @@ export default function PortfolioBuilder() {
       return;
     }
 
-    // AI Director Mode requires content catalog instead of manual scenes
-    if (useAiDirector) {
-      toast({
-        title: "AI Director Mode",
-        description: "Build a content catalog in Content Library, then use this mode to let Gemini orchestrate the entire portfolio.",
-        variant: "default"
-      });
-      return;
-    }
-
-    if (scenes.length === 0) {
-      toast({ title: "Error", description: "Please add at least one scene", variant: "destructive" });
-      return;
+    // Mode-specific validation
+    if (mode === "cinematic") {
+      if (sections.length === 0) {
+        toast({ title: "Error", description: "Please add at least one section for Cinematic Mode", variant: "destructive" });
+        return;
+      }
+    } else {
+      // Hybrid mode
+      if (scenes.length === 0) {
+        toast({ title: "Error", description: "Please add at least one scene for Hybrid Mode", variant: "destructive" });
+        return;
+      }
     }
 
     setIsGenerating(true);
