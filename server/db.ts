@@ -34,3 +34,6 @@ process.on('SIGTERM', async () => {
 });
 
 export const db = drizzle(pool);
+
+// Export pool for session management
+export const sessionPool = pool;
