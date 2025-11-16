@@ -1883,6 +1883,61 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
+  // AI Prompt Templates CRUD endpoints
+  app.get("/api/ai-prompt-templates", requireAuth, async (req, res) => {
+    try {
+      const activeOnly = req.query.activeOnly === 'true';
+      const templates = await storage.getAllPromptTemplates(activeOnly);
+      return res.json(templates);
+    } catch (error) {
+      console.error("Error fetching prompt templates:", error);
+      return res.status(500).json({ error: "Failed to fetch prompt templates" });
+    }
+  });
+
+  app.get("/api/ai-prompt-templates/:key", requireAuth, async (req, res) => {
+    try {
+      const template = await storage.getPromptTemplateByKey(req.params.key);
+      if (!template) {
+        return res.status(404).json({ error: "Prompt template not found" });
+      }
+      return res.json(template);
+    } catch (error) {
+      console.error("Error fetching prompt template:", error);
+      return res.status(500).json({ error: "Failed to fetch prompt template" });
+    }
+  });
+
+  app.post("/api/ai-prompt-templates", requireAuth, async (req, res) => {
+    try {
+      const template = await storage.createPromptTemplate(req.body);
+      return res.json(template);
+    } catch (error) {
+      console.error("Error creating prompt template:", error);
+      return res.status(500).json({ error: "Failed to create prompt template" });
+    }
+  });
+
+  app.put("/api/ai-prompt-templates/:id", requireAuth, async (req, res) => {
+    try {
+      const template = await storage.updatePromptTemplate(req.params.id, req.body);
+      return res.json(template);
+    } catch (error) {
+      console.error("Error updating prompt template:", error);
+      return res.status(500).json({ error: "Failed to update prompt template" });
+    }
+  });
+
+  app.delete("/api/ai-prompt-templates/:id", requireAuth, async (req, res) => {
+    try {
+      await storage.deletePromptTemplate(req.params.id);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting prompt template:", error);
+      return res.status(500).json({ error: "Failed to delete prompt template" });
+    }
+  });
+
   // Enhanced AI Portfolio Generation endpoint (scene-by-scene with per-scene AI prompts)
   // This endpoint handles both "cinematic" and "hybrid" modes, AND refinement
   app.post("/api/portfolio/generate-enhanced", requireAuth, async (req, res) => {

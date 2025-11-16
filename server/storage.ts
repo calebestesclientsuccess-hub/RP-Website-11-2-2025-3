@@ -905,7 +905,7 @@ export class DbStorage implements IStorage {
     return result.length > 0;
   }
 
-  // Prompt Templates CRUD methods
+  // Prompt Templates for AI scene generation
   async getAllPromptTemplates(tenantId: string, activeOnly?: boolean): Promise<PromptTemplate[]> {
     const conditions = [eq(promptTemplates.tenantId, tenantId)];
 

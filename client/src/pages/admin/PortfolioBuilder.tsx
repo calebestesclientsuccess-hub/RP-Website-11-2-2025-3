@@ -289,8 +289,8 @@ export default function PortfolioBuilder() {
     // Existing project selected - load scenes
     if (existingProjectScenes && existingProjectScenes.length > 0) {
       const scenesJson = JSON.stringify(
-        existingProjectScenes.map((scene: any) => scene.sceneConfig), 
-        null, 
+        existingProjectScenes.map((scene: any) => scene.sceneConfig),
+        null,
         2
       );
 
@@ -531,8 +531,8 @@ export default function PortfolioBuilder() {
     // In refinement mode, use currentPrompt; otherwise use portfolioAiPrompt
     const promptToSend = isRefinementMode ? currentPrompt : portfolioAiPrompt;
     if (!promptToSend.trim()) {
-      const errorMsg = isRefinementMode 
-        ? "Please enter a message to refine your scenes" 
+      const errorMsg = isRefinementMode
+        ? "Please enter a message to refine your scenes"
         : "Please provide guidance for AI generation or refinement";
       toast({ title: "Error", description: errorMsg, variant: "destructive" });
       return;
@@ -682,6 +682,15 @@ export default function PortfolioBuilder() {
               <div className="flex items-center gap-4">
                 <SidebarTrigger data-testid="button-sidebar-toggle" />
                 <h1 className="text-2xl font-bold">AI Portfolio Builder (Enhanced)</h1>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setLocation('/admin/ai-prompt-settings')}
+                >
+                  Manage AI Prompts
+                </Button>
               </div>
             </header>
 
@@ -1099,7 +1108,7 @@ export default function PortfolioBuilder() {
                                       toast({ title: "Copied to clipboard" });
                                     }}
                                     onFeedback={(type) => {
-                                      toast({ 
+                                      toast({
                                         title: type === "positive" ? "Thanks for the feedback!" : "We'll try to do better",
                                         description: "Your feedback helps improve Gemini"
                                       });
@@ -1634,7 +1643,7 @@ export default function PortfolioBuilder() {
                           <CardDescription>
                             {conversationHistory.length > 2
                               ? "Scenes refined based on your feedback"
-                              : "AI-generated scenes based on your prompts"}
+                              : "Scenes generated based on your prompts"}
                           </CardDescription>
                           {generatedScenes.confidenceScore !== undefined && (
                             <div className="flex items-center gap-2 mt-2">

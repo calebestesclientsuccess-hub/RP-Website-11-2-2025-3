@@ -239,8 +239,8 @@ export const assessmentAnswers = pgTable("assessment_answers", {
 });
 
 export const portfolioVersions = pgTable("portfolio_versions", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
-  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: 'cascade' }),
   versionNumber: integer("version_number").notNull(),
   scenesJson: jsonb("scenes_json").notNull(),
   assetMap: jsonb("asset_map").$type<Record<string, string>>(), // Maps placeholder IDs to real asset URLs
@@ -1172,3 +1172,24 @@ export const insertSecurityEventSchema = createInsertSchema(securityEvents).omit
   id: true,
   createdAt: true,
 });
+
+export const aiPromptTemplates = pgTable("ai_prompt_templates", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  promptKey: text("prompt_key").notNull().unique(), // e.g., "artistic_director", "technical_director"
+  promptName: text("prompt_name").notNull(), // Display name
+  promptDescription: text("prompt_description"), // What this prompt does
+  systemPrompt: text("system_prompt").notNull(), // The actual prompt template
+  isActive: boolean("is_active").default(true).notNull(),
+  version: integer("version").default(1).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertAiPromptTemplateSchema = createInsertSchema(aiPromptTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAiPromptTemplate = z.infer<typeof insertAiPromptTemplateSchema>;
+export type AiPromptTemplate = typeof aiPromptTemplates.$inferSelect;

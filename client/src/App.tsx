@@ -191,6 +191,7 @@ function Router() {
       <Route path="/admin/projects/new" component={ProjectForm} />
       <Route path="/admin/projects/:id/edit" component={ProjectForm} />
       <Route path="/admin/portfolio-builder" component={PortfolioBuilder} />
+          <Route path="/admin/ai-prompt-settings" component={() => import("./pages/admin/AIPromptSettings").then(m => m.default)} />
       <Route path="/admin/job-postings/new" component={JobPostingForm} />
       <Route path="/admin/job-postings/:id/edit" component={JobPostingForm} />
       <Route path="/admin/widget-config" component={WidgetConfigPage} />
