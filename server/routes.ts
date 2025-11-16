@@ -40,7 +40,6 @@ import {
   type InsertAssessmentResponse,
   projects,
   projectScenes,
-  insertDirectorConfigSchema // Assuming this is the schema for director config
 } from "@shared/schema";
 import { eq, and, asc } from "drizzle-orm";
 import { calculatePointsBasedBucket, calculateDecisionTreeBucket } from "./utils/assessment-scoring";
