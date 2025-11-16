@@ -723,6 +723,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               alt={content.alt || "Scene image"}
               className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
               style={{ opacity: director.mediaOpacity }}
+              data-media-opacity={director.mediaOpacity}
               loading="lazy"
             />
           </div>
@@ -754,6 +755,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
               controls
               className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
               style={{ opacity: director.mediaOpacity }}
+              data-media-opacity={director.mediaOpacity}
             />
           </div>
           {content.caption && (
@@ -795,6 +797,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 controls
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                 style={{ opacity: director.mediaOpacity }}
+                data-media-opacity={director.mediaOpacity}
               />
             ) : (
               <img
@@ -802,6 +805,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 alt={content.alt || "Scene media"}
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                 style={{ opacity: director.mediaOpacity }}
+                data-media-opacity={director.mediaOpacity}
                 loading="lazy"
               />
             )}
@@ -829,6 +833,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                     alt={img.alt || `Gallery image ${idx + 1}`}
                     className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]} hover:scale-105 transition-transform duration-500`}
                     style={{ opacity: director.mediaOpacity }}
+                    data-media-opacity={director.mediaOpacity}
                     loading="lazy"
                   />
                 </div>
@@ -882,6 +887,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 controls
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                 style={{ opacity: director.mediaOpacity }}
+                data-media-opacity={director.mediaOpacity}
               />
             ) : (
               <img
@@ -889,6 +895,7 @@ function SceneRenderer({ scene }: { scene: ProjectScene }) {
                 alt={content.alt || "Full screen media"}
                 className={`w-full h-full ${objectFitMap[director.mediaScale]} ${objectPositionMap[director.mediaPosition]}`}
                 style={{ opacity: director.mediaOpacity }}
+                data-media-opacity={director.mediaOpacity}
                 loading="lazy"
               />
             )}
