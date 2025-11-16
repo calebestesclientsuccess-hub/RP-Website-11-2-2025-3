@@ -192,7 +192,7 @@ export default function BrandingProjectPage() {
     const heroTitle = document.querySelector('[data-testid="text-project-title"]');
     const heroSubtitle = document.querySelector('[data-testid="text-project-subtitle"]');
     const heroBounce = document.querySelector('[data-testid="hero-bounce-indicator"]');
-    
+
     // Animate hero title
     if (heroTitle) {
       gsap.fromTo(heroTitle, 
@@ -206,7 +206,7 @@ export default function BrandingProjectPage() {
         }
       );
     }
-    
+
     // Animate hero subtitle with delay
     if (heroSubtitle) {
       gsap.fromTo(heroSubtitle,
@@ -220,7 +220,7 @@ export default function BrandingProjectPage() {
         }
       );
     }
-    
+
     // Animate bounce indicator with longer delay
     if (heroBounce) {
       gsap.fromTo(heroBounce,
@@ -254,14 +254,35 @@ export default function BrandingProjectPage() {
 
     // Setup scroll-driven animations for each scene
     const sceneElements = scrollContainerRef.current.querySelectorAll('[data-scene]');
-    
+
+    // Helper to get a clean state object, excluding properties GSAP might not handle well directly
+    // or that should be explicitly reset.
+    const getCleanState = (baseState: gsap.TweenVars = {}): gsap.TweenVars => {
+      const clean: gsap.TweenVars = {};
+      // Copy properties, excluding potential problematic ones or those we want to manage explicitly
+      for (const key in baseState) {
+        if (key !== 'opacity' && key !== 'filter' && key !== 'x' && key !== 'y' && key !== 'scale' && key !== 'rotation' && key !== 'rotationY') {
+          clean[key] = baseState[key];
+        }
+      }
+      // Ensure autoAlpha is handled
+      if ('autoAlpha' in baseState) {
+        clean.autoAlpha = baseState.autoAlpha;
+      } else if ('opacity' in baseState) {
+        clean.autoAlpha = baseState.opacity;
+      } else {
+        clean.autoAlpha = 1; // Default to visible if not specified
+      }
+      return clean;
+    };
+
     sceneElements.forEach((element, index) => {
       const scene = scenes[index];
       if (!scene) return;
-      
+
       // Merge director config with defaults
       const director = { ...DEFAULT_DIRECTOR_CONFIG, ...(scene.sceneConfig.director || {}) };
-      
+
       // Debug logging for director config (dev only)
       if (import.meta.env.DEV) {
         console.log(`[Scene ${index}] Director config:`, {
@@ -276,10 +297,10 @@ export default function BrandingProjectPage() {
           scaleOnScroll: director.scaleOnScroll,
         });
       }
-      
+
       // Get scrub speed based on director config
       const scrubSpeed = scrollSpeedMap[director.scrollSpeed] || 1.5;
-      
+
       // Track active scene (throttled state updates)
       let sceneUpdateTimeout: NodeJS.Timeout;
       ScrollTrigger.create({
@@ -301,14 +322,14 @@ export default function BrandingProjectPage() {
       const exitEffect = director.exitEffect ? (exitEffectMap[director.exitEffect] || exitEffectMap.fade) : null;
       const entryDuration = director.entryEffect === 'sudden' ? 0.1 : (director.entryDuration || DEFAULT_DIRECTOR_CONFIG.entryDuration);
       const exitDuration = director.exitDuration || DEFAULT_DIRECTOR_CONFIG.exitDuration;
-      
+
       if (prefersReducedMotion) {
         // Simplified animation for accessibility - just fade in/out
         gsap.fromTo(
           element,
-          { opacity: 0 },
+          { autoAlpha: 0 },
           {
-            opacity: 1,
+            autoAlpha: 1,
             duration: 0.3,
             delay: director.entryDelay || 0,
             scrollTrigger: {
@@ -322,14 +343,11 @@ export default function BrandingProjectPage() {
         // SEPARATE background and foreground animations to prevent conflicts
         const contentWrapper = element.querySelector('[data-scene-content]');
         const mediaElements = element.querySelectorAll('[data-media-opacity]');
-        
+
         // Entry animation - Use autoAlpha for safer visibility control
         const fromState = { ...entryEffect.from };
         const toState = { ...entryEffect.to };
-        
-        // Store original filter for blur-focus restoration
-        const hasBlurEffect = director.entryEffect === 'blur-focus';
-        
+
         // Replace opacity with autoAlpha (controls both opacity and visibility)
         if ('opacity' in fromState) {
           fromState.autoAlpha = fromState.opacity;
@@ -337,21 +355,21 @@ export default function BrandingProjectPage() {
         } else {
           fromState.autoAlpha = 0;
         }
-        
+
         if ('opacity' in toState) {
           toState.autoAlpha = toState.opacity;
           delete toState.opacity;
         } else {
           toState.autoAlpha = 1;
         }
-        
+
         // Animate the CONTENT WRAPPER ONLY (never the section background)
         const targetElement = contentWrapper || element;
-        
+
         // Main entry/exit animation with FULL REVERSIBILITY
         // Use elastic ease for bounce effect, otherwise power3
         const entryEase = director.entryEffect === 'elastic-bounce' ? "elastic.out(1, 0.5)" : "power3.out";
-        
+
         gsap.fromTo(
           targetElement,
           fromState,
@@ -369,7 +387,9 @@ export default function BrandingProjectPage() {
               onLeave: () => {
                 // When scrolling DOWN past this scene, apply exit effect
                 if (exitEffect) {
-                  const exitState = { ...exitEffect };
+                  // Use getCleanState to ensure only properties GSAP understands are passed,
+                  // and combine with the specific exit effect.
+                  const exitState = { ...getCleanState(), ...exitEffect };
                   // Convert opacity to autoAlpha for cleaner visibility handling
                   if ('opacity' in exitState) {
                     exitState.autoAlpha = exitState.opacity;
@@ -383,11 +403,12 @@ export default function BrandingProjectPage() {
                 }
               },
               onEnterBack: () => {
-                // When scrolling UP back into this scene, reverse exit and restore entry
-                const restoreState = { ...toState };
-                // Only add filter reset if it wasn't part of the original animation
-                if (!hasBlurEffect && 'filter' in restoreState) {
-                  delete restoreState.filter;
+                // When scrolling UP back into this scene, restore to fully visible state
+                const restoreState = { ...getCleanState(), ...toState };
+                // Preserve blur-focus effect if it's the entry animation
+                // If not a blur effect, ensure any residual filter is removed
+                if (director.entryEffect !== 'blur-focus' && 'filter' in restoreState) {
+                  restoreState.filter = 'blur(0px)';
                 }
                 gsap.to(targetElement, {
                   ...restoreState,
@@ -397,13 +418,14 @@ export default function BrandingProjectPage() {
               },
               onLeaveBack: () => {
                 // When scrolling UP past this scene, reverse to initial hidden state
-                const exitState = { ...fromState };
-                // Preserve blur animations, remove filter from non-blur effects
-                if (!hasBlurEffect && 'filter' in exitState) {
-                  delete exitState.filter;
+                const exitBackState = { ...getCleanState(), ...fromState };
+                // Preserve blur if it's a blur-focus entry effect
+                // If not a blur effect, ensure any residual filter is removed
+                if (director.entryEffect !== 'blur-focus' && 'filter' in exitBackState) {
+                  exitBackState.filter = 'blur(0px)';
                 }
                 gsap.to(targetElement, {
-                  ...exitState,
+                  ...exitBackState,
                   duration: entryDuration * 0.7,
                   ease: "power2.in",
                 });
@@ -411,7 +433,7 @@ export default function BrandingProjectPage() {
             }
           }
         );
-        
+
         // Parallax effect ONLY on media (not on section), and ONLY if no conflicting animations
         if (!prefersReducedMotion && director.parallaxIntensity > 0 && !director.scaleOnScroll) {
           mediaElements.forEach((media) => {
@@ -427,7 +449,7 @@ export default function BrandingProjectPage() {
             });
           });
         }
-        
+
         // Optional: Fade on scroll effect ONLY on section background (never content wrapper)
         if (director.fadeOnScroll) {
           gsap.to(element, {
@@ -440,7 +462,7 @@ export default function BrandingProjectPage() {
             }
           });
         }
-        
+
         // Optional: Scale on scroll effect ONLY on media elements (never full content)
         // This prevents conflict with entry/exit animations
         if (director.scaleOnScroll && !director.parallaxIntensity && mediaElements.length > 0) {
@@ -472,15 +494,15 @@ export default function BrandingProjectPage() {
   // Navigate to a specific scene
   const scrollToScene = (index: number) => {
     if (!animationsReady || !scrollContainerRef.current) return;
-    
+
     const sceneElements = scrollContainerRef.current.querySelectorAll('[data-scene]');
     const targetScene = sceneElements[index] as HTMLElement;
-    
+
     if (targetScene) {
       const sceneTop = targetScene.getBoundingClientRect().top + window.scrollY;
       const viewportHeight = window.innerHeight;
       const scrollTarget = sceneTop - (viewportHeight * 0.4);
-      
+
       window.scrollTo({ top: scrollTarget, behavior: 'smooth' });
     }
   };
@@ -493,7 +515,7 @@ export default function BrandingProjectPage() {
         <Helmet>
           <title>Loading... | Revenue Party</title>
         </Helmet>
-        
+
         <div className="container mx-auto px-4 py-12">
           <Skeleton className="h-8 w-32 mb-8" />
           <Skeleton className="h-96 w-full mb-8" />
@@ -598,7 +620,7 @@ export default function BrandingProjectPage() {
           scenes.map((scene, index) => {
             // Merge director config with defaults
             const director = { ...DEFAULT_DIRECTOR_CONFIG, ...(scene.sceneConfig.director || {}) };
-            
+
             return (
               <section
                 key={scene.id}

@@ -782,11 +782,11 @@ const fullscreenSceneSchema = z.object({
 
 // Director configuration schema (optional customization)
 const directorConfigSchema = z.object({
-  entryEffect: z.enum(["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-in", "zoom-out", "sudden"]).optional(),
-  entryDuration: z.number().min(0.25).max(5.0).optional(),
+  entryEffect: z.enum(["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-in", "zoom-out", "sudden", "cross-fade", "rotate-in", "flip-in", "spiral-in", "elastic-bounce", "blur-focus"]).optional(),
+  entryDuration: z.number().min(0.1).max(5.0).optional(),
   entryDelay: z.number().min(0).max(10.0).optional(),
-  exitEffect: z.enum(["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-out", "dissolve"]).optional(),
-  exitDuration: z.number().min(0.25).max(5.0).optional(),
+  exitEffect: z.enum(["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-out", "dissolve", "cross-fade", "rotate-out", "flip-out", "scale-blur"]).optional(),
+  exitDuration: z.number().min(0.1).max(5.0).optional(),
   backgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   textColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   gradientColors: z.array(z.string().regex(/^#[0-9A-Fa-f]{6}$/)).optional(),
@@ -878,8 +878,8 @@ export const insertPromptTemplateSchema = createInsertSchema(promptTemplates).om
 export const updatePromptTemplateSchema = insertPromptTemplateSchema.partial();
 
 // Director configuration constants and defaults
-export const ENTRY_EFFECTS = ["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-in", "zoom-out", "sudden"] as const;
-export const EXIT_EFFECTS = ["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-out", "dissolve"] as const;
+export const ENTRY_EFFECTS = ["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-in", "zoom-out", "sudden", "cross-fade", "rotate-in", "flip-in", "spiral-in", "elastic-bounce", "blur-focus"] as const;
+export const EXIT_EFFECTS = ["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-out", "dissolve", "cross-fade", "rotate-out", "flip-out", "scale-blur"] as const;
 export const HEADING_SIZES = ["4xl", "5xl", "6xl", "7xl", "8xl"] as const;
 export const BODY_SIZES = ["base", "lg", "xl", "2xl"] as const;
 export const FONT_WEIGHTS = ["normal", "medium", "semibold", "bold"] as const;
