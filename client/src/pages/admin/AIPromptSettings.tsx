@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,11 +13,21 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, RotateCcw, Edit2, Eye } from "lucide-react";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import type { AiPromptTemplate } from "@shared/schema";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Helmet } from "react-helmet-async";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+
 
 export default function AIPromptSettings() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [editingPrompt, setEditingPrompt] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
+
+  const style = {
+    "--sidebar-width": "16rem",
+  } as React.CSSProperties;
 
   const { data: templates = [], isLoading } = useQuery<AiPromptTemplate[]>({
     queryKey: ["/api/ai-prompt-templates"],
@@ -69,90 +78,120 @@ export default function AIPromptSettings() {
   if (isLoading) {
     return (
       <ProtectedRoute>
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin" />
-        </div>
+        <Helmet>
+          <title>Loading Prompt Settings | Admin Dashboard</title>
+        </Helmet>
+        <SidebarProvider style={style}>
+          <div className="flex h-screen w-full">
+            <AdminSidebar />
+            <div className="flex flex-col flex-1">
+              <header className="flex items-center gap-4 p-4 border-b">
+                <SidebarTrigger data-testid="button-sidebar-toggle" />
+                <h1 className="text-xl font-semibold">AI Prompt Settings</h1>
+              </header>
+              <main className="flex-1 overflow-auto p-6">
+                <div className="flex justify-center items-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                </div>
+              </main>
+            </div>
+          </div>
+        </SidebarProvider>
       </ProtectedRoute>
     );
   }
 
   return (
     <ProtectedRoute>
-      <div className="container mx-auto py-8">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold">AI Prompt Templates</h2>
-            <p className="text-muted-foreground mt-2">
-              Customize the system prompts used in the AI Portfolio Director's 6-stage refinement pipeline
-            </p>
+      <Helmet>
+        <title>AI Prompt Settings | Admin Dashboard</title>
+      </Helmet>
+      <SidebarProvider style={style}>
+        <div className="flex h-screen w-full">
+          <AdminSidebar />
+          <div className="flex flex-col flex-1">
+            <header className="flex items-center gap-4 p-4 border-b">
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <h1 className="text-xl font-semibold">AI Prompt Settings</h1>
+            </header>
+            <main className="flex-1 overflow-auto p-6">
+              <div className="container mx-auto max-w-6xl">
+                <div className="mb-8">
+                  <p className="text-muted-foreground">
+                    Manage system prompts used for AI-generated portfolios
+                  </p>
+                </div>
+                <ErrorBoundary>
+                  <Tabs defaultValue="core" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="core">Core Chain (4)</TabsTrigger>
+                      <TabsTrigger value="specialists">Scene Specialists (4)</TabsTrigger>
+                      <TabsTrigger value="all">All Prompts</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="core" className="space-y-4 mt-4">
+                      {templates
+                        .filter((t) =>
+                          ['artistic_director', 'technical_director', 'executive_producer'].includes(t.promptKey)
+                        )
+                        .map((template) => (
+                          <PromptCard
+                            key={template.id}
+                            template={template}
+                            isEditing={editingPrompt === template.id}
+                            editedContent={editedContent}
+                            onEdit={handleEdit}
+                            onSave={handleSave}
+                            onCancel={handleCancel}
+                            onToggleActive={handleToggleActive}
+                            onContentChange={setEditedContent}
+                            isSaving={updatePromptMutation.isPending}
+                          />
+                        ))}
+                    </TabsContent>
+
+                    <TabsContent value="specialists" className="space-y-4 mt-4">
+                      {templates
+                        .filter((t) => t.promptKey.includes('specialist'))
+                        .map((template) => (
+                          <PromptCard
+                            key={template.id}
+                            template={template}
+                            isEditing={editingPrompt === template.id}
+                            editedContent={editedContent}
+                            onEdit={handleEdit}
+                            onSave={handleSave}
+                            onCancel={handleCancel}
+                            onToggleActive={handleToggleActive}
+                            onContentChange={setEditedContent}
+                            isSaving={updatePromptMutation.isPending}
+                          />
+                        ))}
+                    </TabsContent>
+
+                    <TabsContent value="all" className="space-y-4 mt-4">
+                      {templates.map((template) => (
+                        <PromptCard
+                          key={template.id}
+                          template={template}
+                          isEditing={editingPrompt === template.id}
+                          editedContent={editedContent}
+                          onEdit={handleEdit}
+                          onSave={handleSave}
+                          onCancel={handleCancel}
+                          onToggleActive={handleToggleActive}
+                          onContentChange={setEditedContent}
+                          isSaving={updatePromptMutation.isPending}
+                        />
+                      ))}
+                    </TabsContent>
+                  </Tabs>
+                </ErrorBoundary>
+              </div>
+            </main>
           </div>
-
-          <Tabs defaultValue="core" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="core">Core Chain (4)</TabsTrigger>
-              <TabsTrigger value="specialists">Scene Specialists (4)</TabsTrigger>
-              <TabsTrigger value="all">All Prompts</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="core" className="space-y-4 mt-4">
-              {templates
-                .filter((t) => 
-                  ['artistic_director', 'technical_director', 'executive_producer'].includes(t.promptKey)
-                )
-                .map((template) => (
-                  <PromptCard
-                    key={template.id}
-                    template={template}
-                    isEditing={editingPrompt === template.id}
-                    editedContent={editedContent}
-                    onEdit={handleEdit}
-                    onSave={handleSave}
-                    onCancel={handleCancel}
-                    onToggleActive={handleToggleActive}
-                    onContentChange={setEditedContent}
-                    isSaving={updatePromptMutation.isPending}
-                  />
-                ))}
-            </TabsContent>
-
-            <TabsContent value="specialists" className="space-y-4 mt-4">
-              {templates
-                .filter((t) => t.promptKey.includes('specialist'))
-                .map((template) => (
-                  <PromptCard
-                    key={template.id}
-                    template={template}
-                    isEditing={editingPrompt === template.id}
-                    editedContent={editedContent}
-                    onEdit={handleEdit}
-                    onSave={handleSave}
-                    onCancel={handleCancel}
-                    onToggleActive={handleToggleActive}
-                    onContentChange={setEditedContent}
-                    isSaving={updatePromptMutation.isPending}
-                  />
-                ))}
-            </TabsContent>
-
-            <TabsContent value="all" className="space-y-4 mt-4">
-              {templates.map((template) => (
-                <PromptCard
-                  key={template.id}
-                  template={template}
-                  isEditing={editingPrompt === template.id}
-                  editedContent={editedContent}
-                  onEdit={handleEdit}
-                  onSave={handleSave}
-                  onCancel={handleCancel}
-                  onToggleActive={handleToggleActive}
-                  onContentChange={setEditedContent}
-                  isSaving={updatePromptMutation.isPending}
-                />
-              ))}
-            </TabsContent>
-          </Tabs>
         </div>
-      </div>
+      </SidebarProvider>
     </ProtectedRoute>
   );
 }
