@@ -53,13 +53,17 @@ import { leadLimiter } from "./middleware/rate-limit";
 import { sanitizeInput } from "./middleware/input-sanitization";
 import { pdfUpload, imageUpload, validateUploadedFile } from "./middleware/file-validation";
 import { validatePasswordStrength } from "./utils/password-validator";
-import { 
-  checkAccountLockout, 
-  recordFailedAttempt, 
+import {
+  checkAccountLockout,
+  recordFailedAttempt,
   clearLoginAttempts,
-  getRemainingAttempts 
+  getRemainingAttempts
 } from "./middleware/account-lockout";
 import seoHealthRouter from "./routes/seo-health";
+import sitemapRouter from './routes/sitemap';
+import internalLinkingRouter from './routes/internal-linking';
+import relatedContentRouter from './routes/related-content';
+import analyticsRouter from './routes/analytics';
 
 // Define default director configuration for new scenes
 const DEFAULT_DIRECTOR_CONFIG = {
@@ -295,7 +299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recordFailedAttempt(req);
         await logFailedLogin(req, username, 'User not found');
         const remaining = getRemainingAttempts(req);
-        return res.status(401).json({ 
+        return res.status(401).json({
           error: "Invalid credentials",
           remainingAttempts: remaining > 0 ? remaining : undefined,
         });
@@ -307,7 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recordFailedAttempt(req);
         await logFailedLogin(req, username, 'Invalid password');
         const remaining = getRemainingAttempts(req);
-        return res.status(401).json({ 
+        return res.status(401).json({
           error: "Invalid credentials",
           remainingAttempts: remaining > 0 ? remaining : undefined,
         });
@@ -3683,6 +3687,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // SEO health check
   app.use(seoHealthRouter);
+  app.use(sitemapRouter);
+  app.use(internalLinkingRouter);
+  app.use(relatedContentRouter);
+  app.use(analyticsRouter);
 
   return httpServer;
 }

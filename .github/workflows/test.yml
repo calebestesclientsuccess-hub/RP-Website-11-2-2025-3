@@ -91,3 +91,24 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start server
+        run: npm run preview &
+        env:
+          NODE_ENV: production
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:5000 -t 30000
+
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Check bundle size budgets
+        run: npx tsx scripts/check-bundle-size.ts

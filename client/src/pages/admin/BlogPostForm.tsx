@@ -21,10 +21,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Helmet } from "react-helmet-async";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useLocation, useRoute } from "wouter";
-import { Loader2 } from "lucide-react";
+import { Loader2, Link as LinkIcon, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { BlogPost, InsertBlogPost } from "@shared/schema";
 import { insertBlogPostSchema } from "@shared/schema";
@@ -32,7 +32,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const formSchema = insertBlogPostSchema.extend({
   title: z.string().min(1, "Title is required"),
@@ -53,6 +53,71 @@ function slugify(text: string): string {
     .replace(/[\s_-]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+const InternalLinkSuggestions = ({
+  postId,
+  onInsertLink,
+}: {
+  postId: string | undefined;
+  onInsertLink: (link: { anchorText: string; targetSlug: string }) => void;
+}) => {
+  const [suggestions, setSuggestions] = useState<
+    Array<{ anchorText: string; targetSlug: string }>
+  >([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!postId) return;
+    const fetchSuggestions = async () => {
+      setLoading(true);
+      try {
+        const response = await apiRequest("GET", `/api/blog-posts/${postId}/suggested-links`);
+        setSuggestions(response.data);
+      } catch (error) {
+        console.error("Failed to fetch link suggestions:", error);
+        setSuggestions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSuggestions();
+  }, [postId]);
+
+  return (
+    <div className="p-4 border rounded-md bg-secondary/50">
+      <div className="flex items-center gap-2 mb-3">
+        <Lightbulb className="w-5 h-5 text-primary" />
+        <h3 className="text-lg font-semibold">Link Suggestions</h3>
+      </div>
+      {loading ? (
+        <div className="flex justify-center items-center py-4">
+          <Loader2 className="w-6 h-6 animate-spin" />
+        </div>
+      ) : suggestions.length > 0 ? (
+        <ul className="space-y-3">
+          {suggestions.map((link, index) => (
+            <li key={index} className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground truncate max-w-[150px]">
+                {link.anchorText}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onInsertLink(link)}
+                className="ml-2"
+              >
+                <LinkIcon className="w-4 h-4 mr-1" />
+                Insert
+              </Button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-muted-foreground">No suggestions found.</p>
+      )}
+    </div>
+  );
+};
 
 export default function BlogPostForm() {
   const { toast } = useToast();
@@ -114,6 +179,8 @@ export default function BlogPostForm() {
 
   const title = form.watch("title");
   const status = form.watch("status");
+  const content = form.watch("content");
+  const setContent = form.setValue("content", _, true);
 
   useEffect(() => {
     if (title && !isEdit) {
@@ -314,12 +381,24 @@ export default function BlogPostForm() {
                         <FormItem>
                           <FormLabel>Content *</FormLabel>
                           <FormControl>
-                            <div data-testid="editor-content">
-                              <RichTextEditor
-                                content={field.value}
-                                onChange={field.onChange}
-                                placeholder="Write your blog post content here..."
-                              />
+                            <div className="grid grid-cols-3 gap-4">
+                              <div className="col-span-2">
+                                <RichTextEditor
+                                  content={field.value}
+                                  onChange={field.onChange}
+                                  placeholder="Write your blog post content here..."
+                                />
+                              </div>
+                              <div className="col-span-1">
+                                <InternalLinkSuggestions
+                                  postId={postId}
+                                  onInsertLink={(link) => {
+                                    field.onChange(
+                                      content + `\n\n[${link.anchorText}](/blog/${link.targetSlug})`
+                                    );
+                                  }}
+                                />
+                              </div>
                             </div>
                           </FormControl>
                           <FormMessage />
