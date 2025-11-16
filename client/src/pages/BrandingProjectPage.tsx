@@ -325,6 +325,8 @@ export default function BrandingProjectPage() {
         
         // Animate the CONTENT WRAPPER (not the section background)
         const targetElement = contentWrapper || element;
+        
+        // Main entry/exit animation with FULL REVERSIBILITY
         gsap.fromTo(
           targetElement,
           fromState,
@@ -335,8 +337,36 @@ export default function BrandingProjectPage() {
             ease: "power3.out",
             scrollTrigger: {
               trigger: element,
-              start: "top 80%", // Start earlier for smoother reveal
+              start: "top 80%",
+              end: "bottom 20%",
+              // RUSSIAN DOLL EFFECT: play forward on enter, reverse on leave back
               toggleActions: "play none none reverse",
+              onLeave: () => {
+                // When scrolling DOWN past this scene, apply exit effect
+                if (exitEffect) {
+                  gsap.to(targetElement, {
+                    ...exitEffect,
+                    duration: exitDuration,
+                    ease: "power2.in",
+                  });
+                }
+              },
+              onEnterBack: () => {
+                // When scrolling UP back into this scene, reverse exit and restore entry
+                gsap.to(targetElement, {
+                  ...toState,
+                  duration: entryDuration * 0.7, // Slightly faster on return
+                  ease: "power2.out",
+                });
+              },
+              onLeaveBack: () => {
+                // When scrolling UP past this scene, reverse to initial hidden state
+                gsap.to(targetElement, {
+                  ...fromState,
+                  duration: entryDuration * 0.7,
+                  ease: "power2.in",
+                });
+              },
             }
           }
         );
@@ -357,41 +387,7 @@ export default function BrandingProjectPage() {
           });
         }
         
-        // Exit animation - USE OPACITY ONLY (not autoAlpha)
-        if (exitEffect) {
-          const exitState = { ...exitEffect };
-          
-          // Convert to opacity-only (prevents flash)
-          if ('opacity' in exitState) {
-            // Keep opacity
-          } else {
-            exitState.opacity = 0;
-          }
-          
-          gsap.to(targetElement, {
-            ...exitState,
-            duration: exitDuration,
-            ease: "power2.in",
-            scrollTrigger: {
-              trigger: element,
-              start: "bottom 40%", // Start earlier
-              toggleActions: "play none none reverse",
-              onEnterBack: () => {
-                // Reset to visible state when scrolling back
-                gsap.to(targetElement, {
-                  opacity: 1,
-                  y: 0,
-                  x: 0,
-                  scale: 1,
-                  filter: 'blur(0px)',
-                  duration: 0.3,
-                });
-              },
-            }
-          });
-        }
-        
-        // Optional: Fade on scroll effect (on section background, not content)
+        // Optional: Fade on scroll effect (on section background, not content) - FULLY REVERSIBLE
         if (director.fadeOnScroll) {
           gsap.to(element, {
             opacity: 0.85,
@@ -400,11 +396,12 @@ export default function BrandingProjectPage() {
               start: "top top",
               end: "bottom top",
               scrub: scrubSpeed,
+              // Scrub automatically handles reversibility
             }
           });
         }
         
-        // Optional: Scale on scroll effect (on content, subtle)
+        // Optional: Scale on scroll effect (on content, subtle) - FULLY REVERSIBLE
         if (director.scaleOnScroll && !director.parallaxIntensity) {
           gsap.to(targetElement, {
             scale: 0.98,
@@ -413,6 +410,7 @@ export default function BrandingProjectPage() {
               start: "top top",
               end: "bottom top",
               scrub: scrubSpeed,
+              // Scrub automatically handles reversibility
             }
           });
         }
