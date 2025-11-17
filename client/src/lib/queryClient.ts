@@ -15,28 +15,28 @@ export async function apiRequest(
 ): Promise<Response> {
   const isFormData = data instanceof FormData;
   
-  const defaultHeaders: HeadersInit = isFormData 
-    ? {} 
-    : data 
-      ? { "Content-Type": "application/json" } 
-      : {};
-
-  const mergedHeaders = {
-    ...defaultHeaders,
-    ...(options?.headers || {}),
-  };
-
   const computedBody = data !== undefined 
     ? (isFormData ? data : JSON.stringify(data))
     : options?.body;
 
-  const res = await fetch(url, {
+  // For FormData, we must NOT set headers - browser auto-generates Content-Type with boundary
+  // For other data, merge default JSON headers with any custom headers
+  const fetchOptions: RequestInit = {
     ...options,
     method,
-    headers: mergedHeaders,
     body: computedBody,
     credentials: "include",
-  });
+  };
+
+  if (!isFormData) {
+    const defaultHeaders: HeadersInit = data ? { "Content-Type": "application/json" } : {};
+    fetchOptions.headers = {
+      ...defaultHeaders,
+      ...(options?.headers || {}),
+    };
+  }
+
+  const res = await fetch(url, fetchOptions);
 
   await throwIfResNotOk(res);
   return res;

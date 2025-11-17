@@ -42,9 +42,7 @@ export default function MediaLibrary() {
 
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await apiRequest("POST", "/api/media-library/upload", formData, {
-        headers: {} // Let browser set Content-Type with boundary
-      });
+      const response = await apiRequest("POST", "/api/media-library/upload", formData);
       return response.json();
     },
     onSuccess: () => {
