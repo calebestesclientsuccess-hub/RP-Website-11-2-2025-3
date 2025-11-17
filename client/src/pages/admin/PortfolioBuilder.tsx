@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, X, Sparkles, Loader2, Edit, ArrowUp, ArrowDown, Trash2, ChevronDown, Send } from "lucide-react";
+import { Plus, X, Sparkles, Loader2, Edit, ArrowUp, ArrowDown, Trash2, ChevronDown, Send, Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Project } from "@shared/schema";
 import {
@@ -144,6 +144,9 @@ export default function PortfolioBuilder() {
   const [selectedPlaceholder, setSelectedPlaceholder] = useState<PlaceholderId | null>(null);
   const [assetMap, setAssetMap] = useState<Record<string, string>>({});
 
+  // State for quick upload dialog
+  const [showQuickUpload, setShowQuickUpload] = useState(false);
+
   // --- Form State for Scene Editor ---
   const form = useForm({
     defaultValues: {
@@ -191,7 +194,7 @@ export default function PortfolioBuilder() {
   // Fetch media library for media selection
   const { data: mediaAssets = [] } = useQuery<any[]>({
     queryKey: ["/api/media-library"],
-    staleTime: 1 * 60 * 1000,
+    staleTime: 1 * 60 * 1000, // 1 minute
   });
 
   // Fetch scenes separately for the selected project
@@ -816,7 +819,7 @@ export default function PortfolioBuilder() {
                             data-testid="input-project-client"
                           />
                         </div>
-                        
+
                         <div className="grid grid-cols-3 gap-3">
                           <div className="space-y-2">
                             <Label htmlFor="color-primary">Primary Color</Label>
@@ -1613,7 +1616,7 @@ export default function PortfolioBuilder() {
                       {currentSceneJson && (
                         <Card className="border-2">
                           <CardHeader>
-                            <CardTitle className="text-base">Current Scene JSON</CardTitle>
+                            <CardTitle className="text-base">Scene JSON Editor</CardTitle>
                             <CardDescription>
                               This is what Gemini will use as the foundation for refinements
                             </CardDescription>
@@ -2113,6 +2116,65 @@ export default function PortfolioBuilder() {
           </Form>
         </DialogContent>
       </Dialog>
+
+      {/* Quick Upload Dialog */}
+      <Dialog open={showQuickUpload} onOpenChange={setShowQuickUpload}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Quick Upload to Project</DialogTitle>
+            <DialogDescription>
+              Upload media directly to {selectedProjectId ? "this project" : "a project"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Select File</Label>
+              <Input
+                type="file"
+                accept="image/*,video/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  const formData = new FormData();
+                  formData.append("file", file);
+                  if (selectedProjectId) {
+                    formData.append("project_id", selectedProjectId);
+                  }
+
+                  try {
+                    const response = await fetch("/api/media-library/upload", {
+                      method: "POST",
+                      body: formData,
+                    });
+
+                    if (!response.ok) throw new Error("Upload failed");
+
+                    toast({
+                      title: "Success",
+                      description: "Media uploaded successfully",
+                    });
+                    setShowQuickUpload(false);
+                    // Trigger media library refresh if MediaPicker is shown
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to upload media",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {selectedProjectId
+                ? "File will be automatically linked to this project"
+                : "Please select a project first"}
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </SidebarProvider>
     </ProtectedRoute>
   );
 }

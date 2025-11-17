@@ -36,6 +36,11 @@ export default function MediaLibrary() {
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [filter, setFilter] = useState<"all" | "image" | "video">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [uploadLabel, setUploadLabel] = useState("");
+  const [uploadTags, setUploadTags] = useState("");
+  const [uploadProjectId, setUploadProjectId] = useState<string>("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const style = {
     "--sidebar-width": "16rem",
