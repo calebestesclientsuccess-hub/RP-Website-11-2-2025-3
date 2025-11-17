@@ -1940,6 +1940,23 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
+  // Configure multer for media library uploads
+  const mediaUploadMulter = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: (req, file, cb) => {
+      const allowedMimes = [
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+        'video/mp4', 'video/webm'
+      ];
+      if (allowedMimes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM) are allowed'));
+      }
+    },
+    limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
+  });
+
   // Media Library endpoints
   app.get("/api/media-library", requireAuth, async (req, res) => {
     try {
@@ -1952,30 +1969,40 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
-  app.post("/api/media-library/upload", requireAuth, async (req, res) => {
+  app.post("/api/media-library/upload", requireAuth, mediaUploadMulter.single('file'), async (req, res) => {
     try {
       const tenantId = (req as any).tenantId || "default";
       
-      if (!req.files || !req.files.file) {
+      if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const file = req.files.file as any;
       const label = req.body.label || "";
       const tags = req.body.tags ? req.body.tags.split(",").map((t: string) => t.trim()) : [];
 
-      // Upload to Cloudinary
-      const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
-        resource_type: file.mimetype.startsWith("video/") ? "video" : "image",
-        folder: `tenants/${tenantId}`,
+      // Upload to Cloudinary using buffer
+      const uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            resource_type: req.file!.mimetype.startsWith("video/") ? "video" : "image",
+            folder: `tenants/${tenantId}`,
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        uploadStream.end(req.file!.buffer);
       });
+
+      const result = uploadResult as any;
 
       // Save to database
       const asset = await storage.createMediaAsset({
         tenantId,
-        cloudinaryPublicId: uploadResult.public_id,
-        cloudinaryUrl: uploadResult.secure_url,
-        mediaType: file.mimetype.startsWith("video/") ? "video" : "image",
+        cloudinaryPublicId: result.public_id,
+        cloudinaryUrl: result.secure_url,
+        mediaType: req.file.mimetype.startsWith("video/") ? "video" : "image",
         label: label || undefined,
         tags,
       });
