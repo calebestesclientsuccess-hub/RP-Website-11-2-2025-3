@@ -1194,24 +1194,6 @@ export const insertAiPromptTemplateSchema = createInsertSchema(aiPromptTemplates
 export type InsertAiPromptTemplate = z.infer<typeof insertAiPromptTemplateSchema>;
 export type AiPromptTemplate = typeof aiPromptTemplates.$inferSelect;
 
-// Security audit logging
-export const securityEvents = pgTable("security_events", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  eventType: text("event_type").notNull(),
-  severity: text("severity").notNull().$type<'low' | 'medium' | 'high' | 'critical'>(),
-  tenantId: text("tenant_id").references(() => tenants.id, { onDelete: "cascade" }),
-  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
-  endpoint: text("endpoint"),
-  method: text("method"),
-  details: jsonb("details"),
-  resolved: boolean("resolved").default(false).notNull(),
-  resolvedAt: timestamp("resolved_at"),
-  resolvedBy: text("resolved_by").references(() => users.id, { onDelete: "set null" }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
 // Portfolio-specific prompt overrides
 export const portfolioPrompts = pgTable("portfolio_prompts", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
