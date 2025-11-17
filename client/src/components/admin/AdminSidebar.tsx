@@ -33,6 +33,11 @@ const menuItems = [
     icon: Sparkles,
   },
   {
+    title: "Media Library",
+    url: "/admin/media-library",
+    icon: Upload,
+  },
+  {
     title: "Feature Flags",
     url: "/admin/feature-flags",
     icon: Flag,

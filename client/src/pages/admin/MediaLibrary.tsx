@@ -32,11 +32,6 @@ export default function MediaLibrary() {
   const [selectedLabel, setSelectedLabel] = useState<string>("");
   const [customTags, setCustomTags] = useState<string>("");
 
-  // Early return for SSR/hydration issues
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
   const style = {
     "--sidebar-width": "16rem",
   } as React.CSSProperties;
