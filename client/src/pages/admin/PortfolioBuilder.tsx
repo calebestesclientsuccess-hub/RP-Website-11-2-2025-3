@@ -2174,7 +2174,6 @@ export default function PortfolioBuilder() {
           </div>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
     </ProtectedRoute>
   );
 }
