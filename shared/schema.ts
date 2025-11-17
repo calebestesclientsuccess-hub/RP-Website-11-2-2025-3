@@ -795,6 +795,7 @@ const imageSceneSchema = z.object({
   type: z.literal("image"),
   content: z.object({
     url: z.string().url(),
+    mediaId: z.string().optional(), // NEW: Media Library reference
     alt: z.string().min(10, "Alt text must be at least 10 characters").max(125, "Alt text must be under 125 characters"),
     title: z.string().optional(),
   }),
@@ -811,15 +812,20 @@ const splitSceneSchema = z.object({
   type: z.literal("split"),
   content: z.object({
     media: z.string().url(),
-    mediaMediaId: z.string().optional(), // NEW: Optional reference to media_library for 'media' field
-    heading: z.string().min(1),
+    mediaMediaId: z.string().optional(), // NEW: Media Library reference for 'media' field
+    heading: z.string().optional(),
+    body: z.string().optional(),
   }).passthrough(),
 });
 
 const gallerySceneSchema = z.object({
   type: z.literal("gallery"),
   content: z.object({
-    images: z.array(z.string().url()).min(1),
+    images: z.array(z.object({
+      url: z.string().url(),
+      mediaId: z.string().optional(), // NEW: Media Library reference per image
+      alt: z.string().optional(),
+    })).min(1),
   }).passthrough(),
 });
 
