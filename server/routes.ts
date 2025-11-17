@@ -40,6 +40,7 @@ import {
   type InsertAssessmentResponse,
   projects,
   projectScenes,
+  aiPromptTemplates,
 } from "@shared/schema";
 import { eq, and, asc } from "drizzle-orm";
 import { calculatePointsBasedBucket, calculateDecisionTreeBucket } from "./utils/assessment-scoring";
@@ -64,7 +65,6 @@ import sitemapRouter from './routes/sitemap';
 import internalLinkingRouter from './routes/internal-linking';
 import relatedContentRouter from './routes/related-content';
 import analyticsRouter from './routes/analytics';
-import { aiPromptTemplates } from "@shared/schema";
 
 
 // Define default director configuration for new scenes
@@ -99,6 +99,23 @@ const imageUploadMulter = multer({ // Renamed to avoid conflict with imported im
     }
   },
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+// Multer configuration for media library uploads
+const mediaUpload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = [
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'video/mp4', 'video/webm'
+    ];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM) are allowed'));
+    }
+  },
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
 });
 
 // Middleware to check if user is authenticated
@@ -1940,23 +1957,6 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
-  // Configure multer for media library uploads
-  const mediaUploadMulter = multer({
-    storage: multer.memoryStorage(),
-    fileFilter: (req, file, cb) => {
-      const allowedMimes = [
-        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-        'video/mp4', 'video/webm'
-      ];
-      if (allowedMimes.includes(file.mimetype)) {
-        cb(null, true);
-      } else {
-        cb(new Error('Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM) are allowed'));
-      }
-    },
-    limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
-  });
-
   // Media Library endpoints
   app.get("/api/media-library", requireAuth, async (req, res) => {
     try {
@@ -1969,10 +1969,10 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
-  app.post("/api/media-library/upload", requireAuth, mediaUploadMulter.single('file'), async (req, res) => {
+  app.post("/api/media-library/upload", requireAuth, mediaUpload.single('file'), async (req, res) => {
     try {
       const tenantId = (req as any).tenantId || "default";
-      
+
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
@@ -1981,7 +1981,7 @@ Your explanation should be conversational and reference specific scene numbers.`
       const tags = req.body.tags ? req.body.tags.split(",").map((t: string) => t.trim()) : [];
 
       // Upload to Cloudinary using buffer
-      const uploadResult = await new Promise((resolve, reject) => {
+      const uploadResult = await new Promise<any>((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
             resource_type: req.file!.mimetype.startsWith("video/") ? "video" : "image",
