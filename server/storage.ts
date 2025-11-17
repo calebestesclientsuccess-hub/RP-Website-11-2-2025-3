@@ -1170,12 +1170,10 @@ export class DbStorage implements IStorage {
     return updated;
   }
 
-  async getConversationHistory(projectId: string) {
-    return db
-      .select()
-      .from(portfolioConversations)
+  async getConversationHistory(projectId: string): Promise<PortfolioConversation[]> {
+    return await db.select().from(portfolioConversations)
       .where(eq(portfolioConversations.projectId, projectId))
-      .orderBy(asc(portfolioConversations.timestamp));
+      .orderBy(portfolioConversations.createdAt);
   }
 
   async deleteConversationHistory(projectId: string) {
