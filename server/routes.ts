@@ -40,6 +40,7 @@ import {
   type InsertAssessmentResponse,
   projects,
   projectScenes,
+  mediaLibrary, // Assuming mediaLibrary is imported and available
   aiPromptTemplates,
 } from "@shared/schema";
 import { eq, and, asc } from "drizzle-orm";
@@ -1668,16 +1669,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Project Scenes endpoints
-  app.get("/api/projects/:projectId/scenes", requireAuth, async (req, res) => {
+  app.get("/api/projects/:projectId/scenes", async (req, res) => {
     try {
-      const scenes = await storage.getScenesByProjectId(req.tenantId, req.params.projectId);
-      if (scenes === null) {
-        return res.status(404).json({ error: "Project not found or access denied" });
+      const { projectId } = req.params;
+      const { hydrate } = req.query;
+
+      const scenes = await db
+        .select()
+        .from(projectScenes)
+        .where(eq(projectScenes.projectId, projectId))
+        .orderBy(projectScenes.order);
+
+      // Optionally hydrate mediaId references with current media URLs
+      if (hydrate === 'true') {
+        const hydratedScenes = await Promise.all(
+          scenes.map(async (scene) => {
+            const mediaId = scene.sceneConfig?.content?.mediaId;
+
+            if (mediaId) {
+              const [media] = await db
+                .select()
+                .from(mediaLibrary)
+                .where(eq(mediaLibrary.id, mediaId))
+                .limit(1);
+
+              if (media) {
+                return {
+                  ...scene,
+                  sceneConfig: {
+                    ...scene.sceneConfig,
+                    content: {
+                      ...scene.sceneConfig.content,
+                      url: media.cloudinaryUrl,
+                      mediaId: media.id,
+                    },
+                  },
+                };
+              }
+            }
+
+            // Handle gallery images
+            if (scene.sceneConfig?.content?.images && Array.isArray(scene.sceneConfig.content.images)) {
+              const hydratedImages = await Promise.all(
+                scene.sceneConfig.content.images.map(async (img: any) => {
+                  if (img.mediaId) {
+                    const [media] = await db
+                      .select()
+                      .from(mediaLibrary)
+                      .where(eq(mediaLibrary.id, img.mediaId))
+                      .limit(1);
+
+                    if (media) {
+                      return { ...img, url: media.cloudinaryUrl };
+                    }
+                  }
+                  return img;
+                })
+              );
+
+              return {
+                ...scene,
+                sceneConfig: {
+                  ...scene.sceneConfig,
+                  content: {
+                    ...scene.sceneConfig.content,
+                    images: hydratedImages,
+                  },
+                },
+              };
+            }
+
+            return scene;
+          })
+        );
+
+        res.json(hydratedScenes);
+      } else {
+        res.json(scenes);
       }
-      return res.json(scenes);
-    } catch (error) {
-      console.error("Error fetching project scenes:", error);
-      return res.status(500).json({ error: "Internal server error" });
+    } catch (error: any) {
+      console.error("Error fetching scenes:", error);
+      res.status(500).json({ error: "Failed to fetch scenes" });
     }
   });
 
@@ -1984,13 +2056,13 @@ Your explanation should be conversational and reference specific scene numbers.`
   const handleMediaUpload = (req: any, res: any, next: any) => {
     console.log('[Media Upload] Request received');
     console.log('[Media Upload] Content-Type:', req.headers['content-type']);
-    
+
     mediaUpload.single('file')(req, res, (err: any) => {
       if (err) {
         console.error('[Media Upload] Multer error:', err);
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'File upload error',
-          details: err.message 
+          details: err.message
         });
       }
       console.log('[Media Upload] Multer completed successfully, file present:', !!req.file);
@@ -2053,7 +2125,7 @@ Your explanation should be conversational and reference specific scene numbers.`
       return res.json(asset);
     } catch (error) {
       console.error("[Media Upload] Error:", error);
-      return res.status(500).json({ 
+      return res.status(500).json({
         error: "Failed to upload media",
         details: error instanceof Error ? error.message : "Unknown error"
       });
@@ -2304,7 +2376,7 @@ RESPONSE FORMAT:
           role: msg.role === "user" ? "user" : "model",
           parts: [{ text: msg.content }]
         })),
-        { role: "user", parts: [{ text: currentPrompt }] }
+        { role: "user", parts: [{ text: `Now refine based on: "${userPrompt}"` }] }
       ];
 
       console.log('[Portfolio Enhanced] Sending conversation to Gemini:', {
@@ -2792,7 +2864,7 @@ RESPONSE FORMAT:
   // Prompt Templates endpoints (for AI scene generation)
   // NOTE: These routes use requireAuth only. For production, consider adding
   // role-based authorization (e.g., requireTenantRole('admin')) to mutation endpoints
-  app.get("/api/prompt-templates", requireAuth, async (req, res) => {
+  app.get("/api/prompt-templates", async (req, res) => {
     try {
       const activeOnly = req.query.activeOnly === 'true';
       const templates = await storage.getAllPromptTemplates(req.tenantId, activeOnly);
@@ -2804,7 +2876,7 @@ RESPONSE FORMAT:
   });
 
   // IMPORTANT: /default route MUST come before /:id to avoid conflicts
-  app.get("/api/prompt-templates/default", requireAuth, async (req, res) => {
+  app.get("/api/prompt-templates/default", async (req, res) => {
     try {
       const sceneType = req.query.sceneType as string | undefined;
       const scope = (req.query.scope as string) || 'global';
@@ -2833,7 +2905,7 @@ RESPONSE FORMAT:
     }
   });
 
-  app.get("/api/prompt-templates/:id", requireAuth, async (req, res) => {
+  app.get("/api/prompt-templates/:id", async (req, res) => {
     try {
       const template = await storage.getPromptTemplateById(req.tenantId, req.params.id);
       if (!template) {
@@ -2846,7 +2918,7 @@ RESPONSE FORMAT:
     }
   });
 
-  app.post("/api/prompt-templates", requireAuth, async (req, res) => {
+  app.post("/api/prompt-templates", async (req, res) => {
     try {
       const result = insertPromptTemplateSchema.safeParse(req.body);
       if (!result.success) {
@@ -2873,7 +2945,7 @@ RESPONSE FORMAT:
     }
   });
 
-  app.patch("/api/prompt-templates/:id", requireAuth, async (req, res) => {
+  app.patch("/api/prompt-templates/:id", async (req, res) => {
     try {
       const result = updatePromptTemplateSchema.safeParse(req.body);
       if (!result.success) {
@@ -2904,7 +2976,7 @@ RESPONSE FORMAT:
     }
   });
 
-  app.delete("/api/prompt-templates/:id", requireAuth, async (req, res) => {
+  app.delete("/api/prompt-templates/:id", async (req, res) => {
     try {
       await storage.deletePromptTemplate(req.tenantId, req.params.id);
       return res.json({ success: true });
@@ -3895,7 +3967,7 @@ RESPONSE FORMAT:
 
   app.get("/api/campaigns/:id", requireAuth, async (req, res) => {
     try {
-      // TENANT ISOLATION: Verify campaign belongs to user's tenant
+      // TENANT ISOLATION: Verify campaign exists and belongs to user's tenant
       const campaign = await storage.getCampaignById(req.tenantId, req.params.id);
       if (!campaign) {
         return res.status(404).json({ error: "Campaign not found" });

@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Edit, Trash2, Copy, Sparkles, Loader2 as LoaderIcon } from "lucide-react";
 import { DirectorConfigForm } from "@/components/DirectorConfigForm";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { DEFAULT_DIRECTOR_CONFIG, type ProjectScene } from "@shared/schema";
 import { PortfolioPromptsManager } from "@/components/admin/PortfolioPromptsManager";
 
@@ -104,15 +105,23 @@ const SCENE_TEMPLATES = {
 const quickModeSchema = z.object({
   type: z.enum(["text", "image", "video", "split", "gallery", "quote", "fullscreen"]),
   // Content fields vary by type, so we use a flexible object
-  heading: z.string().optional(),
-  body: z.string().optional(),
-  url: z.string().optional(),
-  media: z.string().optional(),
-  quote: z.string().optional(),
-  author: z.string().optional(),
-  role: z.string().optional(),
-  images: z.string().optional(), // Comma-separated URLs
-  mediaType: z.enum(["image", "video"]).optional(),
+  content: z.object({
+    heading: z.string().optional(),
+    body: z.string().optional(),
+    url: z.string().optional(),
+    media: z.string().optional(),
+    caption: z.string().optional(),
+    quote: z.string().optional(),
+    author: z.string().optional(),
+    role: z.string().optional(),
+    images: z.array(z.object({ url: z.string(), alt: z.string().optional(), caption: z.string().optional(), mediaId: z.string().optional() })).optional(),
+    mediaType: z.enum(["image", "video"]).optional(),
+    layout: z.enum(["media-left", "media-right"]).optional(),
+    overlay: z.object({
+      heading: z.string().optional(),
+      body: z.string().optional(),
+    }).optional(),
+  }),
   // Director config
   director: z.any().optional(),
 });
@@ -123,7 +132,10 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
   const [sceneJson, setSceneJson] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("details"); // Default to details tab
+  const [activeTab, setActiveTab] = useState<"details" | "prompts" | "scenes" | "ai" | "advanced">("details");
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [mediaPickerField, setMediaPickerField] = useState<'url' | 'images'>('url');
+
 
   // AI Generation state
   const [aiPrompt, setAiPrompt] = useState("");
@@ -135,20 +147,25 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
     resolver: zodResolver(quickModeSchema),
     defaultValues: {
       type: "text",
-      heading: "",
-      body: "",
-      url: "",
-      media: "",
-      quote: "",
-      author: "",
-      role: "",
-      images: "",
-      mediaType: "image",
+      content: {
+        heading: "",
+        body: "",
+        url: "",
+        media: "",
+        caption: "",
+        quote: "",
+        author: "",
+        role: "",
+        images: [],
+        mediaType: "image",
+        overlay: { heading: "", body: "" }
+      },
       director: DEFAULT_DIRECTOR_CONFIG,
     },
   });
 
-  const sceneType = form.watch("type") as "text" | "image" | "video" | "split" | "gallery" | "quote" | "fullscreen";
+  const sceneType = form.watch("type");
+  const contentType = form.watch("content");
 
   const { data: scenes = [], isLoading } = useQuery<ProjectScene[]>({
     queryKey: ["/api/projects", projectId, "scenes"],
@@ -284,63 +301,61 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
     }
   };
 
-  const buildSceneConfigFromForm = (data: z.infer<typeof quickModeSchema>) => {
-    const content: any = {};
-
-    // Build content based on scene type
-    switch (data.type) {
-      case "text":
-        content.heading = data.heading;
-        content.body = data.body;
-        break;
-      case "image":
-        content.url = data.url;
-        break;
-      case "video":
-        content.url = data.url;
-        break;
-      case "split":
-        content.media = data.media;
-        content.heading = data.heading;
-        content.body = data.body;
-        break;
-      case "gallery":
-        content.images = data.images?.split(",").map(url => url.trim()).filter(Boolean) || [];
-        break;
-      case "quote":
-        content.quote = data.quote;
-        if (data.author) content.author = data.author;
-        if (data.role) content.role = data.role;
-        break;
-      case "fullscreen":
-        content.media = data.media;
-        content.mediaType = data.mediaType;
-        break;
-    }
-
-    const sceneConfig: any = {
+  const buildSceneConfigFromForm = (data: z.infer<typeof quickModeSchema>): SceneConfig => {
+    const sceneConfig: SceneConfig = {
       type: data.type,
-      content,
+      content: {},
     };
+
+    // Map form content to sceneConfig.content
+    if (data.content.heading !== undefined) sceneConfig.content.heading = data.content.heading;
+    if (data.content.body !== undefined) sceneConfig.content.body = data.content.body;
+    if (data.content.url !== undefined) sceneConfig.content.url = data.content.url;
+    if (data.content.media !== undefined) sceneConfig.content.media = data.content.media;
+    if (data.content.caption !== undefined) sceneConfig.content.caption = data.content.caption;
+    if (data.content.quote !== undefined) sceneConfig.content.quote = data.content.quote;
+    if (data.content.author !== undefined) sceneConfig.content.author = data.content.author;
+    if (data.content.role !== undefined) sceneConfig.content.role = data.content.role;
+    if (data.content.images !== undefined) sceneConfig.content.images = data.content.images;
+    if (data.content.mediaType !== undefined) sceneConfig.content.mediaType = data.content.mediaType;
+    if (data.content.layout !== undefined) sceneConfig.content.layout = data.content.layout;
+    if (data.content.overlay !== undefined) sceneConfig.content.overlay = data.content.overlay;
+
 
     // Add director config if present
     if (data.director && Object.keys(data.director).length > 0) {
       sceneConfig.director = data.director;
     }
 
-    return sceneConfig; // Return object directly (jsonb column handles objects)
+    return sceneConfig;
   };
 
-  const handleQuickModeSave = () => {
-    form.handleSubmit((data) => {
-      const sceneConfig = buildSceneConfigFromForm(data);
 
-      if (editingScene) {
-        updateMutation.mutate({ sceneId: editingScene.id, sceneConfig });
-      } else {
-        createMutation.mutate(sceneConfig);
+  const handleMediaSelect = (media: { id: string; url: string; type: string }) => {
+    if (mediaPickerField === 'url') {
+      form.setValue('content.url', media.url);
+      if (media.id) {
+        form.setValue('content.mediaId', media.id);
       }
-    })();
+    } else if (mediaPickerField === 'images') {
+      const currentImages = form.getValues('content.images') || [];
+      form.setValue('content.images', [
+        ...currentImages,
+        { url: media.url, alt: '', caption: '', mediaId: media.id }
+      ]);
+    }
+    setMediaPickerOpen(false); // Close the picker after selection
+  };
+
+  const handleSaveScene = () => {
+    const formData = form.getValues();
+    const sceneConfig = buildSceneConfigFromForm(formData);
+
+    if (editingScene) {
+      updateMutation.mutate({ sceneId: editingScene.id, sceneConfig });
+    } else {
+      createMutation.mutate(sceneConfig);
+    }
   };
 
   const handleAdvancedSave = () => {
@@ -356,29 +371,36 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
 
   const handleEdit = (scene: ProjectScene) => {
     setEditingScene(scene);
-    // sceneConfig is already an object (jsonb column), just format for display
     const formatted = JSON.stringify(scene.sceneConfig, null, 2);
     setSceneJson(formatted);
     validateJson(formatted);
 
     // Populate form for Quick Mode
-    const config = scene.sceneConfig as any;
-    form.setValue("type", config.type);
+    const config = scene.sceneConfig as any; // Type assertion for easier access
 
-    if (config.content) {
-      if (config.content.heading) form.setValue("heading", config.content.heading);
-      if (config.content.body) form.setValue("body", config.content.body);
-      if (config.content.url) form.setValue("url", config.content.url);
-      if (config.content.media) form.setValue("media", config.content.media);
-      if (config.content.quote) form.setValue("quote", config.content.quote);
-      if (config.content.author) form.setValue("author", config.content.author);
-      if (config.content.role) form.setValue("role", config.content.role);
-      if (config.content.images) form.setValue("images", config.content.images.join(", "));
-      if (config.content.mediaType) form.setValue("mediaType", config.content.mediaType);
-    }
+    // Safely populate form values
+    form.setValue("type", config.type || "text");
+
+    // Populate content fields based on the actual content object
+    const content = config.content || {};
+    form.setValue("content.heading", content.heading);
+    form.setValue("content.body", content.body);
+    form.setValue("content.url", content.url);
+    form.setValue("content.media", content.media);
+    form.setValue("content.caption", content.caption);
+    form.setValue("content.quote", content.quote);
+    form.setValue("content.author", content.author);
+    form.setValue("content.role", content.role);
+    form.setValue("content.images", content.images || []); // Ensure images is an array
+    form.setValue("content.mediaType", content.mediaType);
+    form.setValue("content.layout", content.layout);
+    form.setValue("content.overlay", content.overlay || { heading: "", body: "" });
+
 
     if (config.director) {
       form.setValue("director", config.director);
+    } else {
+      form.setValue("director", DEFAULT_DIRECTOR_CONFIG); // Reset to default if not present
     }
     setIsDialogOpen(true);
   };
@@ -394,11 +416,50 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
     const formatted = JSON.stringify(scene.sceneConfig, null, 2);
     setSceneJson(formatted);
     validateJson(formatted);
+    // Reset form to default values before populating with duplicated scene data
+    form.reset({
+      type: "text",
+      content: {
+        heading: "",
+        body: "",
+        url: "",
+        media: "",
+        caption: "",
+        quote: "",
+        author: "",
+        role: "",
+        images: [],
+        mediaType: "image",
+        overlay: { heading: "", body: "" }
+      },
+      director: DEFAULT_DIRECTOR_CONFIG,
+    });
+    // Populate form with duplicated scene data
+    const config = scene.sceneConfig as any;
+    form.setValue("type", config.type || "text");
+    const content = config.content || {};
+    form.setValue("content.heading", content.heading);
+    form.setValue("content.body", content.body);
+    form.setValue("content.url", content.url);
+    form.setValue("content.media", content.media);
+    form.setValue("content.caption", content.caption);
+    form.setValue("content.quote", content.quote);
+    form.setValue("content.author", content.author);
+    form.setValue("content.role", content.role);
+    form.setValue("content.images", content.images || []);
+    form.setValue("content.mediaType", content.mediaType);
+    form.setValue("content.layout", content.layout);
+    form.setValue("content.overlay", content.overlay || { heading: "", body: "" });
+
+    if (config.director) {
+      form.setValue("director", config.director);
+    } else {
+      form.setValue("director", DEFAULT_DIRECTOR_CONFIG);
+    }
     setIsDialogOpen(true);
   };
 
-  const getSceneType = (sceneConfig: any): string => {
-    // sceneConfig is already an object (jsonb column)
+  const getSceneType = (sceneConfig: SceneConfig | undefined): string => {
     return sceneConfig?.type || "unknown";
   };
 
@@ -426,45 +487,37 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
     try {
       const response = await apiRequest("POST", "/api/scenes/generate-with-ai", {
         prompt: aiPrompt,
-        // Pass projectId for context-aware prompt generation
         projectId: projectId,
         sceneType: (aiSceneType && aiSceneType !== "auto") ? aiSceneType : undefined,
       });
 
       const data = await response.json();
-
-      // Normalize and convert Gemini output to scene config format with proper defaults
       const normalizedType = normalizeSceneType(data.sceneType || "text");
 
-      // Build content with schema requirements
       const content: any = {};
-
       if (data.headline) content.heading = data.headline;
       if (data.bodyText) content.body = data.bodyText;
-      if (data.subheadline) content.subheading = data.subheadline;
+      if (data.subheadline) content.subheading = data.subheadline; // Assuming this maps to body if body is missing
       if (data.mediaUrl) content.url = data.mediaUrl;
       if (data.mediaType) content.mediaType = data.mediaType;
+      if (data.caption) content.caption = data.caption; // For image scenes
+
 
       // Ensure required fields for text scenes (heading + body both required)
       if (normalizedType === "text") {
         if (!content.heading) content.heading = "Untitled Scene";
         if (!content.body) {
-          // Use subheading as body if body is missing, or generate a placeholder
           content.body = content.subheading || "Add your scene content here.";
         }
       }
 
-      // Clamp director timing values to schema constraints (in seconds)
       const clampDuration = (value: number | undefined, max: number): number | undefined => {
         if (value === undefined) return undefined;
-        // Detect milliseconds: values >= 50 are milliseconds (since max valid seconds is 10)
-        // Convert to seconds if in milliseconds, otherwise use as-is
-        const seconds = value >= 50 ? value / 1000 : value;
-        // Clamp to valid range (0.1s to max)
+        const seconds = value >= 50 ? value / 1000 : value; // Detect milliseconds
         return Math.min(Math.max(seconds, 0.1), max);
       };
 
-      const sceneConfig = {
+      const sceneConfig: SceneConfig = {
         type: normalizedType,
         content,
         director: {
@@ -531,6 +584,13 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
     }
   };
 
+  // Function to handle opening the media picker
+  const openMediaPicker = (field: 'url' | 'images') => {
+    setMediaPickerField(field);
+    setMediaPickerOpen(true);
+  };
+
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -547,6 +607,19 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                 setEditingScene(null);
                 form.reset({
                   type: "text",
+                  content: {
+                    heading: "",
+                    body: "",
+                    url: "",
+                    media: "",
+                    caption: "",
+                    quote: "",
+                    author: "",
+                    role: "",
+                    images: [],
+                    mediaType: "image",
+                    overlay: { heading: "", body: "" }
+                  },
                   director: DEFAULT_DIRECTOR_CONFIG,
                 });
                 setSceneJson("");
@@ -568,21 +641,21 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
             </DialogHeader>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-              <TabsList className="grid w-full grid-cols-3" data-testid="tabs-scene-editor">
+              <TabsList className="grid w-full grid-cols-4" data-testid="tabs-scene-editor">
                 <TabsTrigger value="details">Details</TabsTrigger>
                 <TabsTrigger value="prompts">AI Prompts</TabsTrigger>
-                <TabsTrigger value="scenes">Scenes</TabsTrigger>
+                <TabsTrigger value="scenes">Quick Mode</TabsTrigger>
+                <TabsTrigger value="ai">AI Generation</TabsTrigger>
+                <TabsTrigger value="advanced">Advanced JSON</TabsTrigger>
               </TabsList>
 
               <TabsContent value="details" className="space-y-6 mt-6">
-                {/* Placeholder for project details form if it exists or will be added */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Project Details</CardTitle>
                     <CardDescription>Basic information about the project.</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {/* Project details form components would go here */}
                     <p>Project Details Form - Coming Soon</p>
                   </CardContent>
                 </Card>
@@ -605,7 +678,6 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
               <TabsContent value="scenes" className="space-y-6 mt-6">
                 <Form {...form}>
                   <div className="space-y-6">
-                    {/* Scene Type Selector */}
                     <FormField
                       control={form.control}
                       name="type"
@@ -633,7 +705,6 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                       )}
                     />
 
-                    {/* Content Fields (vary by scene type) */}
                     <Card className="p-4 space-y-4">
                       <h4 className="font-medium">Content</h4>
 
@@ -641,7 +712,7 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                         <>
                           <FormField
                             control={form.control}
-                            name="heading"
+                            name="content.heading"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Heading</FormLabel>
@@ -654,7 +725,7 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                           />
                           <FormField
                             control={form.control}
-                            name="body"
+                            name="content.body"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Body Text</FormLabel>
@@ -669,30 +740,55 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                       )}
 
                       {sceneType === "image" && (
-                        <FormField
-                          control={form.control}
-                          name="url"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Image URL</FormLabel>
-                              <FormControl>
-                                <Input {...field} placeholder="https://..." data-testid="input-image-url" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="content.url"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Image URL</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center gap-2">
+                                    <Input {...field} placeholder="https://..." data-testid="input-image-url" />
+                                    <Button type="button" variant="outline" onClick={() => openMediaPicker('url')}>
+                                      <Sparkles className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="content.caption"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Caption</FormLabel>
+                                <FormControl>
+                                  <Input {...field} placeholder="Image caption" data-testid="input-image-caption" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
                       )}
 
                       {sceneType === "video" && (
                         <FormField
                           control={form.control}
-                          name="url"
+                          name="content.url"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Video URL</FormLabel>
                               <FormControl>
-                                <Input {...field} placeholder="https://..." data-testid="input-video-url" />
+                                <div className="flex items-center gap-2">
+                                  <Input {...field} placeholder="https://..." data-testid="input-video-url" />
+                                  <Button type="button" variant="outline" onClick={() => openMediaPicker('url')}>
+                                    <Sparkles className="w-4 h-4" />
+                                  </Button>
+                                </div>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -704,12 +800,17 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                         <>
                           <FormField
                             control={form.control}
-                            name="media"
+                            name="content.media"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Media URL</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="https://..." data-testid="input-split-media" />
+                                  <div className="flex items-center gap-2">
+                                    <Input {...field} placeholder="https://..." data-testid="input-split-media" />
+                                    <Button type="button" variant="outline" onClick={() => openMediaPicker('url')}>
+                                      <Sparkles className="w-4 h-4" />
+                                    </Button>
+                                  </div>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -717,7 +818,7 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                           />
                           <FormField
                             control={form.control}
-                            name="heading"
+                            name="content.heading"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Heading</FormLabel>
@@ -730,7 +831,7 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                           />
                           <FormField
                             control={form.control}
-                            name="body"
+                            name="content.body"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Body Text</FormLabel>
@@ -741,18 +842,56 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                               </FormItem>
                             )}
                           />
+                           <FormField
+                            control={form.control}
+                            name="content.layout"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Layout</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger data-testid="select-split-layout">
+                                      <SelectValue placeholder="Select layout" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="media-left">Media Left</SelectItem>
+                                    <SelectItem value="media-right">Media Right</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </>
                       )}
 
                       {sceneType === "gallery" && (
                         <FormField
                           control={form.control}
-                          name="images"
+                          name="content.images"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Image URLs (comma-separated)</FormLabel>
+                              <FormLabel>Images</FormLabel>
                               <FormControl>
-                                <Textarea {...field} placeholder="https://image1.jpg, https://image2.jpg" className="min-h-[100px]" data-testid="textarea-gallery-images" />
+                                <div className="space-y-2">
+                                  {field.value?.map((image, index) => (
+                                    <div key={index} className="flex items-center gap-2">
+                                      <Input value={image.url} readOnly placeholder="Image URL" className="flex-1" />
+                                      <Button type="button" variant="outline" size="icon" onClick={() => {
+                                        const newImages = [...field.value];
+                                        newImages.splice(index, 1);
+                                        field.onChange(newImages);
+                                      }}>
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </div>
+                                  ))}
+                                  <Button type="button" variant="outline" onClick={() => openMediaPicker('images')}>
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Add Image
+                                  </Button>
+                                </div>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -764,7 +903,7 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                         <>
                           <FormField
                             control={form.control}
-                            name="quote"
+                            name="content.quote"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Quote</FormLabel>
@@ -777,7 +916,7 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                           />
                           <FormField
                             control={form.control}
-                            name="author"
+                            name="content.author"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Author (optional)</FormLabel>
@@ -790,7 +929,7 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                           />
                           <FormField
                             control={form.control}
-                            name="role"
+                            name="content.role"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Role (optional)</FormLabel>
@@ -808,12 +947,17 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                         <>
                           <FormField
                             control={form.control}
-                            name="media"
+                            name="content.media"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Media URL</FormLabel>
                                 <FormControl>
-                                  <Input {...field} placeholder="https://..." data-testid="input-fullscreen-media" />
+                                  <div className="flex items-center gap-2">
+                                    <Input {...field} placeholder="https://..." data-testid="input-fullscreen-media" />
+                                    <Button type="button" variant="outline" onClick={() => openMediaPicker('url')}>
+                                      <Sparkles className="w-4 h-4" />
+                                    </Button>
+                                  </div>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -821,7 +965,7 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                           />
                           <FormField
                             control={form.control}
-                            name="mediaType"
+                            name="content.mediaType"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Media Type</FormLabel>
@@ -840,18 +984,47 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                               </FormItem>
                             )}
                           />
+                           {form.watch('content.mediaType') === 'image' && (
+                              <FormField
+                                control={form.control}
+                                name="content.overlay.heading"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Overlay Heading</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} placeholder="Impactful Heading" data-testid="input-fullscreen-overlay-heading" />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            )}
+                           {form.watch('content.mediaType') === 'image' && (
+                              <FormField
+                                control={form.control}
+                                name="content.overlay.body"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Overlay Body</FormLabel>
+                                    <FormControl>
+                                      <Textarea {...field} placeholder="Overlay text on full-screen media" className="min-h-[100px]" data-testid="textarea-fullscreen-overlay-body" />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            )}
                         </>
                       )}
                     </Card>
 
-                    {/* Director Configuration */}
                     <Card className="p-4">
                       <DirectorConfigForm form={form} sceneType={sceneType} />
                     </Card>
 
                     <div className="flex gap-2">
                       <Button
-                        onClick={handleQuickModeSave}
+                        onClick={handleSaveScene}
                         disabled={createMutation.isPending || updateMutation.isPending}
                         data-testid="button-save-quick-mode"
                       >
@@ -879,7 +1052,7 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                 </Form>
               </TabsContent>
 
-              <TabsContent value="ai" className="space-y-6 mt-6">
+              <TabsContent value="ai" className="space-y-6">
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">Describe Your Scene</label>
@@ -1032,11 +1205,24 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
         </Dialog>
       </div>
 
+      {/* Media Picker Dialog */}
+      <Dialog open={mediaPickerOpen} onOpenChange={setMediaPickerOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Select Media</DialogTitle>
+            <DialogDescription>Choose an asset from your media library.</DialogDescription>
+          </DialogHeader>
+          <MediaPicker onSelect={handleMediaSelect} />
+        </DialogContent>
+      </Dialog>
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-        <TabsList className="grid w-full grid-cols-3" data-testid="tabs-project-editor">
+        <TabsList className="grid w-full grid-cols-4" data-testid="tabs-project-editor">
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="prompts">AI Prompts</TabsTrigger>
           <TabsTrigger value="scenes">Scenes</TabsTrigger>
+          <TabsTrigger value="ai">AI Generation</TabsTrigger>
+          <TabsTrigger value="advanced">Advanced JSON</TabsTrigger>
         </TabsList>
 
         <TabsContent value="details" className="space-y-6 mt-6">
@@ -1046,7 +1232,6 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
               <CardDescription>Basic information about the project.</CardDescription>
             </CardHeader>
             <CardContent>
-              {/* Project details form components would go here */}
               <p>Project Details Form - Coming Soon</p>
             </CardContent>
           </Card>

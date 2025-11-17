@@ -690,7 +690,11 @@ export const projectScenes = pgTable("project_scenes", {
   projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
   sceneConfig: jsonb("scene_config").notNull().$type<{
     type: string;
-    content: any;
+    content: {
+      url?: string;
+      mediaId?: string; // NEW: Optional reference to media_library
+      [key: string]: any;
+    };
     layout?: string;
     animation?: string;
     director?: Record<string, any>;
