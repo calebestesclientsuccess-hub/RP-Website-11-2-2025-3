@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Copy, Sparkles, Loader2 as LoaderIcon } from "lucide-react";
+import { Plus, Edit, Trash2, Copy, Sparkles, Loader2 as LoaderIcon, Loader2 } from "lucide-react";
 import { DirectorConfigForm } from "@/components/DirectorConfigForm";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { DEFAULT_DIRECTOR_CONFIG, type ProjectScene } from "@shared/schema";
@@ -135,6 +135,8 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
   const [activeTab, setActiveTab] = useState<"details" | "prompts" | "scenes" | "ai" | "advanced">("details");
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [mediaPickerField, setMediaPickerField] = useState<'url' | 'images' | 'media'>('url');
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
 
 
   // AI Generation state
@@ -596,6 +598,45 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
     setMediaPickerOpen(true);
   };
 
+  // Quick upload handler
+  const handleQuickUpload = async (file: File) => {
+    setUploadingFile(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('project_id', projectId);
+      
+      const response = await fetch('/api/media-library/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const uploadedMedia = await response.json();
+      
+      // Auto-select the uploaded media
+      handleMediaSelect({
+        id: uploadedMedia.id,
+        url: uploadedMedia.cloudinaryUrl,
+        type: uploadedMedia.mediaType,
+      });
+      
+      toast({ title: 'Media uploaded and selected!' });
+      setUploadModalOpen(false);
+    } catch (error) {
+      toast({ 
+        title: 'Upload failed', 
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive' 
+      });
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
 
   return (
     <div className="space-y-4">
@@ -764,6 +805,15 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                                     >
                                       <Sparkles className="w-4 h-4 mr-1" />
                                       Library
+                                    </Button>
+                                    <Button 
+                                      type="button" 
+                                      variant="outline" 
+                                      onClick={() => setUploadModalOpen(true)}
+                                      title="Upload New Media"
+                                    >
+                                      <Plus className="w-4 h-4 mr-1" />
+                                      Upload
                                     </Button>
                                   </div>
                                 </FormControl>
@@ -1298,6 +1348,37 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
             projectId={projectId}
             mediaType={mediaPickerField === 'url' || mediaPickerField === 'media' ? 'all' : 'image'}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Quick Upload Dialog */}
+      <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upload Media</DialogTitle>
+            <DialogDescription>
+              Upload a new image or video and it will be automatically linked to this project.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              type="file"
+              accept="image/*,video/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleQuickUpload(file);
+                }
+              }}
+              disabled={uploadingFile}
+            />
+            {uploadingFile && (
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Uploading...
+              </p>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 

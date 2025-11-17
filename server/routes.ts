@@ -1685,7 +1685,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const hydratedScenes = await Promise.all(
           scenes.map(async (scene) => {
             const sceneConfig = scene.sceneConfig as any;
-            
+
             // Handle single media field (image, video, split, fullscreen)
             if (sceneConfig?.content?.mediaId) {
               const [media] = await db
@@ -2219,6 +2219,8 @@ Your explanation should be conversational and reference specific scene numbers.`
 
       const label = req.body.label || "";
       const tags = req.body.tags ? req.body.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [];
+      const projectId = req.body.project_id ? parseInt(req.body.project_id) : null;
+
 
       // Upload to Cloudinary using buffer
       console.log('[Media Upload] Starting Cloudinary upload...');
@@ -2251,6 +2253,7 @@ Your explanation should be conversational and reference specific scene numbers.`
         mediaType: req.file.mimetype.startsWith("video/") ? "video" : "image",
         label: label || undefined,
         tags,
+        projectId,
       });
 
       console.log('[Media Upload] Database record created:', asset.id);
@@ -2885,7 +2888,7 @@ RESPONSE FORMAT:
       try {
         // Generate portfolio using AI director
         portfolioResult = await generatePortfolio({
-          projectTitle: newProjectTitle || catalog.title || "AI Generated Portfolio", // Use new project title if available, else catalog title, else default
+          projectTitle: newProjectTitle || (catalog.title ? `Portfolio: ${catalog.title}` : "AI Generated Portfolio"), // Use new project title if available, else catalog title, else default
           projectDescription: catalog.description || "AI generated portfolio from content catalog",
           projectSlug: newProjectSlug || crypto.randomBytes(6).toString('hex'), // Generate a random slug if new project and no slug provided
           contentCatalog: catalog,

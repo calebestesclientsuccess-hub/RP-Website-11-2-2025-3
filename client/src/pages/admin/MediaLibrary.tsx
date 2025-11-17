@@ -24,6 +24,7 @@ interface MediaAsset {
   label?: string;
   tags: string[];
   createdAt: string;
+  projectId?: string;
 }
 
 export default function MediaLibrary() {
@@ -33,13 +34,15 @@ export default function MediaLibrary() {
   const [selectedLabel, setSelectedLabel] = useState<string>("");
   const [customTags, setCustomTags] = useState<string>("");
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [filter, setFilter] = useState<"all" | "image" | "video">("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const style = {
     "--sidebar-width": "16rem",
   } as React.CSSProperties;
 
-  const { data: projects = [] } = useQuery<Project[]>({
-    queryKey: ["/api/projects"],
+  const { data: projects = [] } = useQuery({
+    queryKey: ["/api/branding/projects"],
   });
 
   const { data: mediaAssets = [], isLoading } = useQuery<MediaAsset[]>({
@@ -55,14 +58,27 @@ export default function MediaLibrary() {
 
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await apiRequest("POST", "/api/media-library/upload", formData);
+      // Add project_id if selected
+      if (selectedProjectId) {
+        formData.append('project_id', selectedProjectId);
+      }
+
+      const response = await fetch("/api/media-library/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Upload failed");
+      }
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/media-library"] });
       toast({ title: "Media uploaded successfully" });
       setSelectedLabel("");
       setCustomTags("");
+      setSelectedProjectId("");
+      queryClient.invalidateQueries({ queryKey: ["/api/media-library"] });
     },
     onError: (error: Error) => {
       toast({ title: "Upload failed", description: error.message, variant: "destructive" });
@@ -123,6 +139,17 @@ export default function MediaLibrary() {
     return mediaAssets.filter(asset => asset.label === label);
   };
 
+  const filteredMedia = mediaAssets.filter(asset => {
+    const matchesSearch = asset.cloudinaryPublicId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (asset.label && asset.label.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                          asset.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    if (filter === "all") {
+      return matchesSearch;
+    }
+    return matchesSearch && asset.mediaType === filter;
+  });
+
+
   return (
     <ProtectedRoute>
       <Helmet>
@@ -174,45 +201,41 @@ export default function MediaLibrary() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Associated Portfolio (Optional)</Label>
+                      <Label htmlFor="project">Link to Project (optional)</Label>
                       <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="No portfolio association" />
+                        <SelectTrigger id="project">
+                          <SelectValue placeholder="Select a project..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">No portfolio</SelectItem>
-                          {projects.map((project) => (
-                            <SelectItem key={project.id} value={project.id}>
+                          <SelectItem value="">None (Global Asset)</SelectItem>
+                          {projects.map((project: any) => (
+                            <SelectItem key={project.id} value={project.id.toString()}>
                               {project.title}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Link this asset to a specific project for easy access in the Portfolio Builder
+                      </p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Media Label (Optional)</Label>
-                      <Select value={selectedLabel} onValueChange={setSelectedLabel}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select label..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="logo">Logo</SelectItem>
-                          <SelectItem value="primary-image">Primary Image</SelectItem>
-                          <SelectItem value="secondary-image">Secondary Image</SelectItem>
-                          <SelectItem value="hero-image">Hero Image</SelectItem>
-                          <SelectItem value="thumbnail">Thumbnail</SelectItem>
-                          <SelectItem value="general">General</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Custom Tags (comma-separated)</Label>
+                      <Label htmlFor="label">Label (optional)</Label>
                       <Input
-                        placeholder="e.g., branding, homepage, feature"
+                        id="label"
+                        value={selectedLabel}
+                        onChange={(e) => setSelectedLabel(e.target.value)}
+                        placeholder="e.g., logo, hero-image"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tags">Tags (comma-separated, optional)</Label>
+                      <Input
+                        id="tags"
                         value={customTags}
                         onChange={(e) => setCustomTags(e.target.value)}
+                        placeholder="e.g., branding, marketing"
                       />
                     </div>
 
@@ -240,6 +263,39 @@ export default function MediaLibrary() {
                   </CardContent>
                 </Card>
 
+                {/* Media Grid Controls */}
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Input
+                      placeholder="Search media..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="max-w-sm"
+                    />
+                    <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
+                      <TabsList>
+                        <TabsTrigger value="all">All</TabsTrigger>
+                        <TabsTrigger value="image">Images</TabsTrigger>
+                        <TabsTrigger value="video">Videos</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
+                  {/* Project Stats */}
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span>Total: {filteredMedia.length} assets</span>
+                    {projects.map((project: any) => {
+                      const projectAssets = mediaAssets.filter((m: any) => m.projectId === project.id);
+                      if (projectAssets.length === 0) return null;
+                      return (
+                        <Badge key={project.id} variant="outline">
+                          {project.title}: {projectAssets.length}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </div>
+
+
                 {/* Media Grid */}
                 <Tabs defaultValue="all">
                   <TabsList className="grid w-full grid-cols-5">
@@ -251,23 +307,23 @@ export default function MediaLibrary() {
                   </TabsList>
 
                   <TabsContent value="all" className="mt-6">
-                    <MediaGrid assets={mediaAssets} onDelete={(id) => deleteMutation.mutate(id)} />
+                    <MediaGrid assets={filteredMedia} onDelete={(id) => deleteMutation.mutate(id)} projects={projects} />
                   </TabsContent>
 
                   <TabsContent value="images" className="mt-6">
-                    <MediaGrid assets={filterByType("image")} onDelete={(id) => deleteMutation.mutate(id)} />
+                    <MediaGrid assets={filterByType("image").filter(asset => asset.cloudinaryPublicId.toLowerCase().includes(searchQuery.toLowerCase()) || (asset.label && asset.label.toLowerCase().includes(searchQuery.toLowerCase())) || asset.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))} onDelete={(id) => deleteMutation.mutate(id)} projects={projects} />
                   </TabsContent>
 
                   <TabsContent value="videos" className="mt-6">
-                    <MediaGrid assets={filterByType("video")} onDelete={(id) => deleteMutation.mutate(id)} />
+                    <MediaGrid assets={filterByType("video").filter(asset => asset.cloudinaryPublicId.toLowerCase().includes(searchQuery.toLowerCase()) || (asset.label && asset.label.toLowerCase().includes(searchQuery.toLowerCase())) || asset.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))} onDelete={(id) => deleteMutation.mutate(id)} projects={projects} />
                   </TabsContent>
 
                   <TabsContent value="logos" className="mt-6">
-                    <MediaGrid assets={filterByLabel("logo")} onDelete={(id) => deleteMutation.mutate(id)} />
+                    <MediaGrid assets={filterByLabel("logo").filter(asset => asset.cloudinaryPublicId.toLowerCase().includes(searchQuery.toLowerCase()) || (asset.label && asset.label.toLowerCase().includes(searchQuery.toLowerCase())) || asset.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))} onDelete={(id) => deleteMutation.mutate(id)} projects={projects} />
                   </TabsContent>
 
                   <TabsContent value="primary" className="mt-6">
-                    <MediaGrid assets={filterByLabel("primary-image")} onDelete={(id) => deleteMutation.mutate(id)} />
+                    <MediaGrid assets={filterByLabel("primary-image").filter(asset => asset.cloudinaryPublicId.toLowerCase().includes(searchQuery.toLowerCase()) || (asset.label && asset.label.toLowerCase().includes(searchQuery.toLowerCase())) || asset.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))} onDelete={(id) => deleteMutation.mutate(id)} projects={projects} />
                   </TabsContent>
                 </Tabs>
               </div>
@@ -279,7 +335,7 @@ export default function MediaLibrary() {
   );
 }
 
-function MediaGrid({ assets, onDelete }: { assets: MediaAsset[]; onDelete: (id: string) => void }) {
+function MediaGrid({ assets, onDelete, projects }: { assets: MediaAsset[]; onDelete: (id: string) => void; projects: Project[] }) {
   if (assets.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
@@ -296,7 +352,7 @@ function MediaGrid({ assets, onDelete }: { assets: MediaAsset[]; onDelete: (id: 
             {asset.mediaType === "image" ? (
               <img src={asset.cloudinaryUrl} alt="" className="w-full h-full object-cover" />
             ) : (
-              <video src={asset.cloudinaryUrl} className="w-full h-full object-cover" />
+              <video src={asset.cloudinaryUrl} className="w-full h-full object-cover" controls/>
             )}
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <Button
@@ -309,19 +365,20 @@ function MediaGrid({ assets, onDelete }: { assets: MediaAsset[]; onDelete: (id: 
             </div>
           </div>
           <CardContent className="p-3 space-y-2">
-            <div className="flex items-center gap-2">
-              {asset.mediaType === "image" ? (
-                <Image className="w-4 h-4" />
-              ) : (
-                <Video className="w-4 h-4" />
-              )}
-              <span className="text-xs font-medium truncate">{asset.cloudinaryPublicId}</span>
-            </div>
-            {asset.label && (
-              <Badge variant="secondary" className="text-xs">
-                {asset.label}
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex-1">
+                <p className="font-medium text-sm truncate">{asset.label || "Untitled"}</p>
+                <p className="text-xs text-muted-foreground">{asset.cloudinaryPublicId}</p>
+                {asset.projectId && (
+                  <Badge variant="outline" className="mt-1 text-xs">
+                    {projects.find((p: any) => p.id === asset.projectId)?.title || `Project #${asset.projectId}`}
+                  </Badge>
+                )}
+              </div>
+              <Badge variant={asset.mediaType === "image" ? "default" : "secondary"}>
+                {asset.mediaType}
               </Badge>
-            )}
+            </div>
             {asset.tags.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {asset.tags.map((tag, idx) => (
