@@ -1,4 +1,3 @@
-
 import { defineConfig } from 'vitest/config';
 import path from 'path';
 
@@ -19,6 +18,15 @@ export default defineConfig({
       ],
     },
     testTimeout: 10000,
+    // Run tests sequentially to prevent database deadlocks
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
+    // Alternatively, use threads with maxConcurrency
+    // maxConcurrency: 1,
   },
   resolve: {
     alias: {

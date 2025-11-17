@@ -1,4 +1,3 @@
-
 import { beforeAll, afterAll, afterEach } from 'vitest';
 import { db } from '../server/db';
 import { sql } from 'drizzle-orm';
@@ -22,7 +21,7 @@ if (!process.env.VERBOSE_TESTS) {
 
 beforeAll(async () => {
   console.log('🔧 Setting up test database...');
-  
+
   try {
     // Run migrations to ensure schema is up to date
     await migrate(db, { migrationsFolder: './migrations' });
@@ -40,7 +39,7 @@ afterEach(async () => {
 
 afterAll(async () => {
   console.log('🧹 Cleaning up test database...');
-  
+
   try {
     // Clean all tables
     await testUtils.cleanDatabase();
@@ -58,25 +57,48 @@ declare global {
   };
 }
 
+// Add a global lock to prevent parallel cleanup
+let cleanupLock: Promise<void> | null = null;
+
 global.testUtils = {
   async cleanDatabase() {
-    try {
-      await db.execute(sql`
-        DO $$ DECLARE
-          r RECORD;
-        BEGIN
-          FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename != 'drizzle_migrations' AND tablename != 'session')
-          LOOP
-            EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' RESTART IDENTITY CASCADE';
-          END LOOP;
-        END $$;
-      `);
-    } catch (error) {
-      console.error('Failed to clean database:', error);
-      throw error;
+    // Wait for any ongoing cleanup to complete
+    if (cleanupLock) {
+      await cleanupLock;
     }
+
+    // Create new cleanup promise
+    cleanupLock = (async () => {
+      try {
+        // Disable parallel execution by using a serialized approach
+        const tables = await db.execute(sql`
+          SELECT tablename FROM pg_tables 
+          WHERE schemaname = 'public' AND tablename != 'drizzle_migrations' AND tablename != 'session'
+          ORDER BY tablename
+        `);
+
+        // Truncate tables one at a time to avoid deadlocks
+        for (const table of tables.rows) {
+          try {
+            await db.execute(sql.raw(`TRUNCATE TABLE ${table.tablename} RESTART IDENTITY CASCADE`));
+          } catch (err: any) {
+            // Skip if table doesn't exist or is already being cleaned
+            if (!err.message?.includes('does not exist')) {
+              console.warn(`Warning: Could not clean table ${table.tablename}:`, err.message);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to clean database:', error);
+        throw error;
+      } finally {
+        cleanupLock = null;
+      }
+    })();
+
+    await cleanupLock;
   },
-  
+
   async createTestTenant(id: string = 'test-tenant') {
     const { tenants } = await import('../shared/schema');
     try {
