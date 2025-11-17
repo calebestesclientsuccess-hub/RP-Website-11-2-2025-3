@@ -188,7 +188,8 @@ export interface IStorage {
   removeAssetMapping(projectId: string, placeholderId: string);
 
   // Media Library Methods
-  getMediaAssets(tenantId: string): Promise<MediaLibraryAsset[]>;
+  getMediaAssets(tenantId: string, projectId?: string): Promise<MediaLibraryAsset[]>;
+  getMediaAssetsByProject(projectId: string): Promise<MediaLibraryAsset[]>;
   getMediaAsset(id: string): Promise<MediaLibraryAsset | undefined>;
   createMediaAsset(data: InsertMediaLibraryAsset): Promise<MediaLibraryAsset>;
   deleteMediaAsset(id: string): Promise<void>;
@@ -1090,11 +1091,28 @@ export class DbStorage implements IStorage {
     await db.delete(portfolioPrompts).where(eq(portfolioPrompts.id, id));
   }
 
-  async getMediaAssets(tenantId: string): Promise<MediaLibraryAsset[]> {
+  async getMediaAssets(tenantId: string, projectId?: string): Promise<MediaLibraryAsset[]> {
     try {
+      if (projectId) {
+        return await db.select().from(mediaLibrary).where(
+          and(
+            eq(mediaLibrary.tenantId, tenantId),
+            eq(mediaLibrary.projectId, projectId)
+          )
+        );
+      }
       return await db.select().from(mediaLibrary).where(eq(mediaLibrary.tenantId, tenantId));
     } catch (error) {
       console.error('[Storage] Error fetching media assets:', error);
+      throw error;
+    }
+  }
+
+  async getMediaAssetsByProject(projectId: string): Promise<MediaLibraryAsset[]> {
+    try {
+      return await db.select().from(mediaLibrary).where(eq(mediaLibrary.projectId, projectId));
+    } catch (error) {
+      console.error('[Storage] Error fetching media assets by project:', error);
       throw error;
     }
   }

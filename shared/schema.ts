@@ -1232,6 +1232,7 @@ export type PortfolioPrompt = typeof portfolioPrompts.$inferSelect;
 export const mediaLibrary = pgTable("media_library", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   tenantId: text("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  projectId: text("project_id").references(() => projects.id, { onDelete: "set null" }),
   cloudinaryPublicId: text("cloudinary_public_id").notNull(),
   cloudinaryUrl: text("cloudinary_url").notNull(),
   mediaType: text("media_type").notNull().$type<"image" | "video">(),
@@ -1243,6 +1244,11 @@ export const mediaLibrary = pgTable("media_library", {
 export const insertMediaLibraryAssetSchema = createInsertSchema(mediaLibrary).omit({
   id: true,
   createdAt: true,
+}).extend({
+  projectId: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
 });
 
 export type MediaLibraryAsset = typeof mediaLibrary.$inferSelect;

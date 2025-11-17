@@ -1961,11 +1961,22 @@ Your explanation should be conversational and reference specific scene numbers.`
   app.get("/api/media-library", requireAuth, async (req, res) => {
     try {
       const tenantId = (req as any).tenantId || "default";
-      const assets = await storage.getMediaAssets(tenantId);
+      const projectId = req.query.projectId as string | undefined;
+      const assets = await storage.getMediaAssets(tenantId, projectId);
       return res.json(assets);
     } catch (error) {
       console.error("Error fetching media library:", error);
       return res.status(500).json({ error: "Failed to fetch media library" });
+    }
+  });
+
+  app.get("/api/projects/:projectId/media", requireAuth, async (req, res) => {
+    try {
+      const assets = await storage.getMediaAssetsByProject(req.params.projectId);
+      return res.json(assets);
+    } catch (error) {
+      console.error("Error fetching project media:", error);
+      return res.status(500).json({ error: "Failed to fetch project media" });
     }
   });
 

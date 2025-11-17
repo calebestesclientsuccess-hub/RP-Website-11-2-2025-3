@@ -13,7 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Loader2, Upload, Image, Video, Trash2, Tag } from "lucide-react";
+import { Loader2, Upload, Image, Video, Trash2, Tag, X } from "lucide-react";
+import type { Project } from "@shared/schema";
 
 interface MediaAsset {
   id: string;
@@ -31,13 +32,25 @@ export default function MediaLibrary() {
   const [uploading, setUploading] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState<string>("");
   const [customTags, setCustomTags] = useState<string>("");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
 
   const style = {
     "--sidebar-width": "16rem",
   } as React.CSSProperties;
 
+  const { data: projects = [] } = useQuery<Project[]>({
+    queryKey: ["/api/projects"],
+  });
+
   const { data: mediaAssets = [], isLoading } = useQuery<MediaAsset[]>({
-    queryKey: ["/api/media-library"],
+    queryKey: ["/api/media-library", selectedProjectId],
+    queryFn: async () => {
+      const url = selectedProjectId 
+        ? `/api/media-library?projectId=${selectedProjectId}`
+        : "/api/media-library";
+      const response = await apiRequest("GET", url);
+      return response.json();
+    },
   });
 
   const uploadMutation = useMutation({
@@ -88,6 +101,9 @@ export default function MediaLibrary() {
         if (customTags) {
           formData.append("tags", customTags);
         }
+        if (selectedProjectId) {
+          formData.append("projectId", selectedProjectId);
+        }
 
         await uploadMutation.mutateAsync(formData);
       }
@@ -122,6 +138,31 @@ export default function MediaLibrary() {
                 <SidebarTrigger />
                 <h1 className="text-2xl font-bold">Media Library</h1>
               </div>
+              <div className="flex items-center gap-2">
+                <Label className="text-sm">Filter by Portfolio:</Label>
+                <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="All media" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All media</SelectItem>
+                    {projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedProjectId && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setSelectedProjectId("")}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             </header>
 
             <main className="flex-1 overflow-auto p-6">
@@ -132,6 +173,23 @@ export default function MediaLibrary() {
                     <CardTitle>Upload Media</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Associated Portfolio (Optional)</Label>
+                      <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="No portfolio association" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">No portfolio</SelectItem>
+                          {projects.map((project) => (
+                            <SelectItem key={project.id} value={project.id}>
+                              {project.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     <div className="space-y-2">
                       <Label>Media Label (Optional)</Label>
                       <Select value={selectedLabel} onValueChange={setSelectedLabel}>
