@@ -26,11 +26,15 @@ export async function apiRequest(
     ...(options?.headers || {}),
   };
 
+  const computedBody = data !== undefined 
+    ? (isFormData ? data : JSON.stringify(data))
+    : options?.body;
+
   const res = await fetch(url, {
     ...options,
     method,
     headers: mergedHeaders,
-    body: isFormData ? data : data ? JSON.stringify(data) : undefined,
+    body: computedBody,
     credentials: "include",
   });
 
