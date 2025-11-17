@@ -18,10 +18,7 @@ CREATE TABLE IF NOT EXISTS portfolio_prompts (
   created_at TIMESTAMP DEFAULT NOW() NOT NULL,
   updated_at TIMESTAMP DEFAULT NOW() NOT NULL,
   created_by TEXT REFERENCES users(id),
-  updated_by TEXT REFERENCES users(id),
-  
-  -- Ensure only one active prompt per project+type combination
-  UNIQUE(project_id, prompt_type, is_active) WHERE is_active = true
+  updated_by TEXT REFERENCES users(id)
 );
 
 -- Create indexes for performance
@@ -31,3 +28,6 @@ CREATE INDEX idx_portfolio_prompts_active ON portfolio_prompts(is_active) WHERE 
 
 -- Create composite index for common query pattern
 CREATE INDEX idx_portfolio_prompts_project_type_active ON portfolio_prompts(project_id, prompt_type, is_active);
+
+-- Ensure only one active prompt per project+type combination (partial unique index)
+CREATE UNIQUE INDEX idx_portfolio_prompts_unique_active ON portfolio_prompts(project_id, prompt_type) WHERE is_active = true;
