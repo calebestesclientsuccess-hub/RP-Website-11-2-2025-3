@@ -45,7 +45,7 @@ export default function MediaLibrary() {
   const { data: mediaAssets = [], isLoading } = useQuery<MediaAsset[]>({
     queryKey: ["/api/media-library", selectedProjectId],
     queryFn: async () => {
-      const url = selectedProjectId 
+      const url = selectedProjectId
         ? `/api/media-library?projectId=${selectedProjectId}`
         : "/api/media-library";
       const response = await apiRequest("GET", url);
@@ -88,11 +88,11 @@ export default function MediaLibrary() {
 
     console.log('[MediaLibrary] Files selected:', files.length);
     setUploading(true);
-    
+
     try {
       for (const file of Array.from(files)) {
         console.log('[MediaLibrary] Uploading file:', file.name, file.type, file.size);
-        
+
         const formData = new FormData();
         formData.append("file", file);
         if (selectedLabel) {
@@ -145,7 +145,7 @@ export default function MediaLibrary() {
                     <SelectValue placeholder="All media" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All media</SelectItem>
+                    <SelectItem value="all">All media</SelectItem>
                     {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.title}
@@ -153,11 +153,11 @@ export default function MediaLibrary() {
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedProjectId && (
+                {selectedProjectId && selectedProjectId !== "all" && (
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => setSelectedProjectId("")}
+                    onClick={() => setSelectedProjectId("all")}
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -180,7 +180,7 @@ export default function MediaLibrary() {
                           <SelectValue placeholder="No portfolio association" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">No portfolio</SelectItem>
+                          <SelectItem value="all">No portfolio</SelectItem>
                           {projects.map((project) => (
                             <SelectItem key={project.id} value={project.id}>
                               {project.title}
