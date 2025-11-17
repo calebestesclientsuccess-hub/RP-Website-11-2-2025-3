@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import type { ContentCatalog } from "@shared/schema";
+import type { ContentCatalog, PortfolioPrompt } from "@shared/schema";
+import { storage } from "../storage";
 
 // Lazy-load Gemini client to avoid ESM initialization issues
 let ai: GoogleGenAI | null = null;
@@ -17,6 +18,35 @@ function getAIClient(): GoogleGenAI {
 }
 
 import { getAllPlaceholderIds, PLACEHOLDER_CONFIG } from "@shared/placeholder-config";
+
+// Helper: Load active custom prompts for a project
+async function loadCustomPrompts(projectId: string | null | undefined): Promise<Map<string, string>> {
+  const promptMap = new Map<string, string>();
+  
+  if (!projectId) {
+    return promptMap; // No project = no custom prompts
+  }
+  
+  try {
+    const prompts = await storage.getPortfolioPrompts(projectId);
+    
+    // Only use active prompts
+    prompts
+      .filter((p: PortfolioPrompt) => p.isActive && p.customPrompt)
+      .forEach((p: PortfolioPrompt) => {
+        promptMap.set(p.promptType, p.customPrompt!);
+      });
+    
+    if (promptMap.size > 0) {
+      console.log(`[Custom Prompts] Loaded ${promptMap.size} active custom prompts for project:`, projectId);
+    }
+    
+    return promptMap;
+  } catch (error) {
+    console.error('[Custom Prompts] Error loading prompts for project:', projectId, error);
+    return promptMap; // Return empty map on error (fallback to defaults)
+  }
+}
 
 // Build asset ID whitelist from static placeholders (NOT user's catalog)
 function buildAssetWhitelist(catalog?: ContentCatalog): string[] { // Added catalog parameter for context
@@ -778,43 +808,34 @@ export async function generatePortfolioWithAI(
   catalog: ContentCatalog,
   projectTitle: string, // Added projectTitle for logging
   projectId?: string, // Optional: for loading custom prompts
-  customPrompts?: Record<string, string> // Optional: pre-loaded custom prompts
+  customPromptsParam?: Record<string, string> // Optional: pre-loaded custom prompts
 ): Promise<PortfolioGenerateResponse> {
   const aiClient = getAIClient();
 
   console.log('[Portfolio Director] Starting 6-stage refinement pipeline...');
   
-  // Load custom prompts from database if projectId is provided
-  let activePrompts = customPrompts || {};
-  if (projectId && !customPrompts) {
-    try {
-      const { storage } = await import('../storage');
-      const dbPrompts = await storage.getPortfolioPrompts(projectId);
-      
-      // Convert array to record, only including active prompts
-      activePrompts = dbPrompts
-        .filter(p => p.isActive && p.customPrompt)
-        .reduce((acc, p) => {
-          acc[p.promptType] = p.customPrompt!;
-          return acc;
-        }, {} as Record<string, string>);
-        
-      if (Object.keys(activePrompts).length > 0) {
-        console.log('[Portfolio Director] Loaded', Object.keys(activePrompts).length, 'custom prompts from database');
-      }
-    } catch (error) {
-      console.error('[Portfolio Director] Failed to load custom prompts:', error);
-      // Continue with defaults
-    }
-  }
-
-  // STAGE 1: Initial Generation (Form-Filling) with retry logic
-  // Check for custom prompt override
-  const defaultPrompt = buildPortfolioPrompt(catalog);
-  const prompt = activePrompts['artistic_director'] || defaultPrompt;
+  // Load custom prompts once for reuse across all stages (performance optimization)
+  // Strategy: Start with database prompts, then override with caller-provided prompts
+  let customPrompts: Map<string, string>;
   
-  if (activePrompts['artistic_director']) {
-    console.log('[Portfolio Director] Using CUSTOM prompt for Stage 1 (Artistic Director)');
+  // Start with database prompts (if projectId available)
+  customPrompts = await loadCustomPrompts(projectId);
+  const dbPromptCount = customPrompts.size;
+  
+  // Override with caller-provided prompts (for testing/dependency injection)
+  if (customPromptsParam) {
+    const overrideCount = Object.keys(customPromptsParam).length;
+    Object.entries(customPromptsParam).forEach(([type, prompt]) => {
+      customPrompts.set(type, prompt);
+    });
+    console.log(`[Custom Prompts] Loaded ${dbPromptCount} database prompts, merged ${overrideCount} caller overrides, total: ${customPrompts.size}`);
+  }
+  
+  // STAGE 1: Initial Generation (Form-Filling) with retry logic
+  // Use custom prompt if available, otherwise use default
+  const prompt = customPrompts.get('artistic_director') || buildPortfolioPrompt(catalog);
+  if (customPrompts.has('artistic_director')) {
+    console.log('[Custom Prompts] Stage 1: Using custom artistic_director prompt');
   }
 
   let stage1Response;
@@ -1220,10 +1241,10 @@ Valid IDs: ${getAllPlaceholderIds().join(', ')}
 `;
 
   // Use custom prompt if available
-  const auditPrompt = activePrompts['technical_director'] || defaultAuditPrompt;
+  const auditPrompt = customPrompts.get('technical_director') || defaultAuditPrompt;
   
-  if (activePrompts['technical_director']) {
-    console.log('[Portfolio Director] Using CUSTOM prompt for Stage 2 (Technical Director)');
+  if (customPrompts.has('technical_director')) {
+    console.log('[Custom Prompts] Stage 2: Using custom technical_director prompt');
   }
 
   const auditResponse = await aiClient.models.generateContent({
@@ -1381,7 +1402,7 @@ Return:
   // STAGE 3.5: Scene Type-Specific Refinement
   console.log('[Portfolio Director] 🎬 Stage 3.5: Running scene-type-specific refinements...');
   const sceneTypeImprovements: string[] = [];
-
+  
   for (let i = 0; i < result.scenes.length; i++) {
     const scene = result.scenes[i];
     const previousSceneLayout = i > 0 ? result.scenes[i - 1].layout : null;
@@ -1389,16 +1410,20 @@ Return:
 
     switch (scene.sceneType) {
       case 'split':
-        scenePrompt = buildSplitScenePrompt(scene, catalog, i, previousSceneLayout);
+        scenePrompt = customPrompts.get('split_specialist') || buildSplitScenePrompt(scene, catalog, i, previousSceneLayout);
+        if (customPrompts.has('split_specialist')) console.log('[Custom Prompts] Stage 3.5: Using custom split_specialist prompt for scene', i);
         break;
       case 'gallery':
-        scenePrompt = buildGalleryScenePrompt(scene, catalog, i, previousSceneLayout);
+        scenePrompt = customPrompts.get('gallery_specialist') || buildGalleryScenePrompt(scene, catalog, i, previousSceneLayout);
+        if (customPrompts.has('gallery_specialist')) console.log('[Custom Prompts] Stage 3.5: Using custom gallery_specialist prompt for scene', i);
         break;
       case 'quote':
-        scenePrompt = buildQuoteScenePrompt(scene, catalog, i, previousSceneLayout);
+        scenePrompt = customPrompts.get('quote_specialist') || buildQuoteScenePrompt(scene, catalog, i, previousSceneLayout);
+        if (customPrompts.has('quote_specialist')) console.log('[Custom Prompts] Stage 3.5: Using custom quote_specialist prompt for scene', i);
         break;
       case 'fullscreen':
-        scenePrompt = buildFullscreenScenePrompt(scene, catalog, i, previousSceneLayout);
+        scenePrompt = customPrompts.get('fullscreen_specialist') || buildFullscreenScenePrompt(scene, catalog, i, previousSceneLayout);
+        if (customPrompts.has('fullscreen_specialist')) console.log('[Custom Prompts] Stage 3.5: Using custom fullscreen_specialist prompt for scene', i);
         break;
       default:
         // Skip refinement for basic scene types (text, image, video) and 'component'
@@ -1833,7 +1858,11 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
   // STAGE 5.5: Portfolio-Level Coherence Validation
   console.log('[Portfolio Director] 🎬 Stage 5.5: Validating portfolio-level coherence...');
 
-  const coherencePrompt = buildPortfolioCoherencePrompt(finalResult.scenes, catalog);
+  // Use custom executive_producer prompt if available (already loaded earlier)
+  const coherencePrompt = customPrompts.get('executive_producer') || buildPortfolioCoherencePrompt(finalResult.scenes, catalog);
+  if (customPrompts.has('executive_producer')) {
+    console.log('[Custom Prompts] Stage 5.5: Using custom executive_producer prompt');
+  }
 
   let coherenceResult;
   try {
