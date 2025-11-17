@@ -1,0 +1,131 @@
+Detailed Root Cause Analysis & Fix Plan
+What's Happening
+You're experiencing two critical failures preventing the Custom AI Prompts feature from working:
+
+🔴 Problem 1: Missing Database Table
+error: relation "portfolio_prompts" does not exist
+Root Cause: The migration file migrations/0015_add_portfolio_prompts.sql exists in your codebase, but it has never been executed against your PostgreSQL database. The table schema is defined, but the actual table doesn't exist in the database.
+
+🔴 Problem 2: Wrong Method Name in Routes
+TypeError: storage.getProject is not a function
+Root Cause: In server/routes.ts line 1582, the code calls storage.getProject(), but this method doesn't exist. The correct method is storage.getProjectById().
+
+Why the Migration Hasn't Run
+Your migration file exists, but Drizzle migrations are not auto-applied. You must manually execute:
+
+npx drizzle-kit push
+This command:
+
+Reads all SQL files in migrations/
+Compares them to your live database schema
+Executes any missing migrations
+Current State:
+
+✅ Migration file exists: 0015_add_portfolio_prompts.sql
+❌ Table doesn't exist in database
+❌ Migration never executed
+The Complete Fix (3 Steps)
+Step 1: Fix the Method Name Bug
+server/routes.ts
++0
+-0
+Fix getProject method call - use getProjectById instead
+Step 2: Run the Migration
+npx drizzle-kit push
+
+
+Stop
+What this does:
+
+Creates the portfolio_prompts table with all columns (id, project_id, prompt_type, custom_prompt, is_active, version, etc.)
+Creates indexes for performance
+Creates the UNIQUE constraint preventing multiple active prompts per project+type
+Step 3: Verify the Prompt Flow
+After the migration runs, here's exactly how the system works:
+
+A) When You Click "Create Custom Prompt"
+Frontend (client/src/components/admin/PortfolioPromptsManager.tsx line 125):
+
+const createMutation = useMutation({
+  mutationFn: async (data: { promptType: string; customPrompt: string }) => {
+    const response = await apiRequest("POST", `/api/projects/${projectId}/prompts`, data);
+    return response.json();
+  },
+Backend Route (server/routes.ts line 1951):
+
+app.post("/api/projects/:projectId/prompts", requireAuth, async (req, res) => {
+  const prompt = await storage.createPortfolioPrompt(
+    req.params.projectId,
+    req.session.userId!,
+    req.body
+  );
+Storage Layer (server/storage.ts line 1045):
+
+async createPortfolioPrompt(projectId: string, userId: string, data: InsertPortfolioPrompt) {
+  const [prompt] = await db
+    .insert(portfolioPrompts)
+    .values({
+      ...data,
+      projectId,
+      createdBy: userId,
+      updatedBy: userId,
+    })
+    .returning();
+  return prompt;
+}
+B) How Gemini Receives Your Custom Prompt
+When you generate a portfolio, the system checks for custom prompts:
+
+Generation Request (server/routes.ts line 2286):
+
+app.post("/api/portfolio/generate-enhanced", requireAuth, async (req, res) => {
+Custom Prompt Lookup (inside server/utils/portfolio-director.ts):
+
+// Load custom prompt if exists
+const customPrompt = await storage.getActivePortfolioPrompt(projectId, 'artistic_director');
+const systemPrompt = customPrompt?.customPrompt || DEFAULT_ARTISTIC_DIRECTOR_PROMPT;
+Gemini Call (server/utils/gemini-client.ts):
+
+const response = await ai.models.generateContent({
+  model: "gemini-2.5-pro",
+  contents: [{
+    role: "user",
+    parts: [{ text: systemPrompt }]  // <-- YOUR custom prompt or default
+  }],
+Verification Checklist
+After applying these fixes, verify:
+
+✅ Database Check
+Run this in Replit Shell to confirm table exists:
+
+psql $DATABASE_URL -c "\d portfolio_prompts"
+You should see:
+
+Column         | Type      | Nullable | Default
+---------------+-----------+----------+---------
+id             | text      | not null | 
+project_id     | text      | not null | 
+prompt_type    | text      | not null | 
+custom_prompt  | text      |          | 
+is_active      | boolean   | not null | false
+✅ Frontend Check
+Go to Admin → Projects → Select a project → "AI Prompts" tab
+Click "Create Custom Prompt" under any prompt type
+Enter custom text
+Click "Create"
+Should see success toast
+✅ Backend Check
+Check logs for:
+
+[express] POST /api/projects/{id}/prompts 201 in Xms
+(201 = success)
+
+✅ Gemini Integration Check
+Generate a portfolio with your custom prompt active
+Check server logs for:
+[Portfolio Enhanced] Using custom prompt for artistic_director
+Why This Will Work
+Migration creates the table → No more relation does not exist errors
+Fixed method name → getProjectById actually exists in storage.ts
+Custom prompts persist → Saved to portfolio_prompts table with is_active = true
+Gemini receives custom prompt → getActivePortfolioPrompt() loads it, passes to Gemini

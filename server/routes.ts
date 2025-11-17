@@ -1579,11 +1579,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/projects/:projectId", requireAuth, async (req, res) => {
     try {
-      const project = await storage.getProject(req.params.projectId);
+      const project = await storage.getProjectById(req.tenantId, req.params.projectId);
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
-      const scenes = await storage.getProjectScenes(req.params.projectId);
+      const scenes = await storage.getScenesByProjectId(req.tenantId, req.params.projectId);
       const assetMap = await storage.getAssetMap(req.params.projectId);
       return res.json({ ...project, scenes, assetMap });
     } catch (error) {
