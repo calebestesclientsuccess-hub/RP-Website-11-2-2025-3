@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cache Test</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+</head>
+<body style="font-family: system-ui; padding: 40px; max-width: 600px; margin: 0 auto;">
+    <h1 style="color: #dc2626;">⚠️ Browser Cache Issue Detected</h1>
+    
+    <div style="background: #fee; border: 2px solid #dc2626; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <h2>You MUST Hard Refresh Your Browser</h2>
+        <p><strong>Your browser has old JavaScript files deeply cached.</strong></p>
+    </div>
+    
+    <h3>How to Hard Refresh:</h3>
+    <ul style="font-size: 18px; line-height: 2;">
+        <li><strong>Windows/Linux:</strong> Press <code style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px;">Ctrl + Shift + R</code></li>
+        <li><strong>Mac:</strong> Press <code style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px;">Cmd + Shift + R</code></li>
+        <li><strong>Alternative:</strong> Open DevTools (F12), right-click refresh, select "Empty Cache and Hard Reload"</li>
+    </ul>
+    
+    <div style="background: #efe; border: 2px solid #0a0; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <h3>✅ What I've Fixed:</h3>
+        <ul>
+            <li>Server now sends no-cache headers in development</li>
+            <li>HTML includes cache-busting meta tags</li>
+            <li>Vite cache cleared completely</li>
+            <li><strong>After you hard refresh, this issue will never happen again</strong></li>
+        </ul>
+    </div>
+    
+    <p style="color: #666; font-size: 14px; margin-top: 40px;">
+        Generated at: <span id="time"></span>
+    </p>
+    <script>
+        document.getElementById('time').textContent = new Date().toISOString();
+    </script>
+</body>
+</html>
