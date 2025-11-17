@@ -1091,21 +1091,46 @@ export class DbStorage implements IStorage {
   }
 
   async getMediaAssets(tenantId: string): Promise<MediaLibraryAsset[]> {
-    return await db.select().from(mediaLibrary).where(eq(mediaLibrary.tenantId, tenantId));
+    try {
+      return await db.select().from(mediaLibrary).where(eq(mediaLibrary.tenantId, tenantId));
+    } catch (error) {
+      console.error('[Storage] Error fetching media assets:', error);
+      throw error;
+    }
   }
 
   async getMediaAsset(id: string): Promise<MediaLibraryAsset | undefined> {
-    const results = await db.select().from(mediaLibrary).where(eq(mediaLibrary.id, id));
-    return results[0];
+    try {
+      const results = await db.select().from(mediaLibrary).where(eq(mediaLibrary.id, id));
+      return results[0];
+    } catch (error) {
+      console.error('[Storage] Error fetching media asset:', error);
+      throw error;
+    }
   }
 
   async createMediaAsset(data: InsertMediaLibraryAsset): Promise<MediaLibraryAsset> {
-    const results = await db.insert(mediaLibrary).values(data).returning();
-    return results[0];
+    try {
+      const assetData = {
+        id: crypto.randomUUID(),
+        ...data,
+        createdAt: new Date(),
+      };
+      const results = await db.insert(mediaLibrary).values(assetData).returning();
+      return results[0];
+    } catch (error) {
+      console.error('[Storage] Error creating media asset:', error);
+      throw error;
+    }
   }
 
   async deleteMediaAsset(id: string): Promise<void> {
-    await db.delete(mediaLibrary).where(eq(mediaLibrary.id, id));
+    try {
+      await db.delete(mediaLibrary).where(eq(mediaLibrary.id, id));
+    } catch (error) {
+      console.error('[Storage] Error deleting media asset:', error);
+      throw error;
+    }
   }
 
   async togglePortfolioPrompt(id: string, userId: string) {

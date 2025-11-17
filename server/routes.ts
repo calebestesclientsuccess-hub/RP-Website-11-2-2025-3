@@ -1974,18 +1974,25 @@ Your explanation should be conversational and reference specific scene numbers.`
       const tenantId = (req as any).tenantId || "default";
 
       if (!req.file) {
+        console.error('[Media Upload] No file in request');
         return res.status(400).json({ error: "No file uploaded" });
       }
 
+      console.log('[Media Upload] Processing file:', {
+        filename: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      });
+
       const label = req.body.label || "";
-      const tags = req.body.tags ? req.body.tags.split(",").map((t: string) => t.trim()) : [];
+      const tags = req.body.tags ? req.body.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [];
 
       // Upload to Cloudinary using buffer
       const uploadResult = await new Promise<any>((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
             resource_type: req.file!.mimetype.startsWith("video/") ? "video" : "image",
-            folder: `tenants/${tenantId}`,
+            folder: `tenants/${tenantId}/media-library`,
           },
           (error, result) => {
             if (error) reject(error);
@@ -1996,6 +2003,7 @@ Your explanation should be conversational and reference specific scene numbers.`
       });
 
       const result = uploadResult as any;
+      console.log('[Media Upload] Cloudinary upload successful:', result.public_id);
 
       // Save to database
       const asset = await storage.createMediaAsset({
@@ -2007,10 +2015,14 @@ Your explanation should be conversational and reference specific scene numbers.`
         tags,
       });
 
+      console.log('[Media Upload] Database record created:', asset.id);
       return res.json(asset);
     } catch (error) {
-      console.error("Error uploading media:", error);
-      return res.status(500).json({ error: "Failed to upload media" });
+      console.error("[Media Upload] Error:", error);
+      return res.status(500).json({ 
+        error: "Failed to upload media",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 

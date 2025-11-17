@@ -70,18 +70,31 @@ export default function MediaLibrary() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || files.length === 0) return;
+    if (!files || files.length === 0) {
+      console.log('[MediaLibrary] No files selected');
+      return;
+    }
 
+    console.log('[MediaLibrary] Files selected:', files.length);
     setUploading(true);
+    
     try {
       for (const file of Array.from(files)) {
+        console.log('[MediaLibrary] Uploading file:', file.name, file.type, file.size);
+        
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("label", selectedLabel);
-        formData.append("tags", customTags);
+        if (selectedLabel) {
+          formData.append("label", selectedLabel);
+        }
+        if (customTags) {
+          formData.append("tags", customTags);
+        }
 
         await uploadMutation.mutateAsync(formData);
       }
+    } catch (error) {
+      console.error('[MediaLibrary] Upload error:', error);
     } finally {
       setUploading(false);
       e.target.value = "";
