@@ -11,11 +11,26 @@ export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
+  options?: RequestInit,
 ): Promise<Response> {
+  const isFormData = data instanceof FormData;
+  
+  const defaultHeaders: HeadersInit = isFormData 
+    ? {} 
+    : data 
+      ? { "Content-Type": "application/json" } 
+      : {};
+
+  const mergedHeaders = {
+    ...defaultHeaders,
+    ...(options?.headers || {}),
+  };
+
   const res = await fetch(url, {
+    ...options,
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
+    headers: mergedHeaders,
+    body: isFormData ? data : data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
 
