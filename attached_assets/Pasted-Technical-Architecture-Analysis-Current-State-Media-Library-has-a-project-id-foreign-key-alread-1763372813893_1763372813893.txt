@@ -1,0 +1,107 @@
+Technical Architecture Analysis
+Current State:
+
+Media Library has a project_id foreign key (✅ already added)
+Portfolio scenes store direct Cloudinary URLs in sceneConfig.content.url
+No connection between uploaded media and portfolio projects
+No UI in Portfolio Builder to select from Media Library
+Technical Integration Plan
+Approach: Hybrid Reference System
+I recommend a hybrid approach that supports both direct URLs and media library references, giving you flexibility:
+
+1. Database Schema Enhancement
+Add Media Reference Fields to Scene Content:
+
+// In sceneConfig, scenes can reference media_library OR use direct URLs
+imageScene.content = {
+  url: string,           // Direct Cloudinary URL (backward compatible)
+  mediaId?: string,      // NEW: Optional reference to media_library.id
+  alt: string,
+  title?: string
+}
+videoScene.content = {
+  url: string,           // Direct Cloudinary URL
+  mediaId?: string,      // NEW: Optional reference to media_library.id
+}
+
+Benefits:
+
+✅ Backward compatible (existing scenes keep working)
+✅ Flexible (can use Media Library OR paste direct URLs)
+✅ Enables asset reuse across projects
+✅ Centralized media management
+2. Frontend Integration Points
+A. Project-Media Association During Upload
+
+Add "Associate with Project" dropdown in Media Library upload form
+When uploading, automatically set project_id if working from Portfolio Builder
+Filter Media Library by selected project
+B. Media Picker Component in Portfolio Builder
+
+<MediaPicker 
+  projectId={selectedProjectId}
+  mediaType="image" | "video"
+  onSelect={(media) => {
+    // Set both mediaId and url for hybrid support
+    scene.content.mediaId = media.id;
+    scene.content.url = media.cloudinaryUrl;
+  }}
+/>
+
+C. Scene Editor Enhancement
+
+Add "Choose from Media Library" button next to URL input
+Show media thumbnail if mediaId is set
+Allow switching between Media Library and manual URL entry
+3. Backend API Enhancements
+New Endpoint: GET /api/projects/:projectId/media
+
+Already exists! ✅ Returns media filtered by project
+Use this for the media picker
+Enhanced Scene Hydration:
+
+// When loading scenes, optionally resolve mediaId to current URL
+GET /api/projects/:projectId/scenes?hydrate=true
+// Response includes full media objects for scenes with mediaId
+
+Media Validation:
+
+// When saving scenes, validate mediaId exists if provided
+// Auto-sync project_id in media_library when scene references it
+
+4. AI Generation Integration
+Catalog System Extension:
+The Portfolio Builder already has a Content Catalog concept. We can extend it:
+
+// In Cinematic mode, sections already have assetIds array:
+section = {
+  sectionType: "hero",
+  sectionPrompt: "...",
+  assetIds: string[]  // ✅ Already exists! Links to media_library
+}
+// AI can use these assetIds when generating scenes:
+- Fetch media URLs from media_library by assetIds
+- Include in Gemini prompt: "Use these images: [url1, url2]"
+- AI generates scenes with appropriate mediaId references
+
+5. Implementation Tasks
+Here's what needs to be built:
+
+Phase 1: Basic Integration (Essential)
+
+Update sceneConfigSchema to include optional mediaId field
+Build MediaPicker component with thumbnail grid
+Add "Choose from Library" button to scene URL inputs
+Filter Media Library by projectId in Portfolio Builder
+Phase 2: Upload Flow (Convenience)
+5. Add project selector to Media Library upload form
+
+Auto-link uploaded media to active project in Portfolio Builder
+Show project-specific media in Portfolio Builder sidebar
+Phase 3: AI Integration (Advanced)
+8. Extend AI prompt to include available media URLs
+
+AI generates scenes using mediaId references
+Hydrate scenes on load to resolve mediaId → current URL
+Phase 4: Management Features (Polish)
+11. Bulk media assignment (move media between
