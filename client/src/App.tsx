@@ -124,7 +124,10 @@ const JobPostingForm = withLazyLoading(JobPostingFormLazy);
 const PortfolioBuilder = withLazyLoading(PortfolioBuilderLazy);
 const AIPromptSettingsLazy = lazy(() => import("@/pages/admin/AIPromptSettings"));
 const AIPromptSettings = withLazyLoading(AIPromptSettingsLazy);
-const MediaLibraryLazy = lazy(() => import("@/pages/admin/MediaLibrary"));
+const MediaLibraryLazy = lazy(() => import("@/pages/admin/MediaLibrary").catch(err => {
+  console.error('Failed to load MediaLibrary:', err);
+  return { default: () => <div className="p-8 text-center">Failed to load Media Library. Please refresh the page.</div> };
+}));
 const MediaLibrary = withLazyLoading(MediaLibraryLazy);
 
 

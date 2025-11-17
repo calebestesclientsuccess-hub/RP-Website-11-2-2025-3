@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
@@ -32,6 +31,11 @@ export default function MediaLibrary() {
   const [uploading, setUploading] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState<string>("");
   const [customTags, setCustomTags] = useState<string>("");
+
+  // Early return for SSR/hydration issues
+  if (typeof window === 'undefined') {
+    return null;
+  }
 
   const style = {
     "--sidebar-width": "16rem",
