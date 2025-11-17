@@ -2626,6 +2626,7 @@ RESPONSE FORMAT:
 
     // Save to database (only if we have a project to save to)
     let finalProjectId = projectId;
+    const selectedProjectId = projectId; // Keep original projectId for linking media
 
     if (!isRefinementMode || !projectId) {
       // Create new project if needed

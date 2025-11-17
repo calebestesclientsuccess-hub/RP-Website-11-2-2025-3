@@ -22,25 +22,25 @@ import { getAllPlaceholderIds, PLACEHOLDER_CONFIG } from "@shared/placeholder-co
 // Helper: Load active custom prompts for a project
 async function loadCustomPrompts(projectId: string | null | undefined): Promise<Map<string, string>> {
   const promptMap = new Map<string, string>();
-  
+
   if (!projectId) {
     return promptMap; // No project = no custom prompts
   }
-  
+
   try {
     const prompts = await storage.getPortfolioPrompts(projectId);
-    
+
     // Only use active prompts
     prompts
       .filter((p: PortfolioPrompt) => p.isActive && p.customPrompt)
       .forEach((p: PortfolioPrompt) => {
         promptMap.set(p.promptType, p.customPrompt!);
       });
-    
+
     if (promptMap.size > 0) {
       console.log(`[Custom Prompts] Loaded ${promptMap.size} active custom prompts for project:`, projectId);
     }
-    
+
     return promptMap;
   } catch (error) {
     console.error('[Custom Prompts] Error loading prompts for project:', projectId, error);
@@ -158,7 +158,15 @@ function buildPortfolioPrompt(catalog: ContentCatalog): string {
   const placeholderVideos = PLACEHOLDER_CONFIG.videos.map((id) => `"${id}"`).join(', ');
   const placeholderQuotes = PLACEHOLDER_CONFIG.quotes.map((id) => `"${id}"`).join(', ');
 
-  return `You are an Artistic Director and Cinematic Storyteller for a high-end, scroll-driven web portfolio system. Your role is not merely to select options, but to translate an abstract creative vision and a collection of assets into a technically precise and emotionally resonant digital experience.
+  return `You are an expert portfolio director AI. Your role is to create compelling, professional portfolio scenes that tell a client's story.
+
+MEDIA LIBRARY INTEGRATION:
+- When media assets are available in the Media Library, ALWAYS prefer using them by including their mediaId
+- The mediaId ensures the asset stays linked even if the URL changes
+- If no suitable media exists in the library, you may use direct URLs as a fallback
+- For gallery scenes, you can mix media library references and direct URLs
+
+You are an Artistic Director and Cinematic Storyteller for a high-end, scroll-driven web portfolio system. Your role is not merely to select options, but to translate an abstract creative vision and a collection of assets into a technically precise and emotionally resonant digital experience.
 
 This is a "content-first" system. Your primary job is to build a beautiful story with the assets the user gives you.
 
@@ -813,15 +821,15 @@ export async function generatePortfolioWithAI(
   const aiClient = getAIClient();
 
   console.log('[Portfolio Director] Starting 6-stage refinement pipeline...');
-  
+
   // Load custom prompts once for reuse across all stages (performance optimization)
   // Strategy: Start with database prompts, then override with caller-provided prompts
   let customPrompts: Map<string, string>;
-  
+
   // Start with database prompts (if projectId available)
   customPrompts = await loadCustomPrompts(projectId);
   const dbPromptCount = customPrompts.size;
-  
+
   // Override with caller-provided prompts (for testing/dependency injection)
   if (customPromptsParam) {
     const overrideCount = Object.keys(customPromptsParam).length;
@@ -830,7 +838,7 @@ export async function generatePortfolioWithAI(
     });
     console.log(`[Custom Prompts] Loaded ${dbPromptCount} database prompts, merged ${overrideCount} caller overrides, total: ${customPrompts.size}`);
   }
-  
+
   // STAGE 1: Initial Generation (Form-Filling) with retry logic
   // Use custom prompt if available, otherwise use default
   const prompt = customPrompts.get('artistic_director') || buildPortfolioPrompt(catalog);
@@ -1242,7 +1250,7 @@ Valid IDs: ${getAllPlaceholderIds().join(', ')}
 
   // Use custom prompt if available
   const auditPrompt = customPrompts.get('technical_director') || defaultAuditPrompt;
-  
+
   if (customPrompts.has('technical_director')) {
     console.log('[Custom Prompts] Stage 2: Using custom technical_director prompt');
   }
@@ -1402,7 +1410,7 @@ Return:
   // STAGE 3.5: Scene Type-Specific Refinement
   console.log('[Portfolio Director] 🎬 Stage 3.5: Running scene-type-specific refinements...');
   const sceneTypeImprovements: string[] = [];
-  
+
   for (let i = 0; i < result.scenes.length; i++) {
     const scene = result.scenes[i];
     const previousSceneLayout = i > 0 ? result.scenes[i - 1].layout : null;
@@ -2715,7 +2723,7 @@ Critical Context:
   ${catalog.directorNotes}
 
 Original Scene JSON:
-${JSON.stringify(scene, null, 2)}
+${JSON.JSON.stringify(scene, null, 2)}
 
 Key Refinement Goals for Quote Scenes
 
