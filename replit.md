@@ -26,6 +26,7 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
 **Technical Implementations & Feature Specifications:**
 - **Core Sections**: Includes Hero, Lead Magnet System, `SimpleBridgeSection`, `SimplifiedOrbitalPowers`, Interactive ROI Calculator, Testimonial Carousel, and `BuildAndRampTimeline`.
 - **Content Management System (CMS)**: Unified Content Library with CRUD operations for Testimonials, Portfolio Projects, and Job Postings. Features database-driven blog with Markdown rendering, admin dashboard, rich text editor, and content scheduling.
+- **Media Library**: Cloudinary-backed media management system with database persistence (`media_library` table). Supports image and video uploads with labeling and tagging. Uses multer for multipart form handling. Note: Removed conflicting `express-fileupload` global middleware that was consuming multipart data before multer could process it.
 - **SEO Optimizations**: Comprehensive technical SEO including `robots.txt`, `sitemap.xml`, favicons, canonical URLs, meta tags via `react-helmet-async`, structured data (JSON-LD), and Core Web Vitals optimization.
 - **Error Handling**: Single global `ErrorBoundary` component.
 - **Article Layout System**: 3-column responsive layout with sidebars and a `ReadingProgressBar`.

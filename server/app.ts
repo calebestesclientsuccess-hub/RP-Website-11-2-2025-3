@@ -6,7 +6,6 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import crypto from "crypto";
-import fileUpload from "express-fileupload";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { sessionPool } from "./db";
@@ -29,13 +28,6 @@ app.use(compressionMiddleware);
 // Body parsing with size limits
 app.use(express.json({ limit: process.env.MAX_REQUEST_SIZE || '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: process.env.MAX_REQUEST_SIZE || '10mb' }));
-
-// File upload handling
-app.use(fileUpload({
-  useTempFiles: true,
-  tempFileDir: '/tmp/',
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max
-}));
 
 // Cache control
 app.use(cacheControl);

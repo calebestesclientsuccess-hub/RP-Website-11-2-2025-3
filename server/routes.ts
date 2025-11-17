@@ -1969,12 +1969,30 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
-  app.post("/api/media-library/upload", requireAuth, mediaUpload.single('file'), async (req, res) => {
+  // Custom multer error handler for media uploads
+  const handleMediaUpload = (req: any, res: any, next: any) => {
+    console.log('[Media Upload] Request received');
+    console.log('[Media Upload] Content-Type:', req.headers['content-type']);
+    
+    mediaUpload.single('file')(req, res, (err: any) => {
+      if (err) {
+        console.error('[Media Upload] Multer error:', err);
+        return res.status(400).json({ 
+          error: 'File upload error',
+          details: err.message 
+        });
+      }
+      console.log('[Media Upload] Multer completed successfully, file present:', !!req.file);
+      next();
+    });
+  };
+
+  app.post("/api/media-library/upload", requireAuth, handleMediaUpload, async (req, res) => {
     try {
       const tenantId = (req as any).tenantId || "default";
 
       if (!req.file) {
-        console.error('[Media Upload] No file in request');
+        console.error('[Media Upload] No file in request after multer');
         return res.status(400).json({ error: "No file uploaded" });
       }
 
@@ -1988,6 +2006,7 @@ Your explanation should be conversational and reference specific scene numbers.`
       const tags = req.body.tags ? req.body.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [];
 
       // Upload to Cloudinary using buffer
+      console.log('[Media Upload] Starting Cloudinary upload...');
       const uploadResult = await new Promise<any>((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
@@ -1995,8 +2014,12 @@ Your explanation should be conversational and reference specific scene numbers.`
             folder: `tenants/${tenantId}/media-library`,
           },
           (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
+            if (error) {
+              console.error('[Media Upload] Cloudinary error:', error);
+              reject(error);
+            } else {
+              resolve(result);
+            }
           }
         );
         uploadStream.end(req.file!.buffer);
