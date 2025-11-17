@@ -134,7 +134,7 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"details" | "prompts" | "scenes" | "ai" | "advanced">("details");
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
-  const [mediaPickerField, setMediaPickerField] = useState<'url' | 'images'>('url');
+  const [mediaPickerField, setMediaPickerField] = useState<'url' | 'images' | 'media'>('url');
 
 
   // AI Generation state
@@ -336,6 +336,12 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
       form.setValue('content.url', media.url);
       if (media.id) {
         form.setValue('content.mediaId', media.id);
+      }
+    } else if (mediaPickerField === 'media') {
+      // For split/fullscreen scenes
+      form.setValue('content.media', media.url);
+      if (media.id) {
+        form.setValue('content.mediaMediaId', media.id);
       }
     } else if (mediaPickerField === 'images') {
       const currentImages = form.getValues('content.images') || [];
@@ -750,11 +756,24 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                                 <FormControl>
                                   <div className="flex items-center gap-2">
                                     <Input {...field} placeholder="https://..." data-testid="input-image-url" />
-                                    <Button type="button" variant="outline" onClick={() => openMediaPicker('url')}>
-                                      <Sparkles className="w-4 h-4" />
+                                    <Button 
+                                      type="button" 
+                                      variant="outline" 
+                                      onClick={() => openMediaPicker('url')}
+                                      title="Choose from Media Library"
+                                    >
+                                      <Sparkles className="w-4 h-4 mr-1" />
+                                      Library
                                     </Button>
                                   </div>
                                 </FormControl>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {form.watch('content.mediaId') ? (
+                                    <span className="text-green-600">✓ Linked to Media Library</span>
+                                  ) : (
+                                    <span>Paste URL or choose from library</span>
+                                  )}
+                                </p>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -785,11 +804,24 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                               <FormControl>
                                 <div className="flex items-center gap-2">
                                   <Input {...field} placeholder="https://..." data-testid="input-video-url" />
-                                  <Button type="button" variant="outline" onClick={() => openMediaPicker('url')}>
-                                    <Sparkles className="w-4 h-4" />
+                                  <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    onClick={() => openMediaPicker('url')}
+                                    title="Choose from Media Library"
+                                  >
+                                    <Sparkles className="w-4 h-4 mr-1" />
+                                    Library
                                   </Button>
                                 </div>
                               </FormControl>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {form.watch('content.mediaId') ? (
+                                  <span className="text-green-600">✓ Linked to Media Library</span>
+                                ) : (
+                                  <span>Paste URL or choose from library</span>
+                                )}
+                              </p>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -807,11 +839,27 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                                 <FormControl>
                                   <div className="flex items-center gap-2">
                                     <Input {...field} placeholder="https://..." data-testid="input-split-media" />
-                                    <Button type="button" variant="outline" onClick={() => openMediaPicker('url')}>
-                                      <Sparkles className="w-4 h-4" />
+                                    <Button 
+                                      type="button" 
+                                      variant="outline" 
+                                      onClick={() => {
+                                        setMediaPickerField('media');
+                                        setMediaPickerOpen(true);
+                                      }}
+                                      title="Choose from Media Library"
+                                    >
+                                      <Sparkles className="w-4 h-4 mr-1" />
+                                      Library
                                     </Button>
                                   </div>
                                 </FormControl>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {form.watch('content.mediaMediaId') ? (
+                                    <span className="text-green-600">✓ Linked to Media Library</span>
+                                  ) : (
+                                    <span>Paste URL or choose from library</span>
+                                  )}
+                                </p>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -877,7 +925,19 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                                 <div className="space-y-2">
                                   {field.value?.map((image, index) => (
                                     <div key={index} className="flex items-center gap-2">
-                                      <Input value={image.url} readOnly placeholder="Image URL" className="flex-1" />
+                                      {image.url && (
+                                        <img 
+                                          src={image.url} 
+                                          alt={image.alt || `Gallery image ${index + 1}`}
+                                          className="w-12 h-12 object-cover rounded border"
+                                        />
+                                      )}
+                                      <div className="flex-1">
+                                        <Input value={image.url} readOnly placeholder="Image URL" />
+                                        {image.mediaId && (
+                                          <p className="text-xs text-green-600 mt-1">✓ Linked to library</p>
+                                        )}
+                                      </div>
                                       <Button type="button" variant="outline" size="icon" onClick={() => {
                                         const newImages = [...field.value];
                                         newImages.splice(index, 1);
@@ -889,7 +949,7 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                                   ))}
                                   <Button type="button" variant="outline" onClick={() => openMediaPicker('images')}>
                                     <Plus className="w-4 h-4 mr-2" />
-                                    Add Image
+                                    Add from Library
                                   </Button>
                                 </div>
                               </FormControl>
@@ -954,11 +1014,27 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                                 <FormControl>
                                   <div className="flex items-center gap-2">
                                     <Input {...field} placeholder="https://..." data-testid="input-fullscreen-media" />
-                                    <Button type="button" variant="outline" onClick={() => openMediaPicker('url')}>
-                                      <Sparkles className="w-4 h-4" />
+                                    <Button 
+                                      type="button" 
+                                      variant="outline" 
+                                      onClick={() => {
+                                        setMediaPickerField('media');
+                                        setMediaPickerOpen(true);
+                                      }}
+                                      title="Choose from Media Library"
+                                    >
+                                      <Sparkles className="w-4 h-4 mr-1" />
+                                      Library
                                     </Button>
                                   </div>
                                 </FormControl>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {form.watch('content.mediaMediaId') ? (
+                                    <span className="text-green-600">✓ Linked to Media Library</span>
+                                  ) : (
+                                    <span>Paste URL or choose from library</span>
+                                  )}
+                                </p>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -1210,9 +1286,18 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Select Media</DialogTitle>
-            <DialogDescription>Choose an asset from your media library.</DialogDescription>
+            <DialogDescription>
+              Choose an asset from your media library. 
+              {projectId && <span className="text-xs"> (Filtered to this project)</span>}
+            </DialogDescription>
           </DialogHeader>
-          <MediaPicker onSelect={handleMediaSelect} />
+          <MediaPicker 
+            onSelect={handleMediaSelect} 
+            open={mediaPickerOpen}
+            onOpenChange={setMediaPickerOpen}
+            projectId={projectId}
+            mediaType={mediaPickerField === 'url' || mediaPickerField === 'media' ? 'all' : 'image'}
+          />
         </DialogContent>
       </Dialog>
 
