@@ -1684,22 +1684,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (hydrate === 'true') {
         const hydratedScenes = await Promise.all(
           scenes.map(async (scene) => {
-            const mediaId = scene.sceneConfig?.content?.mediaId;
-
-            if (mediaId) {
+            const sceneConfig = scene.sceneConfig as any;
+            
+            // Handle single media field (image, video, split, fullscreen)
+            if (sceneConfig?.content?.mediaId) {
               const [media] = await db
                 .select()
                 .from(mediaLibrary)
-                .where(eq(mediaLibrary.id, mediaId))
+                .where(eq(mediaLibrary.id, sceneConfig.content.mediaId))
                 .limit(1);
 
               if (media) {
                 return {
                   ...scene,
                   sceneConfig: {
-                    ...scene.sceneConfig,
+                    ...sceneConfig,
                     content: {
-                      ...scene.sceneConfig.content,
+                      ...sceneConfig.content,
                       url: media.cloudinaryUrl,
                       mediaId: media.id,
                     },
@@ -1708,10 +1709,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             }
 
-            // Handle gallery images
-            if (scene.sceneConfig?.content?.images && Array.isArray(scene.sceneConfig.content.images)) {
+            // Handle gallery images array
+            if (sceneConfig?.content?.images && Array.isArray(sceneConfig.content.images)) {
               const hydratedImages = await Promise.all(
-                scene.sceneConfig.content.images.map(async (img: any) => {
+                sceneConfig.content.images.map(async (img: any) => {
                   if (img.mediaId) {
                     const [media] = await db
                       .select()
@@ -1730,13 +1731,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
               return {
                 ...scene,
                 sceneConfig: {
-                  ...scene.sceneConfig,
+                  ...sceneConfig,
                   content: {
-                    ...scene.sceneConfig.content,
+                    ...sceneConfig.content,
                     images: hydratedImages,
                   },
                 },
               };
+            }
+
+            // Handle split scene media field
+            if (sceneConfig?.content?.media && sceneConfig?.content?.mediaMediaId) {
+              const [media] = await db
+                .select()
+                .from(mediaLibrary)
+                .where(eq(mediaLibrary.id, sceneConfig.content.mediaMediaId))
+                .limit(1);
+
+              if (media) {
+                return {
+                  ...scene,
+                  sceneConfig: {
+                    ...sceneConfig,
+                    content: {
+                      ...sceneConfig.content,
+                      media: media.cloudinaryUrl,
+                      mediaMediaId: media.id,
+                    },
+                  },
+                };
+              }
             }
 
             return scene;
@@ -1763,6 +1787,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
+
+      // Validate mediaId exists if provided
+      const sceneConfig = result.data.sceneConfig as any;
+      if (sceneConfig?.content?.mediaId) {
+        const [media] = await db
+          .select()
+          .from(mediaLibrary)
+          .where(eq(mediaLibrary.id, sceneConfig.content.mediaId))
+          .limit(1);
+
+        if (!media) {
+          return res.status(400).json({
+            error: "Invalid media reference",
+            details: `Media with ID ${sceneConfig.content.mediaId} not found`
+          });
+        }
+
+        // Auto-link media to project if not already linked
+        if (!media.projectId) {
+          await db
+            .update(mediaLibrary)
+            .set({ projectId: req.params.projectId })
+            .where(eq(mediaLibrary.id, sceneConfig.content.mediaId));
+        }
+      }
+
+      // Validate gallery images mediaIds
+      if (sceneConfig?.content?.images && Array.isArray(sceneConfig.content.images)) {
+        for (const img of sceneConfig.content.images) {
+          if (img.mediaId) {
+            const [media] = await db
+              .select()
+              .from(mediaLibrary)
+              .where(eq(mediaLibrary.id, img.mediaId))
+              .limit(1);
+
+            if (!media) {
+              return res.status(400).json({
+                error: "Invalid media reference",
+                details: `Media with ID ${img.mediaId} not found in gallery images`
+              });
+            }
+
+            // Auto-link to project
+            if (!media.projectId) {
+              await db
+                .update(mediaLibrary)
+                .set({ projectId: req.params.projectId })
+                .where(eq(mediaLibrary.id, img.mediaId));
+            }
+          }
+        }
+      }
+
       const scene = await storage.createProjectScene(req.tenantId, req.params.projectId, result.data);
       return res.status(201).json(scene);
     } catch (error) {
@@ -1784,6 +1862,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details: validationError.message,
         });
       }
+
+      // Validate mediaId exists if provided
+      const sceneConfig = result.data.sceneConfig as any;
+      if (sceneConfig?.content?.mediaId) {
+        const [media] = await db
+          .select()
+          .from(mediaLibrary)
+          .where(eq(mediaLibrary.id, sceneConfig.content.mediaId))
+          .limit(1);
+
+        if (!media) {
+          return res.status(400).json({
+            error: "Invalid media reference",
+            details: `Media with ID ${sceneConfig.content.mediaId} not found`
+          });
+        }
+
+        // Auto-link media to project if not already linked
+        if (!media.projectId) {
+          await db
+            .update(mediaLibrary)
+            .set({ projectId: req.params.projectId })
+            .where(eq(mediaLibrary.id, sceneConfig.content.mediaId));
+        }
+      }
+
+      // Validate gallery images mediaIds
+      if (sceneConfig?.content?.images && Array.isArray(sceneConfig.content.images)) {
+        for (const img of sceneConfig.content.images) {
+          if (img.mediaId) {
+            const [media] = await db
+              .select()
+              .from(mediaLibrary)
+              .where(eq(mediaLibrary.id, img.mediaId))
+              .limit(1);
+
+            if (!media) {
+              return res.status(400).json({
+                error: "Invalid media reference",
+                details: `Media with ID ${img.mediaId} not found in gallery images`
+              });
+            }
+
+            // Auto-link to project
+            if (!media.projectId) {
+              await db
+                .update(mediaLibrary)
+                .set({ projectId: req.params.projectId })
+                .where(eq(mediaLibrary.id, img.mediaId));
+            }
+          }
+        }
+      }
+
       const scene = await storage.updateProjectScene(req.tenantId, req.params.projectId, req.params.id, result.data);
       if (!scene) {
         return res.status(404).json({ error: "Scene not found or access denied" });

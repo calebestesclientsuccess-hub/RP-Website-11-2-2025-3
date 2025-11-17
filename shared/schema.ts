@@ -811,6 +811,7 @@ const splitSceneSchema = z.object({
   type: z.literal("split"),
   content: z.object({
     media: z.string().url(),
+    mediaMediaId: z.string().optional(), // NEW: Optional reference to media_library for 'media' field
     heading: z.string().min(1),
   }).passthrough(),
 });
