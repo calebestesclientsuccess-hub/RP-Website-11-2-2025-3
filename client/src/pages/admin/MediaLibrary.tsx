@@ -161,6 +161,7 @@ export default function MediaLibrary() {
                     <div className="space-y-2">
                       <Label>Upload Files</Label>
                       <Input
+                        data-testid="input-file-upload"
                         type="file"
                         accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm"
                         multiple
