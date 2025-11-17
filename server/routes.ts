@@ -1940,6 +1940,73 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
+  // Media Library endpoints
+  app.get("/api/media-library", requireAuth, async (req, res) => {
+    try {
+      const tenantId = (req as any).tenantId || "default";
+      const assets = await storage.getMediaAssets(tenantId);
+      return res.json(assets);
+    } catch (error) {
+      console.error("Error fetching media library:", error);
+      return res.status(500).json({ error: "Failed to fetch media library" });
+    }
+  });
+
+  app.post("/api/media-library/upload", requireAuth, async (req, res) => {
+    try {
+      const tenantId = (req as any).tenantId || "default";
+      
+      if (!req.files || !req.files.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const file = req.files.file as any;
+      const label = req.body.label || "";
+      const tags = req.body.tags ? req.body.tags.split(",").map((t: string) => t.trim()) : [];
+
+      // Upload to Cloudinary
+      const uploadResult = await cloudinary.uploader.upload(file.tempFilePath, {
+        resource_type: file.mimetype.startsWith("video/") ? "video" : "image",
+        folder: `tenants/${tenantId}`,
+      });
+
+      // Save to database
+      const asset = await storage.createMediaAsset({
+        tenantId,
+        cloudinaryPublicId: uploadResult.public_id,
+        cloudinaryUrl: uploadResult.secure_url,
+        mediaType: file.mimetype.startsWith("video/") ? "video" : "image",
+        label: label || undefined,
+        tags,
+      });
+
+      return res.json(asset);
+    } catch (error) {
+      console.error("Error uploading media:", error);
+      return res.status(500).json({ error: "Failed to upload media" });
+    }
+  });
+
+  app.delete("/api/media-library/:id", requireAuth, async (req, res) => {
+    try {
+      const asset = await storage.getMediaAsset(req.params.id);
+      if (!asset) {
+        return res.status(404).json({ error: "Asset not found" });
+      }
+
+      // Delete from Cloudinary
+      await cloudinary.uploader.destroy(asset.cloudinaryPublicId);
+
+      // Delete from database
+      await storage.deleteMediaAsset(req.params.id);
+
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting media:", error);
+      return res.status(500).json({ error: "Failed to delete media" });
+    }
+  });
+
   // Portfolio-specific prompt overrides
   app.get("/api/projects/:projectId/prompts", requireAuth, async (req, res) => {
     try {

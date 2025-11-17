@@ -1227,3 +1227,17 @@ export const updatePortfolioPromptSchema = insertPortfolioPromptSchema.partial()
 export type InsertPortfolioPrompt = z.infer<typeof insertPortfolioPromptSchema>;
 export type UpdatePortfolioPrompt = z.infer<typeof updatePortfolioPromptSchema>;
 export type PortfolioPrompt = typeof portfolioPrompts.$inferSelect;
+
+export const mediaLibrary = pgTable("media_library", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  tenantId: text("tenant_id").notNull().default("default"),
+  cloudinaryPublicId: text("cloudinary_public_id").notNull(),
+  cloudinaryUrl: text("cloudinary_url").notNull(),
+  mediaType: text("media_type").notNull().$type<"image" | "video">(),
+  label: text("label"),
+  tags: text("tags").array().default([]),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type MediaLibraryAsset = typeof mediaLibrary.$inferSelect;
+export type InsertMediaLibraryAsset = typeof mediaLibrary.$inferInsert;

@@ -25,9 +25,13 @@ import {
   type ProjectScene, type InsertProjectScene,
   type PromptTemplate, type InsertPromptTemplate,
   type PortfolioPrompt, type InsertPortfolioPrompt, type UpdatePortfolioPrompt,
+  // media library schema - needs to be added
+  type MediaLibraryAsset, type InsertMediaLibraryAsset,
   users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens,
   assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants, leads, featureFlags, insertLeadSchema,
-  projects, projectScenes, promptTemplates, portfolioPrompts, portfolioConversations, portfolioVersions, contentAssets
+  projects, projectScenes, promptTemplates, portfolioPrompts, portfolioConversations, portfolioVersions, contentAssets,
+  // media library table - needs to be added
+  mediaLibrary
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, ilike, sql } from "drizzle-orm";
@@ -182,6 +186,12 @@ export interface IStorage {
   saveAssetMap(projectId: string, assetMap: Record<string, string>);
   updateAssetMapping(projectId: string, placeholderId: string, assetId: string);
   removeAssetMapping(projectId: string, placeholderId: string);
+
+  // Media Library Methods
+  getMediaAssets(tenantId: string): Promise<MediaLibraryAsset[]>;
+  getMediaAsset(id: string): Promise<MediaLibraryAsset | undefined>;
+  createMediaAsset(data: InsertMediaLibraryAsset): Promise<MediaLibraryAsset>;
+  deleteMediaAsset(id: string): Promise<void>;
 }
 
 export class DbStorage implements IStorage {
@@ -994,13 +1004,8 @@ export class DbStorage implements IStorage {
   }
 
   async deletePromptTemplate(tenantId: string, id: string): Promise<void> {
-    const result = await db.delete(promptTemplates)
-      .where(and(eq(promptTemplates.tenantId, tenantId), eq(promptTemplates.id, id)))
-      .returning();
-
-    if (result.length === 0) {
-      throw new Error('Prompt template not found or access denied');
-    }
+    await db.delete(promptTemplates)
+      .where(and(eq(promptTemplates.tenantId, tenantId), eq(promptTemplates.id, id)));
   }
 
   // Portfolio Conversations
@@ -1081,10 +1086,26 @@ export class DbStorage implements IStorage {
     return prompt;
   }
 
-  async deletePortfolioPrompt(id: string) {
-    await db
-      .delete(portfolioPrompts)
-      .where(eq(portfolioPrompts.id, id));
+  async deletePortfolioPrompt(id: string): Promise<void> {
+    await db.delete(portfolioPrompts).where(eq(portfolioPrompts.id, id));
+  }
+
+  async getMediaAssets(tenantId: string): Promise<MediaLibraryAsset[]> {
+    return await db.select().from(mediaLibrary).where(eq(mediaLibrary.tenantId, tenantId));
+  }
+
+  async getMediaAsset(id: string): Promise<MediaLibraryAsset | undefined> {
+    const results = await db.select().from(mediaLibrary).where(eq(mediaLibrary.id, id));
+    return results[0];
+  }
+
+  async createMediaAsset(data: InsertMediaLibraryAsset): Promise<MediaLibraryAsset> {
+    const results = await db.insert(mediaLibrary).values(data).returning();
+    return results[0];
+  }
+
+  async deleteMediaAsset(id: string): Promise<void> {
+    await db.delete(mediaLibrary).where(eq(mediaLibrary.id, id));
   }
 
   async togglePortfolioPrompt(id: string, userId: string) {

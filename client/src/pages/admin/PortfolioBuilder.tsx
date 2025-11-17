@@ -77,6 +77,11 @@ export default function PortfolioBuilder() {
   const [newProjectTitle, setNewProjectTitle] = useState("");
   const [newProjectSlug, setNewProjectSlug] = useState("");
   const [newProjectClient, setNewProjectClient] = useState("");
+  const [brandColorPrimary, setBrandColorPrimary] = useState("#000000");
+  const [brandColorSecondary, setBrandColorSecondary] = useState("#333333");
+  const [brandColorTertiary, setBrandColorTertiary] = useState("#666666");
+  const [logoMediaId, setLogoMediaId] = useState<string>("");
+  const [primaryImageId, setPrimaryImageId] = useState<string>("");
 
   // --- State for Scene Management (Manual Creation) ---
   const [scenes, setScenes] = useState<SceneBuilder[]>([]);
@@ -181,6 +186,12 @@ export default function PortfolioBuilder() {
   const { data: contentAssets } = useQuery<any[]>({
     queryKey: ["/api/content-assets"],
     staleTime: 1 * 60 * 1000, // 1 minute
+  });
+
+  // Fetch media library for media selection
+  const { data: mediaAssets = [] } = useQuery<any[]>({
+    queryKey: ["/api/media-library"],
+    staleTime: 1 * 60 * 1000,
   });
 
   // Fetch scenes separately for the selected project
@@ -467,6 +478,15 @@ export default function PortfolioBuilder() {
         newProjectTitle: isNewProject ? newProjectTitle : undefined,
         newProjectSlug: isNewProject ? newProjectSlug : undefined,
         newProjectClient: isNewProject ? newProjectClient : undefined,
+        brandColors: {
+          primary: brandColorPrimary,
+          secondary: brandColorSecondary,
+          tertiary: brandColorTertiary,
+        },
+        mediaReferences: {
+          logoId: logoMediaId,
+          primaryImageId: primaryImageId,
+        },
         scenes: scenesToSave.map((scene: any) => ({ // Map to expected format if needed
           sceneConfig: scene,
           // Add other fields if the backend expects them, e.g., order, etc.
@@ -795,6 +815,69 @@ export default function PortfolioBuilder() {
                             placeholder="Enter client name..."
                             data-testid="input-project-client"
                           />
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="space-y-2">
+                            <Label htmlFor="color-primary">Primary Color</Label>
+                            <Input
+                              id="color-primary"
+                              type="color"
+                              value={brandColorPrimary}
+                              onChange={(e) => setBrandColorPrimary(e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="color-secondary">Secondary Color</Label>
+                            <Input
+                              id="color-secondary"
+                              type="color"
+                              value={brandColorSecondary}
+                              onChange={(e) => setBrandColorSecondary(e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="color-tertiary">Tertiary Color</Label>
+                            <Input
+                              id="color-tertiary"
+                              type="color"
+                              value={brandColorTertiary}
+                              onChange={(e) => setBrandColorTertiary(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-2">
+                            <Label>Logo</Label>
+                            <Select value={logoMediaId} onValueChange={setLogoMediaId}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select logo..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mediaAssets.filter((m: any) => m.label === "logo").map((media: any) => (
+                                  <SelectItem key={media.id} value={media.id}>
+                                    {media.cloudinaryPublicId}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Primary Image</Label>
+                            <Select value={primaryImageId} onValueChange={setPrimaryImageId}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select primary image..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {mediaAssets.filter((m: any) => m.label === "primary-image").map((media: any) => (
+                                  <SelectItem key={media.id} value={media.id}>
+                                    {media.cloudinaryPublicId}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                       </div>
                     ) : (
