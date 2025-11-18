@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, X, Sparkles, Loader2, Edit, ArrowUp, ArrowDown, Trash2, ChevronDown, Send, Upload } from "lucide-react";
+import { Plus, X, Sparkles, Loader2, Edit, ArrowUp, ArrowDown, Trash2, ChevronDown, Send, Upload, Wand2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { Project } from "@shared/schema";
 import {
@@ -147,6 +147,9 @@ export default function PortfolioBuilder() {
   // State for quick upload dialog
   const [showQuickUpload, setShowQuickUpload] = useState(false);
 
+  // State for Debug Mode
+  const [debugMode, setDebugMode] = useState(false);
+
   // --- Form State for Scene Editor ---
   const form = useForm({
     defaultValues: {
@@ -229,9 +232,10 @@ export default function PortfolioBuilder() {
       versionsCount: versions.length,
       activeVersionId,
       hasCurrentSceneJson: !!currentSceneJson,
-      currentSceneJsonLength: currentSceneJson?.length || 0
+      currentSceneJsonLength: currentSceneJson?.length || 0,
+      debugMode,
     });
-  }, [conversationHistory, versions, activeVersionId, currentSceneJson]);
+  }, [conversationHistory, versions, activeVersionId, currentSceneJson, debugMode]);
 
   // UNIFIED scene loading effect - handles all project selection scenarios
   useEffect(() => {
@@ -620,6 +624,7 @@ export default function PortfolioBuilder() {
           currentPrompt: promptToSend,
           currentSceneJson: currentSceneJson,
           proposedChanges: proposedChanges,
+          debugMode, // Enable detailed logging if checked
         };
       }
 
@@ -1556,25 +1561,40 @@ export default function PortfolioBuilder() {
                         </div>
                       </div>
                     )}
-                    <Button
-                      onClick={handleGeneratePortfolio}
-                      disabled={isRefining || (isNewProject && (!newProjectTitle.trim() || !newProjectSlug.trim() || !newProjectClient.trim())) || (!isNewProject && !selectedProjectId)}
-                      size="lg"
-                      className="w-full"
-                      data-testid="button-generate-portfolio"
-                    >
-                      {isRefining ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating Portfolio...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-4 h-4 mr-2" />
-                          Generate Portfolio with AI
-                        </>
-                      )}
-                    </Button>
+                    <div className="space-y-2">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <input
+                            type="checkbox"
+                            id="debugMode"
+                            checked={debugMode}
+                            onChange={(e) => setDebugMode(e.target.checked)}
+                            className="rounded border-gray-300"
+                          />
+                          <label htmlFor="debugMode" className="text-sm text-muted-foreground">
+                            Enable Debug Mode (detailed console logs)
+                          </label>
+                        </div>
+
+                        <Button
+                          onClick={handleGeneratePortfolio}
+                          disabled={isRefining || (isNewProject && (!newProjectTitle.trim() || !newProjectSlug.trim() || !newProjectClient.trim())) || (!isNewProject && !selectedProjectId)}
+                          size="lg"
+                          className="w-full"
+                          data-testid="button-generate-portfolio"
+                        >
+                          {isRefining ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Generating Portfolio...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4 mr-2" />
+                              Generate Portfolio with AI
+                            </>
+                          )}
+                        </Button>
+                      </div>
                   </CardContent>
                 </Card>
                 )}

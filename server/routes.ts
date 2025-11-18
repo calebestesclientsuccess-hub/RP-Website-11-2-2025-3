@@ -1619,7 +1619,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Hydrate media references if requested
       if (shouldHydrate && scenes.length > 0) {
         console.log(`[Hydration] Processing ${scenes.length} scenes for project ${projectId}`);
-        
+
         // Collect all unique mediaIds from all scenes
         const mediaIds = new Set<string>();
         scenes.forEach((scene: any) => {
@@ -1627,12 +1627,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (scene.sceneConfig?.content?.mediaId) {
             mediaIds.add(scene.sceneConfig.content.mediaId);
           }
-          
+
           // Handle content.mediaMediaId (split/fullscreen scenes)
           if (scene.sceneConfig?.content?.mediaMediaId) {
             mediaIds.add(scene.sceneConfig.content.mediaMediaId);
           }
-          
+
           // Handle gallery images
           if (scene.sceneConfig?.content?.images && Array.isArray(scene.sceneConfig.content.images)) {
             scene.sceneConfig.content.images.forEach((img: any) => {
@@ -1788,9 +1788,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (mediaRecords.length !== mediaIdsToValidate.size) {
           const foundIds = new Set(mediaRecords.map(m => m.id));
           const missingIds = Array.from(mediaIdsToValidate).filter(id => !foundIds.has(id));
-          
+
           console.warn(`[Scene Creation] SECURITY: Attempted to reference unauthorized media:`, missingIds);
-          
+
           return res.status(403).json({
             error: 'Media reference validation failed',
             details: 'One or more media assets are invalid or do not belong to your account',
@@ -1840,20 +1840,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Collect all media references from all scenes
       const mediaIdsToValidate = new Set<string>();
-      
+
       scenes.forEach((scene: any) => {
         const sceneConfig = scene.sceneConfig;
-        
+
         // content.mediaId (image/video scenes)
         if (sceneConfig?.content?.mediaId) {
           mediaIdsToValidate.add(sceneConfig.content.mediaId);
         }
-        
+
         // content.mediaMediaId (split/fullscreen scenes)
         if (sceneConfig?.content?.mediaMediaId) {
           mediaIdsToValidate.add(sceneConfig.content.mediaMediaId);
         }
-        
+
         // Gallery images
         if (sceneConfig?.content?.images && Array.isArray(sceneConfig.content.images)) {
           sceneConfig.content.images.forEach((img: any) => {
@@ -1880,9 +1880,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (mediaRecords.length !== mediaIdsToValidate.size) {
           const foundIds = new Set(mediaRecords.map(m => m.id));
           const missingIds = Array.from(mediaIdsToValidate).filter(id => !foundIds.has(id));
-          
+
           console.warn(`[Scene Update] SECURITY: Attempted to reference unauthorized media:`, missingIds);
-          
+
           return res.status(403).json({
             error: 'Media reference validation failed',
             details: 'One or more media assets are invalid or do not belong to your account',
@@ -2063,8 +2063,8 @@ Your explanation should be conversational and reference specific scene numbers.`
       });
 
       const result = JSON.parse(geminiResponse.text || '{}');
-      enhancedScenes = result.scenes || [];
-      aiExplanation = result.explanation || "Scenes refined successfully";
+      let enhancedScenes = result.scenes || [];
+      let aiExplanation = result.explanation || "Scenes refined successfully";
 
       console.log(`[Portfolio Enhanced] Gemini refined ${enhancedScenes.length} scenes`);
 
@@ -2759,16 +2759,14 @@ RESPONSE FORMAT:
   // CINEMATIC MODE: Full AI Director (4-stage pipeline)
   app.post("/api/portfolio/generate-cinematic", requireAuth, async (req, res) => {
     try {
-      const result = portfolioGenerateRequestSchema.safeParse(req.body);
-      if (!result.success) {
-        const validationError = fromZodError(result.error);
-        return res.status(400).json({
-          error: "Validation failed",
-          details: validationError.message,
-        });
-      }
+      const { catalog, projectId, newProjectTitle, newProjectSlug, newProjectClient } = portfolioGenerateRequestSchema.parse(req.body);
+      // Add debugMode from req.body
+      const { debugMode } = req.body;
 
-      const { catalog, projectId, newProjectTitle, newProjectSlug, newProjectClient } = result.data;
+      // Store debug mode in environment for this request
+      if (debugMode) {
+        process.env.PORTFOLIO_DEBUG_MODE = 'true';
+      }
 
       // Validate catalog has sections
       if (!catalog.sections || catalog.sections.length === 0) {
@@ -2820,7 +2818,7 @@ RESPONSE FORMAT:
         });
       }
 
-      return res.json({
+      res.json({
         success: true,
         projectId: finalProjectId,
         scenes: cinematicResult.scenes,
@@ -2829,28 +2827,29 @@ RESPONSE FORMAT:
         warnings: cinematicResult.warnings,
         message: `Cinematic generation complete (${cinematicResult.scenes.length} scenes)`,
       });
-    } catch (error) {
-      console.error("Cinematic generation error:", error);
-      return res.status(500).json({
-        error: "Failed to generate cinematic portfolio",
-        details: error instanceof Error ? error.message : "Unknown error"
+    } catch (error: any) {
+      console.error('[Portfolio Generation] Error:', error);
+      res.status(500).json({
+        message: error.message || 'Failed to generate portfolio',
+        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
+    } finally {
+      // Clean up debug mode flag
+      delete process.env.PORTFOLIO_DEBUG_MODE;
     }
   });
 
   // HYBRID MODE: AI Portfolio Generation (original content catalog orchestration)
   app.post("/api/portfolio/generate-ai", requireAuth, async (req, res) => {
     try {
-      const result = portfolioGenerateRequestSchema.safeParse(req.body);
-      if (!result.success) {
-        const validationError = fromZodError(result.error);
-        return res.status(400).json({
-          error: "Validation failed",
-          details: validationError.message,
-        });
-      }
+      const { catalog, projectId, newProjectTitle, newProjectSlug, newProjectClient } = portfolioGenerateRequestSchema.parse(req.body);
+      // Add debugMode from req.body
+      const { debugMode } = req.body;
 
-      const { catalog, projectId, newProjectTitle, newProjectSlug, newProjectClient } = result.data;
+      // Store debug mode in environment for this request
+      if (debugMode) {
+        process.env.PORTFOLIO_DEBUG_MODE = 'true';
+      }
 
       // Validate catalog has at least one asset
       const totalAssets = catalog.texts.length + catalog.images.length + catalog.videos.length + catalog.quotes.length;
@@ -2979,12 +2978,15 @@ RESPONSE FORMAT:
         confidenceFactors: portfolioResult.confidenceFactors,
         message: `Generated ${portfolioResult.scenes.length} scenes successfully (Confidence: ${portfolioResult.confidenceScore}%)`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating portfolio with AI:", error);
       return res.status(500).json({
         error: "Failed to generate portfolio",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error.message || "Unknown error"
       });
+    } finally {
+      // Clean up debug mode flag
+      delete process.env.PORTFOLIO_DEBUG_MODE;
     }
   });
 

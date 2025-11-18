@@ -842,6 +842,14 @@ export async function generatePortfolioWithAI(
 ): Promise<PortfolioGenerateResponse> {
   const aiClient = getAIClient();
 
+  const debugMode = process.env.PORTFOLIO_DEBUG_MODE === 'true';
+  
+  if (debugMode) {
+    console.log('\n' + '🔍'.repeat(40));
+    console.log('DEBUG MODE ENABLED - Detailed logging active');
+    console.log('🔍'.repeat(40) + '\n');
+  }
+  
   console.log('[Portfolio Director] Starting 6-stage refinement pipeline...');
 
   // Load custom prompts once for reuse across all stages (performance optimization)
@@ -873,6 +881,20 @@ export async function generatePortfolioWithAI(
   // STAGE 1: Initial Generation (Form-Filling) with enhanced retry logic
   const stage1Start = Date.now();
   console.log('[Portfolio Director] 🎬 STAGE 1/6: Initial Generation (with retry logic)');
+  
+  if (debugMode) {
+    console.log('\n[DEBUG] Stage 1 Configuration:');
+    console.log('  - Model: gemini-2.0-flash-exp');
+    console.log('  - Max Retries:', maxRetries);
+    console.log('  - Catalog Assets:', {
+      texts: catalog.texts?.length ?? 0,
+      images: catalog.images?.length ?? 0,
+      videos: catalog.videos?.length ?? 0,
+      quotes: catalog.quotes?.length ?? 0,
+    });
+    console.log('  - Director Notes Length:', catalog.directorNotes?.length ?? 0, 'chars');
+    console.log('  - Valid Placeholder IDs:', buildAssetWhitelist(catalog).join(', '));
+  }
   
   // Use custom prompt if available, otherwise use default
   const prompt = customPrompts.get('artistic_director') || buildPortfolioPrompt(catalog);
