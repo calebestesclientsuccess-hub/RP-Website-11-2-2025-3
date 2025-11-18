@@ -253,6 +253,26 @@ export const portfolioVersions = pgTable("portfolio_versions", {
   uniqueVersion: unique().on(table.projectId, table.versionNumber),
 }));
 
+export const sceneTemplates = pgTable("scene_templates", {
+  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
+  tenantId: text("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  sceneConfig: jsonb("scene_config").notNull(),
+  tags: text("tags").array().notNull().default(sql`ARRAY[]::text[]`),
+  previewImageUrl: text("preview_image_url"),
+  createdBy: text("created_by").notNull(),
+  usageCount: integer("usage_count").notNull().default(0),
+  isPublic: boolean("is_public").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  tenantIdx: index("idx_scene_templates_tenant").on(table.tenantId),
+  tagsIdx: index("idx_scene_templates_tags").on(table.tags),
+  usageIdx: index("idx_scene_templates_usage").on(table.usageCount),
+  createdIdx: index("idx_scene_templates_created").on(table.createdAt),
+}));
+
 // Scene Templates (reusable scene library)
 export const sceneTemplates = pgTable("scene_templates", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
@@ -1088,6 +1108,10 @@ export type UpdatePromptTemplate = z.infer<typeof updatePromptTemplateSchema>;
 
 export type PortfolioVersion = typeof portfolioVersions.$inferSelect;
 export type InsertPortfolioVersion = typeof portfolioVersions.$inferInsert;
+
+export type SceneTemplate = typeof sceneTemplates.$inferSelect;
+export type InsertSceneTemplate = typeof sceneTemplates.$inferInsert;
+export type UpdateSceneTemplate = Partial<InsertSceneTemplate>;
 
 export type SceneTemplate = typeof sceneTemplates.$inferSelect;
 export type InsertSceneTemplate = typeof sceneTemplates.$inferInsert;
