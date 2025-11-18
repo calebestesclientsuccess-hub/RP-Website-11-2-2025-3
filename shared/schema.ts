@@ -293,19 +293,16 @@ export const sceneTemplates = pgTable("scene_templates", {
 
   // Schema versioning for migrations
   schemaVersion: varchar("schema_version", { length: 10 }).default("1.0").notNull(),
-});
-
-// Indexes for performance
-export const sceneTemplatesIndexes = [
+}, (table) => ({
   // Fast tenant filtering
-  index("scene_templates_tenant_id_idx").on(sceneTemplates.tenantId),
-
+  tenantIdIdx: index("scene_templates_tenant_id_idx").on(table.tenantId),
+  
   // Search by category
-  index("scene_templates_category_idx").on(sceneTemplates.category),
-
+  categoryIdx: index("scene_templates_category_idx").on(table.category),
+  
   // Full-text search on name/description
-  index("scene_templates_search_idx").on(sceneTemplates.name, sceneTemplates.description),
-];
+  searchIdx: index("scene_templates_search_idx").on(table.name, table.description),
+}));
 
 export const portfolioConversations = pgTable("portfolio_conversations", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
