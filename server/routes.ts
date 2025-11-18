@@ -1741,52 +1741,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Validate and auto-link media references
+      // Collect all media references from scene config
       const sceneConfig = result.data.sceneConfig as any;
-      const mediaIdsToLink: string[] = [];
+      const mediaIdsToValidate = new Set<string>();
 
-      // Handle single mediaId
-      if (sceneConfig?.mediaId) {
-        mediaIdsToLink.push(sceneConfig.mediaId);
+      // Extract mediaId from content.mediaId (image/video scenes)
+      if (sceneConfig?.content?.mediaId) {
+        mediaIdsToValidate.add(sceneConfig.content.mediaId);
       }
-      // Handle gallery images mediaIds
+
+      // Extract mediaId from content.mediaMediaId (split/fullscreen scenes)
+      if (sceneConfig?.content?.mediaMediaId) {
+        mediaIdsToValidate.add(sceneConfig.content.mediaMediaId);
+      }
+
+      // Extract mediaIds from gallery images
       if (sceneConfig?.content?.images && Array.isArray(sceneConfig.content.images)) {
         sceneConfig.content.images.forEach((img: any) => {
           if (img.mediaId) {
-            mediaIdsToLink.push(img.mediaId);
+            mediaIdsToValidate.add(img.mediaId);
           }
         });
       }
 
-      if (mediaIdsToLink.length > 0) {
+      // SECURITY: Validate all media references belong to same tenant
+      if (mediaIdsToValidate.size > 0) {
         const projectId = req.params.projectId;
         const tenantId = req.tenantId;
+
+        console.log(`[Scene Creation] Validating ${mediaIdsToValidate.size} media references for tenant ${tenantId}`);
 
         // Verify all media exists and belongs to same tenant
         const mediaRecords = await db.query.mediaLibrary.findMany({
           where: and(
-            inArray(mediaLibrary.id, mediaIdsToLink),
+            inArray(mediaLibrary.id, Array.from(mediaIdsToValidate)),
             eq(mediaLibrary.tenantId, tenantId)
           )
         });
 
-        if (mediaRecords.length !== mediaIdsToLink.length) {
-          return res.status(400).json({
-            error: 'One or more media references are invalid or unauthorized'
+        // SECURITY CHECK: All referenced media must exist and belong to tenant
+        if (mediaRecords.length !== mediaIdsToValidate.size) {
+          const foundIds = new Set(mediaRecords.map(m => m.id));
+          const missingIds = Array.from(mediaIdsToValidate).filter(id => !foundIds.has(id));
+          
+          console.warn(`[Scene Creation] SECURITY: Attempted to reference unauthorized media:`, missingIds);
+          
+          return res.status(403).json({
+            error: 'Media reference validation failed',
+            details: 'One or more media assets are invalid or do not belong to your account',
+            invalidIds: missingIds
           });
         }
 
-        // Auto-associate unlinked media with this project
-        const unlinkedMedia = mediaRecords.filter((m: any) => !m.projectId);
+        // Auto-link unlinked media to this project
+        const unlinkedMedia = mediaRecords.filter(m => !m.projectId);
         if (unlinkedMedia.length > 0) {
           await db
             .update(mediaLibrary)
             .set({ projectId })
             .where(
-              inArray(mediaLibrary.id, unlinkedMedia.map((m: any) => m.id))
+              inArray(mediaLibrary.id, unlinkedMedia.map(m => m.id))
             );
-          console.log(`Auto-linked ${unlinkedMedia.length} media assets to project ${projectId}`);
+          console.log(`[Scene Creation] Auto-linked ${unlinkedMedia.length} media assets to project ${projectId}`);
         }
+
+        console.log(`[Scene Creation] ✓ All ${mediaIdsToValidate.size} media references validated for tenant ${tenantId}`);
       }
 
       const scene = await storage.createProjectScene(req.tenantId, req.params.projectId, result.data);
@@ -1814,23 +1833,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Project not found' });
       }
 
-      // Validate and auto-link media references
-      const mediaIds = scenes
-        .filter((s: any) => s.sceneConfig?.mediaId)
-        .map((s: any) => s.sceneConfig.mediaId);
+      // Collect all media references from all scenes
+      const mediaIdsToValidate = new Set<string>();
+      
+      scenes.forEach((scene: any) => {
+        const sceneConfig = scene.sceneConfig;
+        
+        // content.mediaId (image/video scenes)
+        if (sceneConfig?.content?.mediaId) {
+          mediaIdsToValidate.add(sceneConfig.content.mediaId);
+        }
+        
+        // content.mediaMediaId (split/fullscreen scenes)
+        if (sceneConfig?.content?.mediaMediaId) {
+          mediaIdsToValidate.add(sceneConfig.content.mediaMediaId);
+        }
+        
+        // Gallery images
+        if (sceneConfig?.content?.images && Array.isArray(sceneConfig.content.images)) {
+          sceneConfig.content.images.forEach((img: any) => {
+            if (img.mediaId) {
+              mediaIdsToValidate.add(img.mediaId);
+            }
+          });
+        }
+      });
 
-      if (mediaIds.length > 0) {
+      // SECURITY: Validate all media references
+      if (mediaIdsToValidate.size > 0) {
+        console.log(`[Scene Update] Validating ${mediaIdsToValidate.size} media references for tenant ${project.tenantId}`);
+
         // Verify all media exists and belongs to same tenant
         const mediaRecords = await db.query.mediaLibrary.findMany({
           where: and(
-            inArray(mediaLibrary.id, mediaIds),
+            inArray(mediaLibrary.id, Array.from(mediaIdsToValidate)),
             eq(mediaLibrary.tenantId, project.tenantId)
           )
         });
 
-        if (mediaRecords.length !== mediaIds.length) {
-          return res.status(400).json({
-            error: 'One or more media references are invalid or unauthorized'
+        // SECURITY CHECK: All referenced media must exist and belong to tenant
+        if (mediaRecords.length !== mediaIdsToValidate.size) {
+          const foundIds = new Set(mediaRecords.map(m => m.id));
+          const missingIds = Array.from(mediaIdsToValidate).filter(id => !foundIds.has(id));
+          
+          console.warn(`[Scene Update] SECURITY: Attempted to reference unauthorized media:`, missingIds);
+          
+          return res.status(403).json({
+            error: 'Media reference validation failed',
+            details: 'One or more media assets are invalid or do not belong to your account',
+            invalidIds: missingIds
           });
         }
 
@@ -1843,8 +1894,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .where(
               inArray(mediaLibrary.id, unlinkedMedia.map(m => m.id))
             );
-          console.log(`Auto-linked ${unlinkedMedia.length} media assets to project ${projectId}`);
+          console.log(`[Scene Update] Auto-linked ${unlinkedMedia.length} media assets to project ${projectId}`);
         }
+
+        console.log(`[Scene Update] ✓ All ${mediaIdsToValidate.size} media references validated for tenant ${project.tenantId}`);
       }
 
       const [updatedProject] = await db
