@@ -37,5 +37,10 @@ export default defineConfig({
       deny: ["**/.*"],
     },
     allowedHosts: true,
+    hmr: {
+      protocol: 'wss',
+      clientPort: 443,
+      port: undefined, // Let Vite pick an available port
+    },
   },
 });
