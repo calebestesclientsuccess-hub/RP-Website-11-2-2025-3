@@ -981,41 +981,66 @@ export const MEDIA_SCALES = ["cover", "contain", "fill"] as const;
 export const EASING_FUNCTIONS = ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "power1", "power2", "power3", "power4", "back", "elastic", "bounce"] as const;
 
 export const DEFAULT_DIRECTOR_CONFIG = {
-  entryDuration: 1.2,
-  exitDuration: 1.0,
+  // ANIMATION & TIMING (8 controls)
+  entryEffect: 'fade',
+  entryDuration: 1.0,
   entryDelay: 0,
+  entryEasing: 'ease-out',
+  exitEffect: 'fade',
+  exitDuration: 1.0,
   exitDelay: 0,
-  backgroundColor: "#000000",
-  textColor: "#ffffff",
-  parallaxIntensity: 0.3,
-  entryEffect: "fade",
-  exitEffect: "fade",
-  entryEasing: "ease-out",
-  exitEasing: "ease-in",
-  headingSize: "6xl",
-  bodySize: "lg",
-  alignment: "center",
+  exitEasing: 'ease-in',
+
+  // VISUAL FOUNDATION (2 controls)
+  backgroundColor: '#000000',
+  textColor: '#ffffff',
+
+  // SCROLL DEPTH & DURATION (3 controls)
+  parallaxIntensity: 0,
+  scrollSpeed: 'normal',
+  animationDuration: 1.0,
+
+  // TYPOGRAPHY (4 controls)
+  headingSize: '4xl',
+  bodySize: 'base',
+  fontWeight: 'normal',
+  alignment: 'center',
+
+  // SCROLL INTERACTION (3 controls)
   fadeOnScroll: false,
   scaleOnScroll: false,
   blurOnScroll: false,
-  scrollSpeed: "normal" as const,
-  layerDepth: 5,
+
+  // MULTI-ELEMENT TIMING (2 controls)
   staggerChildren: 0,
-  animationDuration: 2.0,
-  mediaPosition: "center",
-  mediaScale: "cover",
-  mediaOpacity: 1.0,
-  transformOrigin: "center center",
-  overflowBehavior: "hidden",
-  backdropBlur: "none",
-  mixBlendMode: "normal",
+  layerDepth: 5,
+
+  // ADVANCED MOTION (3 controls)
+  transformOrigin: 'center center',
+  overflowBehavior: 'hidden',
+  backdropBlur: 'none',
+
+  // VISUAL BLENDING (2 controls)
+  mixBlendMode: 'normal',
   enablePerspective: false,
-  customCSSClasses: "",
+
+  // CUSTOM STYLING & TEXT (3 controls)
+  customCSSClasses: '',
   textShadow: false,
   textGlow: false,
-  paddingTop: "md",
-  paddingBottom: "md",
-  fontWeight: "bold",
+
+  // VERTICAL SPACING (2 controls)
+  paddingTop: 'md',
+  paddingBottom: 'md',
+
+  // MEDIA PRESENTATION (3 controls - nullable)
+  mediaPosition: 'center',
+  mediaScale: 'cover',
+  mediaOpacity: 1.0,
+
+  // GRADIENT BACKGROUNDS (2 controls - nullable)
+  gradientColors: undefined,
+  gradientDirection: undefined,
 } as const;
 
 // Types
@@ -1210,12 +1235,12 @@ export const portfolioPrompts = pgTable("portfolio_prompts", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
   promptType: text("prompt_type").notNull().$type<
-    'artistic_director' | 
-    'technical_director' | 
-    'executive_producer' | 
-    'split_specialist' | 
-    'gallery_specialist' | 
-    'quote_specialist' | 
+    'artistic_director' |
+    'technical_director' |
+    'executive_producer' |
+    'split_specialist' |
+    'gallery_specialist' |
+    'quote_specialist' |
     'fullscreen_specialist'
   >(),
   customPrompt: text("custom_prompt"),

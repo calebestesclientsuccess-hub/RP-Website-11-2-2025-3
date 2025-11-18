@@ -775,43 +775,8 @@ interface PortfolioGenerateResponse {
   confidenceFactors?: string[];
 }
 
-const DEFAULT_DIRECTOR_CONFIG = {
-  entryEffect: 'fade',
-  entryDuration: 1.0,
-  entryDelay: 0,
-  exitEffect: 'fade',
-  exitDuration: 1.0,
-  exitDelay: 0,
-  backgroundColor: '#000000',
-  textColor: '#ffffff',
-  parallaxIntensity: 0,
-  animationDuration: 1.0,
-  headingSize: '4xl',
-  bodySize: 'base',
-  alignment: 'center',
-  fontWeight: 'normal',
-  staggerChildren: 0,
-  layerDepth: 5,
-  transformOrigin: 'center center',
-  overflowBehavior: 'visible',
-  backdropBlur: 'none',
-  mixBlendMode: 'normal',
-  enablePerspective: false,
-  customCSSClasses: '',
-  textShadow: false,
-  textGlow: false,
-  paddingTop: 'none',
-  paddingBottom: 'none',
-  mediaPosition: 'center',
-  mediaScale: 'cover',
-  mediaOpacity: 1.0,
-  fadeOnScroll: false,
-  scaleOnScroll: false,
-  blurOnScroll: false,
-  scrollSpeed: 'normal', // Added default scrollSpeed
-  gradientColors: undefined, // Default to undefined
-  gradientDirection: undefined, // Default to undefined
-};
+// Import DEFAULT_DIRECTOR_CONFIG from shared schema for consistency
+import { DEFAULT_DIRECTOR_CONFIG } from '@shared/schema';
 
 /**
  * Call Gemini to orchestrate portfolio scenes from content catalog
