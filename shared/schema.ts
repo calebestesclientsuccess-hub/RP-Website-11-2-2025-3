@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, timestamp, boolean, integer, json, jsonb, unique, uniqueIndex, index, bigint } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { nanoid } from 'nanoid';
 
 // Tenants table for multi-tenant architecture
 export const tenants = pgTable("tenants", {
@@ -253,30 +254,58 @@ export const portfolioVersions = pgTable("portfolio_versions", {
   uniqueVersion: unique().on(table.projectId, table.versionNumber),
 }));
 
-// Scene Templates (reusable scene library)
+// Scene Templates - Reusable scene configurations
 export const sceneTemplates = pgTable("scene_templates", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
-  tenantId: text("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
+  // Primary identifier
+  id: varchar("id").primaryKey().$defaultFn(() => `tmpl_${nanoid(12)}`),
+
+  // CRITICAL: Tenant isolation
+  tenantId: varchar("tenant_id")
+    .notNull()
+    .references(() => tenants.id, { onDelete: "cascade" }),
+
+  // Template metadata
+  name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
-  sceneConfig: jsonb("scene_config").notNull(),
-  tags: text("tags").array().notNull().default(sql`ARRAY[]::text[]`),
-  category: text("category"),
-  previewImageUrl: text("preview_image_url"),
-  createdBy: text("created_by").notNull(),
-  usageCount: integer("usage_count").notNull().default(0),
+
+  // The complete scene blueprint (copied from project_scenes.sceneConfig)
+  sceneConfig: jsonb("scene_config").$type<SceneConfig>().notNull(),
+
+  // Visual preview for gallery UI
+  previewImageUrl: varchar("preview_image_url", { length: 2048 }),
+
+  // Categorization and search
+  tags: text("tags").array().default(sql`ARRAY[]::text[]`),
+  category: varchar("category", { length: 100 }),
+
+  // Source tracking (optional - which scene was this template created from?)
+  sourceProjectId: varchar("source_project_id").references(() => projects.id, { onDelete: "set null" }),
+  sourceSceneId: varchar("source_scene_id").references(() => projectScenes.id, { onDelete: "set null" }),
+
+  // Usage analytics
+  usageCount: integer("usage_count").default(0).notNull(),
   lastUsedAt: timestamp("last_used_at"),
-  isPublic: boolean("is_public").notNull().default(false),
+
+  // Auditing
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => ({
-  tenantIdx: index("idx_scene_templates_tenant").on(table.tenantId),
-  categoryIdx: index("idx_scene_templates_category").on(table.category),
-  tagsIdx: index("idx_scene_templates_tags").on(table.tags),
-  usageIdx: index("idx_scene_templates_usage").on(table.usageCount),
-  createdIdx: index("idx_scene_templates_created").on(table.createdAt),
-  searchIdx: index("idx_scene_templates_search").on(table.name, table.description),
-}));
+
+  // Schema versioning for migrations
+  schemaVersion: varchar("schema_version", { length: 10 }).default("1.0").notNull(),
+});
+
+// Indexes for performance
+export const sceneTemplatesIndexes = [
+  // Fast tenant filtering
+  index("scene_templates_tenant_id_idx").on(sceneTemplates.tenantId),
+
+  // Search by category
+  index("scene_templates_category_idx").on(sceneTemplates.category),
+
+  // Full-text search on name/description
+  index("scene_templates_search_idx").on(sceneTemplates.name, sceneTemplates.description),
+];
 
 export const portfolioConversations = pgTable("portfolio_conversations", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
@@ -731,6 +760,11 @@ export const projectScenes = pgTable("project_scenes", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const projectScenesIndexes = [
+  index("project_scenes_project_id_idx").on(projectScenes.projectId),
+  index("project_scenes_tenant_id_idx").on(projectScenes.tenantId),
+];
+
 // AI-powered scene generation prompt templates
 export const promptTemplates = pgTable("prompt_templates", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -1181,18 +1215,26 @@ export type UpdatePromptTemplate = z.infer<typeof updatePromptTemplateSchema>;
 export type PortfolioVersion = typeof portfolioVersions.$inferSelect;
 export type InsertPortfolioVersion = typeof portfolioVersions.$inferInsert;
 
-export const insertSceneTemplateSchema = createInsertSchema(sceneTemplates).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  usageCount: true,
-  lastUsedAt: true,
-});
+export const insertSceneTemplateSchema = createInsertSchema(sceneTemplates)
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    usageCount: true,
+    lastUsedAt: true,
+  })
+  .extend({
+    name: z.string().min(3, "Template name must be at least 3 characters").max(255),
+    description: z.string().max(1000).optional(),
+    sceneConfig: sceneConfigSchema,
+    tags: z.array(z.string()).max(10).optional(),
+    category: z.enum(["hero", "testimonial", "gallery", "split", "text", "media", "other"]).optional(),
+  });
 
 export const updateSceneTemplateSchema = insertSceneTemplateSchema.partial();
 
-export type SceneTemplate = typeof sceneTemplates.$inferSelect;
 export type InsertSceneTemplate = z.infer<typeof insertSceneTemplateSchema>;
+export type SceneTemplate = typeof sceneTemplates.$inferSelect;
 export type UpdateSceneTemplate = z.infer<typeof updateSceneTemplateSchema>;
 
 // Portfolio Builder Content Catalog Schemas - Enhanced for Cinematic Mode
