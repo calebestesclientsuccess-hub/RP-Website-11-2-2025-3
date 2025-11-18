@@ -3199,5 +3199,5 @@ RESPONSE FORMAT:
   app.use(relatedContentRouter);
   app.use(analyticsRouter);
 
-  return httpServer;
+  return;
 }
