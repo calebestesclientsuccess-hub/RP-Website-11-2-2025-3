@@ -321,7 +321,17 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
     if (data.content.quote !== undefined) sceneConfig.content.quote = data.content.quote;
     if (data.content.author !== undefined) sceneConfig.content.author = data.content.author;
     if (data.content.role !== undefined) sceneConfig.content.role = data.content.role;
-    if (data.content.images !== undefined) sceneConfig.content.images = data.content.images;
+    
+    // CRITICAL FIX: Preserve gallery images with ALL fields including mediaId
+    if (data.content.images !== undefined && Array.isArray(data.content.images)) {
+      sceneConfig.content.images = data.content.images.map(img => ({
+        url: img.url,
+        alt: img.alt || '',
+        caption: img.caption || '',
+        ...(img.mediaId && { mediaId: img.mediaId }) // Preserve mediaId if present
+      }));
+    }
+    
     if (data.content.mediaType !== undefined) sceneConfig.content.mediaType = data.content.mediaType;
     if (data.content.layout !== undefined) sceneConfig.content.layout = data.content.layout;
     if (data.content.overlay !== undefined) sceneConfig.content.overlay = data.content.overlay;
@@ -334,6 +344,12 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
     if (data.director && Object.keys(data.director).length > 0) {
       sceneConfig.director = data.director;
     }
+
+    console.log('[Scene Save] Built config with mediaId references:', {
+      hasContentMediaId: !!sceneConfig.content.mediaId,
+      hasMediaMediaId: !!sceneConfig.content.mediaMediaId,
+      galleryImagesWithMediaId: sceneConfig.content.images?.filter(img => img.mediaId).length || 0
+    });
 
     return sceneConfig;
   };
@@ -355,10 +371,19 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
       const currentImages = form.getValues('content.images') || [];
       form.setValue('content.images', [
         ...currentImages,
-        { url: media.url, alt: '', caption: '', mediaId: media.id }
+        { 
+          url: media.url, 
+          alt: media.type === 'image' ? `Gallery image from Media Library` : `Gallery video`,
+          caption: '', 
+          mediaId: media.id || undefined // Ensure mediaId is preserved
+        }
       ]);
+      toast({ 
+        title: "Media added to gallery", 
+        description: "Linked to Media Library" 
+      });
     }
-    setMediaPickerOpen(false); // Close the picker after selection
+    setMediaPickerOpen(false);
   };
 
   const handleSaveScene = () => {
@@ -980,32 +1005,61 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                               <FormControl>
                                 <div className="space-y-2">
                                   {field.value?.map((image, index) => (
-                                    <div key={index} className="flex items-center gap-2">
+                                    <div key={index} className="flex items-center gap-2 p-2 border rounded">
                                       {image.url && (
                                         <img 
                                           src={image.url} 
                                           alt={image.alt || `Gallery image ${index + 1}`}
-                                          className="w-12 h-12 object-cover rounded border"
+                                          className="w-16 h-16 object-cover rounded"
                                         />
                                       )}
-                                      <div className="flex-1">
-                                        <Input value={image.url} readOnly placeholder="Image URL" />
-                                        {image.mediaId && (
-                                          <p className="text-xs text-green-600 mt-1">✓ Linked to library</p>
-                                        )}
+                                      <div className="flex-1 space-y-1">
+                                        <Input 
+                                          value={image.url} 
+                                          readOnly 
+                                          placeholder="Image URL"
+                                          className="text-xs"
+                                        />
+                                        <div className="flex items-center gap-2">
+                                          {image.mediaId ? (
+                                            <Badge variant="default" className="text-xs">
+                                              ✓ Media Library
+                                            </Badge>
+                                          ) : (
+                                            <Badge variant="outline" className="text-xs">
+                                              Direct URL
+                                            </Badge>
+                                          )}
+                                          <Input
+                                            placeholder="Alt text (optional)"
+                                            value={image.alt || ''}
+                                            onChange={(e) => {
+                                              const newImages = [...field.value];
+                                              newImages[index] = { ...image, alt: e.target.value };
+                                              field.onChange(newImages);
+                                            }}
+                                            className="text-xs"
+                                          />
+                                        </div>
                                       </div>
-                                      <Button type="button" variant="outline" size="icon" onClick={() => {
-                                        const newImages = [...field.value];
-                                        newImages.splice(index, 1);
-                                        field.onChange(newImages);
-                                      }}>
+                                      <Button 
+                                        type="button" 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={() => {
+                                          const newImages = [...field.value];
+                                          newImages.splice(index, 1);
+                                          field.onChange(newImages);
+                                        }}
+                                        title="Remove image"
+                                      >
                                         <Trash2 className="w-4 h-4" />
                                       </Button>
                                     </div>
                                   ))}
                                   <Button type="button" variant="outline" onClick={() => openMediaPicker('images')}>
                                     <Plus className="w-4 h-4 mr-2" />
-                                    Add from Library
+                                    Add from Media Library
                                   </Button>
                                 </div>
                               </FormControl>
