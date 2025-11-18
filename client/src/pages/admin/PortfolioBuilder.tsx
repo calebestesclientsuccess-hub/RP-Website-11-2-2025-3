@@ -200,9 +200,9 @@ export default function PortfolioBuilder() {
     staleTime: 1 * 60 * 1000, // 1 minute
   });
 
-  // Fetch scenes separately for the selected project
+  // Fetch scenes separately for the selected project (with media hydration)
   const { data: existingProjectScenes, isLoading: isLoadingScenes, error: scenesError } = useQuery<any[]>({
-    queryKey: ["/api/projects", selectedProjectId, "scenes"],
+    queryKey: ["/api/projects", selectedProjectId, "scenes", { hydrate: true }],
     enabled: !isNewProject && !!selectedProjectId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
