@@ -914,40 +914,6 @@ export const insertProjectSceneSchema = createInsertSchema(projectScenes).omit({
 
 export const updateProjectSceneSchema = insertProjectSceneSchema.partial();
 
-// Insert schemas for prompt templates
-export const insertPromptTemplateSchema = createInsertSchema(promptTemplates).omit({
-  id: true,
-  tenantId: true,
-  createdAt: true,
-  updatedAt: true,
-  createdBy: true,
-  updatedBy: true,
-}).extend({
-  // Preprocessors: convert blank strings to null for optional fields
-  description: z.preprocess(
-    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
-    z.string().nullable().optional()
-  ),
-  sceneType: z.preprocess(
-    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
-    z.string().nullable().optional()
-  ),
-});
-
-export const updatePromptTemplateSchema = insertPromptTemplateSchema.partial();
-
-// Director configuration constants and defaults
-export const ENTRY_EFFECTS = ["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-in", "zoom-out", "sudden", "cross-fade", "rotate-in", "flip-in", "spiral-in", "elastic-bounce", "blur-focus"] as const;
-export const EXIT_EFFECTS = ["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-out", "dissolve", "cross-fade", "rotate-out", "flip-out", "scale-blur"] as const;
-export const HEADING_SIZES = ["4xl", "5xl", "6xl", "7xl", "8xl"] as const;
-export const BODY_SIZES = ["base", "lg", "xl", "2xl"] as const;
-export const FONT_WEIGHTS = ["normal", "medium", "semibold", "bold"] as const;
-export const ALIGNMENTS = ["left", "center", "right"] as const;
-export const SCROLL_SPEEDS = ["slow", "normal", "fast"] as const;
-export const MEDIA_POSITIONS = ["center", "top", "bottom", "left", "right"] as const;
-export const MEDIA_SCALES = ["cover", "contain", "fill"] as const;
-export const EASING_FUNCTIONS = ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "power1", "power2", "power3", "power4", "back", "elastic", "bounce"] as const;
-
 export const DIRECTOR_CONFIG_DEFAULTS = {
   // ANIMATION & TIMING (8 controls)
   entryEffect: 'fade',
