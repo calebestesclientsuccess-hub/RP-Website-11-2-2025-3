@@ -1451,6 +1451,13 @@ export default function PortfolioBuilder() {
                                       // Handle both old and new scene formats
                                       const sceneType = scene.type || scene.sceneType || 'unknown';
                                       const heading = scene.content?.heading || scene.content?.quote || scene.headline || 'Scene ' + (idx + 1);
+                                      
+                                      // Check if scene uses Media Library
+                                      const usesMediaLibrary = !!(
+                                        scene.content?.mediaId || 
+                                        scene.content?.mediaMediaId || 
+                                        (scene.content?.images && scene.content.images.some((img: any) => img.mediaId))
+                                      );
 
                                       return (
                                         <div key={idx} className="flex items-start gap-3 p-3 border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
@@ -1458,7 +1465,14 @@ export default function PortfolioBuilder() {
                                             {idx + 1}
                                           </div>
                                           <div className="flex-1 min-w-0">
-                                            <div className="text-sm font-medium capitalize">{sceneType}</div>
+                                            <div className="flex items-center gap-2">
+                                              <div className="text-sm font-medium capitalize">{sceneType}</div>
+                                              {usesMediaLibrary && (
+                                                <span className="text-xs px-1.5 py-0.5 bg-green-500/20 text-green-700 dark:text-green-300 rounded" title="Uses Media Library assets">
+                                                  📚 Media
+                                                </span>
+                                              )}
+                                            </div>
                                             <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
                                               {heading}
                                             </div>

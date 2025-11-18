@@ -215,39 +215,93 @@ function buildPortfolioPrompt(catalog: ContentCatalog, availableMediaLibrary?: a
   const placeholderVideos = PLACEHOLDER_CONFIG.videos.map((id) => `"${id}"`).join(', ');
   const placeholderQuotes = PLACEHOLDER_CONFIG.quotes.map((id) => `"${id}"`).join(', ');
 
-  // Build Media Library asset list
+  // Build Media Library asset list with detailed information
   let mediaLibrarySection = '';
   if (availableMediaLibrary && availableMediaLibrary.length > 0) {
-    const mediaList = availableMediaLibrary.map(m => 
-      `- ${m.id}: ${m.label || m.cloudinaryPublicId} (${m.mediaType})`
-    ).join('\n');
+    const mediaList = availableMediaLibrary.map(m => {
+      const label = m.label || m.cloudinaryPublicId;
+      const type = m.mediaType === 'image' ? '🖼️ Image' : '🎥 Video';
+      return `  - ID: "${m.id}" | Label: "${label}" | Type: ${type} | URL: ${m.cloudinaryUrl}`;
+    }).join('\n');
     
     mediaLibrarySection = `
 
-MEDIA LIBRARY INTEGRATION:
-You have access to ${availableMediaLibrary.length} media assets in the Media Library. When creating scenes, you can reference these assets using their mediaId:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MEDIA LIBRARY INTEGRATION (${availableMediaLibrary.length} Assets Available)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+You have access to ${availableMediaLibrary.length} pre-uploaded media assets in the Media Library. 
+ALWAYS prefer using these assets over placeholder references when appropriate.
+
+Available Assets:
 ${mediaList}
 
-IMPORTANT: When you use media from the Media Library, include BOTH the mediaId AND url in the content:
-- For image/video scenes: { "content": { "mediaId": "media-id-here", "url": "fallback-url" } }
-- For split scenes: { "content": { "mediaMediaId": "media-id-here", "media": "fallback-url" } }
-- For gallery scenes: Include mediaId in each image object
+CRITICAL USAGE INSTRUCTIONS:
 
-The mediaId ensures the asset stays linked even if URLs change. The url is a fallback for rendering.
+1. WHEN TO USE MEDIA LIBRARY:
+   - Use Media Library assets when they match the scene's narrative intent
+   - Prefer Media Library over placeholders for production-ready portfolios
+   - Media Library assets are real, uploaded files (not placeholders)
+
+2. HOW TO REFERENCE MEDIA LIBRARY ASSETS:
+   
+   For IMAGE/VIDEO scenes:
+   {
+     "content": {
+       "mediaId": "asset-id-from-list-above",
+       "url": "corresponding-cloudinary-url"
+     }
+   }
+   
+   For SPLIT scenes:
+   {
+     "content": {
+       "mediaMediaId": "asset-id-from-list-above",
+       "media": "corresponding-cloudinary-url"
+     }
+   }
+   
+   For GALLERY scenes:
+   {
+     "content": {
+       "images": [
+         {
+           "mediaId": "asset-id-1",
+           "url": "corresponding-url-1",
+           "alt": "descriptive-alt-text"
+         },
+         {
+           "mediaId": "asset-id-2",
+           "url": "corresponding-url-2",
+           "alt": "descriptive-alt-text"
+         }
+       ]
+     }
+   }
+
+3. DUAL-REFERENCE REQUIREMENT:
+   - ALWAYS include BOTH mediaId AND url
+   - mediaId = permanent link (survives URL changes)
+   - url = immediate fallback for rendering
+   - This redundancy is intentional and required
+
+4. FALLBACK TO PLACEHOLDERS:
+   - Only use placeholder IDs if no suitable Media Library asset exists
+   - Document why you chose placeholder over Media Library in your reasoning
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `;
   }
 
   return `You are an expert portfolio director AI. Your role is to create compelling, professional portfolio scenes that tell a client's story.
 ${mediaLibrarySection}
 
-MEDIA LIBRARY INTEGRATION:
-- When media assets are available in the Media Library, ALWAYS prefer using them by including their mediaId
-- The mediaId ensures the asset stays linked even if the URL changes
-- If no suitable media exists in the library, you may use direct URLs as a fallback
-- For gallery scenes, you can mix media library references and direct URLs
-
 You are an Artistic Director and Cinematic Storyteller for a high-end, scroll-driven web portfolio system. Your role is not merely to select options, but to translate an abstract creative vision and a collection of assets into a technically precise and emotionally resonant digital experience.
+
+STRATEGIC ASSET SELECTION PRIORITY:
+1. Media Library assets (real, uploaded files with mediaId references) - USE THESE FIRST
+2. Placeholder references (temporary, will be mapped later) - use only if no Media Library match
+3. Direct URLs (least preferred, no persistence guarantee) - avoid unless necessary
 
 This is a "content-first" system. Your primary job is to build a beautiful story with the assets the user gives you.
 
@@ -1177,6 +1231,45 @@ export async function generatePortfolioWithAI(
     if (scene.director.mediaOpacity === null) scene.director.mediaOpacity = undefined;
     if (scene.director.gradientColors === null) scene.director.gradientColors = undefined;
     if (scene.director.gradientDirection === null) scene.director.gradientDirection = undefined;
+
+    // Validate Media Library references
+    if (availableMediaLibrary && availableMediaLibrary.length > 0) {
+      const sceneConfig = scene as any;
+      
+      // Check content.mediaId
+      if (sceneConfig.content?.mediaId) {
+        const mediaExists = availableMediaLibrary.some(m => m.id === sceneConfig.content.mediaId);
+        if (!mediaExists) {
+          console.warn(`[Portfolio Director] AI referenced invalid mediaId: ${sceneConfig.content.mediaId}`);
+        } else {
+          console.log(`[Portfolio Director] ✓ AI correctly referenced Media Library asset: ${sceneConfig.content.mediaId}`);
+        }
+      }
+      
+      // Check content.mediaMediaId (for split scenes)
+      if (sceneConfig.content?.mediaMediaId) {
+        const mediaExists = availableMediaLibrary.some(m => m.id === sceneConfig.content.mediaMediaId);
+        if (!mediaExists) {
+          console.warn(`[Portfolio Director] AI referenced invalid mediaMediaId: ${sceneConfig.content.mediaMediaId}`);
+        } else {
+          console.log(`[Portfolio Director] ✓ AI correctly referenced Media Library asset: ${sceneConfig.content.mediaMediaId}`);
+        }
+      }
+      
+      // Check gallery images
+      if (sceneConfig.content?.images && Array.isArray(sceneConfig.content.images)) {
+        sceneConfig.content.images.forEach((img: any, idx: number) => {
+          if (img.mediaId) {
+            const mediaExists = availableMediaLibrary.some(m => m.id === img.mediaId);
+            if (!mediaExists) {
+              console.warn(`[Portfolio Director] AI referenced invalid mediaId in gallery image ${idx}: ${img.mediaId}`);
+            } else {
+              console.log(`[Portfolio Director] ✓ AI correctly referenced Media Library asset in gallery: ${img.mediaId}`);
+            }
+          }
+        });
+      }
+    }
   });
 
   // Enhanced confidence scoring with severity categorization

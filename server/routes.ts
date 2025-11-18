@@ -2100,8 +2100,7 @@ Your explanation should be conversational and reference specific scene numbers.`
   // AI Prompt Templates CRUD endpoints
   app.get("/api/ai-prompt-templates", requireAuth, async (req, res) => {
     try {
-      const activeOnly = req.query.activeOnly === 'true';
-      const templates = await storage.getAllPromptTemplates(req.tenantId, activeOnly);
+      const templates = await storage.getAllPromptTemplates(req.tenantId, req.query.activeOnly === 'true');
       return res.json(templates);
     } catch (error) {
       console.error("Error fetching prompt templates:", error);
@@ -2363,8 +2362,8 @@ Your explanation should be conversational and reference specific scene numbers.`
       newProjectTitle,
       newProjectSlug,
       newProjectClient,
-      scenes,
       mode,
+      scenes,
       portfolioAiPrompt,
       currentPrompt,
       conversationHistory: clientConversationHistory = [],
@@ -2437,6 +2436,14 @@ Your explanation should be conversational and reference specific scene numbers.`
       }
     }
 
+    // Fetch available Media Library assets for this tenant
+    const availableMediaLibrary = await db.query.mediaLibrary.findMany({
+      where: eq(mediaLibrary.tenantId, req.tenantId),
+      orderBy: [asc(mediaLibrary.createdAt)]
+    });
+
+    console.log(`[Portfolio Generation] Loaded ${availableMediaLibrary.length} Media Library assets for tenant ${req.tenantId}`);
+
     // Lazy-load Gemini client
     const { GoogleGenAI, Type } = await import("@google/genai");
     const aiClient = new GoogleGenAI({
@@ -2475,10 +2482,11 @@ Your explanation should be conversational and reference specific scene numbers.`
 CURRENT SCENES (JSON):
 ${JSON.stringify(currentScenes, null, 2)}
 
-Your job is to:
-1. Listen to the user's refinement request
-2. Explain what changes you're making in plain English
-3. Return the COMPLETE refined scenes array with improvements
+USER'S REFINEMENT REQUEST:
+"${userPrompt}"
+
+AVAILABLE MEDIA LIBRARY ASSETS:
+${availableMediaLibrary.length > 0 ? availableMediaLibrary.map(asset => `- ${asset.label || asset.id} (ID: ${asset.id}, Type: ${asset.mediaType})`).join('\n') : 'None available.'}
 
 CRITICAL REQUIREMENT:
 YOU MUST RETURN ALL ${currentScenes.length} SCENES IN YOUR RESPONSE.
