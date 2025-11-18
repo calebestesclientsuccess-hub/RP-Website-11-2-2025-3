@@ -1601,6 +1601,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const projectId = req.params.id;
       const shouldHydrate = req.query.hydrate === 'true';
 
+      // CACHE CONTROL: Scenes with hydration should not be cached aggressively
+      if (shouldHydrate) {
+        res.set('Cache-Control', 'private, no-cache, must-revalidate');
+      }
+
       const project = await db.query.projects.findFirst({
         where: eq(projects.id, projectId)
       });

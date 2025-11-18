@@ -92,11 +92,34 @@ export default function MediaLibrary() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/media-library/${id}`);
+      const response = await fetch(`/api/media-library/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete media");
+      }
+
+      return response.json();
     },
     onSuccess: () => {
+      // CACHE INVALIDATION: Refresh media library AND all project scenes
       queryClient.invalidateQueries({ queryKey: ["/api/media-library"] });
-      toast({ title: "Media deleted successfully" });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          return typeof key === 'string' && key.includes('/scenes');
+        }
+      });
+
+      console.log('[Cache] Invalidated media library and all scene queries after deletion');
+
+      toast({
+        title: "Success",
+        description: "Media deleted successfully",
+      });
     },
   });
 
