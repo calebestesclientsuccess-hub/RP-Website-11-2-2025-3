@@ -1,7 +1,7 @@
 /**
  * Portfolio Director - AI-Powered Scene Generation
  * Orchestrates portfolio creation using Gemini AI
- * 
+ *
  * 6-Stage Refinement Pipeline (Enhanced):
  * 1. Initial Generation (form-filling) - with retry logic
  * 2. Self-Audit (AI finds inconsistencies) - with fallback
@@ -223,14 +223,14 @@ function buildPortfolioPrompt(catalog: ContentCatalog, availableMediaLibrary?: a
       const type = m.mediaType === 'image' ? '🖼️ Image' : '🎥 Video';
       return `  - ID: "${m.id}" | Label: "${label}" | Type: ${type} | URL: ${m.cloudinaryUrl}`;
     }).join('\n');
-    
+
     mediaLibrarySection = `
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 MEDIA LIBRARY INTEGRATION (${availableMediaLibrary.length} Assets Available)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-You have access to ${availableMediaLibrary.length} pre-uploaded media assets in the Media Library. 
+You have access to ${availableMediaLibrary.length} pre-uploaded media assets in the Media Library.
 ALWAYS prefer using these assets over placeholder references when appropriate.
 
 Available Assets:
@@ -244,7 +244,7 @@ CRITICAL USAGE INSTRUCTIONS:
    - Media Library assets are real, uploaded files (not placeholders)
 
 2. HOW TO REFERENCE MEDIA LIBRARY ASSETS:
-   
+
    For IMAGE/VIDEO scenes:
    {
      "content": {
@@ -252,7 +252,7 @@ CRITICAL USAGE INSTRUCTIONS:
        "url": "corresponding-cloudinary-url"
      }
    }
-   
+
    For SPLIT scenes:
    {
      "content": {
@@ -260,7 +260,7 @@ CRITICAL USAGE INSTRUCTIONS:
        "media": "corresponding-cloudinary-url"
      }
    }
-   
+
    For GALLERY scenes:
    {
      "content": {
@@ -894,6 +894,7 @@ interface PortfolioGenerateResponse {
   scenes: GeneratedScene[];
   confidenceScore?: number;
   confidenceFactors?: string[];
+  metrics?: PipelineMetrics; // Include metrics in the response
 }
 
 // Import DEFAULT_DIRECTOR_CONFIG from shared schema for consistency
@@ -922,13 +923,13 @@ export async function generatePortfolioWithAI(
   const aiClient = getAIClient();
 
   const debugMode = process.env.PORTFOLIO_DEBUG_MODE === 'true';
-  
+
   if (debugMode) {
     console.log('\n' + '🔍'.repeat(40));
     console.log('DEBUG MODE ENABLED - Detailed logging active');
     console.log('🔍'.repeat(40) + '\n');
   }
-  
+
   console.log('[Portfolio Director] Starting 6-stage refinement pipeline...');
 
   // Load custom prompts once for reuse across all stages (performance optimization)
@@ -960,11 +961,11 @@ export async function generatePortfolioWithAI(
   // STAGE 1: Initial Generation (Form-Filling) with enhanced retry logic
   const stage1Start = Date.now();
   console.log('[Portfolio Director] 🎬 STAGE 1/6: Initial Generation (with retry logic)');
-  
+
   if (debugMode) {
     console.log('\n[DEBUG] Stage 1 Configuration:');
     console.log('  - Model: gemini-2.0-flash-exp');
-    console.log('  - Max Retries:', maxRetries);
+    console.log('  - Max Retries:', PIPELINE_CONFIG.MAX_RETRIES);
     console.log('  - Catalog Assets:', {
       texts: catalog.texts?.length ?? 0,
       images: catalog.images?.length ?? 0,
@@ -974,13 +975,13 @@ export async function generatePortfolioWithAI(
     console.log('  - Director Notes Length:', catalog.directorNotes?.length ?? 0, 'chars');
     console.log('  - Valid Placeholder IDs:', buildAssetWhitelist(catalog).join(', '));
   }
-  
+
   // Use custom prompt if available, otherwise use default
   const prompt = customPrompts.get('artistic_director') || buildPortfolioPrompt(catalog, availableMediaLibrary);
   if (customPrompts.has('artistic_director')) {
     console.log('[Custom Prompts] Stage 1: Using custom artistic_director prompt');
   }
-  
+
   if (availableMediaLibrary && availableMediaLibrary.length > 0) {
     console.log(`[Portfolio Director] AI has access to ${availableMediaLibrary.length} Media Library assets`);
   }
@@ -1023,6 +1024,10 @@ export async function generatePortfolioWithAI(
                       type: Type.OBJECT,
                       description: "Scene content with media references. MUST include mediaId when using Media Library assets.",
                       properties: {
+                        heading: { type: Type.STRING },
+                        body: { type: Type.STRING },
+                        url: { type: Type.STRING },
+                        alt: { type: Type.STRING },
                         mediaId: {
                           type: Type.STRING,
                           description: "Media Library asset ID (REQUIRED when url is from Media Library)",
@@ -1031,11 +1036,6 @@ export async function generatePortfolioWithAI(
                         mediaMediaId: {
                           type: Type.STRING,
                           description: "Media Library asset ID for split/fullscreen scenes (REQUIRED when media is from Media Library)",
-                          nullable: true
-                        },
-                        url: {
-                          type: Type.STRING,
-                          description: "Media URL (Cloudinary URL from Media Library or fallback)",
                           nullable: true
                         },
                         media: {
@@ -1065,7 +1065,7 @@ export async function generatePortfolioWithAI(
                             }
                           },
                           nullable: true
-                        }
+                        },
                       }
                     },
                     layout: {
@@ -1284,7 +1284,7 @@ export async function generatePortfolioWithAI(
     // Validate Media Library references
     if (availableMediaLibrary && availableMediaLibrary.length > 0) {
       const sceneConfig = scene as any;
-      
+
       // Check content.mediaId
       if (sceneConfig.content?.mediaId) {
         const mediaExists = availableMediaLibrary.some(m => m.id === sceneConfig.content.mediaId);
@@ -1294,7 +1294,7 @@ export async function generatePortfolioWithAI(
           console.log(`[Portfolio Director] ✓ AI correctly referenced Media Library asset: ${sceneConfig.content.mediaId}`);
         }
       }
-      
+
       // Check content.mediaMediaId (for split scenes)
       if (sceneConfig.content?.mediaMediaId) {
         const mediaExists = availableMediaLibrary.some(m => m.id === sceneConfig.content.mediaMediaId);
@@ -1304,7 +1304,7 @@ export async function generatePortfolioWithAI(
           console.log(`[Portfolio Director] ✓ AI correctly referenced Media Library asset: ${sceneConfig.content.mediaMediaId}`);
         }
       }
-      
+
       // Check gallery images
       if (sceneConfig.content?.images && Array.isArray(sceneConfig.content.images)) {
         sceneConfig.content.images.forEach((img: any, idx: number) => {
@@ -1323,13 +1323,13 @@ export async function generatePortfolioWithAI(
 
   // Enhanced confidence scoring with severity categorization
   console.log('[Portfolio Director] 📊 Calculating confidence score with severity levels...');
-  
+
   const confidenceIssues: Array<{
     severity: 'CRITICAL' | 'WARNING' | 'INFO';
     message: string;
     penalty: number;
   }> = [];
-  
+
   let confidenceScore = 100;
 
   result.scenes.forEach((scene: GeneratedScene, idx: number) => {
@@ -1398,7 +1398,7 @@ export async function generatePortfolioWithAI(
   const infoItems = confidenceIssues.filter(i => i.severity === 'INFO');
 
   result.confidenceScore = confidenceScore;
-  result.confidenceFactors = confidenceIssues.map(i => 
+  result.confidenceFactors = confidenceIssues.map(i =>
     `${i.severity}: ${i.message} (${i.penalty > 0 ? '-' : '+'}${Math.abs(i.penalty)} pts)`
   );
 
@@ -1410,8 +1410,8 @@ export async function generatePortfolioWithAI(
 
   console.log(`[Portfolio Director] ✅ Generated ${result.scenes.length} scenes for project: ${projectTitle}`);
   console.log(`[Portfolio Director] 📊 Confidence Score: ${confidenceScore}% ${confidenceScore < 70 ? '⚠️ LOW' : confidenceScore < 85 ? '✓ GOOD' : '✓✓ EXCELLENT'}`);
-  if (confidenceFactors.length > 0) {
-    console.log(`[Portfolio Director] 📋 Confidence Factors:`, confidenceFactors);
+  if (result.confidenceFactors && result.confidenceFactors.length > 0) {
+    console.log(`[Portfolio Director] 📋 Confidence Factors:`, result.confidenceFactors);
   }
 
   console.log('[Portfolio Director] ✅ Stage 1 complete: Initial generation and confidence scoring');
@@ -2268,7 +2268,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     backgroundColor: { type: 'string', pattern: /^#[0-9A-Fa-f]{6}$/ },
     textColor: { type: 'string', pattern: /^#[0-9A-Fa-f]{6}$/ },
 
-    // SCROLL DEPTH EFFECTS (3)
+    // SCROLL DEPTH & DURATION (3)
     parallaxIntensity: { type: 'number', min: 0, max: 1 },
     scrollSpeed: { type: 'string', enum: ['slow', 'normal', 'fast'] },
     animationDuration: { type: 'number', min: 0.5, max: 10 },
@@ -2311,6 +2311,8 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     mediaScale: { type: 'string', enum: ['cover', 'contain', 'fill'] }, // Note: This will be validated as string, nulls handled separately
     mediaOpacity: { type: 'number', min: 0, max: 1 } // Note: This will be validated as number, nulls handled separately
   };
+
+  const validMediaIds = availableMediaLibrary?.map(m => m.id) || []; // Get valid Media Library IDs
 
   for (const scene of finalResult.scenes) {
     // Ensure director object exists and has all default values applied first
@@ -2448,7 +2450,49 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
         console.error(`❌ [Portfolio Director] ${errorMsg}`);
         // Add to confidence factors as a warning
         confidenceScore -= 3; // Deduct score for invalid placeholder ID
-        confidenceFactors.push(`Scene with assets [${scene.assetIds.join(', ')}]: Invalid placeholder ID "${assetId}"`);
+        if (!result.confidenceFactors) result.confidenceFactors = [];
+        result.confidenceFactors.push(`Scene with assets [${scene.assetIds.join(', ')}]: Invalid placeholder ID "${assetId}"`);
+      }
+    }
+
+    // Validate mediaId references if Media Library assets are available
+    const validMediaIds = availableMediaLibrary?.map(m => m.id) || [];
+    if (availableMediaLibrary && availableMediaLibrary.length > 0) {
+      // Validate content.mediaId
+      if (scene.content?.mediaId) {
+        if (!validMediaIds.includes(scene.content.mediaId)) {
+          warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Invalid mediaId "${scene.content.mediaId}" - not in Media Library`);
+          confidenceScore -= 5; // Higher penalty for invalid media references
+        } else if (!scene.content.url) {
+          warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Missing url for mediaId "${scene.content.mediaId}" (dual-reference required)`);
+          confidenceScore -= 3;
+        }
+      }
+
+      // Validate content.mediaMediaId
+      if (scene.content?.mediaMediaId) {
+        if (!validMediaIds.includes(scene.content.mediaMediaId)) {
+          warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Invalid mediaMediaId "${scene.content.mediaMediaId}" - not in Media Library`);
+          confidenceScore -= 5;
+        } else if (!scene.content.media) {
+          warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Missing media URL for mediaMediaId "${scene.content.mediaMediaId}" (dual-reference required)`);
+          confidenceScore -= 3;
+        }
+      }
+
+      // Validate gallery images with mediaId
+      if (scene.content?.images && Array.isArray(scene.content.images)) {
+        scene.content.images.forEach((img: any, imgIdx: number) => {
+          if (img.mediaId) {
+            if (!validMediaIds.includes(img.mediaId)) {
+              warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}, Image ${imgIdx}: Invalid mediaId "${img.mediaId}" - not in Media Library`);
+              confidenceScore -= 3;
+            } else if (!img.url) {
+              warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}, Image ${imgIdx}: Missing url for mediaId "${img.mediaId}" (dual-reference required)`);
+              confidenceScore -= 2;
+            }
+          }
+        });
       }
     }
 
@@ -2457,7 +2501,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 
     // AUTO-FIX: Conflict resolution
     let autoFixCount = 0;
-    
+
     if (director.parallaxIntensity > 0 && director.scaleOnScroll) {
       warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ parallax + scaleOnScroll conflict. Auto-fixing scaleOnScroll → false`);
       scene.director.scaleOnScroll = false;
@@ -2686,7 +2730,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
   console.log(`  Scene Refinements (3.5): ${sceneTypeImprovements.length}`);
   console.log(`  Coherence Score (5.5): ${coherenceResult?.overallScore ?? 'N/A'}/100`);
   console.log(`  Validation Warnings (6): ${warnings.length}`);
-  
+
   if (warnings.length > 0) {
     console.log('\n⚠️  Validation Warnings:');
     warnings.slice(0, 5).forEach(w => console.log(`  - ${w}`));
@@ -2694,7 +2738,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
       console.log(`  ... and ${warnings.length - 5} more warnings`);
     }
   }
-  
+
   console.log('='.repeat(80) + '\n');
 
   return {
@@ -2864,7 +2908,7 @@ Your refinements are creative, but they must not violate the core production rul
 
 1. Obey the "Content-First" Mandate: This is your primary rule. A gallery scene is media-intensive. You MUST validate its assetIds array against the totalImagesProvided to ensure it does not violate the "Do Not Overdraw" rule.
 2. Obey the "Dual-Track" Architecture: This is a "Cinematic Scene," so it MUST use the 37 director controls. Your output must be a valid 37-control object.
-3. Obey the Director's Vision: Your primary creative guide is the original ${catalog.directorNotes}.
+3. Obey the Director's Vision: Your primary creative guide is the original Director's Notes below.
 4. Use the "Source of Truth": You must use the Director's Lexicon and Advanced Artistic Combinations (Recipes) from the top of the Stage 1 prompt. You MUST IGNORE the older, redundant guides at the bottom of that prompt.
 5. Maintain 37 Controls: Your final output must still be a valid scene object with all 37 controls present and correct (with nulls where appropriate).
 
@@ -2877,7 +2921,7 @@ CREATIVE RATIONALE:
 
 1. Asset Check (MANDATORY): I am validating all assets against the 'Do Not Overdraw' mandate. The user provided ${totalImagesProvided} images. The scene uses assetIds: ["placeholder-image-3", "placeholder-image-4", "placeholder-image-5"]. The highest index is '5'. This is a valid asset selection as it is less than or equal to the total available. I am clear to proceed.
 
-2. Refinement 1 (Stagger): This is the most critical fix. A gallery's items must never appear at the same time. I am setting staggerChildren: 0.2s to create a rapid "waterfall" or "domino" effect as the images animate in. This directly serves the 'energetic' Director's Vision.
+2. Refinement 1 (Stagger): A gallery's items must never appear at the same time. I am setting staggerChildren: 0.2s to create a rapid "waterfall" or "domino" effect as the images animate in. This directly serves the 'energetic' Director's Vision.
 
 3. Refinement 2 (Pacing): To match this new staggered animation, I am slightly shortening the entryDuration to 1.1s and using a back.out(1.7) ease. This will give the animation a 'peppy' and 'playful' feel, as taught in the 'Director's Lexicon.'
 

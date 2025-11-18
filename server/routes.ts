@@ -43,7 +43,7 @@ import {
   mediaLibrary, // Assuming mediaLibrary is imported and available
   aiPromptTemplates,
 } from "@shared/schema";
-import { eq, and, asc, inArray } from "drizzle-orm";
+import { eq, and, asc, inArray, or, isNull } from "drizzle-orm";
 import { calculatePointsBasedBucket, calculateDecisionTreeBucket } from "./utils/assessment-scoring";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
