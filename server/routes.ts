@@ -35,6 +35,8 @@ import {
   updateProjectSceneSchema,
   insertPromptTemplateSchema,
   updatePromptTemplateSchema,
+  insertSceneTemplateSchema,
+  updateSceneTemplateSchema,
   portfolioGenerateRequestSchema,
   assessmentResultBuckets,
   type InsertAssessmentResponse,
@@ -42,6 +44,7 @@ import {
   projectScenes,
   mediaLibrary, // Assuming mediaLibrary is imported and available
   aiPromptTemplates,
+  sceneTemplates,
 } from "@shared/schema";
 import { eq, and, asc, inArray, or, isNull } from "drizzle-orm";
 import { calculatePointsBasedBucket, calculateDecisionTreeBucket } from "./utils/assessment-scoring";
@@ -1595,6 +1598,84 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // Get project by slug
+  app.get("/api/projects/slug/:slug", requireAuth, async (req, res) => {
+    try {
+      const project = await db.query.projects.findFirst({
+        where: and(
+          eq(projects.tenantId, req.tenantId),
+          eq(projects.slug, req.params.slug)
+        ),
+      });
+      
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      return res.json(project);
+    } catch (error) {
+      console.error("Error fetching project by slug:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Create new project
+  app.post("/api/projects", requireAuth, async (req, res) => {
+    try {
+      const result = insertProjectSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: result.error.issues 
+        });
+      }
+      
+      const project = await storage.createProject(req.tenantId, result.data);
+      return res.status(201).json(project);
+    } catch (error) {
+      console.error("Error creating project:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update existing project
+  app.patch("/api/projects/:id", requireAuth, async (req, res) => {
+    try {
+      // Verify project exists and belongs to tenant
+      const existing = await db.query.projects.findFirst({
+        where: and(
+          eq(projects.id, req.params.id),
+          eq(projects.tenantId, req.tenantId)
+        ),
+      });
+      
+      if (!existing) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      const result = insertProjectSchema.partial().safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: result.error.issues 
+        });
+      }
+      
+      const [updated] = await db.update(projects)
+        .set(result.data)
+        .where(and(
+          eq(projects.id, req.params.id),
+          eq(projects.tenantId, req.tenantId)
+        ))
+        .returning();
+      
+      return res.json(updated);
+    } catch (error) {
+      console.error("Error updating project:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Get project scenes (with optional media hydration)
   app.get('/api/projects/:id/scenes', requireAuth, async (req, res) => {
     try {
@@ -1749,9 +1830,28 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.post("/api/projects/:projectId/scenes", requireAuth, async (req, res) => {
     try {
+      const projectId = req.params.projectId;
+      
+      // LOG 1: Request received
+      console.log('[Scene Create] Request received:', {
+        projectId,
+        tenantId: req.tenantId,
+        bodyKeys: Object.keys(req.body),
+        sceneConfigPresent: !!req.body.sceneConfig,
+        sceneConfigType: req.body.sceneConfig?.type
+      });
+
       const result = insertProjectSceneSchema.safeParse(req.body);
+      
+      // LOG 2: Validation result
+      console.log('[Scene Create] Validation result:', {
+        success: result.success,
+        errorCount: result.success ? 0 : result.error.issues.length
+      });
+      
       if (!result.success) {
         const validationError = fromZodError(result.error);
+        console.error('[Scene Create] Validation failed:', result.error.issues);
         return res.status(400).json({
           error: "Validation failed",
           details: validationError.message,
@@ -1828,13 +1928,40 @@ export async function registerRoutes(app: Express): Promise<void> {
         console.log(`[Scene Creation] ✓ All ${mediaIdsToValidate.size} media references validated for tenant ${tenantId}`);
       }
 
+      // LOG 3: Calling storage layer
+      console.log('[Scene Create] Calling storage.createProjectScene with:', {
+        tenantId: req.tenantId,
+        projectId: req.params.projectId,
+        hasSceneConfig: !!result.data.sceneConfig
+      });
+      
       const scene = await storage.createProjectScene(req.tenantId, req.params.projectId, result.data);
+      
+      // LOG 4: Success
+      console.log('[Scene Create] ✓ Scene created successfully:', {
+        sceneId: scene.id,
+        projectId: req.params.projectId
+      });
+      
       return res.status(201).json(scene);
     } catch (error) {
       if (error instanceof Error && error.message === 'Project not found or access denied') {
+        console.error('[Scene Create] Project not found:', {
+          projectId: req.params.projectId,
+          tenantId: req.tenantId
+        });
         return res.status(404).json({ error: "Project not found" });
       }
-      console.error("Error creating project scene:", error);
+      
+      // LOG 5: Error details
+      console.error('[Scene Create] ERROR:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        name: error instanceof Error ? error.name : 'Unknown',
+        projectId: req.params.projectId,
+        tenantId: req.tenantId
+      });
+      
       return res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -1956,6 +2083,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         prompt: z.string().min(1, "Prompt is required"),
         sceneType: z.string().optional(),
         systemInstructions: z.string().optional(),
+        projectId: z.string().optional(), // Add projectId for filtering media
       });
 
       const result = requestSchema.safeParse(req.body);
@@ -1967,7 +2095,17 @@ export async function registerRoutes(app: Express): Promise<void> {
         });
       }
 
-      const { prompt, sceneType, systemInstructions } = result.data;
+      const { prompt, sceneType, systemInstructions, projectId } = result.data;
+
+      // Fetch available Media Library assets for this tenant (optionally filtered by project)
+      const availableMediaLibrary = await db.query.mediaLibrary.findMany({
+        where: projectId 
+          ? and(eq(mediaLibrary.tenantId, req.tenantId), eq(mediaLibrary.projectId, projectId))
+          : eq(mediaLibrary.tenantId, req.tenantId),
+        orderBy: [asc(mediaLibrary.createdAt)]
+      });
+
+      console.log(`[AI Scene Generation] Loaded ${availableMediaLibrary.length} Media Library assets for tenant ${req.tenantId}${projectId ? ` (project: ${projectId})` : ''}`);
 
       // Lazy-load Gemini client to avoid startup errors if not configured
       const { generateSceneWithGemini } = await import("./utils/gemini-client");
@@ -1975,7 +2113,8 @@ export async function registerRoutes(app: Express): Promise<void> {
       const sceneConfig = await generateSceneWithGemini(
         prompt,
         sceneType,
-        systemInstructions
+        systemInstructions,
+        availableMediaLibrary
       );
 
       return res.json(sceneConfig);
@@ -2451,6 +2590,190 @@ Your explanation should be conversational and reference specific scene numbers.`
     } catch (error) {
       console.error("Error toggling portfolio prompt:", error);
       return res.status(500).json({ error: "Failed to toggle portfolio prompt" });
+    }
+  });
+
+  // Scene Template CRUD endpoints
+  app.get("/api/scene-templates", requireAuth, async (req, res) => {
+    try {
+      const category = req.query.category as string | undefined;
+      const tags = req.query.tags ? (req.query.tags as string).split(',') : undefined;
+      
+      const templates = await storage.getAllSceneTemplates(req.tenantId, {
+        category,
+        tags,
+      });
+      
+      return res.json(templates);
+    } catch (error) {
+      console.error("Error fetching scene templates:", error);
+      return res.status(500).json({ error: "Failed to fetch scene templates" });
+    }
+  });
+
+  app.get("/api/scene-templates/search", requireAuth, async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      
+      if (!query || query.trim().length === 0) {
+        return res.status(400).json({ error: "Search query is required" });
+      }
+      
+      const templates = await storage.searchSceneTemplates(req.tenantId, query);
+      return res.json(templates);
+    } catch (error) {
+      console.error("Error searching scene templates:", error);
+      return res.status(500).json({ error: "Failed to search scene templates" });
+    }
+  });
+
+  app.get("/api/scene-templates/:id", requireAuth, async (req, res) => {
+    try {
+      const template = await storage.getSceneTemplateById(req.tenantId, req.params.id);
+      
+      if (!template) {
+        return res.status(404).json({ error: "Scene template not found" });
+      }
+      
+      return res.json(template);
+    } catch (error) {
+      console.error("Error fetching scene template:", error);
+      return res.status(500).json({ error: "Failed to fetch scene template" });
+    }
+  });
+
+  app.post("/api/scene-templates", requireAuth, async (req, res) => {
+    try {
+      const result = insertSceneTemplateSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      
+      const template = await storage.createSceneTemplate(
+        req.tenantId,
+        req.session.userId!,
+        result.data
+      );
+      
+      return res.status(201).json(template);
+    } catch (error) {
+      console.error("Error creating scene template:", error);
+      return res.status(500).json({ error: "Failed to create scene template" });
+    }
+  });
+
+  app.patch("/api/scene-templates/:id", requireAuth, async (req, res) => {
+    try {
+      const existing = await storage.getSceneTemplateById(req.tenantId, req.params.id);
+      
+      if (!existing) {
+        return res.status(404).json({ error: "Scene template not found" });
+      }
+      
+      const result = updateSceneTemplateSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({
+          error: "Validation failed",
+          details: validationError.message,
+        });
+      }
+      
+      const template = await storage.updateSceneTemplate(
+        req.tenantId,
+        req.params.id,
+        result.data
+      );
+      
+      return res.json(template);
+    } catch (error) {
+      console.error("Error updating scene template:", error);
+      return res.status(500).json({ error: "Failed to update scene template" });
+    }
+  });
+
+  app.delete("/api/scene-templates/:id", requireAuth, async (req, res) => {
+    try {
+      const existing = await storage.getSceneTemplateById(req.tenantId, req.params.id);
+      
+      if (!existing) {
+        return res.status(404).json({ error: "Scene template not found" });
+      }
+      
+      await storage.deleteSceneTemplate(req.tenantId, req.params.id);
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting scene template:", error);
+      return res.status(500).json({ error: "Failed to delete scene template" });
+    }
+  });
+
+  app.post("/api/scene-templates/:id/recycle", requireAuth, async (req, res) => {
+    try {
+      const { projectId } = req.body;
+      
+      if (!projectId) {
+        return res.status(400).json({ error: "projectId is required" });
+      }
+      
+      // Verify template exists
+      const template = await storage.getSceneTemplateById(req.tenantId, req.params.id);
+      if (!template) {
+        return res.status(404).json({ error: "Scene template not found" });
+      }
+      
+      // Verify project exists and user has access
+      const project = await storage.getProjectById(req.tenantId, projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      // Recycle template into project
+      const newScene = await storage.recycleTemplate(req.tenantId, req.params.id, projectId);
+      
+      return res.status(201).json(newScene);
+    } catch (error) {
+      console.error("Error recycling scene template:", error);
+      return res.status(500).json({ error: "Failed to recycle scene template" });
+    }
+  });
+
+  app.post("/api/project-scenes/:sceneId/save-as-template", requireAuth, async (req, res) => {
+    try {
+      const { name, description, category, tags, previewImageUrl } = req.body;
+      
+      if (!name || name.trim().length === 0) {
+        return res.status(400).json({ error: "Template name is required" });
+      }
+      
+      const template = await storage.saveSceneAsTemplate(
+        req.tenantId,
+        req.params.sceneId,
+        req.session.userId!,
+        {
+          name,
+          description,
+          category,
+          tags,
+          previewImageUrl,
+        }
+      );
+      
+      return res.status(201).json(template);
+    } catch (error) {
+      console.error("Error saving scene as template:", error);
+      
+      if (error instanceof Error && error.message === "Scene not found") {
+        return res.status(404).json({ error: "Scene not found" });
+      }
+      
+      return res.status(500).json({ error: "Failed to save scene as template" });
     }
   });
 
