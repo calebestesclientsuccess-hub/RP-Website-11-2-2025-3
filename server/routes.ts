@@ -1997,7 +1997,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Build conversation context for Gemini
-      const systemPrompt = `You are a cinematic director helping refine a scrollytelling portfolio.
+      const systemPrompt = `You are a cinematic director helping refine scrollytelling portfolio.
 
 CURRENT PROJECT:
 Title: ${projectContext?.title || "Portfolio"}

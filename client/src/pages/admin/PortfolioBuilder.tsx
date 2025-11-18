@@ -478,6 +478,22 @@ export default function PortfolioBuilder() {
       return;
     }
 
+    // Validate media references before saving
+    const scenesWithUnlinkedMedia = scenesToSave.filter((scene: any) => {
+      const hasUrl = scene.content?.url || scene.content?.media;
+      const hasMediaId = scene.content?.mediaId || scene.content?.mediaMediaId;
+      return hasUrl && !hasMediaId; // URL without mediaId is suspicious
+    });
+
+    if (scenesWithUnlinkedMedia.length > 0) {
+      console.warn('[Portfolio Builder] Scenes with unlinked media:', scenesWithUnlinkedMedia);
+      toast({
+        title: "Warning",
+        description: `${scenesWithUnlinkedMedia.length} scene(s) have media URLs but no Media Library links. They will still save, but may break if URLs change.`,
+        variant: "default"
+      });
+    }
+
     setIsSavingScenes(true);
     try {
       const requestPayload = {

@@ -204,7 +204,7 @@ function buildAssetWhitelist(catalog?: ContentCatalog): string[] { // Added cata
 
 
 // Build Gemini prompt for portfolio orchestration
-function buildPortfolioPrompt(catalog: ContentCatalog): string {
+function buildPortfolioPrompt(catalog: ContentCatalog, availableMediaLibrary?: any[]): string {
   const validAssetIds = buildAssetWhitelist(catalog); // Pass catalog context
   const totalImagesProvided = catalog.images?.length ?? 0;
   const totalVideosProvided = catalog.videos?.length ?? 0;
@@ -215,7 +215,31 @@ function buildPortfolioPrompt(catalog: ContentCatalog): string {
   const placeholderVideos = PLACEHOLDER_CONFIG.videos.map((id) => `"${id}"`).join(', ');
   const placeholderQuotes = PLACEHOLDER_CONFIG.quotes.map((id) => `"${id}"`).join(', ');
 
+  // Build Media Library asset list
+  let mediaLibrarySection = '';
+  if (availableMediaLibrary && availableMediaLibrary.length > 0) {
+    const mediaList = availableMediaLibrary.map(m => 
+      `- ${m.id}: ${m.label || m.cloudinaryPublicId} (${m.mediaType})`
+    ).join('\n');
+    
+    mediaLibrarySection = `
+
+MEDIA LIBRARY INTEGRATION:
+You have access to ${availableMediaLibrary.length} media assets in the Media Library. When creating scenes, you can reference these assets using their mediaId:
+
+${mediaList}
+
+IMPORTANT: When you use media from the Media Library, include BOTH the mediaId AND url in the content:
+- For image/video scenes: { "content": { "mediaId": "media-id-here", "url": "fallback-url" } }
+- For split scenes: { "content": { "mediaMediaId": "media-id-here", "media": "fallback-url" } }
+- For gallery scenes: Include mediaId in each image object
+
+The mediaId ensures the asset stays linked even if URLs change. The url is a fallback for rendering.
+`;
+  }
+
   return `You are an expert portfolio director AI. Your role is to create compelling, professional portfolio scenes that tell a client's story.
+${mediaLibrarySection}
 
 MEDIA LIBRARY INTEGRATION:
 - When media assets are available in the Media Library, ALWAYS prefer using them by including their mediaId
@@ -838,7 +862,8 @@ export async function generatePortfolioWithAI(
   catalog: ContentCatalog,
   projectTitle: string, // Added projectTitle for logging
   projectId?: string, // Optional: for loading custom prompts
-  customPromptsParam?: Record<string, string> // Optional: pre-loaded custom prompts
+  customPromptsParam?: Record<string, string>, // Optional: pre-loaded custom prompts
+  availableMediaLibrary?: any[] // Optional: Media Library assets
 ): Promise<PortfolioGenerateResponse> {
   const aiClient = getAIClient();
 
@@ -897,9 +922,13 @@ export async function generatePortfolioWithAI(
   }
   
   // Use custom prompt if available, otherwise use default
-  const prompt = customPrompts.get('artistic_director') || buildPortfolioPrompt(catalog);
+  const prompt = customPrompts.get('artistic_director') || buildPortfolioPrompt(catalog, availableMediaLibrary);
   if (customPrompts.has('artistic_director')) {
     console.log('[Custom Prompts] Stage 1: Using custom artistic_director prompt');
+  }
+  
+  if (availableMediaLibrary && availableMediaLibrary.length > 0) {
+    console.log(`[Portfolio Director] AI has access to ${availableMediaLibrary.length} Media Library assets`);
   }
 
   let stage1Response;
