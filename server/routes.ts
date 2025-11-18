@@ -1792,8 +1792,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.warn(`[Scene Creation] SECURITY: Attempted to reference unauthorized media:`, missingIds);
 
           return res.status(403).json({
-            error: 'Media reference validation failed',
-            details: 'One or more media assets are invalid or do not belong to your account',
+            error: 'Invalid media reference',
+            details: 'One or more media assets do not exist or do not belong to your organization',
             invalidIds: missingIds
           });
         }
@@ -1884,8 +1884,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.warn(`[Scene Update] SECURITY: Attempted to reference unauthorized media:`, missingIds);
 
           return res.status(403).json({
-            error: 'Media reference validation failed',
-            details: 'One or more media assets are invalid or do not belong to your account',
+            error: 'Invalid media reference',
+            details: 'One or more media assets do not exist or do not belong to your organization',
             invalidIds: missingIds
           });
         }
