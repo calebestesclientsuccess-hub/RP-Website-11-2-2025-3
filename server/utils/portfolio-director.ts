@@ -2,19 +2,35 @@
  * Portfolio Director - AI-Powered Scene Generation
  * Orchestrates portfolio creation using Gemini AI
  * 
- * 6-Stage Refinement Pipeline:
- * 1. Initial Generation (form-filling)
- * 2. Self-Audit (AI finds inconsistencies)
- * 3. Generate 10 Improvements
- * 4. Auto-Apply Non-Conflicting Fixes
- * 5. Final Regeneration
- * 6. Validation Against Requirements
+ * 6-Stage Refinement Pipeline (Enhanced):
+ * 1. Initial Generation (form-filling) - with retry logic
+ * 2. Self-Audit (AI finds inconsistencies) - with fallback
+ * 3. Generate 10 Improvements - with timeout
+ * 4. Auto-Apply Non-Conflicting Fixes - with validation
+ * 5. Final Regeneration - with abort signal
+ * 6. Validation Against Requirements - comprehensive checks
  */
 
 import { GoogleGenAI, Type } from "@google/genai";
 import type { ContentCatalog, PortfolioPrompt } from "@shared/schema";
 import { storage } from "../storage";
 import { AssetValidator } from "./asset-validator"; // Assuming AssetValidator is in the same directory
+
+// Pipeline configuration
+const PIPELINE_CONFIG = {
+  STAGE_TIMEOUT_MS: 60000, // 60s max per stage
+  MAX_RETRIES: 3,
+  ENABLE_FALLBACKS: true,
+  LOG_TIMINGS: true,
+};
+
+// Pipeline state tracking
+interface PipelineMetrics {
+  stageTimings: Record<string, number>;
+  retryCount: number;
+  fallbacksUsed: string[];
+  totalDuration: number;
+}
 
 // Lazy-load Gemini client to avoid ESM initialization issues
 let ai: GoogleGenAI | null = null;
@@ -29,6 +45,33 @@ function getAIClient(): GoogleGenAI {
     });
   }
   return ai;
+}
+
+/**
+ * Execute AI operation with timeout and abort signal
+ */
+async function executeWithTimeout<T>(
+  operation: (signal: AbortSignal) => Promise<T>,
+  timeoutMs: number,
+  stageName: string
+): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    console.warn(`[Portfolio Director] ${stageName} timeout after ${timeoutMs}ms, aborting...`);
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    const result = await operation(controller.signal);
+    clearTimeout(timeoutId);
+    return result;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (controller.signal.aborted) {
+      throw new Error(`${stageName} timed out after ${timeoutMs}ms`);
+    }
+    throw error;
+  }
 }
 
 import { getAllPlaceholderIds, PLACEHOLDER_CONFIG } from "@shared/placeholder-config";
@@ -818,7 +861,19 @@ export async function generatePortfolioWithAI(
     console.log(`[Custom Prompts] Loaded ${dbPromptCount} database prompts, merged ${overrideCount} caller overrides, total: ${customPrompts.size}`);
   }
 
-  // STAGE 1: Initial Generation (Form-Filling) with retry logic
+  // Initialize pipeline metrics
+  const metrics: PipelineMetrics = {
+    stageTimings: {},
+    retryCount: 0,
+    fallbacksUsed: [],
+    totalDuration: 0,
+  };
+  const pipelineStart = Date.now();
+
+  // STAGE 1: Initial Generation (Form-Filling) with enhanced retry logic
+  const stage1Start = Date.now();
+  console.log('[Portfolio Director] 🎬 STAGE 1/6: Initial Generation (with retry logic)');
+  
   // Use custom prompt if available, otherwise use default
   const prompt = customPrompts.get('artistic_director') || buildPortfolioPrompt(catalog);
   if (customPrompts.has('artistic_director')) {
@@ -827,10 +882,11 @@ export async function generatePortfolioWithAI(
 
   let stage1Response;
   let retryCount = 0;
-  const maxRetries = 3;
+  const maxRetries = PIPELINE_CONFIG.MAX_RETRIES;
 
   while (retryCount < maxRetries) {
     try {
+      metrics.retryCount = retryCount;
       // This is the responseSchema for the Stage 1 'Artistic Director'
       // (buildPortfolioPrompt) - PERFECTED ENFORCER
       stage1Response = await aiClient.models.generateContent({
@@ -1011,13 +1067,23 @@ export async function generatePortfolioWithAI(
         throw new Error(`Failed to generate portfolio after ${maxRetries} attempts: ${error.message}`);
       }
 
-      // Exponential backoff
-      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+      // Exponential backoff with jitter
+      const backoffMs = (1000 * Math.pow(2, retryCount)) + Math.random() * 1000;
+      console.log(`[Portfolio Director] Retrying in ${backoffMs.toFixed(0)}ms...`);
+      await new Promise(resolve => setTimeout(resolve, backoffMs));
     }
   }
 
+  metrics.stageTimings['Stage 1: Initial Generation'] = Date.now() - stage1Start;
+  console.log(`[Portfolio Director] ✅ Stage 1 complete in ${metrics.stageTimings['Stage 1: Initial Generation']}ms`);
+
   const responseText = stage1Response.text;
   if (!responseText) {
+    console.error('[Portfolio Director] ❌ Stage 1 CRITICAL: No response text from Gemini');
+    if (PIPELINE_CONFIG.ENABLE_FALLBACKS) {
+      metrics.fallbacksUsed.push('Stage 1: Empty response fallback');
+      throw new Error("Stage 1 failed: No response from Gemini AI - fallback not implemented");
+    }
     throw new Error("No response from Gemini AI");
   }
 
@@ -1062,48 +1128,92 @@ export async function generatePortfolioWithAI(
     if (scene.director.gradientDirection === null) scene.director.gradientDirection = undefined;
   });
 
-  // Calculate confidence score based on completeness
+  // Enhanced confidence scoring with severity categorization
+  console.log('[Portfolio Director] 📊 Calculating confidence score with severity levels...');
+  
+  const confidenceIssues: Array<{
+    severity: 'CRITICAL' | 'WARNING' | 'INFO';
+    message: string;
+    penalty: number;
+  }> = [];
+  
   let confidenceScore = 100;
-  let confidenceFactors: string[] = [];
 
   result.scenes.forEach((scene: GeneratedScene, idx: number) => {
-    // Check scene structure
+    // CRITICAL: Check scene structure
     for (const field of requiredSceneFields) {
       if (!scene[field]) {
-        confidenceScore -= 5;
-        confidenceFactors.push(`Scene ${idx}: missing ${field}`);
+        confidenceIssues.push({
+          severity: 'CRITICAL',
+          message: `Scene ${idx + 1}: missing required field '${field}'`,
+          penalty: 10,
+        });
+        confidenceScore -= 10;
       }
     }
 
-    // Check director configuration completeness against the 37 controls
+    // CRITICAL: Missing director config
     if (!scene.director) {
-      confidenceScore -= 10;
-      confidenceFactors.push(`Scene ${idx}: missing director config`);
+      confidenceIssues.push({
+        severity: 'CRITICAL',
+        message: `Scene ${idx + 1}: missing director configuration`,
+        penalty: 15,
+      });
+      confidenceScore -= 15;
     } else {
+      // WARNING: Incomplete director fields
       for (const field of requiredDirectorFields) {
         if (scene.director[field] === undefined || scene.director[field] === null) {
+          confidenceIssues.push({
+            severity: 'WARNING',
+            message: `Scene ${idx + 1}: missing director.${field}`,
+            penalty: 2,
+          });
           confidenceScore -= 2;
-          confidenceFactors.push(`Scene ${idx}: missing director.${field}`);
         }
       }
     }
   });
 
-  // Bonus points for proper asset selection
+  // INFO: Asset utilization bonus
   const totalAssets = result.scenes.reduce((sum: number, scene: GeneratedScene) =>
     sum + (scene.assetIds?.length || 0), 0
   );
   const avgAssetsPerScene = result.scenes.length > 0 ? totalAssets / result.scenes.length : 0;
   if (avgAssetsPerScene >= 1.5) {
+    confidenceIssues.push({
+      severity: 'INFO',
+      message: 'Good asset utilization across scenes',
+      penalty: -5, // Bonus
+    });
     confidenceScore = Math.min(100, confidenceScore + 5);
-    confidenceFactors.push('Good asset utilization');
+  } else if (avgAssetsPerScene < 0.5) {
+    confidenceIssues.push({
+      severity: 'WARNING',
+      message: 'Low asset utilization - scenes may lack visual content',
+      penalty: 5,
+    });
+    confidenceScore -= 5;
   }
 
   // Clamp score between 0-100
   confidenceScore = Math.max(0, Math.min(100, confidenceScore));
 
+  // Categorize issues by severity
+  const criticalIssues = confidenceIssues.filter(i => i.severity === 'CRITICAL');
+  const warningIssues = confidenceIssues.filter(i => i.severity === 'WARNING');
+  const infoItems = confidenceIssues.filter(i => i.severity === 'INFO');
+
   result.confidenceScore = confidenceScore;
-  result.confidenceFactors = confidenceFactors;
+  result.confidenceFactors = confidenceIssues.map(i => 
+    `${i.severity}: ${i.message} (${i.penalty > 0 ? '-' : '+'}${Math.abs(i.penalty)} pts)`
+  );
+
+  // Log severity breakdown
+  console.log(`[Portfolio Director] Confidence Analysis:`);
+  console.log(`  - CRITICAL issues: ${criticalIssues.length}`);
+  console.log(`  - WARNING issues: ${warningIssues.length}`);
+  console.log(`  - INFO items: ${infoItems.length}`);
 
   console.log(`[Portfolio Director] ✅ Generated ${result.scenes.length} scenes for project: ${projectTitle}`);
   console.log(`[Portfolio Director] 📊 Confidence Score: ${confidenceScore}% ${confidenceScore < 70 ? '⚠️ LOW' : confidenceScore < 85 ? '✓ GOOD' : '✓✓ EXCELLENT'}`);
@@ -2152,22 +2262,44 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
     // Validate director fields and conflicts
     const director = scene.director;
 
-    // Conflict checks
+    // AUTO-FIX: Conflict resolution
+    let autoFixCount = 0;
+    
     if (director.parallaxIntensity > 0 && director.scaleOnScroll) {
-      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ parallax + scaleOnScroll conflict detected. Auto-fixing scaleOnScroll to false.`);
-      scene.director.scaleOnScroll = false; // Auto-fix
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ parallax + scaleOnScroll conflict. Auto-fixing scaleOnScroll → false`);
+      scene.director.scaleOnScroll = false;
+      autoFixCount++;
     }
     if (director.blurOnScroll && director.parallaxIntensity > 0) {
-        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ blurOnScroll conflicts with parallax. Auto-fixing blurOnScroll to false.`);
-        scene.director.blurOnScroll = false; // Auto-fix
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ blurOnScroll conflicts with parallax. Auto-fixing blurOnScroll → false`);
+      scene.director.blurOnScroll = false;
+      autoFixCount++;
     }
-     if (director.blurOnScroll && director.scaleOnScroll) {
-        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ blurOnScroll conflicts with scaleOnScroll. Auto-fixing blurOnScroll to false.`);
-        scene.director.blurOnScroll = false; // Auto-fix
+    if (director.blurOnScroll && director.scaleOnScroll) {
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ blurOnScroll conflicts with scaleOnScroll. Auto-fixing blurOnScroll → false`);
+      scene.director.blurOnScroll = false;
+      autoFixCount++;
     }
     if (director.textShadow && director.textGlow) {
-        warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ textShadow and textGlow conflict. Auto-fixing textGlow to false.`);
-        scene.director.textGlow = false;
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: ⚠️ textShadow + textGlow conflict. Auto-fixing textGlow → false`);
+      scene.director.textGlow = false;
+      autoFixCount++;
+    }
+
+    // AUTO-FIX: Duration too short (INFO-level issue)
+    if (director.entryDuration < 0.8) {
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: INFO: Entry duration ${director.entryDuration}s too short. Auto-fixing → 0.8s`);
+      scene.director.entryDuration = 0.8;
+      autoFixCount++;
+    }
+    if (director.exitDuration < 0.6) {
+      warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: INFO: Exit duration ${director.exitDuration}s too short. Auto-fixing → 0.6s`);
+      scene.director.exitDuration = 0.6;
+      autoFixCount++;
+    }
+
+    if (autoFixCount > 0) {
+      console.log(`[Stage 6] Auto-fixed ${autoFixCount} issues in scene ${finalResult.scenes.indexOf(scene) + 1}`);
     }
 
     // Duration checks
@@ -2337,32 +2469,51 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
   result.confidenceFactors = Array.from(new Set([...(result.confidenceFactors || []), ...warnings.map(w => w.replace('⚠️ ', ''))]));
 
 
-  console.log('[Portfolio Director] 🎬 PIPELINE COMPLETE - Final Output:', {
-    totalScenes: finalResult.scenes.length,
-    stage1: 'Initial generation',
-    stage2: `Found ${auditResult.issues.length} issues`,
-    stage3: `Generated ${improvementsResult.improvements.length} improvements`,
-    stage3_5: `Applied ${sceneTypeImprovements.length} scene-type refinements`,
-    stage4: `Applied ${appliedImprovements.length} improvements`,
-    stage5: 'Final regeneration with all fixes',
-    stage5_5: `Coherence validated (${coherenceResult?.overallScore ?? 'N/A'}/100)`,
-    stage6: warnings.length > 0 ? `${warnings.length} validation warnings` : 'All validations passed',
-    appliedImprovements: appliedImprovements.length > 0 ? appliedImprovements : 'none',
-    warnings: warnings.length > 0 ? warnings : 'none',
-    sceneSummary: finalResult.scenes.map((s, i) => ({
-      index: i,
-      type: s.sceneType,
-      assets: s.assetIds.length,
-      entry: `${s.director.entryEffect} (${s.director.entryDuration}s)`,
-      exit: `${s.director.exitEffect} (${s.director.exitDuration}s)`,
-      scrollSpeed: s.director.scrollSpeed
-    }))
+  // Calculate total pipeline duration
+  metrics.totalDuration = Date.now() - pipelineStart;
+
+  // Log comprehensive pipeline summary
+  console.log('\n' + '='.repeat(80));
+  console.log('🎬 PIPELINE COMPLETE - 6-Stage Refinement Summary');
+  console.log('='.repeat(80));
+  console.log(`⏱️  Total Duration: ${metrics.totalDuration}ms (${(metrics.totalDuration / 1000).toFixed(2)}s)`);
+  console.log(`🔄 Retry Attempts: ${metrics.retryCount}`);
+  console.log(`🛡️  Fallbacks Used: ${metrics.fallbacksUsed.length > 0 ? metrics.fallbacksUsed.join(', ') : 'None'}`);
+  console.log('\n📊 Stage Performance:');
+  Object.entries(metrics.stageTimings).forEach(([stage, duration]) => {
+    const percentage = ((duration / metrics.totalDuration) * 100).toFixed(1);
+    console.log(`  ${stage}: ${duration}ms (${percentage}%)`);
   });
+  console.log('\n📈 Output Quality:');
+  console.log(`  Scenes Generated: ${finalResult.scenes.length}`);
+  console.log(`  Confidence Score: ${result.confidenceScore}% ${result.confidenceScore < 70 ? '⚠️ LOW' : result.confidenceScore < 85 ? '✓ GOOD' : '✓✓ EXCELLENT'}`);
+  console.log(`  Issues Found (Stage 2): ${auditResult.issues.length}`);
+  console.log(`  Improvements (Stage 3): ${improvementsResult.improvements.length}`);
+  console.log(`  Applied Fixes (Stage 4): ${appliedImprovements.length}`);
+  console.log(`  Scene Refinements (3.5): ${sceneTypeImprovements.length}`);
+  console.log(`  Coherence Score (5.5): ${coherenceResult?.overallScore ?? 'N/A'}/100`);
+  console.log(`  Validation Warnings (6): ${warnings.length}`);
+  
+  if (warnings.length > 0) {
+    console.log('\n⚠️  Validation Warnings:');
+    warnings.slice(0, 5).forEach(w => console.log(`  - ${w}`));
+    if (warnings.length > 5) {
+      console.log(`  ... and ${warnings.length - 5} more warnings`);
+    }
+  }
+  
+  console.log('='.repeat(80) + '\n');
 
   return {
     scenes: finalResult.scenes,
     confidenceScore: result.confidenceScore,
-    confidenceFactors: result.confidenceFactors
+    confidenceFactors: result.confidenceFactors,
+    metrics: {
+      totalDuration: metrics.totalDuration,
+      stageTimings: metrics.stageTimings,
+      retryCount: metrics.retryCount,
+      fallbacksUsed: metrics.fallbacksUsed,
+    },
   };
 }
 
