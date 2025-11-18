@@ -231,7 +231,7 @@ function calculateBucket(data: Partial<InsertAssessmentResponse>): string {
   return 'architecture-gap';
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<void> {
   // Authentication endpoints
   app.post("/api/auth/register", async (req, res) => {
     try {

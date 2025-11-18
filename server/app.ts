@@ -3,6 +3,7 @@
  * after Vite has been patched to support Replit domains
  */
 import express, { type Request, Response, NextFunction } from "express";
+import { createServer } from "http";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import crypto from "crypto";
@@ -175,7 +176,11 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  // Create HTTP server
+  const server = createServer(app);
+
+  // Register routes
+  await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
