@@ -38,7 +38,7 @@ const menuItems = [
     icon: Upload,
   },
   {
-    title: "AI Prompt Settings",
+    title: "Default AI Prompts",
     url: "/admin/ai-prompts",
     icon: Sparkles,
   },

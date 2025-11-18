@@ -2169,6 +2169,49 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
+  // Test prompt endpoint
+  app.post("/api/ai-prompt-templates/:id/test", requireAuth, async (req, res) => {
+    try {
+      const { testInput } = req.body;
+      const template = await storage.getPromptTemplateById(req.tenantId, req.params.id);
+      
+      if (!template) {
+        return res.status(404).json({ error: "Prompt template not found" });
+      }
+
+      // Lazy-load Gemini client
+      const { GoogleGenAI } = await import("@google/genai");
+      const ai = new GoogleGenAI({
+        apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
+        httpOptions: {
+          apiVersion: "",
+          baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
+        },
+      });
+
+      // Test the prompt with sample input
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-pro",
+        contents: [
+          { role: "user", parts: [{ text: template.systemPrompt }] },
+          { role: "user", parts: [{ text: testInput }] }
+        ],
+      });
+
+      return res.json({
+        success: true,
+        result: response.text,
+        promptVersion: template.version,
+      });
+    } catch (error) {
+      console.error("Error testing prompt:", error);
+      return res.status(500).json({ 
+        error: "Failed to test prompt",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Media Library endpoints
   app.get("/api/media-library", requireAuth, async (req, res) => {
     try {
