@@ -261,17 +261,21 @@ export const sceneTemplates = pgTable("scene_templates", {
   description: text("description"),
   sceneConfig: jsonb("scene_config").notNull(),
   tags: text("tags").array().notNull().default(sql`ARRAY[]::text[]`),
+  category: text("category"),
   previewImageUrl: text("preview_image_url"),
   createdBy: text("created_by").notNull(),
   usageCount: integer("usage_count").notNull().default(0),
+  lastUsedAt: timestamp("last_used_at"),
   isPublic: boolean("is_public").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
   tenantIdx: index("idx_scene_templates_tenant").on(table.tenantId),
+  categoryIdx: index("idx_scene_templates_category").on(table.category),
   tagsIdx: index("idx_scene_templates_tags").on(table.tags),
   usageIdx: index("idx_scene_templates_usage").on(table.usageCount),
   createdIdx: index("idx_scene_templates_created").on(table.createdAt),
+  searchIdx: index("idx_scene_templates_search").on(table.name, table.description),
 }));
 
 export const portfolioConversations = pgTable("portfolio_conversations", {
@@ -1177,9 +1181,19 @@ export type UpdatePromptTemplate = z.infer<typeof updatePromptTemplateSchema>;
 export type PortfolioVersion = typeof portfolioVersions.$inferSelect;
 export type InsertPortfolioVersion = typeof portfolioVersions.$inferInsert;
 
+export const insertSceneTemplateSchema = createInsertSchema(sceneTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  usageCount: true,
+  lastUsedAt: true,
+});
+
+export const updateSceneTemplateSchema = insertSceneTemplateSchema.partial();
+
 export type SceneTemplate = typeof sceneTemplates.$inferSelect;
-export type InsertSceneTemplate = typeof sceneTemplates.$inferInsert;
-export type UpdateSceneTemplate = Partial<InsertSceneTemplate>;
+export type InsertSceneTemplate = z.infer<typeof insertSceneTemplateSchema>;
+export type UpdateSceneTemplate = z.infer<typeof updateSceneTemplateSchema>;
 
 // Portfolio Builder Content Catalog Schemas - Enhanced for Cinematic Mode
 export const textAssetSchema = z.object({
