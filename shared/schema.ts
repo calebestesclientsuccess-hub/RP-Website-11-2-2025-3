@@ -239,16 +239,40 @@ export const assessmentAnswers = pgTable("assessment_answers", {
 });
 
 export const portfolioVersions = pgTable("portfolio_versions", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
+  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
   versionNumber: integer("version_number").notNull(),
   scenesJson: jsonb("scenes_json").notNull(),
-  assetMap: jsonb("asset_map").$type<Record<string, string>>(), // Maps placeholder IDs to real asset URLs
   confidenceScore: integer("confidence_score"),
   confidenceFactors: jsonb("confidence_factors"),
   changeDescription: text("change_description"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  projectIdx: index("idx_portfolio_versions_project").on(table.projectId),
+  createdIdx: index("idx_portfolio_versions_created").on(table.createdAt),
+  uniqueVersion: unique().on(table.projectId, table.versionNumber),
+}));
+
+// Scene Templates (reusable scene library)
+export const sceneTemplates = pgTable("scene_templates", {
+  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
+  tenantId: text("tenant_id").notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  sceneConfig: jsonb("scene_config").notNull(),
+  tags: text("tags").array().notNull().default(sql`ARRAY[]::text[]`),
+  previewImageUrl: text("preview_image_url"),
+  createdBy: text("created_by").notNull(),
+  usageCount: integer("usage_count").notNull().default(0),
+  isPublic: boolean("is_public").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  tenantIdx: index("idx_scene_templates_tenant").on(table.tenantId),
+  tagsIdx: index("idx_scene_templates_tags").on(table.tags),
+  usageIdx: index("idx_scene_templates_usage").on(table.usageCount),
+  createdIdx: index("idx_scene_templates_created").on(table.createdAt),
+}));
 
 export const portfolioConversations = pgTable("portfolio_conversations", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
@@ -1061,6 +1085,13 @@ export type DirectorConfig = z.infer<typeof directorConfigSchema>;
 export type PromptTemplate = typeof promptTemplates.$inferSelect;
 export type InsertPromptTemplate = z.infer<typeof insertPromptTemplateSchema>;
 export type UpdatePromptTemplate = z.infer<typeof updatePromptTemplateSchema>;
+
+export type PortfolioVersion = typeof portfolioVersions.$inferSelect;
+export type InsertPortfolioVersion = typeof portfolioVersions.$inferInsert;
+
+export type SceneTemplate = typeof sceneTemplates.$inferSelect;
+export type InsertSceneTemplate = typeof sceneTemplates.$inferInsert;
+export type UpdateSceneTemplate = Partial<InsertSceneTemplate>;
 
 // Portfolio Builder Content Catalog Schemas - Enhanced for Cinematic Mode
 export const textAssetSchema = z.object({
