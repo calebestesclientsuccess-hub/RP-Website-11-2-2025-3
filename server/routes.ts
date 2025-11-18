@@ -1606,18 +1606,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.set('Cache-Control', 'private, no-cache, must-revalidate');
       }
 
+      // Fetch scenes directly from projectScenes table
+      const scenes = await db.query.projectScenes.findMany({
+        where: eq(projectScenes.projectId, projectId),
+        orderBy: asc(projectScenes.order)
+      });
+
+      if (scenes.length === 0) {
+        return res.json([]);
+      }
+
+      // Get tenant ID for security validation
       const project = await db.query.projects.findFirst({
-        where: eq(projects.id, projectId)
+        where: eq(projects.id, projectId),
+        columns: { tenantId: true }
       });
 
       if (!project) {
         return res.status(404).json({ error: 'Project not found' });
       }
 
-      let scenes = project.scenes || [];
-
       // Hydrate media references if requested
-      if (shouldHydrate && scenes.length > 0) {
+      if (shouldHydrate) {
         console.log(`[Hydration] Processing ${scenes.length} scenes for project ${projectId}`);
 
         // Collect all unique mediaIds from all scenes
@@ -1662,7 +1672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           );
 
           // Hydrate scenes
-          scenes = scenes.map((scene: any) => {
+          const hydratedScenes = scenes.map((scene: any) => {
             const hydratedSceneConfig = { ...scene.sceneConfig };
             const hydratedContent = { ...(scene.sceneConfig?.content || {}) };
 
@@ -1725,6 +1735,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               sceneConfig: hydratedSceneConfig
             };
           });
+
+          return res.json(hydratedScenes);
         }
       }
 
