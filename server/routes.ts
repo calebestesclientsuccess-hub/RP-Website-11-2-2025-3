@@ -2169,11 +2169,60 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
+  // Get version history for a prompt template
+  app.get("/api/ai-prompt-templates/:id/versions", requireAuth, async (req, res) => {
+    try {
+      const versions = await storage.getPromptVersionHistory(req.params.id);
+      return res.json(versions);
+    } catch (error) {
+      console.error("Error fetching version history:", error);
+      return res.status(500).json({ error: "Failed to fetch version history" });
+    }
+  });
+
+  // Rollback prompt to a specific version
+  app.post("/api/ai-prompt-templates/:id/rollback/:version", requireAuth, async (req, res) => {
+    try {
+      const { id, version } = req.params;
+      const versionNumber = parseInt(version);
+
+      if (isNaN(versionNumber) || versionNumber < 1) {
+        return res.status(400).json({ 
+          error: "Invalid version number" 
+        });
+      }
+
+      const rolledBack = await storage.rollbackPromptToVersion(id, versionNumber);
+      
+      return res.json({
+        success: true,
+        prompt: rolledBack,
+        message: `Successfully rolled back to version ${versionNumber}`
+      });
+    } catch (error) {
+      console.error("Error rolling back prompt:", error);
+      return res.status(500).json({ 
+        error: "Failed to rollback prompt",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Test prompt endpoint
   app.post("/api/ai-prompt-templates/:id/test", requireAuth, async (req, res) => {
     try {
       const { testInput } = req.body;
-      const template = await storage.getPromptTemplateById(req.tenantId, req.params.id);
+      
+      if (!testInput || !testInput.trim()) {
+        return res.status(400).json({ 
+          error: "Validation failed",
+          details: "Test input is required" 
+        });
+      }
+
+      const template = await db.query.aiPromptTemplates.findFirst({
+        where: eq(aiPromptTemplates.id, req.params.id)
+      });
       
       if (!template) {
         return res.status(404).json({ error: "Prompt template not found" });
@@ -2190,6 +2239,7 @@ Your explanation should be conversational and reference specific scene numbers.`
       });
 
       // Test the prompt with sample input
+      const startTime = Date.now();
       const response = await ai.models.generateContent({
         model: "gemini-2.5-pro",
         contents: [
@@ -2197,11 +2247,15 @@ Your explanation should be conversational and reference specific scene numbers.`
           { role: "user", parts: [{ text: testInput }] }
         ],
       });
+      const duration = Date.now() - startTime;
 
       return res.json({
         success: true,
         result: response.text,
         promptVersion: template.version,
+        promptKey: template.promptKey,
+        duration,
+        testInput,
       });
     } catch (error) {
       console.error("Error testing prompt:", error);

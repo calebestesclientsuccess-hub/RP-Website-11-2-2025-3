@@ -36,9 +36,13 @@ import {
 
 interface PromptVersion {
   version: number;
-  content: string;
-  timestamp: string;
-  active: boolean;
+  systemPrompt: string;
+  updatedAt: string;
+  updatedBy: string | null;
+}
+
+interface PromptTemplate extends AiPromptTemplate {
+  versions?: PromptVersion[];
 }
 
 export default function AIPromptSettings() {
@@ -146,21 +150,31 @@ export default function AIPromptSettings() {
     });
   };
 
+  const rollbackMutation = useMutation({
+    mutationFn: async ({ promptId, version }: { promptId: string; version: number }) => {
+      const response = await apiRequest("POST", `/api/ai-prompt-templates/${promptId}/rollback/${version}`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/ai-prompt-templates"] });
+      toast({ title: "Success", description: "Prompt rolled back successfully" });
+      setShowRollbackDialog(null);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Rollback Failed", description: error.message, variant: "destructive" });
+    },
+  });
+
   const handleRollback = (promptId: string, version: number) => {
-    // In a real implementation, this would fetch the historical version
-    // For now, we'll show the confirmation dialog
     setShowRollbackDialog({ promptId, version });
   };
 
   const confirmRollback = () => {
     if (!showRollbackDialog) return;
-
-    toast({ 
-      title: "Rollback Initiated", 
-      description: `Rolling back to version ${showRollbackDialog.version}` 
+    rollbackMutation.mutate({ 
+      promptId: showRollbackDialog.promptId, 
+      version: showRollbackDialog.version 
     });
-    setShowRollbackDialog(null);
-    // In a real implementation, this would trigger a mutation to rollback the prompt
   };
 
   const handleTest = (template: AiPromptTemplate) => {

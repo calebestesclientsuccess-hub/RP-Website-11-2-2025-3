@@ -162,6 +162,13 @@ export interface IStorage {
   createPromptTemplate(tenantId: string, userId: string, template: InsertPromptTemplate): Promise<PromptTemplate>;
   updatePromptTemplate(tenantId: string, id: string, userId: string, template: Partial<InsertPromptTemplate>): Promise<PromptTemplate>;
   deletePromptTemplate(tenantId: string, id: string): Promise<void>;
+  getPromptVersionHistory(id: string): Promise<Array<{
+    version: number;
+    systemPrompt: string;
+    updatedAt: Date;
+    updatedBy: string | null;
+  }>>;
+  rollbackPromptToVersion(id: string, targetVersion: number): Promise<any>;
 
   // Content Assets API
   createContentAsset(tenantId: string, data: {
@@ -1007,6 +1014,55 @@ export class DbStorage implements IStorage {
   async deletePromptTemplate(tenantId: string, id: string): Promise<void> {
     await db.delete(promptTemplates)
       .where(and(eq(promptTemplates.tenantId, tenantId), eq(promptTemplates.id, id)));
+  }
+
+  async getPromptVersionHistory(id: string): Promise<Array<{
+    version: number;
+    systemPrompt: string;
+    updatedAt: Date;
+    updatedBy: string | null;
+  }>> {
+    // For now, return current version only
+    // In production, you'd have a separate prompt_versions table
+    const template = await db.query.aiPromptTemplates.findFirst({
+      where: eq(aiPromptTemplates.id, id)
+    });
+
+    if (!template) {
+      return [];
+    }
+
+    return [{
+      version: template.version,
+      systemPrompt: template.systemPrompt,
+      updatedAt: template.updatedAt,
+      updatedBy: null // TODO: Add updatedBy tracking
+    }];
+  }
+
+  async rollbackPromptToVersion(id: string, targetVersion: number): Promise<typeof aiPromptTemplates.$inferSelect> {
+    // Get current template
+    const current = await db.query.aiPromptTemplates.findFirst({
+      where: eq(aiPromptTemplates.id, id)
+    });
+
+    if (!current) {
+      throw new Error('Prompt template not found');
+    }
+
+    if (targetVersion >= current.version) {
+      throw new Error('Cannot rollback to current or future version');
+    }
+
+    // For now, this is a placeholder implementation
+    // In production, you'd fetch the historical version from a versions table
+    // and restore it, incrementing the version number
+    
+    // Since we don't have version history yet, we'll just return the current
+    // TODO: Implement proper version history table
+    console.warn(`Rollback requested for ${id} to version ${targetVersion}, but version history not yet implemented`);
+    
+    return current;
   }
 
   // Portfolio Conversations

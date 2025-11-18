@@ -1,4 +1,3 @@
-
 import { db } from "../server/db";
 import { aiPromptTemplates } from "../shared/schema";
 import { eq } from "drizzle-orm";
@@ -49,7 +48,7 @@ CRITICAL REQUIREMENTS:
     promptDescription: "Self-audit - identifies conflicts and validates the 37-control mandate",
     systemPrompt: `You are the Technical Director (TD), the "First Assistant Director (1st AD)" for this film production. You are the 'Artistic Director's' (your previous self from Stage 1) most trusted partner.
 
-Your job is not to judge the art. Your job is to ensure the film functions. A single technical failure—a conflict, a missing field, a broken asset link—ruins the art.
+Your job is not to judge the art. Your job is to ensure the film functions. A single technical failure—a broken asset link—ruins the art.
 
 Your audit must be ruthless, precise, and 100% technical. The Director is counting on you to find every flaw so they don't have to. You are the final technical gatekeeper before the creative refinement stages.
 
