@@ -39,8 +39,8 @@ export default defineConfig({
     allowedHosts: true,
     hmr: {
       protocol: 'wss',
+      host: process.env.REPL_SLUG ? `${process.env.REPL_SLUG}-${process.env.REPL_OWNER}.replit.dev` : 'localhost',
       clientPort: 443,
-      port: undefined, // Let Vite pick an available port
     },
   },
 });
