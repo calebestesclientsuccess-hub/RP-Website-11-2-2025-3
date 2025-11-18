@@ -121,6 +121,9 @@ const quickModeSchema = z.object({
       heading: z.string().optional(),
       body: z.string().optional(),
     }).optional(),
+    // Media Library references
+    mediaId: z.string().optional(),
+    mediaMediaId: z.string().optional(),
   }),
   // Director config
   director: z.any().optional(),
@@ -323,6 +326,9 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
     if (data.content.layout !== undefined) sceneConfig.content.layout = data.content.layout;
     if (data.content.overlay !== undefined) sceneConfig.content.overlay = data.content.overlay;
 
+    // CRITICAL FIX: Include mediaId references from form
+    if (data.content.mediaId !== undefined) sceneConfig.content.mediaId = data.content.mediaId;
+    if (data.content.mediaMediaId !== undefined) sceneConfig.content.mediaMediaId = data.content.mediaMediaId;
 
     // Add director config if present
     if (data.director && Object.keys(data.director).length > 0) {

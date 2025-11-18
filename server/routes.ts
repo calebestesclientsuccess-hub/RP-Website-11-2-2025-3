@@ -1645,28 +1645,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Hydrate scenes
           scenes = scenes.map((scene: any) => {
-            let hydratedSceneConfig = scene.sceneConfig;
+            let hydratedSceneConfig = { ...scene.sceneConfig };
+            let hydratedContent = { ...(scene.sceneConfig?.content || {}) };
 
-            // Hydrate single media field
-            if (scene.sceneConfig?.mediaId) {
-              const media = mediaMap.get(scene.sceneConfig.mediaId);
+            // Hydrate content.mediaId (for image/video scenes)
+            if (hydratedContent.mediaId) {
+              const media = mediaMap.get(hydratedContent.mediaId);
               if (media) {
-                hydratedSceneConfig = {
-                  ...scene.sceneConfig,
-                  url: media.cloudinaryUrl, // Inject current URL
-                  _media: { // Include metadata
-                    label: media.label,
-                    mediaType: media.mediaType
-                  }
+                hydratedContent.url = media.cloudinaryUrl;
+                hydratedContent._media = {
+                  label: media.label,
+                  mediaType: media.mediaType
                 };
               } else {
-                console.warn(`Media ${scene.sceneConfig.mediaId} not found or unauthorized for scene ${scene.id}`);
+                console.warn(`Media ${hydratedContent.mediaId} not found or unauthorized for scene ${scene.id}`);
+              }
+            }
+
+            // Hydrate content.media (for split/fullscreen scenes with mediaMediaId)
+            if (hydratedContent.mediaMediaId) {
+              const media = mediaMap.get(hydratedContent.mediaMediaId);
+              if (media) {
+                hydratedContent.media = media.cloudinaryUrl;
+                hydratedContent._mediaMedia = {
+                  label: media.label,
+                  mediaType: media.mediaType
+                };
+              } else {
+                console.warn(`Media ${hydratedContent.mediaMediaId} not found or unauthorized for scene ${scene.id}`);
               }
             }
 
             // Hydrate gallery images
-            if (scene.sceneConfig?.content?.images && Array.isArray(scene.sceneConfig.content.images)) {
-              const hydratedImages = scene.sceneConfig.content.images.map((img: any) => {
+            if (hydratedContent.images && Array.isArray(hydratedContent.images)) {
+              hydratedContent.images = hydratedContent.images.map((img: any) => {
                 if (img.mediaId) {
                   const media = mediaMap.get(img.mediaId);
                   if (media) {
@@ -1684,15 +1696,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
                 return img;
               });
-              // Ensure hydratedSceneConfig is updated if it wasn't modified by single media field
-              hydratedSceneConfig = {
-                ...hydratedSceneConfig,
-                content: {
-                  ...(hydratedSceneConfig?.content || {}),
-                  images: hydratedImages
-                }
-              };
             }
+
+            hydratedSceneConfig.content = hydratedContent;
 
             return {
               ...scene,
