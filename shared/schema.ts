@@ -755,12 +755,9 @@ export const projectScenes = pgTable("project_scenes", {
   }>(),
   order: integer("order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const projectScenesIndexes = [
-  index("project_scenes_project_id_idx").on(projectScenes.projectId),
-  index("project_scenes_tenant_id_idx").on(projectScenes.tenantId),
-];
+}, (table) => ({
+  projectIdIdx: index("project_scenes_project_id_idx").on(table.projectId),
+}));
 
 // AI-powered scene generation prompt templates
 export const promptTemplates = pgTable("prompt_templates", {
