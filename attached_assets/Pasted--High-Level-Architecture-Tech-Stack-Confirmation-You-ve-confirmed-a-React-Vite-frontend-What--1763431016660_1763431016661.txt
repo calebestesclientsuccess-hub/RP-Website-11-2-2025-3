@@ -1,0 +1,61 @@
+## 🚀 High-Level Architecture
+Tech Stack Confirmation: You've confirmed a React/Vite frontend. What are we using for the backend (e.g., Node.js, Python?) and where is it hosted? Is this a single monolith in Replit, or does it call external serverless functions?
+
+State Management: How is the main JSON "source of truth" managed on the frontend? Is it in a React Context, a global store like Zustand/Redux, or passed down as props?
+
+JSON Storage & Data Flow: How is the JSON "source of truth" persisted? (e.g., ReplitDB, static file, external PostgreSQL?). When the JSON is updated, does the server send the entire new JSON to the client, or does it send a diff/patch?
+
+## 📄 The JSON Schema & Component "Dictionary"
+(This section is key to understanding the "What can I build?" question.)
+
+Schema Definition: Do you have a TypeScript interface or JSON Schema that defines the entire structure? This is the single most useful document you could provide.
+
+Component Library: What is the complete list of all React components the JSON can reference? (e.g., Headline, Paragraph, ImageBasic, ImageWithZoom, VideoPlayer, ThreeColumnLayout). This is my "menu" of what I can build.
+
+Component Props: How are component-specific properties defined? For example, for an Image component, what are the JSON properties for src, altText, and caption?
+
+Section-Level Properties: How do I define section-level formatting? Is there a section component with properties for height (e.g., 100vh, 50vh, auto), backgroundColor, or padding?
+
+Example Snippet: Could I see a real-world JSON example for a single section that includes:
+
+The section definition itself.
+
+At least two different components (like a Headline and an Image).
+
+At least one GSAP animation instruction.
+
+## ✨ The GSAP "Engine" & Animation "Allow-List"
+(This section is key to understanding the "How can I animate it?" question.)
+
+The "Engine" Code: How does your React code "read" the animation JSON? Is it a custom hook like useScrollytelling(sectionJson) that parses the JSON and builds the GSAP timelines?
+
+The "Allow-List": What is the exact "allow-list" of CSS/GSAP properties the engine is built to parse?
+
+e.g., Is it just opacity and transform?
+
+Or does it include more advanced properties like clipPath, scale, rotation, color, filter?
+
+What are the allowed transform values? (xPercent, yPercent, translateX, scale, etc.)
+
+"From/To" Definitions: How do I define a "fly in from screen-left" animation? Does the JSON have separate keys for the "from" state (e.g., xPercent: -100) and the "to" state (e.g., xPercent: 0)?
+
+ScrollTrigger Mapping: Are you using GSAP's ScrollTrigger? If so, how are you mapping our JSON properties to ScrollTrigger's config options (like trigger, start, end, scrub, pin, toggleActions)?
+
+Enter/Exit Animations: Does the JSON schema support defining separate animations for a component entering the viewport vs. exiting it?
+
+Performance Context: How are we handling performance and cleanup, especially in React? Are we using gsap.context() to manage all the tweens and ScrollTriggers created by a component?
+
+## 🤖 LLM Prompt & Editing Workflow
+(This section is key to understanding "How do I know what the user wants?")
+
+The System Prompt: What standing instructions ("system prompt") are sent to me (Gemini) as part of every request? Does it include "few-shot" examples of good JSON output?
+
+Context Snapshot: When a user makes a vague request (e.g., "make this bigger and make it pop"), what context is sent to me along with that request?
+
+Am I sent the entire page's JSON, or just the JSON for the section being edited?
+
+Am I sent the current JSON Schema as a reminder?
+
+Am I sent the list of available components and animation properties?
+
+Manual Edits: When a user makes a manual change (e.g., in the UI or by editing the JSON directly), how is that change saved? Does that new JSON just become the "current state" for my next chat request?

@@ -1,0 +1,314 @@
+Project Cygnus: Scene Recycler
+
+Technical Specification & Implementation Plan
+
+
+
+
+
+Project
+
+Project Cygnus (Scene Recycler)
+
+Version
+
+1.0
+
+Status
+
+In Development
+
+Lead
+
+[Your Name, Product Owner & Lead Developer]
+
+Reviewers
+
+[Frontend Team, Backend Team, AI Team]
+
+Created
+
+November 17, 2025
+
+1. Overview
+
+1.1. The Vision: The "Lego" Box
+
+Currently, our platform empowers users to build cinematic, "scrollytelling" websites by generating sceneConfig JSON via an AI chat interface. This is a powerful 1:1 creation model.
+
+The "Scene Recycler" (Project Cygnus) evolves this model from creation to assembly.
+
+This project introduces a new foundational asset: the Template Scene. A Template Scene is a "perfect" scene—a sceneConfig object complete with content structure, mediaId references, and the full 37-control director animation config.
+
+Instead of asking the AI (Gemini) to "invent" a hero section from scratch every time, this system provides two new workflows:
+
+Manual Recycling (UX): A user can visually browse a library of these "perfect" scenes and add them to their project with a single click.
+
+AI Recycling (AI): The AI will be taught to prefer these pre-built, pre-approved "Lego bricks" when a user makes a request, falling back to from-scratch generation only when necessary.
+
+This solves the "blank page problem," enforces brand/animation consistency, and dramatically increases the speed and quality of page creation.
+
+1.2. The Problem
+
+Speed vs. Quality: Users must choose between a fast, AI-generated scene (which may be inconsistent) and a slow, manually-tuned scene.
+
+Brand Inconsistency: There is no way to enforce that all "Quote" scenes use the same animation and layout.
+
+The "Blank Page Problem": Users are creatively blocked when starting a new page.
+
+Developer Bottleneck: The team's best designs are "locked" inside a single project, requiring developer effort to port.
+
+1.3. The Solution
+
+We will build an end-to-end system that allows any project_scene to be "blessed" as a scene_template, stored in a new library, and reused—with all its data, media, and animation settings intact—across any project.
+
+2. Goals & Non-Goals
+
+2.1. Goals
+
+Backend: Create a new scene_templates table to store sceneConfig JSONB.
+
+Backend: Build API endpoints to list, create (from an existing scene), and "recycle" (copy) templates.
+
+Frontend: Build a new SceneRecyclerModal component that provides a visual gallery of available templates.
+
+Frontend: Integrate this modal into the existing project editor.
+
+AI: Update the AI system prompt (portfolio-director.ts) to make Gemini "aware" of the template library.
+
+AI: Teach Gemini to "call" a recycle function, passing in a template ID, when a user's request matches a template.
+
+2.2. Non-Goals (for V1)
+
+No Cross-Tenant Sharing: This system is for our internal library and a user's own saved scenes. We are not building a marketplace for users to share templates with each other.
+
+No Real-time Collaboration: This is a copy/paste system, not a multi-user "instance" system like Figma components.
+
+No UI for Template Editing: V1 will not have a dedicated "template editor." To edit a template, a user will "recycle" it, edit it in their project, and "Save As" a new template (overwriting the old one).
+
+3. Key Terminology
+
+Scene (project_scenes): The atomic unit of a project. A single row in the project_scenes table.
+
+sceneConfig (JSONB): The JSON blueprint for a scene. Contains content, mediaId references, and the director animation object.
+
+Template Scene (scene_templates): A "blessed" Scene saved in a new table for reuse.
+
+Recycling (The Task): The action of copying a sceneConfig from scene_templates and creating a new project_scene from it, linked to a new projectId.
+
+Media Hydration: The existing process of resolving a mediaId from media_library into a live Cloudinary URL. This system will be leveraged heavily.
+
+4. Proposed Architecture
+
+4.1. Architectural Flow (Manual Recycle)
+
+graph TD
+    A[User clicks "Add Scene"] --> B{Modal: 'New' or 'From Library'};
+    B --> C[User clicks 'From Library'];
+    C --> D[FE: 'SceneRecyclerModal' opens];
+    D --> E[FE: GET /api/scene-templates];
+    E --> F[BE: Queries 'scene_templates' table];
+    F --> E;
+    E --> G[FE: Renders grid of 'ScenePreviewCard'];
+    G --> H[User clicks "Use This Scene" (templateId: 'tmpl_001')];
+    H --> I[FE: POST /api/projects/{projId}/scenes/recycle<br/>Body: { templateId: 'tmpl_001' }];
+    I --> J[BE: Recycle Service];
+    J --> K[1. Find 'sceneConfig' from 'scene_templates' where id='tmpl_001'];
+    K --> L[2. Create new 'project_scene' row];
+    L --> M[3. Set 'projectId' = {projId}];
+    M --> N[4. Set 'sceneConfig' = (copied config)];
+    N --> I;
+    I --> O[FE: React Query invalidates 'getProjectScenes'];
+    O --> P[New scene appears in editor];
+
+
+4.2. Database Schema (shared/schema.ts - New Table)
+
+We will introduce one new table to store the "blessed" templates.
+
+// in shared/schema.ts
+import { pgTable, varchar, text, jsonb, tags, timestamp } from 'drizzle-orm/pg-core';
+
+export const sceneTemplates = pgTable("scene_templates", {
+  id: varchar("id").primaryKey(), // e.g., 'tmpl_hero_dark_01'
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  
+  // The entire JSON blueprint, copied from a 'project_scene'
+  sceneConfig: jsonb("scene_config").notNull(), 
+
+  // URL for the gallery in 'SceneRecyclerModal'
+  previewImageUrl: varchar("preview_image_url"), 
+
+  // For filtering and search
+  tags: tags("tags").default([]), 
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+
+4.3. API Endpoints (server/routes.ts - New Endpoints)
+
+POST /api/scene-templates/create-from-scene
+
+Action: "Save As Template."
+
+Body: { "sceneId": "...", "templateName": "...", "tags": [...] }
+
+Logic:
+
+Find the project_scene by sceneId.
+
+Get its sceneConfig.
+
+Create a new row in scene_templates with this sceneConfig and the new metadata.
+
+(Optional: Generate previewImageUrl via a screenshot service).
+
+GET /api/scene-templates
+
+Action: Lists all available templates for the SceneRecyclerModal.
+
+Query Params: ?tag=... , ?search=...
+
+Response: Array<SceneTemplate>
+
+POST /api/projects/:id/scenes/recycle
+
+Action: "Recycles" a template into a project.
+
+Body: { "templateId": "..." }
+
+Logic:
+
+Find the scene_template by templateId.
+
+Get its sceneConfig.
+
+Create a new project_scene row:
+
+Generate a new id (e.g., scene_...).
+
+Set projectId to the one from the URL.
+
+Set sceneConfig to the copied JSON.
+
+Crucially, all mediaId references are preserved as-is.
+
+Return the newly created project_scene object.
+
+5. Detailed Implementation Plan
+
+Phase 1: Backend (Database & API) [Est. 2 Sprints]
+
+Owner: Backend Team
+
+DB: Add sceneTemplates table to shared/schema.ts. Run Drizzle migration.
+
+API: Create server/services/template.service.ts.
+
+API: Implement createFromScene logic.
+
+Risk: previewImageUrl generation. For V1, we may manually populate this field. For V2, we will integrate a service like Puppeteer to screenshot a scene.
+
+API: Implement listTemplates logic (with tag/search filtering).
+
+API: Implement recycleScene logic.
+
+Security: This service must ensure the mediaIds within the sceneConfig are valid.
+
+Hydration: The existing media_library hydration system will handle resolving these mediaIds on the client. No new hydration logic is needed here.
+
+Phase 2: Frontend (UX & Components) [Est. 2 Sprints]
+
+Owner: Frontend Team
+
+New Component: client/src/components/scenes/SceneRecyclerModal.tsx
+
+Use React Query's useQuery to call GET /api/scene-templates.
+
+Implement client-side search/filtering that adds to the query params.
+
+Display results in a responsive grid.
+
+New Component: client/src/components/scenes/ScenePreviewCard.tsx
+
+A simple card with previewImageUrl as the background, name as the title, and an "Add" button.
+
+On "Add," it will call the recycleScene mutation (see step 4).
+
+Modify: client/src/pages/branding/BrandingProject.tsx (or equivalent editor)
+
+Add a new "Add from Library" button to the "Add Scene" flow.
+
+This button will open the SceneRecyclerModal.
+
+New Hook: client/src/hooks/useRecycleScene.ts
+
+Use React Query's useMutation to wrap POST /api/projects/:id/scenes/recycle.
+
+On onSuccess, it must invalidate the main getProjectScenes query to trigger a re-render of the project editor with the new scene.
+
+Phase 3: AI Integration (Prompt Engineering) [Est. 1 Sprint]
+
+Owner: AI / Lead Developer
+
+Modify Endpoint: server/utils/portfolio-director.ts (and its data-fetching logic).
+
+When building the prompt for generate-ai, in addition to the media_library, fetch all scene_templates (names, descriptions, and tags).
+
+Update Prompt (DB): Update the ai_prompt_templates table entry for the "Portfolio Director."
+
+New Instruction: "You have a library of pre-approved scene_templates at your disposal. Your primary goal is to use these templates first if they satisfy the user's request, as they are pre-approved for quality and animation."
+
+Provide Data: Inject the list of templates into the prompt:
+
+<SCENE_TEMPLATE_LIBRARY>
+  [
+    { "id": "tmpl_quote_dark_01", "name": "Dark Testimonial", "description": "A full-screen quote, black background, text fades in." },
+    { "id": "tmpl_hero_video_01", "name": "Video Hero", "description": "Autoplaying video background with a centered headline." }
+  ]
+</SCENE_TEMPLATE_LIBRARY>
+
+
+Implement AI Function Calling: We must teach the AI to respond with a "recycle" command.
+
+New Instruction: "If you find a matching template, DO NOT generate a sceneConfig. Instead, respond with a JSON object with action: 'recycle'."
+
+Example AI Output:
+
+{
+  "action": "recycle",
+  "templateId": "tmpl_quote_dark_01",
+  "modifications": {
+    "content": {
+      "heading": "From the user's request",
+      "body": "The user's specific quote text..."
+    }
+  }
+}
+
+
+Modify Endpoint: server/routes.ts (e.g., POST /api/portfolio/generate-ai)
+
+Add logic to parse the AI's response.
+
+If response.action === 'recycle':
+
+Call the template.service.recycleScene function (from Phase 1) using response.templateId.
+
+After the scene is created, take its new id and apply the response.modifications (e.g., UPDATE project_scenes SET sceneConfig = jsonb_set(sceneConfig, '$.content.heading', '...') WHERE id = ...).
+
+Else (no "recycle" action):
+
+Proceed with the existing from-scratch generation logic.
+
+6. Risks & Future Considerations
+
+Risk: Schema Mismatch: If we update the sceneConfig schema (e.g., add a new director property), old templates will be "stale." We must build a migration script to update all sceneConfig JSONB in scene_templates when this happens.
+
+Risk: Media Deletion: If a template's mediaId is deleted from the media_library, recycling it will result in a broken image. The recycleScene service should check for mediaId validity and fall back to a placeholder if it's missing.
+
+Future (V2): A "Save to Library" button directly on the scene component in the UI.
+
+Future (V3): AI-powered template suggestions ("I see you're writing a testimonial. Would you like to use one of these templates?").

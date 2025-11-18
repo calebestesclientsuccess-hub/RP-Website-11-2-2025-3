@@ -1,0 +1,301 @@
+Based on my analysis of your codebase, here are comprehensive answers to your questions:
+
+🚀 High-Level Architecture
+
+Tech Stack:
+
+Frontend: React 18 + Vite + TypeScript
+
+Backend: Node.js/Express (TypeScript with tsx)
+
+Database: PostgreSQL with Drizzle ORM
+
+Hosting: Single monolith on Replit (all code in one repository)
+
+File Storage: Cloudinary for media assets
+
+State Management:
+
+React Query (@tanstack/react-query) for server state
+
+React Context for theme and auth
+
+No global state management library like Redux/Zustand
+
+Props drilling for component-specific state
+
+JSON Storage & Data Flow:
+
+PostgreSQL database (primary storage)
+
+Tables: portfolio_projects, portfolio_versions, portfolio_conversations
+
+The "source of truth" is the scenes JSONB column in portfolio_projects
+
+Updates are full replacement - the entire new JSON is sent to the client
+
+Version history is maintained in portfolio_versions table
+
+Asset mapping stored in asset_map JSONB column
+
+📄 The JSON Schema & Component "Dictionary"
+
+Schema Definition:
+
+Looking at shared/placeholder-config.ts, the core structure is:
+
+interface Scene {
+
+id: string;
+
+type: 'fullscreen' | 'split' | 'gallery' | 'quote';
+
+zone: string; // e.g., 'HERO', 'PROBLEM', 'SOLUTION'
+
+
+// For fullscreen/split
+
+headline?: string;
+
+subheadline?: string;
+
+body?: string;
+
+mediaUrl?: string;
+
+mediaType?: 'image' | 'video';
+
+
+// For gallery
+
+images?: Array<{url: string; caption: string}>;
+
+
+// For quote
+
+quote?: string;
+
+attribution?: string;
+
+
+// Placeholders (matched to media library)
+
+placeholders?: {
+
+headline?: string;
+
+media?: string;
+
+body?: string;
+
+};
+
+}
+
+Component Library (Scene Types):
+
+Based on client/src/components/branding/SceneRenderer.tsx:
+
+FullscreenScene - Full viewport hero with headline, media, CTA
+
+SplitScene - Two-column layout (50/50 or 60/40)
+
+GalleryScene - Multi-image grid with captions
+
+QuoteScene - Large testimonial/quote block
+
+Component Props:
+
+Each scene type has specific props defined in their respective components in client/src/components/branding/:
+
+Media props: mediaUrl, mediaType, mediaAlt
+
+Text props: headline, subheadline, body
+
+Layout props: layout (for split scenes)
+
+Animation: NOT currently in JSON - animations are hardcoded in components
+
+Section-Level Properties:
+
+The current implementation uses the zone property to determine styling, but there's no explicit section-level formatting in the JSON. Height/padding/background are determined by component defaults.
+
+Example Snippet:
+
+{
+
+"id": "hero-001",
+
+"type": "fullscreen",
+
+"zone": "HERO",
+
+"headline": "Transform Your Revenue Engine",
+
+"subheadline": "Build predictable pipeline in 90 days",
+
+"body": "Stop gambling on agencies. Start owning your growth.",
+
+"mediaUrl": "/path/to/image.jpg",
+
+"mediaType": "image",
+
+"placeholders": {
+
+"headline": "HERO_HEADLINE_PRIMARY",
+
+"media": "HERO_BACKGROUND_VIDEO"
+
+}
+
+}
+
+✨ The GSAP "Engine" & Animation "Allow-List"
+
+Current Reality - There is NO animation engine yet:
+
+After reviewing the codebase thoroughly, GSAP animations are NOT currently driven by JSON. Here's what exists:
+
+Hardcoded GSAP in Components:
+
+BrandingHero.tsx has hardcoded GSAP ScrollTrigger animations
+
+ProjectExpansion.tsx has modal open/close animations
+
+These are NOT configurable via JSON
+
+Animation Configuration File:
+
+client/src/lib/animationConfig.ts exists but is NOT used in production code
+
+It defines animation presets but no component references it
+
+No Engine Code:
+
+There is no useScrollytelling() hook
+
+There is no JSON parser for animation instructions
+
+Components animate themselves with static GSAP code
+
+What WOULD Need to Be Built:
+
+To make animations JSON-driven, you'd need:
+
+// Hypothetical schema extension
+
+interface Scene {
+
+// ... existing props
+
+animations?: {
+
+onEnter?: {
+
+from: { opacity: number; yPercent: number };
+
+to: { opacity: number; yPercent: number };
+
+duration: number;
+
+ease: string;
+
+};
+
+onScroll?: {
+
+scrollTrigger: {
+
+trigger: string;
+
+start: string;
+
+end: string;
+
+scrub: boolean;
+
+};
+
+timeline: Array<{
+
+selector: string;
+
+props: Record<string, any>;
+
+position: string;
+
+}>;
+
+};
+
+};
+
+}
+
+🤖 LLM Prompt & Editing Workflow
+
+The System Prompt:
+
+Located in server/utils/cinematic-director.ts and server/utils/portfolio-director.ts:
+
+Portfolio Director - Uses Gemini 2.0 Flash Experimental
+
+Includes schema definitions and zone guides
+
+No few-shot examples in the current prompts
+
+Prompts are stored in ai_prompt_templates table (can be edited via admin)
+
+Context Snapshot:
+
+When a user makes a request (via POST /api/portfolio/:id/generate):
+
+Sent to Gemini:
+
+User's natural language request
+
+The entire project's scenes array (full JSON)
+
+Project metadata (name, description, target audience)
+
+System prompt from database
+
+Previous conversation history (last 10 messages)
+
+NOT sent:
+
+No explicit JSON schema as a reminder
+
+No component "allow-list"
+
+No animation property documentation
+
+Manual Edits:
+
+Currently handled in ProjectSceneEditor.tsx:
+
+Users can edit the raw JSON in a textarea
+
+Changes are validated against basic structure
+
+Saved via PATCH /api/portfolio/projects/:id
+
+The new JSON becomes the current state
+
+Version is auto-saved to portfolio_versions table
+
+Next AI request uses this updated JSON as context
+
+Key Gaps Identified:
+
+❌ No formal JSON schema sent to AI
+
+❌ No component props documentation in prompts
+
+❌ No animation system exists
+
+❌ No diff/patch system (always full replacement)
+
+✅ Version history exists
+
+✅ Conversation context is maintained

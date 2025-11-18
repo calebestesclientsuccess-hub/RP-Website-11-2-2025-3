@@ -1,0 +1,489 @@
+Project Cygnus: Scene Recycler System
+Implementation Plan v2.1 (Final)
+Lead: Development Team
+Estimated Time: 6-8 hours (3 sprints)
+Based On: Comprehensive Technical Specification v2.0 with integrated feedback
+
+📋 Sprint Overview
+This plan organizes implementation into 3 sequential sprints with clear dependencies and integration checkpoints.
+
+Sprint 0: Foundation (30 minutes)
+Database schema and TypeScript types
+Foundation for all subsequent work
+Checkpoint: Schema committed, types available for import
+Sprint 1: Backend API Layer (2-3 hours)
+All CRUD and recycle endpoints
+Media validation and security
+Checkpoint: APIs testable via curl/Postman
+Dependency: None (can start immediately after Sprint 0)
+Sprint 2: Frontend UI & Integration (2-3 hours)
+All React components and hooks
+Critical: Full integration into ProjectSceneEditor
+Checkpoint: End-to-end user workflow functional
+Dependency: Sprint 1 APIs must be complete for integration testing
+Sprint 3: AI Enhancement (1-2 hours)
+Template-aware AI generation
+Usage analytics and logging
+Checkpoint: AI uses templates, logs verify behavior
+Dependency: Sprint 0 schema (templates must exist in DB)
+🏗️ Sprint 0: Foundation & Type Safety
+Owner: Backend Team
+Time: 30 minutes
+Goal: Establish database schema and shared TypeScript types
+
+Tasks
+[0.1] Database Schema Implementation
+
+Add sceneTemplates table to shared/schema.ts:
+Primary key: id (varchar with nanoid default)
+CRITICAL: tenantId (varchar, FK to tenants, NOT NULL, cascade delete)
+Metadata: name (varchar 255), description (text), category (varchar 100)
+Content: sceneConfig (jsonb typed as SceneConfig)
+Visual: previewImageUrl (varchar 2048)
+Organization: tags (text array, default [])
+Lineage: sourceProjectId, sourceSceneId (FKs with set null on delete)
+Analytics: usageCount (integer default 0), lastUsedAt (timestamp)
+Audit: createdAt, updatedAt (timestamps), createdBy (FK to users)
+Versioning: schemaVersion (varchar default "1.0")
+Add indexes:
+scene_templates_tenant_id_idx on tenantId
+scene_templates_category_idx on category
+Composite search index on name, description
+[0.2] Zod Schemas and TypeScript Types
+
+Create insertSceneTemplateSchema using createInsertSchema:
+Omit auto-generated fields (id, createdAt, updatedAt, usageCount, lastUsedAt)
+Extend with validation: name min 3 max 255, description max 1000
+Tags array max 10 items
+Category enum: hero/testimonial/gallery/split/text/media/other
+sceneConfig validated against existing sceneConfigSchema
+Export TypeScript types:
+export type InsertSceneTemplate = z.infer<typeof insertSceneTemplateSchema>
+export type SceneTemplate = typeof sceneTemplates.$inferSelect
+[0.3] Migration
+
+Run npm run db:push --force to create table
+Verify table exists in database
+[0.4] Checkpoint
+
+Commit: feat: add scene templates schema and types
+Types available for import in both backend and frontend
+🔌 Sprint 1: Backend API Layer
+Owner: Backend Team
+Time: 2-3 hours
+Goal: Implement all API endpoints with security and validation
+Dependency: Sprint 0 complete
+
+Tasks
+[1.1] POST /api/scene-templates/create-from-scene
+
+Create endpoint in server/routes.ts:
+
+Request Validation:
+
+Zod schema: sceneId (string required), templateName (3-255 chars), description (max 1000 optional), category (enum optional), tags (array max 10 optional), previewImageUrl (URL optional)
+Security & Validation Logic:
+
+Fetch source scene with project join to get tenantId
+Verify sourceScene.project.tenantId === req.tenantId (403 if mismatch)
+Validate sceneConfig against sceneConfigSchema
+Media Validation (CRITICAL):
+Extract ALL mediaIds from: content.mediaId, content.mediaMediaId, content.images[].mediaId
+Query media_library with WHERE id IN (...) AND tenantId = req.tenantId
+If count mismatch, return 403 with invalidMediaIds array
+Auto-generate category from sceneConfig.type if not provided
+Auto-generate preview: use content.url or content.images[0].url if available
+Create template with all metadata
+Log creation event
+Response: 201 with created template object
+
+[1.2] GET /api/scene-templates
+
+Query Parameters:
+
+category (string, optional)
+tag (string, optional)
+search (string, optional) - ILIKE on name/description
+limit (number, default 50, max 100)
+offset (number, default 0)
+sortBy (enum: "recent" | "popular" | "name", default "recent")
+Implementation:
+
+Build WHERE clause: always filter by tenantId
+Add category filter if provided
+Add tag filter using sql${tag} = ANY(${sceneTemplates.tags})``
+Add search filter using OR on name/description ILIKE
+Determine ORDER BY based on sortBy:
+popular: usageCount DESC, createdAt DESC
+name: name ASC
+recent: createdAt DESC
+Execute paginated query with limit/offset
+Get total count for pagination metadata
+Response:
+
+{
+  "templates": SceneTemplate[],
+  "total": number,
+  "limit": number,
+  "offset": number
+}
+
+[1.3] POST /api/projects/:projectId/scenes/recycle
+
+Request Body:
+
+templateId (string required)
+order (number optional) - insertion position
+customizations (optional object):
+content (partial content override)
+director (partial director override)
+Implementation Logic:
+
+Verify project exists and belongs to req.tenantId (404/403)
+Fetch template and verify template.tenantId === req.tenantId (403)
+Media Validation & Orphan Cleanup:
+Extract all mediaIds from template sceneConfig
+Query media_library for valid media
+Identify orphaned mediaIds (missing from DB)
+Graceful degradation: Strip orphaned mediaIds but keep URLs
+Log warnings for orphaned media
+Auto-link valid unlinked media to target project
+Apply customizations if provided (merge content/director)
+Add metadata: _sourceTemplateId, _recycledAt
+Scene Ordering:
+If order not specified: append to end (max order + 1)
+If order specified: shift subsequent scenes (UPDATE order = order + 1 WHERE order >= ?)
+Create new projectScene with copied sceneConfig
+Update template analytics: increment usageCount, set lastUsedAt
+Log recycling event
+Response: 201 with { scene, warnings } (warnings contains orphanedMediaIds if any)
+
+[1.4] PATCH /api/scene-templates/:id
+
+Request Body: Partial updates to metadata only (not sceneConfig)
+
+name (3-255 chars, optional)
+description (max 1000, optional)
+category (enum, optional)
+tags (array max 10, optional)
+previewImageUrl (URL, optional)
+Logic:
+
+Fetch template
+Verify template.tenantId === req.tenantId (403)
+Update fields with updatedAt timestamp
+Return updated template
+[1.5] DELETE /api/scene-templates/:id
+
+Logic:
+
+Fetch template
+Verify template.tenantId === req.tenantId (403)
+Delete template
+Log deletion event
+Return 204 No Content
+[1.6] Sprint 1 Checkpoint
+
+Test all endpoints via curl/Postman
+Verify tenant isolation (403 for cross-tenant access)
+Verify media validation (403 for invalid mediaIds)
+Commit: feat: scene template API endpoints
+🎨 Sprint 2: Frontend UI & Integration
+Owner: Frontend Team
+Time: 2-3 hours
+Goal: Build all UI components AND integrate into existing editor
+Dependency: Sprint 1 APIs must be complete for integration testing
+
+Tasks
+[2.1] Build useRecycleScene Hook
+
+File: client/src/hooks/useRecycleScene.ts
+
+Implementation:
+
+interface RecycleSceneParams {
+  templateId: string;
+  order?: number;
+  customizations?: {
+    content?: Record<string, any>;
+    director?: Record<string, any>;
+  };
+}
+export function useRecycleScene(projectId: string) {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (params: RecycleSceneParams) => {
+      return apiRequest(`/api/projects/${projectId}/scenes/recycle`, {
+        method: 'POST',
+        body: JSON.stringify(params),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/projects', projectId, 'scenes'] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/projects', projectId, 'scenes', { hydrate: true }] 
+      });
+    },
+  });
+}
+
+Purpose: This is needed FIRST because both modal and button use it
+
+[2.2] Build SceneRecyclerModal Component
+
+File: client/src/components/admin/SceneRecyclerModal.tsx
+
+Features:
+
+Full-screen dialog (max-w-6xl, h-80vh)
+Search input with debounce
+Category tabs (all/hero/testimonial/gallery/split/media)
+Tag filter pills (extracted from results, toggle selection)
+Template grid (responsive: cols-1 md:2 lg:3)
+Loading state (Loader2 spinner centered)
+Error state (AlertCircle with message)
+Empty state (message with filter suggestions)
+Footer with count stats
+Sub-component: TemplateCard
+
+Embedded in same file (not separate)
+Preview image (aspect-video) or type icon fallback
+Usage badge if usageCount > 0
+Template name (h3 truncate)
+Description (line-clamp-2)
+Tags (first 3 + overflow badge)
+"Add to Project" button with loading state
+hover-elevate effect
+State Management:
+
+useState for searchTerm, selectedCategory, selectedTag
+useQuery with filters (enabled when isOpen)
+useRecycleScene hook for mutations
+Error Handling:
+
+Show warning toast for orphaned media
+Show success toast on completion
+Call onSceneRecycled callback
+Close modal on success
+Add all data-testid attributes per comprehensive spec
+
+[2.3] Build SaveAsTemplateButton Component
+
+File: client/src/components/admin/SaveAsTemplateButton.tsx
+
+Features:
+
+Button trigger with Save icon and "Save as Template" text
+Dialog with metadata form:
+Template name input (3-255 chars with character counter)
+Description textarea (max 1000 chars with counter)
+Tags input system:
+Input field with Add button
+Enter key handler
+Max 10 tags
+Badge list with X remove buttons
+Form validation (name min 3 chars)
+useMutation calling /api/scene-templates/create-from-scene
+Success: invalidate templates cache, show toast, close dialog
+Error: show destructive toast
+Reset form on close/success
+Add all data-testid attributes per comprehensive spec
+
+[2.4] Integration into ProjectSceneEditor (CRITICAL)
+
+File: client/src/pages/admin/ProjectSceneEditor.tsx
+
+Changes Required:
+
+Import Components:
+
+import { SceneRecyclerModal } from '@/components/admin/SceneRecyclerModal';
+import { SaveAsTemplateButton } from '@/components/admin/SaveAsTemplateButton';
+
+Add State:
+
+const [showRecyclerModal, setShowRecyclerModal] = useState(false);
+
+Add "Add from Library" Button:
+
+Position: In scene list header toolbar, next to existing "Add Scene" button
+Icon: Library or Template icon from lucide-react
+Click handler: () => setShowRecyclerModal(true)
+data-testid: button-add-from-library
+Render Modal:
+
+<SceneRecyclerModal
+  projectId={projectId}
+  isOpen={showRecyclerModal}
+  onClose={() => setShowRecyclerModal(false)}
+  onSceneRecycled={(scene) => {
+    toast({ title: "Scene added", description: "Template successfully recycled" });
+    // Modal auto-invalidates cache via hook
+  }}
+/>
+
+Add SaveAsTemplateButton to Scene Actions:
+
+Position: In each scene card's action menu (alongside Edit/Delete/Duplicate)
+Pass props: sceneId={scene.id} and sceneName={scene.sceneConfig.content?.heading}
+Only show for saved scenes (not drafts)
+Test Integration:
+
+Open modal → modal appears
+Click template → scene appears in list
+Click "Save as Template" on scene → template created
+Reload modal → new template visible
+[2.5] Sprint 2 Checkpoint
+
+Manual test: Save scene as template → appears in library
+Manual test: Browse library → visual gallery loads
+Manual test: Recycle template → new scene created in project
+Verify React Query cache invalidation works (scenes update immediately)
+Commit: feat: scene template UI and integration
+🤖 Sprint 3: AI Enhancement
+Owner: AI/Backend Team
+Time: 1-2 hours
+Goal: Enable AI to use templates when generating scenes
+Dependency: Sprint 0 schema (templates must exist in DB)
+
+Tasks
+[3.1] Load Template Library in AI Endpoint
+
+File: server/routes.ts
+Location: POST /api/portfolio/generate-enhanced (around line 2456)
+
+Implementation:
+
+// After loading availableMediaLibrary:
+const availableTemplates = await db.query.sceneTemplates.findMany({
+  where: eq(sceneTemplates.tenantId, req.tenantId),
+  orderBy: [desc(sceneTemplates.usageCount), desc(sceneTemplates.createdAt)],
+  limit: 20, // Top 20 most popular/recent
+});
+console.log(`[Portfolio Generation] Loaded ${availableTemplates.length} scene templates for tenant ${req.tenantId}`);
+
+[3.2] Inject Template Context into AI Prompt
+
+Location: Prompt building (around line 2506)
+
+Add after Media Library section:
+
+const templateContext = `
+AVAILABLE SCENE TEMPLATES:
+${availableTemplates.length > 0 
+  ? availableTemplates.map(tmpl => `
+  Template ID: ${tmpl.id}
+  Name: ${tmpl.name}
+  Description: ${tmpl.description || 'No description'}
+  Type: ${tmpl.sceneConfig.type}
+  Category: ${tmpl.category || 'general'}
+  Tags: ${tmpl.tags?.join(', ') || 'none'}
+  
+  Director Config (USE THIS FOR CONSISTENCY):
+  ${JSON.stringify(tmpl.sceneConfig.director, null, 2)}
+  
+  Content Structure:
+  ${JSON.stringify(tmpl.sceneConfig.content, null, 2)}
+  `).join('\n---\n')
+  : 'No templates available - generate from scratch.'}
+CRITICAL INSTRUCTIONS FOR TEMPLATE USAGE:
+1. PREFER TEMPLATES: When user's request matches a template's purpose, use it as your starting point
+2. COPY DIRECTOR CONFIG: Use the template's exact director animation settings (entryEffect, duration, colors, parallax)
+3. CUSTOMIZE CONTENT: Populate content fields with the user's specific text/media requirements
+4. TRACK LINEAGE: Include "_sourceTemplateId": "tmpl_xxx" in your sceneConfig output
+5. FALLBACK: If no template matches, generate from scratch using animation best practices
+EXAMPLE - User says "add a dark testimonial from Jane Smith":
+✓ Find template with category="testimonial" or name containing "testimonial"
+✓ Copy its director config (fade effects, black background, white text, timing)
+✓ Set content.quote to Jane's testimonial text
+✓ Set content.author to "Jane Smith"
+✓ Include "_sourceTemplateId": "tmpl_quote_dark_01" in the scene object
+`;
+// Prepend to existing prompt context
+const fullPrompt = `${templateContext}\n\n${existingPromptContext}`;
+
+[3.3] Add Template Usage Logging
+
+Location: After AI generates scenes (after portfolioResult received)
+
+Implementation:
+
+// Track template usage
+let templateUsageCount = 0;
+const templateUsageDetails: string[] = [];
+portfolioResult.scenes.forEach((scene, idx) => {
+  if (scene._sourceTemplateId) {
+    templateUsageCount++;
+    templateUsageDetails.push(
+      `Scene ${idx + 1} (${scene.type}): used template ${scene._sourceTemplateId}`
+    );
+  }
+});
+console.log(`[AI Template Usage] ${templateUsageCount}/${portfolioResult.scenes.length} scenes used templates`);
+if (templateUsageDetails.length > 0) {
+  console.log('[AI Template Details]:\n' + templateUsageDetails.join('\n'));
+}
+
+[3.4] Sprint 3 Checkpoint
+
+Create a test template (save a scene)
+Ask AI: "add a testimonial" or similar request matching template
+Check logs for [AI Template Usage] confirmation
+Verify generated scene includes _sourceTemplateId in sceneConfig
+Verify director config matches template
+Commit: feat: AI template-aware scene generation
+✅ Final Sign-Off Criteria (Definition of Done)
+All four requirements MUST pass:
+
+✓ Template Creation Works
+
+User can click "Save as Template" on any scene
+Template appears in scene_templates table
+Template metadata (name, description, tags) is correct
+Template sceneConfig is an exact copy
+✓ Visual Gallery Works
+
+User can open "Add from Library" modal
+Templates display in responsive grid
+Search/filter by category/tags works
+Preview images display (or fallback icons)
+✓ Recycling Works Perfectly
+
+User clicks "Add to Project" on a template
+New scene appears in project immediately (cache invalidation)
+Scene sceneConfig matches template exactly
+All mediaId references are preserved and validated
+Orphaned media is handled gracefully (warnings shown)
+Scene animations work identically to template
+✓ AI Uses Templates
+
+User asks AI to "add a dark testimonial" (or similar)
+AI generates scene using matching template
+Server logs show: [AI Template Usage] Scene 1 used template tmpl_xxx
+Generated scene includes _sourceTemplateId field
+Director config matches template
+✓ Security Verified
+
+All operations are tenant-isolated
+Cross-tenant template access returns 403
+Cross-tenant media references return 403
+Invalid mediaIds are rejected or cleaned
+📊 Time Budget Breakdown
+Sprint	Tasks	Estimated Time	Cumulative
+Sprint 0	Schema & Types	30 min	30 min
+Sprint 1	Backend APIs	2-3 hours	3-3.5 hours
+Sprint 2	Frontend & Integration	2-3 hours	5-6.5 hours
+Sprint 3	AI Enhancement	1-2 hours	6-8.5 hours
+Total	15 tasks	6-8.5 hours	
+🎯 Success Metrics (Post-Launch)
+Track these metrics after deployment:
+
+Template Adoption: % of scenes created via recycling vs. from scratch
+Template Reuse: Average usageCount per template
+AI Template Usage: % of AI-generated scenes using _sourceTemplateId
+User Efficiency: Time to create page before vs. after templates
+Template Quality: Templates with usageCount > 10 (indicates value)
+This is the final, production-ready implementation plan incorporating all feedback and technical specifications.

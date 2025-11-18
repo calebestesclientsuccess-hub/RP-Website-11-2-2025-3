@@ -1,0 +1,176 @@
+⚠️ Your Response Has Significant Inaccuracies
+I'm comparing your response to Gemini against the actual codebase I just audited, and there are major discrepancies. Your description doesn't match the current implementation.
+
+🔴 Critical Inaccuracies
+1. Database Schema - WRONG
+You Said:
+
+Tables: portfolio_projects, portfolio_versions, portfolio_conversations
+The "source of truth" is the scenes JSONB column in portfolio_projects
+Asset mapping stored in asset_map JSONB column
+
+Reality (from shared/schema.ts):
+
+// ACTUAL TABLES:
+- projects (NOT portfolio_projects)
+- projectScenes (separate table, NOT a JSONB column)
+- portfolioConversations ✓ (this one is correct)
+// ACTUAL STRUCTURE:
+export const projectScenes = pgTable("project_scenes", {
+  id: varchar("id").primaryKey(),
+  projectId: varchar("project_id").references(() => projects.id),
+  sceneConfig: jsonb("scene_config").notNull(), // ← Scene data HERE
+  order: integer("order").notNull(),
+});
+export const projects = pgTable("portfolio_projects", {
+  id: varchar("id").primaryKey(),
+  scenes: jsonb("scenes"), // ← LEGACY, not used with projectScenes
+  // NO asset_map column exists
+});
+
+Impact: You're describing a completely different architecture. Scenes are stored in a separate projectScenes table, not as a JSONB column in projects.
+
+2. JSON Schema - WRONG
+You Said:
+
+interface Scene {
+  type: 'fullscreen' | 'split' | 'gallery' | 'quote';
+  zone: string; // e.g., 'HERO', 'PROBLEM', 'SOLUTION'
+  placeholders?: { headline?: string; media?: string; };
+}
+
+Reality (from shared/schema.ts lines 670-730):
+
+// ACTUAL SCHEMA:
+const sceneConfigSchema = z.object({
+  type: z.enum(["text", "image", "video", "quote", "split", "gallery", "fullscreen"]),
+  content: z.object({
+    heading: z.string().optional(),
+    body: z.string().optional(),
+    url: z.string().optional(),
+    media: z.string().optional(),
+    mediaId: z.string().optional(), // ← Media Library integration!
+    mediaMediaId: z.string().optional(),
+    images: z.array(z.object({ 
+      url: z.string(), 
+      mediaId: z.string().optional() // ← Gallery media refs
+    })),
+    // ... more fields
+  }),
+  director: z.object({
+    entryEffect: z.string().optional(),
+    entryDuration: z.number().optional(),
+    exitEffect: z.string().optional(),
+    backgroundColor: z.string().optional(),
+    textColor: z.string().optional(),
+    parallaxIntensity: z.number().optional(),
+    // ... animation configs
+  }),
+});
+
+Impact:
+
+No zone field exists
+No placeholders field exists
+director field DOES exist with animation configs
+mediaId references ARE part of the schema (this is what we just implemented!)
+3. GSAP Animation System - WRONG
+You Said:
+
+There is NO animation engine yet
+GSAP animations are NOT currently driven by JSON
+Hardcoded GSAP in components
+No useScrollytelling() hook exists
+
+Reality (from client/src/pages/branding/BrandingProject.tsx):
+The animation system DOES exist and IS driven by sceneConfig JSON:
+
+// Scene animations ARE configured in sceneConfig.director:
+{
+  director: {
+    entryEffect: "fade" | "slide-up" | "zoom-in",
+    entryDuration: 1.5,
+    exitEffect: "fade-out",
+    backgroundColor: "#000000",
+    parallaxIntensity: 0.3,
+    staggerChildren: 0.2,
+  }
+}
+
+The SceneRenderer component reads these values and applies GSAP animations based on the JSON configuration.
+
+Impact: You told Gemini that a core feature doesn't exist when it actually does.
+
+4. LLM Endpoints - PARTIALLY WRONG
+You Said:
+
+POST /api/portfolio/:id/generate
+
+Reality (from server/routes.ts):
+
+// ACTUAL ENDPOINTS:
+POST /api/portfolio/generate-cinematic
+POST /api/portfolio/generate-ai  
+POST /api/scenes/generate-with-ai
+
+Impact: The endpoint structure is different than described.
+
+✅ What You Got Right
+Tech stack basics: React + Vite + Express + PostgreSQL ✓
+State management: React Query + Context ✓
+Cloudinary integration: Confirmed ✓
+Gemini 2.0 Flash for AI: Confirmed ✓
+Conversation history: Exists in portfolioConversations ✓
+🤔 Why This Matters for Scene Recycling
+If Gemini is designing a recycling system based on incorrect assumptions about your architecture, the proposed solution won't work. For example:
+
+Bad Plan (based on wrong info):
+
+"Add a scene_templates table that references the asset_map column 
+in portfolio_projects and uses the zone field for categorization"
+
+↑ This won't work because:
+
+No asset_map column exists
+No zone field exists
+Scenes aren't stored in portfolio_projects.scenes
+Good Plan (based on actual architecture):
+
+"Add a scene_templates table that copies sceneConfig JSONB from 
+projectScenes, preserving mediaId references that can be hydrated 
+across projects using the existing Media Library system"
+
+📋 What You Should Send Gemini Instead
+Here's the accurate architecture summary:
+
+## Actual Architecture (Corrected)
+**Database Tables:**
+- `portfolio_projects` - Project metadata
+- `project_scenes` - Individual scenes (sceneConfig JSONB)
+- `media_library` - Cloudinary assets with project associations
+- `portfolio_conversations` - AI chat history
+**Scene Structure:**
+{
+  type: "text" | "image" | "video" | "quote" | "split" | "gallery" | "fullscreen",
+  content: {
+    heading, body, url, media,
+    mediaId, // ← Links to media_library
+    images: [{ url, mediaId }] // ← Gallery references
+  },
+  director: {
+    entryEffect, entryDuration, exitEffect,
+    backgroundColor, textColor, parallaxIntensity
+  }
+}
+**Media Library Integration:**
+- Scenes reference media via `mediaId` (optional)
+- Hydration endpoint resolves `mediaId` → current `cloudinaryUrl`
+- Tenant isolation prevents cross-project media theft
+**AI Endpoints:**
+- POST /api/portfolio/generate-cinematic (4-stage pipeline)
+- POST /api/portfolio/generate-ai (content catalog orchestration)
+- POST /api/scenes/generate-with-ai (single scene generation)
+**AI receives:**
+- Full scenes array from projectScenes
+- Available Media Library assets
+- Conversation history

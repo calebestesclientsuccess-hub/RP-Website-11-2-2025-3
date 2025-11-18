@@ -1,0 +1,116 @@
+Project Cygnus: Implementation Sprint Plan (v2.0)
+
+Based on: Project Cygnus: Comprehensive Technical Specification v2.0
+Lead: [Your Name]
+Est. Time: 1-2 Sprints (6-8 hours, given our new economics)
+
+This plan organizes the 8 tasks from our v2.0 spec into parallel workstreams.
+
+Sprint 1: Backend Foundation & API Core
+
+Owner: Backend Team
+Est. Time: 3-4 hours
+Goal: Establish the database schema and all core CRUD/recycle logic. The platform should be fully functional via API by the end of this sprint.
+
+Tasks:
+
+[Task 1] Set Up Storage:
+
+Implement the sceneTemplates table in shared/schema.ts as defined in v2.0 spec (with tenantId, schemaVersion, etc.).
+
+Implement all indexes (tenant_id_idx, category_idx, search_idx).
+
+Run Drizzle migration (npm run db:push --force).
+
+[Task 2] Implement "Save As" Endpoint:
+
+Build POST /api/scene-templates/create-from-scene.
+
+Implement all validation: Zod schema, tenant ownership of the source scene, and the critical media validation logic (checking all mediaIds against media_library for correct tenancy).
+
+[Task 3] Implement "List" Endpoint:
+
+Build GET /api/scene-templates.
+
+Implement all filtering logic: category, tag, search.
+
+Implement all sorting logic: recent, popular, name.
+
+[Task 4] Implement "Recycle" Endpoint:
+
+Build POST /api/projects/:projectId/scenes/recycle.
+
+Implement all validation: project ownership, template ownership (must match tenant).
+
+Implement media validation (graceful degradation: strip orphaned mediaIds).
+
+Implement scene ordering logic (append to end or insert-and-shift).
+
+Implement customizations logic (applying content and director overrides).
+
+Implement usageCount and lastUsedAt analytics update on the template.
+
+[Task 5] Implement "Change/Remove" Endpoints:
+
+Build PATCH /api/scene-templates/:id (for metadata changes).
+
+Build DELETE /api/scene-templates/:id (for deletion).
+
+Ensure tenant isolation is checked on both.
+
+Sprint 2: Frontend Interface & AI Integration
+
+Owner: Frontend Team & AI Lead
+Est. Time: 3-4 hours (Can be run in parallel with Sprint 1)
+
+Tasks:
+
+[Task 6 & 7] Build Recycler Modal & Cards:
+
+Implement the SceneRecyclerModal.tsx component as specified.
+
+Implement the TemplateCard.tsx sub-component.
+
+Build the UI for all search, category tabs, and tag filters.
+
+Integrate the useQuery call to GET /api/scene-templates with debounced search.
+
+[Task 8] Build "Save As" UI:
+
+Implement the SaveAsTemplateButton.tsx and its modal.
+
+Build the form (name, description, tags) and integrate the useMutation hook to call POST /api/scene-templates/create-from-scene.
+
+Add this button to the ProjectSceneEditor UI.
+
+[Task 8, cont.] Build "Recycle" Hook:
+
+Implement the useRecycleScene.ts hook (useMutation).
+
+Ensure its onSuccess callback invalidates the project's scene list query (queryKey: ['/api/projects', projectId, 'scenes']).
+
+Hook this up to the "Add to Project" button in TemplateCard.tsx.
+
+[AI Task] Implement AI Integration:
+
+Modify server/utils/portfolio-director.ts.
+
+Fetch the availableTemplates list (top 20, filtered by tenant) from the DB.
+
+Inject the AVAILABLE_SCENE_TEMPLATES block into the system prompt context.
+
+Add the CRITICAL_INSTRUCTIONS_FOR_TEMPLATE_USAGE to the prompt.
+
+Add the post-generation logging to track _sourceTemplateId usage.
+
+Sign-Off Criteria (Definition of Done):
+
+A user can click "Save as Template" on a scene, and it appears in the scene_templates table.
+
+A user can open the "Add from Library" modal and see a visual gallery of their saved templates.
+
+A user can click "Add to Project," and the scene (with all media and animations) is perfectly cloned into their project.
+
+The AI, when asked to "add a dark testimonial," generates a scene using the tmpl_quote_dark_01 template, and the server logs show the _sourceTemplateId was used.
+
+All 4 of these actions are fully isolated by tenantId.
