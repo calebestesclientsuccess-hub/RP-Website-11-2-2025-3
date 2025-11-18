@@ -1451,7 +1451,7 @@ export default function PortfolioBuilder() {
                                       // Handle both old and new scene formats
                                       const sceneType = scene.type || scene.sceneType || 'unknown';
                                       const heading = scene.content?.heading || scene.content?.quote || scene.headline || 'Scene ' + (idx + 1);
-                                      
+
                                       // Check if scene uses Media Library
                                       const usesMediaLibrary = !!(
                                         scene.content?.mediaId || 
