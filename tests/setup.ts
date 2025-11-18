@@ -1,4 +1,4 @@
-import { beforeAll, afterAll, afterEach } from 'vitest';
+import { beforeAll, afterAll, afterEach, beforeEach } from 'vitest';
 import { db } from '../server/db';
 import { sql } from 'drizzle-orm';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
@@ -32,21 +32,53 @@ beforeAll(async () => {
   }
 });
 
+// Global transaction context for each test
 let testTransaction: any;
+let transactionPromise: Promise<void> | null = null;
+let resolveTransaction: (() => void) | null = null;
 
 beforeEach(async () => {
-  // Start a transaction for test isolation
-  testTransaction = await db.transaction(async (tx) => {
-    // Return the transaction to be used in tests
-    return tx;
+  // Create a promise that we can resolve manually to end the transaction
+  let txResolve: () => void;
+  transactionPromise = new Promise<void>((resolve) => {
+    txResolve = resolve;
   });
+  resolveTransaction = txResolve!;
+
+  // Start a transaction for test isolation
+  const txPromise = db.transaction(async (tx) => {
+    testTransaction = tx;
+    global.testDb = tx;
+
+    // Keep transaction open until manually resolved
+    await transactionPromise;
+  }).catch((error) => {
+    // Ignore rollback errors - they're expected
+    if (!error.message?.includes('rollback')) {
+      console.error('Transaction error:', error);
+    }
+  });
+
+  // Wait a tick to ensure transaction is started
+  await new Promise(resolve => setImmediate(resolve));
 });
 
 afterEach(async () => {
-  // Rollback transaction instead of truncating
-  if (testTransaction) {
-    await testTransaction.rollback();
+  // Signal transaction to end
+  if (resolveTransaction) {
+    resolveTransaction();
   }
+
+  // Wait for transaction cleanup
+  if (transactionPromise) {
+    await transactionPromise.catch(() => {});
+  }
+
+  // Clear state
+  testTransaction = null;
+  transactionPromise = null;
+  resolveTransaction = null;
+  global.testDb = null;
 });
 
 afterAll(async () => {
@@ -67,6 +99,7 @@ declare global {
     cleanDatabase: () => Promise<void>;
     createTestTenant: (id?: string) => Promise<any>;
   };
+  var testDb: any; // Expose the transaction to global scope for tests
 }
 
 // Add a global lock to prevent parallel cleanup

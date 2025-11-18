@@ -1,6 +1,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { db } from '../../server/db';
+import { getTestDb } from '../helpers/db';
+const db = getTestDb();
 import { projects, mediaLibrary, projectScenes } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 

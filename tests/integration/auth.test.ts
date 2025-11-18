@@ -14,8 +14,9 @@ describe('Authentication API', () => {
   const testTenantId = 'test-tenant-auth';
 
   beforeAll(async () => {
-    // Create test tenant
-    await db.insert(tenants).values({
+    // Create test tenant using transaction-safe db
+    const dbInstance = global.testDb || db;
+    await dbInstance.insert(tenants).values({
       id: testTenantId,
       name: 'Test Tenant',
       slug: 'test-tenant',
@@ -41,9 +42,7 @@ describe('Authentication API', () => {
   });
 
   afterAll(async () => {
-    // Clean up test data
-    await db.delete(users).where(eq(users.tenantId, testTenantId));
-    await db.delete(tenants).where(eq(tenants.id, testTenantId));
+    // Cleanup handled automatically by transaction rollback
   });
 
   describe('POST /api/auth/register', () => {

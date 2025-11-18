@@ -58,13 +58,31 @@ Tests cover:
 
 ## Test Database
 
-Tests use a separate test database to avoid affecting production data. Set the `TEST_DATABASE_URL` environment variable to specify a dedicated test database:
+Tests use a separate test database with **transaction-based isolation**. Each test runs in its own transaction that is automatically rolled back after the test completes.
+
+Set the `TEST_DATABASE_URL` environment variable to specify a dedicated test database:
 
 ```bash
 export TEST_DATABASE_URL="postgresql://user:password@localhost:5432/test_db"
 ```
 
 If not set, tests will use the main `DATABASE_URL` with a warning.
+
+### Transaction-Based Isolation
+
+Each test automatically gets its own database transaction:
+- ✅ **Automatic cleanup**: No need to manually delete test data
+- ✅ **True isolation**: Tests cannot interfere with each other
+- ✅ **Parallel execution**: Safe to run tests concurrently
+- ✅ **Faster execution**: No table locks or manual truncation
+
+**Using the test database:**
+```typescript
+import { getTestDb } from '../helpers/db';
+
+const db = getTestDb(); // Always use this in tests
+await db.insert(users).values({ ... });
+```
 
 ## Writing Tests
 

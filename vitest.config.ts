@@ -18,13 +18,16 @@ export default defineConfig({
       ],
     },
     testTimeout: 10000,
-    // Parallel execution is now safe with transaction-based isolation
+    // Parallel execution with transaction-based isolation
     pool: 'threads',
     poolOptions: {
       threads: {
         maxThreads: 4,
+        minThreads: 1,
       },
     },
+    // Increase timeout for transaction setup/teardown
+    hookTimeout: 15000,
   },
   resolve: {
     alias: {

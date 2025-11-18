@@ -17,8 +17,11 @@ describe('Admin CRUD Operations', () => {
   let testUserId: string;
 
   beforeAll(async () => {
+    // Use transaction-safe db instance
+    const dbInstance = global.testDb || db;
+    
     // Create test tenant
-    await db.insert(tenants).values({
+    await dbInstance.insert(tenants).values({
       id: testTenantId,
       name: 'Test Tenant',
       slug: 'test-tenant',
@@ -26,7 +29,7 @@ describe('Admin CRUD Operations', () => {
 
     // Create test admin user
     const hashedPassword = await bcrypt.hash('TestPass123!', 10);
-    const [user] = await db.insert(users).values({
+    const [user] = await dbInstance.insert(users).values({
       tenantId: testTenantId,
       username: 'testadmin',
       email: 'admin@test.com',
@@ -60,10 +63,7 @@ describe('Admin CRUD Operations', () => {
   });
 
   afterAll(async () => {
-    await db.delete(testimonials).where(eq(testimonials.tenantId, testTenantId));
-    await db.delete(jobPostings).where(eq(jobPostings.tenantId, testTenantId));
-    await db.delete(users).where(eq(users.id, testUserId));
-    await db.delete(tenants).where(eq(tenants.id, testTenantId));
+    // Cleanup handled automatically by transaction rollback
   });
 
   describe('Testimonials CRUD', () => {

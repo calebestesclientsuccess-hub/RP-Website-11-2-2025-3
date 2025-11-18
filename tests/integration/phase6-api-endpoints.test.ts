@@ -2,7 +2,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import { app } from '../../server/app';
-import { db } from '../../server/db';
+import { getTestDb } from '../helpers/db';
+const db = getTestDb();
 import { projects, mediaLibrary } from '../../shared/schema';
 
 describe('Phase 6: API Endpoints for AI Media Integration', () => {

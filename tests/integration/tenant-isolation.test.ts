@@ -1,6 +1,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { db } from '../../server/db';
+import { getTestDb } from '../helpers/db';
 import { campaigns, leads, tenants } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
