@@ -1786,7 +1786,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const projectId = req.params.projectId;
         const tenantId = req.tenantId;
 
-        console.log(`[Scene Creation] Validating ${mediaIdsToValidate.size} media references for tenant ${tenantId}`);
+        console.log(`[Scene Creation Security] Validating ${mediaIdsToValidate.size} media references for tenant ${tenantId}`);
+        console.log(`[Scene Creation Security] Media IDs to validate:`, Array.from(mediaIdsToValidate));
 
         // Verify all media exists and belongs to same tenant
         const mediaRecords = await db.query.mediaLibrary.findMany({
@@ -1796,12 +1797,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           )
         });
 
+        console.log(`[Scene Creation Security] Found ${mediaRecords.length} valid media records`);
+
         // SECURITY CHECK: All referenced media must exist and belong to tenant
         if (mediaRecords.length !== mediaIdsToValidate.size) {
           const foundIds = new Set(mediaRecords.map(m => m.id));
           const missingIds = Array.from(mediaIdsToValidate).filter(id => !foundIds.has(id));
 
-          console.warn(`[Scene Creation] SECURITY: Attempted to reference unauthorized media:`, missingIds);
+          console.error(`[Scene Creation Security] BLOCKED: Attempted to reference ${missingIds.length} unauthorized media IDs:`, missingIds);
 
           return res.status(403).json({
             error: 'Invalid media reference',
@@ -1878,7 +1881,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // SECURITY: Validate all media references
       if (mediaIdsToValidate.size > 0) {
-        console.log(`[Scene Update] Validating ${mediaIdsToValidate.size} media references for tenant ${project.tenantId}`);
+        console.log(`[Scene Update Security] Validating ${mediaIdsToValidate.size} media references for tenant ${project.tenantId}`);
+        console.log(`[Scene Update Security] Media IDs to validate:`, Array.from(mediaIdsToValidate));
 
         // Verify all media exists and belongs to same tenant
         const mediaRecords = await db.query.mediaLibrary.findMany({
@@ -1888,12 +1892,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           )
         });
 
+        console.log(`[Scene Update Security] Found ${mediaRecords.length} valid media records`);
+
         // SECURITY CHECK: All referenced media must exist and belong to tenant
         if (mediaRecords.length !== mediaIdsToValidate.size) {
           const foundIds = new Set(mediaRecords.map(m => m.id));
           const missingIds = Array.from(mediaIdsToValidate).filter(id => !foundIds.has(id));
 
-          console.warn(`[Scene Update] SECURITY: Attempted to reference unauthorized media:`, missingIds);
+          console.error(`[Scene Update Security] BLOCKED: Attempted to reference ${missingIds.length} unauthorized media IDs:`, missingIds);
 
           return res.status(403).json({
             error: 'Invalid media reference',
