@@ -1019,6 +1019,55 @@ export async function generatePortfolioWithAI(
                       items: { type: Type.STRING },
                       description: "Array of valid placeholder IDs (e.g., ['placeholder-image-1']). MUST be an empty array for 'component' sceneType."
                     },
+                    content: {
+                      type: Type.OBJECT,
+                      description: "Scene content with media references. MUST include mediaId when using Media Library assets.",
+                      properties: {
+                        mediaId: {
+                          type: Type.STRING,
+                          description: "Media Library asset ID (REQUIRED when url is from Media Library)",
+                          nullable: true
+                        },
+                        mediaMediaId: {
+                          type: Type.STRING,
+                          description: "Media Library asset ID for split/fullscreen scenes (REQUIRED when media is from Media Library)",
+                          nullable: true
+                        },
+                        url: {
+                          type: Type.STRING,
+                          description: "Media URL (Cloudinary URL from Media Library or fallback)",
+                          nullable: true
+                        },
+                        media: {
+                          type: Type.STRING,
+                          description: "Media URL for split/fullscreen scenes",
+                          nullable: true
+                        },
+                        images: {
+                          type: Type.ARRAY,
+                          description: "Gallery images array",
+                          items: {
+                            type: Type.OBJECT,
+                            properties: {
+                              mediaId: {
+                                type: Type.STRING,
+                                description: "Media Library asset ID (REQUIRED for Media Library images)",
+                                nullable: true
+                              },
+                              url: {
+                                type: Type.STRING,
+                                description: "Image URL"
+                              },
+                              alt: {
+                                type: Type.STRING,
+                                description: "Alt text for accessibility"
+                              }
+                            }
+                          },
+                          nullable: true
+                        }
+                      }
+                    },
                     layout: {
                       type: Type.STRING,
                       description: "Optional layout: default or reverse (for split scenes)."
