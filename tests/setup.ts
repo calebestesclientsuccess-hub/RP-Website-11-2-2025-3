@@ -32,9 +32,21 @@ beforeAll(async () => {
   }
 });
 
+let testTransaction: any;
+
+beforeEach(async () => {
+  // Start a transaction for test isolation
+  testTransaction = await db.transaction(async (tx) => {
+    // Return the transaction to be used in tests
+    return tx;
+  });
+});
+
 afterEach(async () => {
-  // Clean database after each test to ensure isolation
-  await testUtils.cleanDatabase();
+  // Rollback transaction instead of truncating
+  if (testTransaction) {
+    await testTransaction.rollback();
+  }
 });
 
 afterAll(async () => {

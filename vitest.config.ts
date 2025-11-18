@@ -18,15 +18,13 @@ export default defineConfig({
       ],
     },
     testTimeout: 10000,
-    // Run tests sequentially to prevent database deadlocks
-    pool: 'forks',
+    // Parallel execution is now safe with transaction-based isolation
+    pool: 'threads',
     poolOptions: {
-      forks: {
-        singleFork: true,
+      threads: {
+        maxThreads: 4,
       },
     },
-    // Alternatively, use threads with maxConcurrency
-    // maxConcurrency: 1,
   },
   resolve: {
     alias: {
