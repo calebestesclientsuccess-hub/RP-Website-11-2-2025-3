@@ -868,6 +868,149 @@ const fullscreenSceneSchema = z.object({
   }).passthrough(),
 });
 
+// New: Component-based scene type for rich SaaS UI elements
+const componentSceneSchema = z.object({
+  type: z.literal("component"),
+  content: z.object({
+    componentType: z.enum([
+      "metric-card",
+      "timeline",
+      "comparison-table",
+      "testimonial-carousel",
+      "badge-grid",
+      "icon-grid",
+      "chart",
+      "calculator",
+      "feature-showcase",
+      "stat-counter",
+      "pricing-table",
+      "cta-block"
+    ]),
+    props: z.record(z.any()), // Component-specific props
+    heading: z.string().optional(),
+    description: z.string().optional(),
+  }).passthrough(),
+});
+
+// Discriminated union of all scene types
+export const sceneConfigSchema = z.discriminatedUnion("type", [
+  textSceneSchema,
+  imageSceneSchema,
+  videoSceneSchema,
+  splitSceneSchema,
+  gallerySceneSchema,
+  quoteSceneSchema,
+  fullscreenSceneSchema,
+  componentSceneSchema, // Added component scene type
+]);
+
+export const insertProjectSceneSchema = createInsertSchema(projectScenes).omit({
+  id: true,
+  projectId: true,
+  createdAt: true,
+}).extend({
+  sceneConfig: sceneConfigSchema, // Validate object structure directly (jsonb column)
+});
+
+export const updateProjectSceneSchema = insertProjectSceneSchema.partial();
+
+// Insert schemas for prompt templates
+export const insertPromptTemplateSchema = createInsertSchema(promptTemplates).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+  updatedAt: true,
+  createdBy: true,
+  updatedBy: true,
+}).extend({
+  // Preprocessors: convert blank strings to null for optional fields
+  description: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
+  sceneType: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().nullable().optional()
+  ),
+});
+
+export const updatePromptTemplateSchema = insertPromptTemplateSchema.partial();
+
+// Director configuration constants and defaults
+export const ENTRY_EFFECTS = ["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-in", "zoom-out", "sudden", "cross-fade", "rotate-in", "flip-in", "spiral-in", "elastic-bounce", "blur-focus"] as const;
+export const EXIT_EFFECTS = ["fade", "slide-up", "slide-down", "slide-left", "slide-right", "zoom-out", "dissolve", "cross-fade", "rotate-out", "flip-out", "scale-blur"] as const;
+export const HEADING_SIZES = ["4xl", "5xl", "6xl", "7xl", "8xl"] as const;
+export const BODY_SIZES = ["base", "lg", "xl", "2xl"] as const;
+export const FONT_WEIGHTS = ["normal", "medium", "semibold", "bold"] as const;
+export const ALIGNMENTS = ["left", "center", "right"] as const;
+export const SCROLL_SPEEDS = ["slow", "normal", "fast"] as const;
+export const MEDIA_POSITIONS = ["center", "top", "bottom", "left", "right"] as const;
+export const MEDIA_SCALES = ["cover", "contain", "fill"] as const;
+export const EASING_FUNCTIONS = ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "power1", "power2", "power3", "power4", "back", "elastic", "bounce"] as const;
+
+export const DIRECTOR_CONFIG_DEFAULTS = {
+  // ANIMATION & TIMING (8 controls)
+  entryEffect: 'fade',
+  entryDuration: 1.0,
+  entryDelay: 0,
+  entryEasing: 'ease-out',
+  exitEffect: 'fade',
+  exitDuration: 1.0,
+  exitDelay: 0,
+  exitEasing: 'ease-in',
+
+  // VISUAL FOUNDATION (2 controls)
+  backgroundColor: '#000000',
+  textColor: '#ffffff',
+
+  // SCROLL DEPTH & DURATION (3 controls)
+  parallaxIntensity: 0,
+  scrollSpeed: 'normal',
+  animationDuration: 1.0,
+
+  // TYPOGRAPHY (4 controls)
+  headingSize: '4xl',
+  bodySize: 'base',
+  fontWeight: 'normal',
+  alignment: 'center',
+
+  // SCROLL INTERACTION (3 controls)
+  fadeOnScroll: false,
+  scaleOnScroll: false,
+  blurOnScroll: false,
+
+  // MULTI-ELEMENT TIMING (2 controls)
+  staggerChildren: 0,
+  layerDepth: 5,
+
+  // ADVANCED MOTION (3 controls)
+  transformOrigin: 'center center',
+  overflowBehavior: 'hidden',
+  backdropBlur: 'none',
+
+  // VISUAL BLENDING (2 controls)
+  mixBlendMode: 'normal',
+  enablePerspective: false,
+
+  // CUSTOM STYLING & TEXT (3 controls)
+  customCSSClasses: '',
+  textShadow: false,
+  textGlow: false,
+
+  // VERTICAL SPACING (2 controls)
+  paddingTop: 'md',
+  paddingBottom: 'md',
+
+  // MEDIA PRESENTATION (3 controls - nullable)
+  mediaPosition: 'center',
+  mediaScale: 'cover',
+  mediaOpacity: 1.0,
+
+  // GRADIENT BACKGROUNDS (2 controls - nullable)
+  gradientColors: undefined,
+  gradientDirection: undefined,
+} as const;
+
 // Director configuration schema (optional customization)
 export const directorConfigSchema = z.object({
   entryDuration: z.number().min(0.1).max(5).default(1.2),
@@ -920,36 +1063,12 @@ const fullscreenSceneWithDirectorSchema = fullscreenSceneSchema.extend({
   director: directorConfigSchema,
 });
 
-// New: Component-based scene type for rich SaaS UI elements
-const componentSceneSchema = z.object({
-  type: z.literal("component"),
-  content: z.object({
-    componentType: z.enum([
-      "metric-card",
-      "timeline",
-      "comparison-table",
-      "testimonial-carousel",
-      "badge-grid",
-      "icon-grid",
-      "chart",
-      "calculator",
-      "feature-showcase",
-      "stat-counter",
-      "pricing-table",
-      "cta-block"
-    ]),
-    props: z.record(z.any()), // Component-specific props
-    heading: z.string().optional(),
-    description: z.string().optional(),
-  }).passthrough(),
-});
-
 const componentSceneWithDirectorSchema = componentSceneSchema.extend({
   director: directorConfigSchema,
 });
 
-// Discriminated union of all scene types
-export const sceneConfigSchema = z.discriminatedUnion("type", [
+// Discriminated union of all scene types with director config
+export const sceneConfigWithDirectorSchema = z.discriminatedUnion("type", [
   textSceneWithDirectorSchema,
   imageSceneWithDirectorSchema,
   videoSceneWithDirectorSchema,
@@ -960,15 +1079,16 @@ export const sceneConfigSchema = z.discriminatedUnion("type", [
   componentSceneWithDirectorSchema, // Added component scene type
 ]);
 
-export const insertProjectSceneSchema = createInsertSchema(projectScenes).omit({
+
+export const insertProjectSceneSchemaWithDirector = createInsertSchema(projectScenes).omit({
   id: true,
   projectId: true,
   createdAt: true,
 }).extend({
-  sceneConfig: sceneConfigSchema, // Validate object structure directly (jsonb column)
+  sceneConfig: sceneConfigWithDirectorSchema, // Validate object structure directly (jsonb column)
 });
 
-export const updateProjectSceneSchema = insertProjectSceneSchema.partial();
+export const updateProjectSceneSchemaWithDirector = insertProjectSceneSchemaWithDirector.partial();
 
 // Insert schemas for prompt templates
 export const insertPromptTemplateSchema = createInsertSchema(promptTemplates).omit({
@@ -1076,11 +1196,13 @@ export type SeoMetadata = z.infer<typeof seoMetadataSchema>;
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type SceneConfig = z.infer<typeof sceneConfigSchema>;
+export type SceneConfigWithDirector = z.infer<typeof sceneConfigWithDirectorSchema>;
 // ProjectScene with properly typed sceneConfig
 export type ProjectScene = Omit<typeof projectScenes.$inferSelect, 'sceneConfig'> & {
   sceneConfig: SceneConfig;
 };
 export type InsertProjectScene = z.infer<typeof insertProjectSceneSchema>;
+export type InsertProjectSceneWithDirector = z.infer<typeof insertProjectSceneSchemaWithDirector>;
 export type DirectorConfig = z.infer<typeof directorConfigSchema>;
 export type PromptTemplate = typeof promptTemplates.$inferSelect;
 export type InsertPromptTemplate = z.infer<typeof insertPromptTemplateSchema>;
