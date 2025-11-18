@@ -1613,13 +1613,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Hydrate media references if requested
       if (shouldHydrate && scenes.length > 0) {
+        console.log(`[Hydration] Processing ${scenes.length} scenes for project ${projectId}`);
+        
         // Collect all unique mediaIds from all scenes
         const mediaIds = new Set<string>();
         scenes.forEach((scene: any) => {
-          if (scene.sceneConfig?.mediaId) {
-            mediaIds.add(scene.sceneConfig.mediaId);
+          // Handle content.mediaId (image/video scenes)
+          if (scene.sceneConfig?.content?.mediaId) {
+            mediaIds.add(scene.sceneConfig.content.mediaId);
           }
-          // Also handle gallery images if present
+          
+          // Handle content.mediaMediaId (split/fullscreen scenes)
+          if (scene.sceneConfig?.content?.mediaMediaId) {
+            mediaIds.add(scene.sceneConfig.content.mediaMediaId);
+          }
+          
+          // Handle gallery images
           if (scene.sceneConfig?.content?.images && Array.isArray(scene.sceneConfig.content.images)) {
             scene.sceneConfig.content.images.forEach((img: any) => {
               if (img.mediaId) {
@@ -1628,6 +1637,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
         });
+
+        console.log(`[Hydration] Found ${mediaIds.size} unique media references`);
 
         if (mediaIds.size > 0) {
           // Fetch all referenced media in one query
@@ -1638,6 +1649,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             )
           });
 
+          console.log(`[Hydration] Fetched ${mediaRecords.length} media records from database`);
+
           // Create lookup map
           const mediaMap = new Map(
             mediaRecords.map(m => [m.id, m])
@@ -1645,8 +1658,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Hydrate scenes
           scenes = scenes.map((scene: any) => {
-            let hydratedSceneConfig = { ...scene.sceneConfig };
-            let hydratedContent = { ...(scene.sceneConfig?.content || {}) };
+            const hydratedSceneConfig = { ...scene.sceneConfig };
+            const hydratedContent = { ...(scene.sceneConfig?.content || {}) };
 
             // Hydrate content.mediaId (for image/video scenes)
             if (hydratedContent.mediaId) {
@@ -1657,12 +1670,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   label: media.label,
                   mediaType: media.mediaType
                 };
+                console.log(`[Hydration] ✓ Resolved mediaId ${hydratedContent.mediaId} → ${media.cloudinaryUrl}`);
               } else {
-                console.warn(`Media ${hydratedContent.mediaId} not found or unauthorized for scene ${scene.id}`);
+                console.warn(`[Hydration] ✗ Media ${hydratedContent.mediaId} not found or unauthorized`);
               }
             }
 
-            // Hydrate content.media (for split/fullscreen scenes with mediaMediaId)
+            // Hydrate content.mediaMediaId (for split/fullscreen scenes)
             if (hydratedContent.mediaMediaId) {
               const media = mediaMap.get(hydratedContent.mediaMediaId);
               if (media) {
@@ -1671,8 +1685,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   label: media.label,
                   mediaType: media.mediaType
                 };
+                console.log(`[Hydration] ✓ Resolved mediaMediaId ${hydratedContent.mediaMediaId} → ${media.cloudinaryUrl}`);
               } else {
-                console.warn(`Media ${hydratedContent.mediaMediaId} not found or unauthorized for scene ${scene.id}`);
+                console.warn(`[Hydration] ✗ Media ${hydratedContent.mediaMediaId} not found or unauthorized`);
               }
             }
 
@@ -1691,7 +1706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       }
                     };
                   } else {
-                    console.warn(`Media ${img.mediaId} not found or unauthorized for gallery image in scene ${scene.id}`);
+                    console.warn(`[Hydration] ✗ Gallery media ${img.mediaId} not found or unauthorized`);
                   }
                 }
                 return img;
