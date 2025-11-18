@@ -39,8 +39,12 @@ export default defineConfig({
     allowedHosts: true,
     hmr: {
       protocol: 'wss',
-      host: process.env.REPL_SLUG ? `${process.env.REPL_SLUG}-${process.env.REPL_OWNER}.replit.dev` : 'localhost',
+      host: process.env.REPLIT_DEV_DOMAIN?.replace(/^https?:\/\//, '') || 
+            (process.env.REPL_SLUG && process.env.REPL_OWNER ? 
+              `${process.env.REPL_SLUG}-${process.env.REPL_OWNER}.replit.dev` : 
+              'localhost'),
       clientPort: 443,
+      timeout: 30000,
     },
   },
 });
