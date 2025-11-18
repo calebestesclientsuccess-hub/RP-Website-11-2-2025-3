@@ -43,7 +43,7 @@ import {
   mediaLibrary, // Assuming mediaLibrary is imported and available
   aiPromptTemplates,
 } from "@shared/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, inArray } from "drizzle-orm";
 import { calculatePointsBasedBucket, calculateDecisionTreeBucket } from "./utils/assessment-scoring";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
@@ -1595,185 +1595,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/projects/:projectId", requireAuth, async (req, res) => {
+  // Get project scenes (with optional media hydration)
+  app.get('/api/projects/:id/scenes', requireAuth, async (req, res) => {
     try {
-      const project = await storage.getProjectById(req.tenantId, req.params.projectId);
+      const projectId = req.params.id;
+      const shouldHydrate = req.query.hydrate === 'true';
+
+      const project = await db.query.projects.findFirst({
+        where: eq(projects.id, projectId)
+      });
+
       if (!project) {
-        return res.status(404).json({ error: "Project not found" });
+        return res.status(404).json({ error: 'Project not found' });
       }
-      const scenes = await storage.getScenesByProjectId(req.tenantId, req.params.projectId);
-      const assetMap = await storage.getAssetMap(req.params.projectId);
-      return res.json({ ...project, scenes, assetMap });
-    } catch (error) {
-      console.error("Error fetching project:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
 
-  app.post("/api/projects", requireAuth, async (req, res) => {
-    try {
-      const result = insertProjectSchema.safeParse(req.body);
-      if (!result.success) {
-        const validationError = fromZodError(result.error);
-        return res.status(400).json({
-          error: "Validation failed",
-          details: validationError.message,
+      let scenes = project.scenes || [];
+
+      // Hydrate media references if requested
+      if (shouldHydrate && scenes.length > 0) {
+        // Collect all unique mediaIds from all scenes
+        const mediaIds = new Set<string>();
+        scenes.forEach((scene: any) => {
+          if (scene.sceneConfig?.mediaId) {
+            mediaIds.add(scene.sceneConfig.mediaId);
+          }
+          // Also handle gallery images if present
+          if (scene.sceneConfig?.content?.images && Array.isArray(scene.sceneConfig.content.images)) {
+            scene.sceneConfig.content.images.forEach((img: any) => {
+              if (img.mediaId) {
+                mediaIds.add(img.mediaId);
+              }
+            });
+          }
         });
-      }
-      const project = await storage.createProject(req.tenantId, result.data);
-      return res.status(201).json(project);
-    } catch (error) {
-      console.error("Error creating project:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
 
-  app.patch("/api/projects/:id", requireAuth, async (req, res) => {
-    try {
-      const result = updateProjectSchema.safeParse(req.body);
-      if (!result.success) {
-        const validationError = fromZodError(result.error);
-        return res.status(400).json({
-          error: "Validation failed",
-          details: validationError.message,
-        });
-      }
+        if (mediaIds.size > 0) {
+          // Fetch all referenced media in one query
+          const mediaRecords = await db.query.mediaLibrary.findMany({
+            where: and(
+              inArray(mediaLibrary.id, Array.from(mediaIds)),
+              eq(mediaLibrary.tenantId, project.tenantId) // Security: only same tenant
+            )
+          });
 
-      // Strip undefined keys while preserving null (allows clearing optional fields)
-      const updateData = Object.fromEntries(
-        Object.entries(result.data).filter(([_, value]) => value !== undefined)
-      );
+          // Create lookup map
+          const mediaMap = new Map(
+            mediaRecords.map(m => [m.id, m])
+          );
 
-      const project = await storage.updateProject(req.tenantId, req.params.id, updateData);
-      if (!project) {
-        return res.status(404).json({ error: "Project not found or access denied" });
-      }
-      return res.json(project);
-    } catch (error) {
-      console.error("Error updating project:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
+          // Hydrate scenes
+          scenes = scenes.map((scene: any) => {
+            let hydratedSceneConfig = scene.sceneConfig;
 
-  app.delete("/api/projects/:id", requireAuth, async (req, res) => {
-    try {
-      const deleted = await storage.deleteProject(req.tenantId, req.params.id);
-      if (!deleted) {
-        return res.status(404).json({ error: "Project not found or access denied" });
-      }
-      return res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting project:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  // Project Scenes endpoints
-  app.get("/api/projects/:projectId/scenes", async (req, res) => {
-    try {
-      const { projectId } = req.params;
-      const { hydrate } = req.query;
-
-      const scenes = await db
-        .select()
-        .from(projectScenes)
-        .where(eq(projectScenes.projectId, projectId))
-        .orderBy(projectScenes.order);
-
-      // Optionally hydrate mediaId references with current media URLs
-      if (hydrate === 'true') {
-        const hydratedScenes = await Promise.all(
-          scenes.map(async (scene) => {
-            const sceneConfig = scene.sceneConfig as any;
-
-            // Handle single media field (image, video, split, fullscreen)
-            if (sceneConfig?.content?.mediaId) {
-              const [media] = await db
-                .select()
-                .from(mediaLibrary)
-                .where(eq(mediaLibrary.id, sceneConfig.content.mediaId))
-                .limit(1);
-
+            // Hydrate single media field
+            if (scene.sceneConfig?.mediaId) {
+              const media = mediaMap.get(scene.sceneConfig.mediaId);
               if (media) {
-                return {
-                  ...scene,
-                  sceneConfig: {
-                    ...sceneConfig,
-                    content: {
-                      ...sceneConfig.content,
-                      url: media.cloudinaryUrl,
-                      mediaId: media.id,
-                    },
-                  },
+                hydratedSceneConfig = {
+                  ...scene.sceneConfig,
+                  url: media.cloudinaryUrl, // Inject current URL
+                  _media: { // Include metadata
+                    label: media.label,
+                    mediaType: media.mediaType
+                  }
                 };
+              } else {
+                console.warn(`Media ${scene.sceneConfig.mediaId} not found or unauthorized for scene ${scene.id}`);
               }
             }
 
-            // Handle gallery images array
-            if (sceneConfig?.content?.images && Array.isArray(sceneConfig.content.images)) {
-              const hydratedImages = await Promise.all(
-                sceneConfig.content.images.map(async (img: any) => {
-                  if (img.mediaId) {
-                    const [media] = await db
-                      .select()
-                      .from(mediaLibrary)
-                      .where(eq(mediaLibrary.id, img.mediaId))
-                      .limit(1);
-
-                    if (media) {
-                      return { ...img, url: media.cloudinaryUrl };
-                    }
+            // Hydrate gallery images
+            if (scene.sceneConfig?.content?.images && Array.isArray(scene.sceneConfig.content.images)) {
+              const hydratedImages = scene.sceneConfig.content.images.map((img: any) => {
+                if (img.mediaId) {
+                  const media = mediaMap.get(img.mediaId);
+                  if (media) {
+                    return {
+                      ...img,
+                      url: media.cloudinaryUrl,
+                      _media: {
+                        label: media.label,
+                        mediaType: media.mediaType
+                      }
+                    };
+                  } else {
+                    console.warn(`Media ${img.mediaId} not found or unauthorized for gallery image in scene ${scene.id}`);
                   }
-                  return img;
-                })
-              );
-
-              return {
-                ...scene,
-                sceneConfig: {
-                  ...sceneConfig,
-                  content: {
-                    ...sceneConfig.content,
-                    images: hydratedImages,
-                  },
-                },
+                }
+                return img;
+              });
+              // Ensure hydratedSceneConfig is updated if it wasn't modified by single media field
+              hydratedSceneConfig = {
+                ...hydratedSceneConfig,
+                content: {
+                  ...(hydratedSceneConfig?.content || {}),
+                  images: hydratedImages
+                }
               };
             }
 
-            // Handle split scene media field
-            if (sceneConfig?.content?.media && sceneConfig?.content?.mediaMediaId) {
-              const [media] = await db
-                .select()
-                .from(mediaLibrary)
-                .where(eq(mediaLibrary.id, sceneConfig.content.mediaMediaId))
-                .limit(1);
-
-              if (media) {
-                return {
-                  ...scene,
-                  sceneConfig: {
-                    ...sceneConfig,
-                    content: {
-                      ...sceneConfig.content,
-                      media: media.cloudinaryUrl,
-                      mediaMediaId: media.id,
-                    },
-                  },
-                };
-              }
-            }
-
-            return scene;
-          })
-        );
-
-        res.json(hydratedScenes);
-      } else {
-        res.json(scenes);
+            return {
+              ...scene,
+              sceneConfig: hydratedSceneConfig
+            };
+          });
+        }
       }
-    } catch (error: any) {
-      console.error("Error fetching scenes:", error);
-      res.status(500).json({ error: "Failed to fetch scenes" });
+
+      res.json(scenes);
+    } catch (error) {
+      console.error('Error fetching project scenes:', error);
+      res.status(500).json({ error: 'Failed to fetch scenes' });
     }
   });
 
@@ -1788,56 +1720,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Validate mediaId exists if provided
+      // Validate and auto-link media references
       const sceneConfig = result.data.sceneConfig as any;
-      if (sceneConfig?.content?.mediaId) {
-        const [media] = await db
-          .select()
-          .from(mediaLibrary)
-          .where(eq(mediaLibrary.id, sceneConfig.content.mediaId))
-          .limit(1);
+      const mediaIdsToLink: string[] = [];
 
-        if (!media) {
+      // Handle single mediaId
+      if (sceneConfig?.mediaId) {
+        mediaIdsToLink.push(sceneConfig.mediaId);
+      }
+      // Handle gallery images mediaIds
+      if (sceneConfig?.content?.images && Array.isArray(sceneConfig.content.images)) {
+        sceneConfig.content.images.forEach((img: any) => {
+          if (img.mediaId) {
+            mediaIdsToLink.push(img.mediaId);
+          }
+        });
+      }
+
+      if (mediaIdsToLink.length > 0) {
+        const projectId = req.params.projectId;
+        const tenantId = req.tenantId;
+
+        // Verify all media exists and belongs to same tenant
+        const mediaRecords = await db.query.mediaLibrary.findMany({
+          where: and(
+            inArray(mediaLibrary.id, mediaIdsToLink),
+            eq(mediaLibrary.tenantId, tenantId)
+          )
+        });
+
+        if (mediaRecords.length !== mediaIdsToLink.length) {
           return res.status(400).json({
-            error: "Invalid media reference",
-            details: `Media with ID ${sceneConfig.content.mediaId} not found`
+            error: 'One or more media references are invalid or unauthorized'
           });
         }
 
-        // Auto-link media to project if not already linked
-        if (!media.projectId) {
+        // Auto-associate unlinked media with this project
+        const unlinkedMedia = mediaRecords.filter((m: any) => !m.projectId);
+        if (unlinkedMedia.length > 0) {
           await db
             .update(mediaLibrary)
-            .set({ projectId: req.params.projectId })
-            .where(eq(mediaLibrary.id, sceneConfig.content.mediaId));
-        }
-      }
-
-      // Validate gallery images mediaIds
-      if (sceneConfig?.content?.images && Array.isArray(sceneConfig.content.images)) {
-        for (const img of sceneConfig.content.images) {
-          if (img.mediaId) {
-            const [media] = await db
-              .select()
-              .from(mediaLibrary)
-              .where(eq(mediaLibrary.id, img.mediaId))
-              .limit(1);
-
-            if (!media) {
-              return res.status(400).json({
-                error: "Invalid media reference",
-                details: `Media with ID ${img.mediaId} not found in gallery images`
-              });
-            }
-
-            // Auto-link to project
-            if (!media.projectId) {
-              await db
-                .update(mediaLibrary)
-                .set({ projectId: req.params.projectId })
-                .where(eq(mediaLibrary.id, img.mediaId));
-            }
-          }
+            .set({ projectId })
+            .where(
+              inArray(mediaLibrary.id, unlinkedMedia.map((m: any) => m.id))
+            );
+          console.log(`Auto-linked ${unlinkedMedia.length} media assets to project ${projectId}`);
         }
       }
 
@@ -1852,78 +1779,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/projects/:projectId/scenes/:id", requireAuth, async (req, res) => {
+  // Update project scenes
+  app.put('/api/projects/:id/scenes', requireAuth, async (req, res) => {
     try {
-      const result = updateProjectSceneSchema.safeParse(req.body);
-      if (!result.success) {
-        const validationError = fromZodError(result.error);
-        return res.status(400).json({
-          error: "Validation failed",
-          details: validationError.message,
-        });
+      const projectId = req.params.id;
+      const { scenes } = req.body;
+
+      const project = await db.query.projects.findFirst({
+        where: eq(projects.id, projectId)
+      });
+
+      if (!project) {
+        return res.status(404).json({ error: 'Project not found' });
       }
 
-      // Validate mediaId exists if provided
-      const sceneConfig = result.data.sceneConfig as any;
-      if (sceneConfig?.content?.mediaId) {
-        const [media] = await db
-          .select()
-          .from(mediaLibrary)
-          .where(eq(mediaLibrary.id, sceneConfig.content.mediaId))
-          .limit(1);
+      // Validate and auto-link media references
+      const mediaIds = scenes
+        .filter((s: any) => s.sceneConfig?.mediaId)
+        .map((s: any) => s.sceneConfig.mediaId);
 
-        if (!media) {
+      if (mediaIds.length > 0) {
+        // Verify all media exists and belongs to same tenant
+        const mediaRecords = await db.query.mediaLibrary.findMany({
+          where: and(
+            inArray(mediaLibrary.id, mediaIds),
+            eq(mediaLibrary.tenantId, project.tenantId)
+          )
+        });
+
+        if (mediaRecords.length !== mediaIds.length) {
           return res.status(400).json({
-            error: "Invalid media reference",
-            details: `Media with ID ${sceneConfig.content.mediaId} not found`
+            error: 'One or more media references are invalid or unauthorized'
           });
         }
 
-        // Auto-link media to project if not already linked
-        if (!media.projectId) {
+        // Auto-associate unlinked media with this project
+        const unlinkedMedia = mediaRecords.filter(m => !m.projectId);
+        if (unlinkedMedia.length > 0) {
           await db
             .update(mediaLibrary)
-            .set({ projectId: req.params.projectId })
-            .where(eq(mediaLibrary.id, sceneConfig.content.mediaId));
+            .set({ projectId })
+            .where(
+              inArray(mediaLibrary.id, unlinkedMedia.map(m => m.id))
+            );
+          console.log(`Auto-linked ${unlinkedMedia.length} media assets to project ${projectId}`);
         }
       }
 
-      // Validate gallery images mediaIds
-      if (sceneConfig?.content?.images && Array.isArray(sceneConfig.content.images)) {
-        for (const img of sceneConfig.content.images) {
-          if (img.mediaId) {
-            const [media] = await db
-              .select()
-              .from(mediaLibrary)
-              .where(eq(mediaLibrary.id, img.mediaId))
-              .limit(1);
+      const [updatedProject] = await db
+        .update(projects)
+        .set({ scenes, updatedAt: new Date() })
+        .where(eq(projects.id, projectId))
+        .returning();
 
-            if (!media) {
-              return res.status(400).json({
-                error: "Invalid media reference",
-                details: `Media with ID ${img.mediaId} not found in gallery images`
-              });
-            }
-
-            // Auto-link to project
-            if (!media.projectId) {
-              await db
-                .update(mediaLibrary)
-                .set({ projectId: req.params.projectId })
-                .where(eq(mediaLibrary.id, img.mediaId));
-            }
-          }
-        }
-      }
-
-      const scene = await storage.updateProjectScene(req.tenantId, req.params.projectId, req.params.id, result.data);
-      if (!scene) {
-        return res.status(404).json({ error: "Scene not found or access denied" });
-      }
-      return res.json(scene);
+      res.json(updatedProject);
     } catch (error) {
-      console.error("Error updating project scene:", error);
-      return res.status(500).json({ error: "Internal server error" });
+      console.error('Error updating project scenes:', error);
+      res.status(500).json({ error: 'Failed to update scenes' });
     }
   });
 

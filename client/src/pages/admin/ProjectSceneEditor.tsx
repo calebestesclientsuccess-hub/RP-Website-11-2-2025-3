@@ -76,7 +76,7 @@ const SCENE_TEMPLATES = {
     content: {
       images: [
         "https://images.unsplash.com/photo-1557683316-973673baf926",
-        "https://images.unsplash.com/photo-1551434678-e076c223a692",
+        "https://images.unsplash.com/photo-1557683316-973673baf926",
       ],
     },
   },
@@ -593,7 +593,7 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
   };
 
   // Function to handle opening the media picker
-  const openMediaPicker = (field: 'url' | 'images') => {
+  const openMediaPicker = (field: 'url' | 'images' | 'media') => {
     setMediaPickerField(field);
     setMediaPickerOpen(true);
   };
@@ -605,25 +605,25 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
       const formData = new FormData();
       formData.append('file', file);
       formData.append('project_id', projectId);
-      
+
       const response = await fetch('/api/media-library/upload', {
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         throw new Error('Upload failed');
       }
-      
+
       const uploadedMedia = await response.json();
-      
+
       // Auto-select the uploaded media
       handleMediaSelect({
         id: uploadedMedia.id,
         url: uploadedMedia.cloudinaryUrl,
         type: uploadedMedia.mediaType,
       });
-      
+
       toast({ title: 'Media uploaded and selected!' });
       setUploadModalOpen(false);
     } catch (error) {
