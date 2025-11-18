@@ -75,6 +75,12 @@ const TestimonialFormLazy = lazy(() => import("@/pages/admin/TestimonialForm"));
 const ProjectFormLazy = lazy(() => import("@/pages/admin/ProjectForm"));
 const JobPostingFormLazy = lazy(() => import("@/pages/admin/JobPostingForm"));
 const PortfolioBuilderLazy = lazy(() => import("@/pages/admin/PortfolioBuilder"));
+const AIPromptSettingsLazy = lazy(() => import("@/pages/admin/AIPromptSettings"));
+const PortfolioPromptManagerLazy = lazy(() => import("@/pages/admin/PortfolioPromptManager"));
+const MediaLibraryLazy = lazy(() => import("@/pages/admin/MediaLibrary").catch(err => {
+  console.error('Failed to load MediaLibrary:', err);
+  return { default: () => <div className="p-8 text-center">Failed to load Media Library. Please refresh the page.</div> };
+}));
 
 // Loading fallback component
 function PageLoadingFallback() {
@@ -122,12 +128,8 @@ const TestimonialForm = withLazyLoading(TestimonialFormLazy);
 const ProjectForm = withLazyLoading(ProjectFormLazy);
 const JobPostingForm = withLazyLoading(JobPostingFormLazy);
 const PortfolioBuilder = withLazyLoading(PortfolioBuilderLazy);
-const AIPromptSettingsLazy = lazy(() => import("@/pages/admin/AIPromptSettings"));
 const AIPromptSettings = withLazyLoading(AIPromptSettingsLazy);
-const MediaLibraryLazy = lazy(() => import("@/pages/admin/MediaLibrary").catch(err => {
-  console.error('Failed to load MediaLibrary:', err);
-  return { default: () => <div className="p-8 text-center">Failed to load Media Library. Please refresh the page.</div> };
-}));
+const PortfolioPromptManager = withLazyLoading(PortfolioPromptManagerLazy);
 const MediaLibrary = withLazyLoading(MediaLibraryLazy);
 
 
@@ -197,7 +199,8 @@ function Router() {
       <Route path="/admin/testimonials/:id/edit" component={TestimonialForm} />
       <Route path="/admin/projects/new" component={ProjectForm} />
       <Route path="/admin/projects/:id/edit" component={ProjectForm} />
-      <Route path="/admin/portfolio-builder" component={PortfolioBuilder} />
+      <Route path="/admin/portfolio-builder" element={<ProtectedRoute><PortfolioBuilder /></ProtectedRoute>} />
+      <Route path="/admin/portfolio-prompts" element={<ProtectedRoute><PortfolioPromptManager /></ProtectedRoute>} />
       <Route path="/admin/ai-prompt-settings" component={AIPromptSettings} />
           <Route path="/admin/media-library" component={MediaLibrary} />
       <Route path="/admin/job-postings/new" component={JobPostingForm} />

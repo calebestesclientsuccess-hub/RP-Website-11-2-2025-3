@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
-import { Info } from "lucide-react";
+import { Info, FolderKanban, Sparkles } from "lucide-react";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 
 export default function AdminDashboard() {
   const [hasUsers, setHasUsers] = useState<boolean | null>(null);
@@ -91,6 +92,36 @@ export default function AdminDashboard() {
                       Configure the bottom-right floating widget
                     </p>
                   </div>
+                  <Link to="/admin/portfolio-builder" className="block">
+                    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <FolderKanban className="w-5 h-5" />
+                          Portfolio Builder
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                          Build and manage portfolio projects with AI
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                  <Link to="/admin/portfolio-prompts" className="block">
+                    <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Sparkles className="w-5 h-5" />
+                          AI Prompt Manager
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                          Customize AI prompts for portfolio generation
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 </div>
               </div>
             </main>

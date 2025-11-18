@@ -31,7 +31,7 @@ import {
   assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants, leads, featureFlags, insertLeadSchema,
   projects, projectScenes, promptTemplates, portfolioPrompts, portfolioConversations, portfolioVersions, contentAssets,
   // media library table - needs to be added
-  mediaLibrary
+  mediaLibrary, aiPromptTemplates // Added aiPromptTemplates here for getPromptVersionHistory and rollbackPromptToVersion
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, ilike, sql } from "drizzle-orm";
@@ -200,6 +200,19 @@ export interface IStorage {
   getMediaAsset(id: string): Promise<MediaLibraryAsset | undefined>;
   createMediaAsset(data: InsertMediaLibraryAsset): Promise<MediaLibraryAsset>;
   deleteMediaAsset(id: string): Promise<void>;
+
+  // Portfolio Prompt Methods
+  getPortfolioPrompts(projectId: string): Promise<PortfolioPrompt[]>;
+  upsertPortfolioPrompt(data: {
+    projectId: string;
+    promptType: string;
+    customPrompt: string | null;
+    isActive: boolean;
+    userId?: string;
+  }): Promise<PortfolioPrompt>;
+  togglePortfolioPrompt(id: string, userId: string): Promise<PortfolioPrompt>;
+  getPortfolioPrompt(projectId: string, promptType: string): Promise<PortfolioPrompt | null>;
+  deletePortfolioPrompt(id: string): Promise<void>;
 }
 
 export class DbStorage implements IStorage {
@@ -1057,11 +1070,11 @@ export class DbStorage implements IStorage {
     // For now, this is a placeholder implementation
     // In production, you'd fetch the historical version from a versions table
     // and restore it, incrementing the version number
-    
+
     // Since we don't have version history yet, we'll just return the current
     // TODO: Implement proper version history table
     console.warn(`Rollback requested for ${id} to version ${targetVersion}, but version history not yet implemented`);
-    
+
     return current;
   }
 
@@ -1086,66 +1099,146 @@ export class DbStorage implements IStorage {
   }
 
   // Portfolio Prompts (per-portfolio system prompt overrides)
-  async getPortfolioPrompts(projectId: string) {
-    return db
+  async getPortfolioPrompts(projectId: string): Promise<PortfolioPrompt[]> {
+    return await db
       .select()
       .from(portfolioPrompts)
       .where(eq(portfolioPrompts.projectId, projectId))
       .orderBy(portfolioPrompts.promptType);
   }
 
-  async getActivePortfolioPrompt(projectId: string, promptType: string) {
+  // Upsert a portfolio prompt
+  async upsertPortfolioPrompt(data: {
+    projectId: string;
+    promptType: string;
+    customPrompt: string | null;
+    isActive: boolean;
+    userId?: string;
+  }): Promise<PortfolioPrompt> {
+    const existing = await db
+      .select()
+      .from(portfolioPrompts)
+      .where(
+        and(
+          eq(portfolioPrompts.projectId, data.projectId),
+          eq(portfolioPrompts.promptType, data.promptType)
+        )
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      // Update existing prompt
+      const [updated] = await db
+        .update(portfolioPrompts)
+        .set({
+          customPrompt: data.customPrompt,
+          isActive: data.isActive,
+          version: existing[0].version + 1,
+          updatedAt: new Date(),
+          updatedBy: data.userId,
+        })
+        .where(eq(portfolioPrompts.id, existing[0].id))
+        .returning();
+
+      return updated;
+    } else {
+      // Create new prompt
+      const [created] = await db
+        .insert(portfolioPrompts)
+        .values({
+          projectId: data.projectId,
+          promptType: data.promptType,
+          customPrompt: data.customPrompt,
+          isActive: data.isActive,
+          version: 1,
+          createdBy: data.userId,
+          updatedBy: data.userId,
+        })
+        .returning();
+
+      return created;
+    }
+  }
+
+  // Get portfolio prompt templates for a project (for AI generation)
+  async getPortfolioPrompts(projectId: string | undefined): Promise<Map<string, string>> {
+    if (!projectId) {
+      return new Map();
+    }
+
+    const prompts = await db
+      .select()
+      .from(portfolioPrompts)
+      .where(
+        and(
+          eq(portfolioPrompts.projectId, projectId),
+          eq(portfolioPrompts.isActive, true)
+        )
+      );
+
+    const promptMap = new Map<string, string>();
+    prompts.forEach((prompt) => {
+      promptMap.set(prompt.promptType, prompt.customPrompt || '');
+    });
+
+    return promptMap;
+  }
+
+  async togglePortfolioPrompt(id: string, userId: string): Promise<PortfolioPrompt> {
+    const [prompt] = await db
+      .select()
+      .from(portfolioPrompts)
+      .where(eq(portfolioPrompts.id, id))
+      .limit(1);
+
+    if (!prompt) {
+      throw new Error('Prompt not found');
+    }
+
+    // If activating, deactivate other prompts of same type for same project
+    if (!prompt.isActive) {
+      await db
+        .update(portfolioPrompts)
+        .set({ isActive: false })
+        .where(
+          and(
+            eq(portfolioPrompts.projectId, prompt.projectId),
+            eq(portfolioPrompts.promptType, prompt.promptType)
+          )
+        );
+    }
+
+    const [updated] = await db
+      .update(portfolioPrompts)
+      .set({
+        isActive: !prompt.isActive,
+        updatedBy: userId,
+        updatedAt: new Date(),
+      })
+      .where(eq(portfolioPrompts.id, id))
+      .returning();
+
+    return updated;
+  }
+
+  async getPortfolioPrompt(projectId: string, promptType: string): Promise<PortfolioPrompt | null> {
     const [prompt] = await db
       .select()
       .from(portfolioPrompts)
       .where(
         and(
           eq(portfolioPrompts.projectId, projectId),
-          eq(portfolioPrompts.promptType, promptType),
-          eq(portfolioPrompts.isActive, true)
+          eq(portfolioPrompts.promptType, promptType)
         )
       )
       .limit(1);
     return prompt || null;
   }
 
-  async createPortfolioPrompt(
-    projectId: string,
-    userId: string,
-    data: InsertPortfolioPrompt
-  ) {
-    const [prompt] = await db
-      .insert(portfolioPrompts)
-      .values({
-        ...data,
-        projectId,
-        createdBy: userId,
-        updatedBy: userId,
-      })
-      .returning();
-    return prompt;
-  }
-
-  async updatePortfolioPrompt(
-    id: string,
-    userId: string,
-    data: UpdatePortfolioPrompt
-  ) {
-    const [prompt] = await db
-      .update(portfolioPrompts)
-      .set({
-        ...data,
-        updatedBy: userId,
-        updatedAt: new Date(),
-      })
-      .where(eq(portfolioPrompts.id, id))
-      .returning();
-    return prompt;
-  }
-
   async deletePortfolioPrompt(id: string): Promise<void> {
     await db.delete(portfolioPrompts).where(eq(portfolioPrompts.id, id));
   }
+
 
   async getMediaAssets(tenantId: string, projectId?: string): Promise<MediaLibraryAsset[]> {
     try {
@@ -1207,41 +1300,23 @@ export class DbStorage implements IStorage {
     }
   }
 
-  async togglePortfolioPrompt(id: string, userId: string) {
-    const [prompt] = await db
-      .select()
-      .from(portfolioPrompts)
-      .where(eq(portfolioPrompts.id, id))
-      .limit(1);
-
-    if (!prompt) {
-      throw new Error('Prompt not found');
-    }
-
-    // If activating, deactivate other prompts of same type for same project
-    if (!prompt.isActive) {
-      await db
-        .update(portfolioPrompts)
-        .set({ isActive: false })
-        .where(
-          and(
-            eq(portfolioPrompts.projectId, prompt.projectId),
-            eq(portfolioPrompts.promptType, prompt.promptType)
-          )
-        );
-    }
-
-    const [updated] = await db
-      .update(portfolioPrompts)
-      .set({
-        isActive: !prompt.isActive,
-        updatedBy: userId,
-        updatedAt: new Date(),
+  async createConversationMessage(
+    projectId: string,
+    role: 'user' | 'assistant',
+    content: string,
+    versionId?: string
+  ) {
+    const [message] = await db
+      .insert(portfolioConversations)
+      .values({
+        projectId,
+        role,
+        content,
+        timestamp: Date.now(),
+        versionId: versionId || null,
       })
-      .where(eq(portfolioPrompts.id, id))
       .returning();
-
-    return updated;
+    return message;
   }
 
   async getConversationHistory(projectId: string): Promise<PortfolioConversation[]> {
