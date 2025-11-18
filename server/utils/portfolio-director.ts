@@ -215,26 +215,27 @@ function buildPortfolioPrompt(catalog: ContentCatalog, availableMediaLibrary?: a
   const placeholderVideos = PLACEHOLDER_CONFIG.videos.map((id) => `"${id}"`).join(', ');
   const placeholderQuotes = PLACEHOLDER_CONFIG.quotes.map((id) => `"${id}"`).join(', ');
 
-  // Build Media Library asset list with detailed information
+  // Build Media Library asset list with structured auto-population tags
   let mediaLibrarySection = '';
   if (availableMediaLibrary && availableMediaLibrary.length > 0) {
     const mediaList = availableMediaLibrary.map(m => {
       const label = m.label || m.cloudinaryPublicId;
       const type = m.mediaType === 'image' ? '🖼️ Image' : '🎥 Video';
-      return `  - ID: "${m.id}" | Label: "${label}" | Type: ${type} | URL: ${m.cloudinaryUrl}`;
+      return `  <media_asset id="${m.id}" type="${m.mediaType}" label="${label}" url="${m.cloudinaryUrl}" />`;
     }).join('\n');
 
     mediaLibrarySection = `
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MEDIA LIBRARY INTEGRATION (${availableMediaLibrary.length} Assets Available)
+<MEDIA_LIBRARY_ASSETS count="${availableMediaLibrary.length}">
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 You have access to ${availableMediaLibrary.length} pre-uploaded media assets in the Media Library.
 ALWAYS prefer using these assets over placeholder references when appropriate.
 
-Available Assets:
 ${mediaList}
+
+</MEDIA_LIBRARY_ASSETS>
 
 CRITICAL USAGE INSTRUCTIONS:
 
@@ -248,16 +249,16 @@ CRITICAL USAGE INSTRUCTIONS:
    For IMAGE/VIDEO scenes:
    {
      "content": {
-       "mediaId": "asset-id-from-list-above",
-       "url": "corresponding-cloudinary-url"
+       "mediaId": "<id from media_asset above>",
+       "url": "<url from media_asset above>"
      }
    }
 
    For SPLIT scenes:
    {
      "content": {
-       "mediaMediaId": "asset-id-from-list-above",
-       "media": "corresponding-cloudinary-url"
+       "mediaMediaId": "<id from media_asset above>",
+       "media": "<url from media_asset above>"
      }
    }
 
@@ -266,13 +267,8 @@ CRITICAL USAGE INSTRUCTIONS:
      "content": {
        "images": [
          {
-           "mediaId": "asset-id-1",
-           "url": "corresponding-url-1",
-           "alt": "descriptive-alt-text"
-         },
-         {
-           "mediaId": "asset-id-2",
-           "url": "corresponding-url-2",
+           "mediaId": "<id from media_asset>",
+           "url": "<url from media_asset>",
            "alt": "descriptive-alt-text"
          }
        ]
@@ -293,15 +289,66 @@ CRITICAL USAGE INSTRUCTIONS:
 `;
   }
 
+  // Build section-by-section structure if provided
+  let sectionsSection = '';
+  if (catalog.sections && catalog.sections.length > 0) {
+    const sectionsList = catalog.sections.map((section, idx) => {
+      return `
+<section id="${section.sectionId}" type="${section.sectionType}" order="${idx + 1}">
+  <prompt>${section.sectionPrompt}</prompt>
+  <assigned_assets>${section.assetIds.join(', ')}</assigned_assets>
+  ${section.userStyling ? `
+  <user_styling>
+    ${section.userStyling.preferredFontFamily ? `<font_family>${section.userStyling.preferredFontFamily}</font_family>` : ''}
+    ${section.userStyling.preferredAlignment ? `<alignment>${section.userStyling.preferredAlignment}</alignment>` : ''}
+    ${section.userStyling.colorScheme ? `
+    <color_scheme>
+      ${section.userStyling.colorScheme.background ? `<background>${section.userStyling.colorScheme.background}</background>` : ''}
+      ${section.userStyling.colorScheme.text ? `<text>${section.userStyling.colorScheme.text}</text>` : ''}
+      ${section.userStyling.colorScheme.accent ? `<accent>${section.userStyling.colorScheme.accent}</accent>` : ''}
+    </color_scheme>
+    ` : ''}
+    ${section.userStyling.transitionStyle ? `<transition_style>${section.userStyling.transitionStyle}</transition_style>` : ''}
+  </user_styling>
+  ` : ''}
+</section>`;
+    }).join('\n');
+
+    sectionsSection = `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<USER_DEFINED_SECTIONS count="${catalog.sections.length}">
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The user has provided ${catalog.sections.length} structured sections with specific requirements.
+You MUST create scenes that fulfill each section's narrative intent and use the assigned assets.
+
+${sectionsList}
+
+</USER_DEFINED_SECTIONS>
+
+SECTION COMPLIANCE RULES:
+1. Each section MUST be represented by at least one scene
+2. Use the assigned_assets for that section when creating scenes
+3. Respect user_styling preferences (font, alignment, colors, transitions)
+4. Follow the section order to create narrative flow
+5. The sectionType guides the emotional tone and purpose
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+  }
+
   return `You are an expert portfolio director AI. Your role is to create compelling, professional portfolio scenes that tell a client's story.
 ${mediaLibrarySection}
+${sectionsSection}
 
 You are an Artistic Director and Cinematic Storyteller for a high-end, scroll-driven web portfolio system. Your role is not merely to select options, but to translate an abstract creative vision and a collection of assets into a technically precise and emotionally resonant digital experience.
 
 STRATEGIC ASSET SELECTION PRIORITY:
 1. Media Library assets (real, uploaded files with mediaId references) - USE THESE FIRST
-2. Placeholder references (temporary, will be mapped later) - use only if no Media Library match
-3. Direct URLs (least preferred, no persistence guarantee) - avoid unless necessary
+2. User-defined section assets (assigned to specific sections) - RESPECT THESE ASSIGNMENTS
+3. Placeholder references (temporary, will be mapped later) - use only if no Media Library match
+4. Direct URLs (least preferred, no persistence guarantee) - avoid unless necessary
 
 This is a "content-first" system. Your primary job is to build a beautiful story with the assets the user gives you.
 
@@ -309,9 +356,9 @@ This is a "content-first" system. Your primary job is to build a beautiful story
 
 You will be given "Director's Notes" from the user. This is their creative vision in natural language.
 
-START DIRECTOR'S NOTES
-${catalog.directorNotes}
-END DIRECTOR'S NOTES
+<DIRECTOR_NOTES>
+${catalog.directorNotes || catalog.globalPrompt || 'Create a compelling portfolio narrative'}
+</DIRECTOR_NOTES>
 
 2. The "Content-First" Mandate (Your Core Strategy)
 
