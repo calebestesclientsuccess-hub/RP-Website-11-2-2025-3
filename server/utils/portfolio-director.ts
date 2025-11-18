@@ -1,6 +1,20 @@
+/**
+ * Portfolio Director - AI-Powered Scene Generation
+ * Orchestrates portfolio creation using Gemini AI
+ * 
+ * 6-Stage Refinement Pipeline:
+ * 1. Initial Generation (form-filling)
+ * 2. Self-Audit (AI finds inconsistencies)
+ * 3. Generate 10 Improvements
+ * 4. Auto-Apply Non-Conflicting Fixes
+ * 5. Final Regeneration
+ * 6. Validation Against Requirements
+ */
+
 import { GoogleGenAI, Type } from "@google/genai";
 import type { ContentCatalog, PortfolioPrompt } from "@shared/schema";
 import { storage } from "../storage";
+import { AssetValidator } from "./asset-validator"; // Assuming AssetValidator is in the same directory
 
 // Lazy-load Gemini client to avoid ESM initialization issues
 let ai: GoogleGenAI | null = null;
@@ -743,11 +757,11 @@ interface GeneratedScene {
     textGlow?: boolean;
     paddingTop?: string;
     paddingBottom?: string;
-    mediaPosition?: string;
-    mediaScale?: string;
-    mediaOpacity?: number;
-    gradientColors?: string[]; // Added gradientColors
-    gradientDirection?: string; // Added gradientDirection
+    mediaPosition?: string | null; // Explicitly allow null
+    mediaScale?: string | null; // Explicitly allow null
+    mediaOpacity?: number | null; // Explicitly allow null
+    gradientColors?: string[] | null; // Explicitly allow null
+    gradientDirection?: string | null; // Explicitly allow null
   };
   // Confidence score fields
   confidenceScore?: number;
