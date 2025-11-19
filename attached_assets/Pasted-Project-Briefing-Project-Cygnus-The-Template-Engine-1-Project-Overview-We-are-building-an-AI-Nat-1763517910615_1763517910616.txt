@@ -1,0 +1,68 @@
+Project Briefing: Project Cygnus (The Template Engine)
+1. Project Overview We are building an AI-Native Web Development Platform designed for high-volume, brand-compliant content creation. The core philosophy moves the AI from being a "generator" (writing code from scratch) to an "assembler" (using validated, pre-built JSON components).
+
+2. Technical Architecture
+
+Stack: React (Vite), Node.js/Express, PostgreSQL (Drizzle ORM), TypeScript, Zod, TanStack Query.
+
+Core Data Structure: The system relies on sceneConfig JSON blobs that define web sections (Heroes, Testimonials, etc.).
+
+
+Multi-Tenancy: Strict tenantId isolation is enforced at the database level for all queries.
+
+
+Current Status: Phases 0, 1, & 2 are COMPLETE
+We have successfully implemented the "Recycler" engine foundation. The database, API, and UI for managing templates are live.
+
+✅ Phase 0: Database Schema (Completed)
+
+
+Table Created: scene_templates table is live in Postgres.
+
+
+Fields: Includes id, tenantId, sceneConfig (JSONB), tags, category, and previewImageUrl .
+
+
+Type Safety: Zod schemas (insertSceneTemplateSchema) and TypeScript types (SceneTemplate) are exported in shared/schema.ts .
+
+✅ Phase 1: Backend API Layer (Completed)
+
+Endpoints Implemented:
+
+
+POST /create-from-scene: Saves a scene as a template with media validation.
+
+
+GET /scene-templates: Lists templates with filtering/search.
+
+
+POST /recycle: Clones a template into a project, handling media linking and order logic.
+
+
+Security: All endpoints enforce tenantId isolation and validate media ownership .
+
+✅ Phase 2: Frontend UI (Completed)
+
+
+Components Built: SceneRecyclerModal, TemplateCard, and SaveAsTemplateButton are functional.
+
+
+
+Integration: The useRecycleScene hook handles mutations and query invalidation. Users can now save scenes as templates and add them back into projects via the UI.
+
+Current Objective: Phase 3 (AI Enhancement)
+Goal: Evolve the AI from a "generator" to an "assembler." We need to teach the AI to look at the scene_templates library first before generating new content.
+
+Immediate Requirements:
+
+
+Load Context: Update the AI generation endpoint to query scene_templates (limit 20, sorted by usage) .
+
+
+Inject Prompt: Inject a new system prompt section <AVAILABLE_SCENE_TEMPLATES> containing the JSON structure of available assets.
+
+
+Enforce Logic: Instruct the AI to COPY DIRECTOR CONFIG from templates to ensure animation consistency, while populating content fields with user data .
+
+
+Tracking: Ensure the output JSON includes _sourceTemplateId for lineage tracking.

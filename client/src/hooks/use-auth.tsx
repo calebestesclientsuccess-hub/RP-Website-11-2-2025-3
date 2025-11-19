@@ -1,6 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { createContext, useContext } from "react";
+
+// Mock user for demo mode - always logged in
+const DEMO_USER = {
+  id: 'demo_user_01',
+  username: 'demo_user'
+};
 
 interface User {
   id: string;
@@ -17,59 +21,29 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Demo mode auth provider - always returns demo user, no real authentication
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const queryClient = useQueryClient();
-  
-  const { data: sessionData, isLoading } = useQuery<{ user: User | null }>({
-    queryKey: ["/api/auth/session"],
-  });
-
-  const user = sessionData?.user || null;
-
-  const loginMutation = useMutation({
-    mutationFn: async ({ username, password }: { username: string; password: string }) => {
-      const res = await apiRequest("POST", "/api/auth/login", { username, password });
-      return await res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/session"] });
-    },
-  });
-
-  const registerMutation = useMutation({
-    mutationFn: async ({ username, email, password }: { username: string; email: string; password: string }) => {
-      const res = await apiRequest("POST", "/api/auth/register", { username, email, password });
-      return await res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/session"] });
-    },
-  });
-
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/auth/logout");
-      return await res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/session"] });
-    },
-  });
-
+  // Mock functions that do nothing in demo mode
   const login = async (username: string, password: string) => {
-    await loginMutation.mutateAsync({ username, password });
+    console.log('Demo mode - login not required');
   };
 
   const register = async (username: string, email: string, password: string) => {
-    await registerMutation.mutateAsync({ username, email, password });
+    console.log('Demo mode - registration not required');
   };
 
   const logout = async () => {
-    await logoutMutation.mutateAsync();
+    console.log('Demo mode - logout not required');
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ 
+      user: DEMO_USER, // Always logged in as demo user
+      isLoading: false, // Never loading in demo mode
+      login, 
+      register, 
+      logout 
+    }}>
       {children}
     </AuthContext.Provider>
   );

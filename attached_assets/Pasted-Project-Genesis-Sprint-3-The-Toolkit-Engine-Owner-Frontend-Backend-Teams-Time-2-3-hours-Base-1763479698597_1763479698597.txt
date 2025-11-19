@@ -1,0 +1,179 @@
+Project Genesis - Sprint 3: The Toolkit Engine
+
+Owner: Frontend & Backend Teams
+Time: 2-3 hours
+Based On: Project Genesis Technical Specification v1.0
+
+1. Sprint Goal
+
+Implement the "Component Toolkit" architecture. This decouples the AI-generated JSON (sceneConfig) from the React components that render it. This allows us to create different "themes" or "toolkits" (e.g., "Default v1," "Client X Custom") that can render the same JSON in completely different visual styles.
+
+2. Dependencies
+
+Sprint 0-2 must be complete. This system modifies the SceneRenderer and builds upon the projects.componentToolkitId field.
+
+3. Technical Tasks
+
+[3.1] Backend: component_toolkits Table
+
+File: shared/schema.ts
+
+Action: This can be a "soft" feature (hardcoded map) or a "hard" feature (database table). For a scalable system, we'll use a table.
+
+Schema:
+
+export const componentToolkits = pgTable("component_toolkits", {
+  id: varchar("id").primaryKey(), // e.g., 'default_v1'
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  tenantId: varchar("tenant_id").references(() => tenants.id, { onDelete: "cascade" }), // NULL = global/system toolkit
+  availableSceneTypes: text("available_scene_types").array().notNull(), // ['fullscreen', 'split', 'quote', 'client_x_hero']
+});
+
+
+Migration: Run npm run db:push --force.
+
+Seed: Insert your "Default v1" toolkit into this table.
+
+INSERT INTO component_toolkits (id, name, availableSceneTypes) 
+VALUES ('default_v1', 'Default Toolkit', ARRAY['fullscreen', 'split', 'gallery', 'quote', 'text', 'image', 'video']);
+
+
+[3.2] Frontend: The Dynamic Component "Registry"
+
+File: client/src/components/branding/toolkits/default_v1.ts
+
+Action: Create a "registry" file that maps string keys to your actual React components.
+
+Logic:
+
+// This file defines your 'Default v1' toolkit
+import FullscreenScene from '../scenes/FullscreenScene.tsx';
+import SplitScene from '../scenes/SplitScene.tsx';
+import GalleryScene from '../scenes/GalleryScene.tsx';
+import QuoteScene from '../scenes/QuoteScene.tsx';
+// ... import all your scene components
+
+export const defaultToolkit = new Map<string, React.ComponentType<any>>([
+  ['fullscreen', FullscreenScene],
+  ['split', SplitScene],
+  ['gallery', GalleryScene],
+  ['quote', QuoteScene],
+  // ... etc.
+]);
+
+
+File: client/src/components/branding/toolkits/registry.ts
+
+Action: Create a master registry that knows how to load toolkits.
+
+Logic:
+
+import { defaultToolkit } from './default_v1.ts';
+// Import other toolkits as you build them
+// import { clientXToolkit } from './client_x.ts';
+
+const toolkitRegistry = new Map<string, Map<string, React.ComponentType<any>>>([
+  ['default_v1', defaultToolkit],
+  // ['client_x', clientXToolkit],
+]);
+
+export const getComponent = (toolkitId: string, sceneType: string) => {
+  const toolkit = toolkitRegistry.get(toolkitId);
+  if (!toolkit) {
+    console.error(`Unknown toolkit: ${toolkitId}`);
+    return null;
+  }
+  const SceneComponent = toolkit.get(sceneType);
+  if (!SceneComponent) {
+    console.error(`Unknown scene type '${sceneType}' in toolkit '${toolkitId}'`);
+    return null;
+  }
+  return SceneComponent;
+};
+
+
+[3.3] Frontend: Modify SceneRenderer.tsx
+
+File: client/src/components/branding/SceneRenderer.tsx
+
+Action: Replace the static switch statement with a dynamic lookup.
+
+Logic:
+
+import { getComponent } from './toolkits/registry';
+
+// Props will include the 'project' object or just the 'toolkitId'
+interface SceneRendererProps {
+  scene: SceneConfig;
+  projectToolkitId: string;
+  // ... other props
+}
+
+export const SceneRenderer = ({ scene, projectToolkitId, ...props }: SceneRendererProps) => {
+  // DYNAMIC LOOKUP
+  const SceneComponent = getComponent(projectToolkitId, scene.type);
+
+  if (!SceneComponent) {
+    // Render a fallback or error component
+    return (
+      <div className="text-red-500">
+        Error: Scene type "{scene.type}" not found in toolkit "{projectToolkitId}".
+      </div>
+    );
+  }
+
+  // Render the dynamically-found component
+  return <SceneComponent scene={scene} {...props} />;
+
+  /* // DELETE THE OLD STATIC SWITCH STATEMENT
+  switch (scene.type) {
+    case "fullscreen": return <FullscreenScene ... />;
+    case "split": return <SplitScene ... />;
+    // ... etc.
+  }
+  */
+};
+
+
+[3.4] AI Integration: Update AI Director
+
+File: server/utils/portfolio-director.ts
+
+Action: The prompt is already set up! In Sprint 1, we added this line:
+<Available Scene Types: ["fullscreen", "split", "gallery", "quote", "text", "image", "video"]>
+
+Logic: Now, you just need to make this dynamic.
+
+Fetch the componentToolkit from the DB using project.componentToolkitId.
+
+Inject its availableSceneTypes array into the prompt.
+
+// Inside 'POST /api/projects/:id/generate'
+const toolkit = await db.query.componentToolkits.findFirst({
+  where: eq(componentToolkits.id, project.componentToolkitId)
+});
+
+const availableTypes = toolkit ? toolkit.availableSceneTypes : ['fullscreen', 'split']; // Default fallback
+
+// ... inside the system prompt string:
+<COMPONENT_TOOLKIT>
+Toolkit ID: ${project.componentToolkitId}
+Available Scene Types: ${JSON.stringify(availableTypes)}
+(You MUST only use 'type' values from this list.)
+</COMPONENT_TOOLKIT>
+
+
+4. Definition of Done
+
+Sprint 3 is complete when:
+
+The component_toolkits table exists and is seeded.
+
+The static switch statement in SceneRenderer.tsx is gone.
+
+The SceneRenderer.tsx now uses getComponent(toolkitId, sceneType) to dynamically render scenes.
+
+The AI "Director" prompt is dynamically populated with the availableSceneTypes from the project's selected toolkit.
+
+(Test): You can manually create a client_x toolkit, register it, and watch the AI generate JSON and the frontend render it using your new components.

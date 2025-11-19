@@ -300,8 +300,9 @@ export const sceneTemplates = pgTable("scene_templates", {
   // Search by category
   categoryIdx: index("scene_templates_category_idx").on(table.category),
   
-  // Full-text search on name/description
-  searchIdx: index("scene_templates_search_idx").on(table.name, table.description),
+  // Full-text search on name/description using GIN index with to_tsvector
+  searchIdx: index("scene_templates_search_idx")
+    .using("gin", sql`to_tsvector('english', coalesce(${table.name}, '') || ' ' || coalesce(${table.description}, ''))`),
 }));
 
 export const portfolioConversations = pgTable("portfolio_conversations", {

@@ -27,16 +27,18 @@ import {
   type PortfolioPrompt, type InsertPortfolioPrompt, type UpdatePortfolioPrompt,
   // media library schema - needs to be added
   type MediaLibraryAsset, type InsertMediaLibraryAsset,
+  type SceneTemplate, type InsertSceneTemplate, type UpdateSceneTemplate,
   users, emailCaptures, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings, jobApplications, leadCaptures, blueprintCaptures, assessmentResponses, newsletterSignups, passwordResetTokens,
   assessmentConfigs, assessmentQuestions, assessmentAnswers, assessmentResultBuckets, configurableAssessmentResponses, campaigns, events, tenants, leads, featureFlags, insertLeadSchema,
   projects, projectScenes, promptTemplates, portfolioPrompts, portfolioConversations, portfolioVersions, contentAssets,
   // media library table - needs to be added
-  mediaLibrary, aiPromptTemplates // Added aiPromptTemplates here for getPromptVersionHistory and rollbackPromptToVersion
+  mediaLibrary, aiPromptTemplates, sceneTemplates // Added aiPromptTemplates here for getPromptVersionHistory and rollbackPromptToVersion
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, like, ilike, sql } from "drizzle-orm";
 import crypto from 'crypto';
-
+import { brandSettings, type BrandSettings, type NewBrandSettings } from "./models/brandSettings";
+import { layoutDrafts, type LayoutDraft, type NewLayoutDraft } from "./models/layoutDraft";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -213,6 +215,27 @@ export interface IStorage {
   togglePortfolioPrompt(id: string, userId: string): Promise<PortfolioPrompt>;
   getPortfolioPrompt(projectId: string, promptType: string): Promise<PortfolioPrompt | null>;
   deletePortfolioPrompt(id: string): Promise<void>;
+
+  // Scene Template Methods
+  getAllSceneTemplates(tenantId: string, filters?: { category?: string; tags?: string[] }): Promise<SceneTemplate[]>;
+  getSceneTemplateById(tenantId: string, id: string): Promise<SceneTemplate | undefined>;
+  createSceneTemplate(tenantId: string, userId: string, template: InsertSceneTemplate): Promise<SceneTemplate>;
+  updateSceneTemplate(tenantId: string, id: string, template: Partial<InsertSceneTemplate>): Promise<SceneTemplate>;
+  deleteSceneTemplate(tenantId: string, id: string): Promise<void>;
+  searchSceneTemplates(tenantId: string, searchQuery: string): Promise<SceneTemplate[]>;
+  recycleTemplate(tenantId: string, templateId: string, projectId: string): Promise<ProjectScene>;
+  saveSceneAsTemplate(tenantId: string, sceneId: string, userId: string, metadata: { name: string; description?: string; category?: string; tags?: string[]; previewImageUrl?: string }): Promise<SceneTemplate>;
+
+
+  // Brand Settings
+  getBrandSettings(tenantId: string): Promise<BrandSettings | undefined>;
+  createBrandSettings(settings: NewBrandSettings): Promise<BrandSettings>;
+  updateBrandSettings(tenantId: string, settings: Partial<NewBrandSettings>): Promise<BrandSettings>;
+
+  // Layout Drafts
+  getLayoutDraft(tenantId: string, userId: string): Promise<LayoutDraft | undefined>;
+  createLayoutDraft(draft: NewLayoutDraft): Promise<LayoutDraft>;
+  updateLayoutDraft(id: number, draft: Partial<NewLayoutDraft>): Promise<LayoutDraft>;
 }
 
 export class DbStorage implements IStorage {
@@ -1239,6 +1262,125 @@ export class DbStorage implements IStorage {
     await db.delete(portfolioPrompts).where(eq(portfolioPrompts.id, id));
   }
 
+  // Scene Template Methods
+  async getAllSceneTemplates(tenantId: string, filters?: { category?: string; tags?: string[] }): Promise<SceneTemplate[]> {
+    let conditions = [eq(sceneTemplates.tenantId, tenantId)];
+
+    if (filters?.category) {
+      conditions.push(eq(sceneTemplates.category, filters.category));
+    }
+
+    if (filters?.tags && filters.tags.length > 0) {
+      // Check if template tags array contains any of the filter tags
+      conditions.push(sql`${sceneTemplates.tags} && ${filters.tags}`);
+    }
+
+    return await db
+      .select()
+      .from(sceneTemplates)
+      .where(and(...conditions))
+      .orderBy(desc(sceneTemplates.createdAt));
+  }
+
+  async getSceneTemplateById(tenantId: string, id: string): Promise<SceneTemplate | undefined> {
+    const [template] = await db
+      .select()
+      .from(sceneTemplates)
+      .where(and(eq(sceneTemplates.tenantId, tenantId), eq(sceneTemplates.id, id)));
+    return template;
+  }
+
+  async createSceneTemplate(tenantId: string, userId: string, template: InsertSceneTemplate): Promise<SceneTemplate> {
+    const [newTemplate] = await db
+      .insert(sceneTemplates)
+      .values({
+        ...template,
+        tenantId,
+        createdBy: userId,
+      })
+      .returning();
+    return newTemplate;
+  }
+
+  async updateSceneTemplate(tenantId: string, id: string, template: Partial<InsertSceneTemplate>): Promise<SceneTemplate> {
+    const [updated] = await db
+      .update(sceneTemplates)
+      .set({ ...template, updatedAt: new Date() })
+      .where(and(eq(sceneTemplates.tenantId, tenantId), eq(sceneTemplates.id, id)))
+      .returning();
+    return updated;
+  }
+
+  async deleteSceneTemplate(tenantId: string, id: string): Promise<void> {
+    await db.delete(sceneTemplates).where(and(eq(sceneTemplates.tenantId, tenantId), eq(sceneTemplates.id, id)));
+  }
+
+  async searchSceneTemplates(tenantId: string, searchQuery: string): Promise<SceneTemplate[]> {
+    // Use PostgreSQL full-text search with the GIN index
+    return await db
+      .select()
+      .from(sceneTemplates)
+      .where(
+        and(
+          eq(sceneTemplates.tenantId, tenantId),
+          sql`to_tsvector('english', coalesce(${sceneTemplates.name}, '') || ' ' || coalesce(${sceneTemplates.description}, '')) @@ plainto_tsquery('english', ${searchQuery})`
+        )
+      )
+      .orderBy(desc(sceneTemplates.usageCount));
+  }
+
+  async recycleTemplate(tenantId: string, templateId: string, projectId: string): Promise<ProjectScene> {
+    // Get the template
+    const template = await this.getSceneTemplateById(tenantId, templateId);
+    if (!template) {
+      throw new Error('Template not found');
+    }
+
+    // Clone the scene config and create new project scene
+    const newScene = await this.createProjectScene(tenantId, projectId, {
+      sceneConfig: template.sceneConfig,
+    });
+
+    // Update template usage statistics
+    await db
+      .update(sceneTemplates)
+      .set({
+        usageCount: sql`${sceneTemplates.usageCount} + 1`,
+        lastUsedAt: new Date(),
+      })
+      .where(and(eq(sceneTemplates.tenantId, tenantId), eq(sceneTemplates.id, templateId)));
+
+    return newScene;
+  }
+
+  async saveSceneAsTemplate(
+    tenantId: string,
+    sceneId: string,
+    userId: string,
+    metadata: { name: string; description?: string; category?: string; tags?: string[]; previewImageUrl?: string }
+  ): Promise<SceneTemplate> {
+    // Get the source scene
+    const [scene] = await db
+      .select()
+      .from(projectScenes)
+      .where(eq(projectScenes.id, sceneId));
+
+    if (!scene) {
+      throw new Error('Scene not found');
+    }
+
+    // Create template from scene
+    return await this.createSceneTemplate(tenantId, userId, {
+      name: metadata.name,
+      description: metadata.description,
+      sceneConfig: scene.sceneConfig,
+      previewImageUrl: metadata.previewImageUrl,
+      tags: metadata.tags,
+      category: metadata.category,
+      sourceProjectId: scene.projectId,
+      sourceSceneId: sceneId,
+    });
+  }
 
   async getMediaAssets(tenantId: string, projectId?: string): Promise<MediaLibraryAsset[]> {
     try {
@@ -1472,6 +1614,47 @@ export class DbStorage implements IStorage {
     const currentMap = await this.getAssetMap(projectId);
     const { [placeholderId]: _, ...newMap } = currentMap;
     return this.saveAssetMap(projectId, newMap);
+  }
+
+  // Brand Settings Implementation
+  async getBrandSettings(tenantId: string): Promise<BrandSettings | undefined> {
+    const [settings] = await db.select().from(brandSettings).where(eq(brandSettings.tenantId, tenantId));
+    return settings;
+  }
+
+  async createBrandSettings(settings: NewBrandSettings): Promise<BrandSettings> {
+    const [newSettings] = await db.insert(brandSettings).values(settings).returning();
+    return newSettings;
+  }
+
+  async updateBrandSettings(tenantId: string, settings: Partial<NewBrandSettings>): Promise<BrandSettings> {
+    const [updated] = await db
+      .update(brandSettings)
+      .set({ ...settings, updatedAt: new Date().toISOString() })
+      .where(eq(brandSettings.tenantId, tenantId))
+      .returning();
+    return updated;
+  }
+
+  // Layout Drafts Implementation
+  async getLayoutDraft(tenantId: string, userId: string): Promise<LayoutDraft | undefined> {
+    const [draft] = await db.select().from(layoutDrafts)
+      .where(and(eq(layoutDrafts.tenantId, tenantId), eq(layoutDrafts.userId, userId)));
+    return draft;
+  }
+
+  async createLayoutDraft(draft: NewLayoutDraft): Promise<LayoutDraft> {
+    const [newDraft] = await db.insert(layoutDrafts).values(draft).returning();
+    return newDraft;
+  }
+
+  async updateLayoutDraft(id: number, draft: Partial<NewLayoutDraft>): Promise<LayoutDraft> {
+    const [updated] = await db
+      .update(layoutDrafts)
+      .set({ ...draft, updatedAt: new Date().toISOString() })
+      .where(eq(layoutDrafts.id, id))
+      .returning();
+    return updated;
   }
 }
 

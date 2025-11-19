@@ -230,12 +230,12 @@ export default function MediaLibrary() {
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="project">Link to Project (optional)</Label>
-                      <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                      <Select value={selectedProjectId || "none"} onValueChange={(val) => setSelectedProjectId(val === "none" ? "" : val)}>
                         <SelectTrigger id="project">
                           <SelectValue placeholder="Select a project..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">None (Global Asset)</SelectItem>
+                          <SelectItem value="none">None (Global Asset)</SelectItem>
                           {projects.map((project: any) => (
                             <SelectItem key={project.id} value={project.id.toString()}>
                               {project.title}

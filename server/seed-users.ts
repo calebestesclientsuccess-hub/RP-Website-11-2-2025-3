@@ -4,33 +4,33 @@ import bcrypt from "bcryptjs";
 
 const userAccounts = [
   {
-    username: "Caleb@RevenueParty.com",
-    email: "Caleb@RevenueParty.com",
+    username: "caleb@revenueparty.com",
+    email: "caleb@revenueparty.com",
     role: "super_user",
   },
   {
-    username: "admin@RevenueParty.com",
-    email: "admin@RevenueParty.com",
+    username: "admin@revenueparty.com",
+    email: "admin@revenueparty.com",
     role: "manager",
   },
   {
-    username: "mariya@RevenueParty.com",
-    email: "mariya@RevenueParty.com",
+    username: "mariya@revenueparty.com",
+    email: "mariya@revenueparty.com",
     role: "manager",
   },
   {
-    username: "muneeb@RevenueParty.com",
-    email: "muneeb@RevenueParty.com",
+    username: "muneeb@revenueparty.com",
+    email: "muneeb@revenueparty.com",
     role: "manager",
   },
   {
-    username: "danyal@RevenueParty.com",
-    email: "danyal@RevenueParty.com",
+    username: "danyal@revenueparty.com",
+    email: "danyal@revenueparty.com",
     role: "manager",
   },
   {
-    username: "sofia@RevenueParty.com",
-    email: "sofia@RevenueParty.com",
+    username: "sofia@revenueparty.com",
+    email: "sofia@revenueparty.com",
     role: "manager",
   },
 ];
@@ -38,12 +38,13 @@ const userAccounts = [
 async function seedUsers() {
   console.log("Starting user account creation...");
   
-  const temporaryPassword = "RevenueParty2024!";
+  const temporaryPassword = "test1234";
   const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
   
   for (const account of userAccounts) {
     try {
       const [user] = await db.insert(users).values({
+        tenantId: "tnt_revenueparty_default",
         username: account.username,
         email: account.email,
         password: hashedPassword,
@@ -61,15 +62,15 @@ async function seedUsers() {
   }
   
   console.log("\n=== USER ACCOUNTS CREATED ===");
-  console.log("All accounts use temporary password: RevenueParty2024!");
+  console.log("All accounts use temporary password: test1234");
   console.log("Please use 'Forgot Password' to set your own secure password.");
   console.log("\nAccounts created:");
-  console.log("- Caleb@RevenueParty.com (Super User)");
-  console.log("- admin@RevenueParty.com (Manager)");
-  console.log("- mariya@RevenueParty.com (Manager)");
-  console.log("- muneeb@RevenueParty.com (Manager)");
-  console.log("- danyal@RevenueParty.com (Manager)");
-  console.log("- sofia@RevenueParty.com (Manager)");
+  console.log("- caleb@revenueparty.com (Super User)");
+  console.log("- admin@revenueparty.com (Manager)");
+  console.log("- mariya@revenueparty.com (Manager)");
+  console.log("- muneeb@revenueparty.com (Manager)");
+  console.log("- danyal@revenueparty.com (Manager)");
+  console.log("- sofia@revenueparty.com (Manager)");
   
   process.exit(0);
 }

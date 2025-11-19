@@ -1,0 +1,78 @@
+I can see the issue - your server is stuck in a crash loop because port 5000 is already in use. The workflow keeps trying to restart but fails immediately with EADDRINUSE.
+
+Let me fix this by finding and killing whatever's holding port 5000:
+
+ps aux | grep -E "node|tsx|npm" | grep -v grep | awk '{print $2}' | xargs -r kill -9
+
+
+Run again
+This will:
+
+Find all Node.js/tsx/npm processes
+Kill them forcefully to free up port 5000
+Allow the workflow to restart cleanly
+After running this, the "Start application" workflow should automatically restart and work properly.
+
+rest-express@1.0.0 dev
+NODE_ENV=development tsx server/index.ts
+
+[server] Registering ESM loader to patch Vite: /home/runner/workspace/server/register-loader.mjs
+[server] Loader registered, now loading application
+[register-loader] Checking Vite chunk for createServer: file:///home/runner/workspace/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js
+[register-loader] Successfully patched createServer function
+[vite-patch] Injecting allowedHosts: true into server config
+Uncaught Exception: Error: listen EADDRINUSE: address already in use 0.0.0.0:5000
+at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+at listenInCluster (node:net:1965:12)
+at doListen (node:net:2139:7)
+at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+code: 'EADDRINUSE',
+errno: -98,
+syscall: 'listen',
+address: '0.0.0.0',
+port: 5000
+}
+
+CE
+
+calebestesclien
+Assistant
+just now
+Read 20 files
+The port 5000 is stuck because processes keep restarting. Let me stop everything completely and then restart fresh.
+
+First, let's kill all Node processes:
+
+pkill -9 node; pkill -9 tsx; sleep 2
+
+
+Run again
+After running this, the workflow should restart automatically. If it doesn't start on its own after a few seconds, click the Stop button in the workflow panel, wait 2 seconds, then click Run to start it cleanly.
+
+The migrations will run automatically when the server starts successfully.
+
+it keeps failing!
+
+CE
+
+calebestesclien
+Assistant
+just now
+Read 12 files
+I can see the issue - port 5000 is still occupied despite killing the processes. The webview logs show Vite is trying to connect over an insecure WebSocket, which is also failing.
+
+Let me take a different approach - we need to find what's actually holding the port and force a clean restart:
+
+fuser -k 5000/tcp 2>/dev/null || true; sleep 1
+
+
+Run again
+This uses fuser to forcefully kill any process bound to port 5000. After this runs, the workflow should automatically restart and work properly.
+
+If it still fails after this, we may need to temporarily change the port in your environment to bypass the stuck port entirely.
+
+Nothing to commit
+Apply all:
+Run shell command:
+fuser -k 5000/tcp 2>/dev/null || true; sleep 1
+Nothing to commit

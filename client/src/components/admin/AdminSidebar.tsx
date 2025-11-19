@@ -12,7 +12,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { FileText, Video, Settings, LogOut, LayoutDashboard, ClipboardList, Megaphone, Flag, Library, Sparkles, Upload } from "lucide-react";
+import { FileText, Video, Settings, LogOut, LayoutDashboard, ClipboardList, Megaphone, Flag, Library, Sparkles, Upload, Bookmark, Wand2, Palette } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 
@@ -28,14 +28,29 @@ const menuItems = [
     icon: Library,
   },
   {
+    title: "Portfolio Wizard",
+    url: "/admin/portfolio-wizard",
+    icon: Wand2,
+  },
+  {
     title: "AI Portfolio Builder",
     url: "/admin/portfolio-builder",
-    icon: Sparkles,
+    icon: Palette,
+  },
+  {
+    title: "AI Layout Wizard",
+    url: "/admin/wizard",
+    icon: Wand2,
   },
   {
     title: "Media Library",
     url: "/admin/media-library",
     icon: Upload,
+  },
+  {
+    title: "Template Library",
+    url: "/admin/template-library",
+    icon: Bookmark,
   },
   {
     title: "Default AI Prompts",

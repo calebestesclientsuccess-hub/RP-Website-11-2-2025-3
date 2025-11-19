@@ -1,0 +1,845 @@
+import { z } from "zod";
+
+import { fromZodError } from "zod-validation-error";
+
+import { eq, and, desc, asc, inArray, sql, or, ilike } from "drizzle-orm";
+
+import { db } from "./db"; // Adjust import path as needed
+
+import { 
+
+  sceneTemplates, 
+
+  projectScenes, 
+
+  projects, 
+
+  mediaLibrary, 
+
+  sceneConfigSchema,
+
+  portfolioVersions // Assuming this exists based on spec
+
+} from "@shared/schema"; // Adjust import path as needed
+
+
+
+// ... existing code ...
+
+
+
+  // -------------------------------------------------------------------------
+
+  // PROJECT CYGNUS: SCENE RECYCLER API
+
+  // Sprint 1 Implementation
+
+  // -------------------------------------------------------------------------
+
+
+
+  // [1.1] POST /api/scene-templates/create-from-scene
+
+  app.post('/api/scene-templates/create-from-scene', requireAuth, async (req, res) => {
+
+    try {
+
+      // Validation Schema
+
+      const createFromSceneSchema = z.object({
+
+        sceneId: z.string().min(1),
+
+        templateName: z.string().min(3).max(255),
+
+        description: z.string().max(1000).optional(),
+
+        category: z.enum(["hero", "testimonial", "gallery", "split", "text", "media", "other"]).optional(),
+
+        tags: z.array(z.string()).max(10).optional(),
+
+        previewImageUrl: z.string().url().optional(),
+
+      });
+
+
+
+      // 1. Validate Request
+
+      const result = createFromSceneSchema.safeParse(req.body);
+
+      if (!result.success) {
+
+        return res.status(400).json({
+
+          error: "Validation failed",
+
+          details: fromZodError(result.error).message
+
+        });
+
+      }
+
+
+
+      const { sceneId, templateName, description, category, tags, previewImageUrl } = result.data;
+
+
+
+      // 2. Fetch Source Scene & Verify Tenant
+
+      const sourceScene = await db.query.projectScenes.findFirst({
+
+        where: eq(projectScenes.id, sceneId),
+
+        with: { 
+
+          project: { 
+
+            columns: { tenantId: true } 
+
+          } 
+
+        } as any // Cast if necessary depending on Drizzle types setup
+
+      });
+
+
+
+      if (!sourceScene) {
+
+        return res.status(404).json({ error: "Scene not found" });
+
+      }
+
+
+
+      // SECURITY: Cross-tenant check
+
+      if (sourceScene.project.tenantId !== req.tenantId) {
+
+        console.error(`[Security] User ${req.user!.id} attempted to create template from scene ${sceneId} owned by tenant ${sourceScene.project.tenantId}`);
+
+        return res.status(403).json({ error: "Access denied" });
+
+      }
+
+
+
+      // 3. Validate Scene Config
+
+      const sceneConfig = sourceScene.sceneConfig as any; // Type assertion for flexibility
+
+      const configValidation = sceneConfigSchema.safeParse(sceneConfig);
+
+      if (!configValidation.success) {
+
+        return res.status(400).json({
+
+          error: "Invalid scene configuration",
+
+          details: fromZodError(configValidation.error).message
+
+        });
+
+      }
+
+
+
+      // 4. Media Validation (Critical)
+
+      const mediaIdsToValidate = new Set<string>();
+
+      
+
+      // Extract mediaIds recursively or from known fields
+
+      if (sceneConfig.content?.mediaId) mediaIdsToValidate.add(sceneConfig.content.mediaId);
+
+      if (sceneConfig.content?.mediaMediaId) mediaIdsToValidate.add(sceneConfig.content.mediaMediaId);
+
+      if (Array.isArray(sceneConfig.content?.images)) {
+
+        sceneConfig.content.images.forEach((img: any) => {
+
+          if (img.mediaId) mediaIdsToValidate.add(img.mediaId);
+
+        });
+
+      }
+
+
+
+      if (mediaIdsToValidate.size > 0) {
+
+        const mediaRecords = await db.query.mediaLibrary.findMany({
+
+          where: and(
+
+            inArray(mediaLibrary.id, Array.from(mediaIdsToValidate)),
+
+            eq(mediaLibrary.tenantId, req.tenantId)
+
+          )
+
+        });
+
+
+
+        if (mediaRecords.length !== mediaIdsToValidate.size) {
+
+          const foundIds = new Set(mediaRecords.map(m => m.id));
+
+          const missingIds = Array.from(mediaIdsToValidate).filter(id => !foundIds.has(id));
+
+          
+
+          console.error(`[Security] Template creation blocked - invalid media references: ${missingIds.join(', ')}`);
+
+          return res.status(403).json({
+
+            error: "Scene references media that doesn't exist or doesn't belong to your organization",
+
+            invalidMediaIds: missingIds
+
+          });
+
+        }
+
+      }
+
+
+
+      // 5. Logic: Auto-generate defaults
+
+      const autoCategory = category || sceneConfig.type || "other";
+
+      
+
+      let finalPreviewUrl = previewImageUrl;
+
+      if (!finalPreviewUrl) {
+
+        if (sceneConfig.content?.url) finalPreviewUrl = sceneConfig.content.url;
+
+        else if (sceneConfig.content?.images?.[0]?.url) finalPreviewUrl = sceneConfig.content.images[0].url;
+
+      }
+
+
+
+      // 6. Create Template
+
+      const [template] = await db.insert(sceneTemplates).values({
+
+        tenantId: req.tenantId,
+
+        name: templateName,
+
+        description: description || null,
+
+        sceneConfig: sceneConfig,
+
+        category: autoCategory,
+
+        tags: tags || [],
+
+        previewImageUrl: finalPreviewUrl || null,
+
+        sourceProjectId: sourceScene.projectId,
+
+        sourceSceneId: sceneId,
+
+        createdBy: req.user!.id,
+
+        usageCount: 0,
+
+        schemaVersion: "1.0",
+
+      }).returning();
+
+
+
+      console.log(`[Template Created] ${template.id} by user ${req.user!.id}`);
+
+      return res.status(201).json(template);
+
+
+
+    } catch (error: any) {
+
+      console.error("Error creating template:", error);
+
+      return res.status(500).json({ error: "Internal server error" });
+
+    }
+
+  });
+
+
+
+  // [1.2] GET /api/scene-templates
+
+  app.get('/api/scene-templates', requireAuth, async (req, res) => {
+
+    try {
+
+      const { category, tag, search, limit = "50", offset = "0", sortBy = "recent" } = req.query;
+
+
+
+      const parsedLimit = Math.min(parseInt(limit as string, 10) || 50, 100);
+
+      const parsedOffset = parseInt(offset as string, 10) || 0;
+
+
+
+      // 1. Security: Always filter by Tenant
+
+      const conditions = [eq(sceneTemplates.tenantId, req.tenantId)];
+
+
+
+      // 2. Optional Filters
+
+      if (category && category !== 'all') {
+
+        conditions.push(eq(sceneTemplates.category, category as string));
+
+      }
+
+
+
+      if (tag) {
+
+        // Drizzle syntax for array containment
+
+        conditions.push(sql`${tag} = ANY(${sceneTemplates.tags})`);
+
+      }
+
+
+
+      if (search) {
+
+        const searchTerm = `%${search}%`;
+
+        conditions.push(
+
+          or(
+
+            ilike(sceneTemplates.name, searchTerm),
+
+            ilike(sceneTemplates.description, searchTerm)
+
+          )
+
+        );
+
+      }
+
+
+
+      // 3. Sort Order
+
+      let orderBy;
+
+      if (sortBy === "popular") {
+
+        orderBy = [desc(sceneTemplates.usageCount), desc(sceneTemplates.createdAt)];
+
+      } else if (sortBy === "name") {
+
+        orderBy = [asc(sceneTemplates.name)];
+
+      } else {
+
+        orderBy = [desc(sceneTemplates.createdAt)]; // default recent
+
+      }
+
+
+
+      // 4. Execute Queries
+
+      const templates = await db.query.sceneTemplates.findMany({
+
+        where: and(...conditions),
+
+        orderBy: orderBy,
+
+        limit: parsedLimit,
+
+        offset: parsedOffset,
+
+      });
+
+
+
+      // Count query for pagination
+
+      const countResult = await db
+
+        .select({ count: sql<number>`count(*)` })
+
+        .from(sceneTemplates)
+
+        .where(and(...conditions));
+
+      
+
+      const total = Number(countResult[0]?.count || 0);
+
+
+
+      return res.json({
+
+        templates,
+
+        total,
+
+        limit: parsedLimit,
+
+        offset: parsedOffset
+
+      });
+
+
+
+    } catch (error: any) {
+
+      console.error("Error fetching templates:", error);
+
+      return res.status(500).json({ error: "Internal server error" });
+
+    }
+
+  });
+
+
+
+  // [1.3] POST /api/projects/:projectId/scenes/recycle
+
+  app.post('/api/projects/:projectId/scenes/recycle', requireAuth, async (req, res) => {
+
+    try {
+
+      const { projectId } = req.params;
+
+      const recycleSchema = z.object({
+
+        templateId: z.string().min(1),
+
+        order: z.number().int().min(0).optional(),
+
+        customizations: z.object({
+
+          content: z.record(z.any()).optional(),
+
+          director: z.record(z.any()).optional(),
+
+        }).optional(),
+
+      });
+
+
+
+      const result = recycleSchema.safeParse(req.body);
+
+      if (!result.success) {
+
+        return res.status(400).json({ error: "Validation failed", details: fromZodError(result.error).message });
+
+      }
+
+
+
+      const { templateId, order: requestedOrder, customizations } = result.data;
+
+
+
+      // Use transaction for atomicity
+
+      const recycleResult = await db.transaction(async (tx) => {
+
+        // 1. Validation & Security
+
+        const project = await tx.query.projects.findFirst({
+
+          where: eq(projects.id, projectId),
+
+          columns: { id: true, tenantId: true }
+
+        });
+
+
+
+        if (!project) throw new Error("PROJECT_NOT_FOUND");
+
+        if (project.tenantId !== req.tenantId) throw new Error("ACCESS_DENIED");
+
+
+
+        const template = await tx.query.sceneTemplates.findFirst({
+
+          where: eq(sceneTemplates.id, templateId)
+
+        });
+
+
+
+        if (!template) throw new Error("TEMPLATE_NOT_FOUND");
+
+        if (template.tenantId !== req.tenantId) throw new Error("ACCESS_DENIED");
+
+
+
+        // 2. Media Validation & Orphan Cleanup
+
+        const sceneConfig = JSON.parse(JSON.stringify(template.sceneConfig)); // Deep copy
+
+        const mediaIdsToValidate = new Set<string>();
+
+
+
+        if (sceneConfig.content?.mediaId) mediaIdsToValidate.add(sceneConfig.content.mediaId);
+
+        if (sceneConfig.content?.mediaMediaId) mediaIdsToValidate.add(sceneConfig.content.mediaMediaId);
+
+        if (Array.isArray(sceneConfig.content?.images)) {
+
+          sceneConfig.content.images.forEach((img: any) => {
+
+            if (img.mediaId) mediaIdsToValidate.add(img.mediaId);
+
+          });
+
+        }
+
+
+
+        const orphanedMediaIds: string[] = [];
+
+        if (mediaIdsToValidate.size > 0) {
+
+          const mediaRecords = await tx.query.mediaLibrary.findMany({
+
+            where: and(
+
+              inArray(mediaLibrary.id, Array.from(mediaIdsToValidate)),
+
+              eq(mediaLibrary.tenantId, req.tenantId)
+
+            )
+
+          });
+
+
+
+          const foundIds = new Set(mediaRecords.map(m => m.id));
+
+          const missingIds = Array.from(mediaIdsToValidate).filter(id => !foundIds.has(id));
+
+
+
+          if (missingIds.length > 0) {
+
+            orphanedMediaIds.push(...missingIds);
+
+            // Graceful Degradation
+
+            if (sceneConfig.content?.mediaId && missingIds.includes(sceneConfig.content.mediaId)) delete sceneConfig.content.mediaId;
+
+            if (sceneConfig.content?.mediaMediaId && missingIds.includes(sceneConfig.content.mediaMediaId)) delete sceneConfig.content.mediaMediaId;
+
+            if (Array.isArray(sceneConfig.content?.images)) {
+
+              sceneConfig.content.images = sceneConfig.content.images.map((img: any) => {
+
+                if (img.mediaId && missingIds.includes(img.mediaId)) {
+
+                  const { mediaId, ...rest } = img;
+
+                  return rest;
+
+                }
+
+                return img;
+
+              });
+
+            }
+
+          }
+
+
+
+          // Auto-link
+
+          const unlinkedMedia = mediaRecords.filter(m => !m.projectId || m.projectId !== projectId);
+
+          if (unlinkedMedia.length > 0) {
+
+             await tx.update(mediaLibrary)
+
+               .set({ projectId })
+
+               .where(inArray(mediaLibrary.id, unlinkedMedia.map(m => m.id)));
+
+          }
+
+        }
+
+
+
+        // 3. Customizations
+
+        if (customizations?.content) {
+
+          sceneConfig.content = { ...sceneConfig.content, ...customizations.content };
+
+        }
+
+        if (customizations?.director) {
+
+          sceneConfig.director = { ...sceneConfig.director, ...customizations.director };
+
+        }
+
+
+
+        // 4. Lineage
+
+        sceneConfig._sourceTemplateId = templateId;
+
+        sceneConfig._recycledAt = new Date().toISOString();
+
+
+
+        // 5. Scene Ordering
+
+        let finalOrder = requestedOrder;
+
+        if (finalOrder === undefined) {
+
+          // Append
+
+          const existingScenes = await tx.query.projectScenes.findMany({
+
+            where: eq(projectScenes.projectId, projectId),
+
+            columns: { order: true },
+
+            orderBy: [desc(projectScenes.order)],
+
+            limit: 1
+
+          });
+
+          finalOrder = existingScenes.length > 0 ? existingScenes[0].order + 1 : 0;
+
+        } else {
+
+          // Insert & Shift
+
+          await tx.execute(
+
+            sql`UPDATE project_scenes SET "order" = "order" + 1 WHERE project_id = ${projectId} AND "order" >= ${finalOrder}`
+
+          );
+
+        }
+
+
+
+        // 6. Create Scene
+
+        const [newScene] = await tx.insert(projectScenes).values({
+
+          projectId,
+
+          sceneConfig,
+
+          order: finalOrder,
+
+        }).returning();
+
+
+
+        // 7. Update Analytics
+
+        await tx.update(sceneTemplates)
+
+          .set({ 
+
+            usageCount: sql`${sceneTemplates.usageCount} + 1`,
+
+            lastUsedAt: new Date() 
+
+          })
+
+          .where(eq(sceneTemplates.id, templateId));
+
+
+
+        // 8. Version History (Optional)
+
+        if (portfolioVersions) {
+
+           await tx.insert(portfolioVersions).values({
+
+             projectId: projectId,
+
+             changeType: 'scene_recycled',
+
+             createdAt: new Date(),
+
+             // Add other required fields for your specific versioning schema
+
+           });
+
+        }
+
+
+
+        return { newScene, orphanedMediaIds };
+
+      });
+
+
+
+      return res.status(201).json({
+
+        scene: recycleResult.newScene,
+
+        warnings: recycleResult.orphanedMediaIds.length > 0 ? {
+
+          orphanedMediaIds: recycleResult.orphanedMediaIds,
+
+          message: "Some media references were removed because the original assets no longer exist"
+
+        } : null
+
+      });
+
+
+
+    } catch (error: any) {
+
+      if (error.message === "PROJECT_NOT_FOUND" || error.message === "TEMPLATE_NOT_FOUND") return res.status(404).json({ error: error.message });
+
+      if (error.message === "ACCESS_DENIED") return res.status(403).json({ error: "Access denied" });
+
+      
+
+      console.error("Error recycling template:", error);
+
+      return res.status(500).json({ error: "Internal server error" });
+
+    }
+
+  });
+
+
+
+  // [1.4] PATCH /api/scene-templates/:id
+
+  app.patch('/api/scene-templates/:id', requireAuth, async (req, res) => {
+
+    try {
+
+      const updateSchema = z.object({
+
+        name: z.string().min(3).max(255).optional(),
+
+        description: z.string().max(1000).optional(),
+
+        category: z.enum(["hero", "testimonial", "gallery", "split", "text", "media", "other"]).optional(),
+
+        tags: z.array(z.string()).max(10).optional(),
+
+        previewImageUrl: z.string().url().optional(),
+
+      });
+
+
+
+      const result = updateSchema.safeParse(req.body);
+
+      if (!result.success) return res.status(400).json({ error: "Validation failed" });
+
+
+
+      const template = await db.query.sceneTemplates.findFirst({
+
+        where: eq(sceneTemplates.id, req.params.id)
+
+      });
+
+
+
+      if (!template) return res.status(404).json({ error: "Template not found" });
+
+      if (template.tenantId !== req.tenantId) return res.status(403).json({ error: "Access denied" });
+
+
+
+      const [updated] = await db.update(sceneTemplates)
+
+        .set({ ...result.data, updatedAt: new Date() })
+
+        .where(eq(sceneTemplates.id, req.params.id))
+
+        .returning();
+
+
+
+      return res.json(updated);
+
+    } catch (error) {
+
+      console.error("Error updating template:", error);
+
+      return res.status(500).json({ error: "Internal server error" });
+
+    }
+
+  });
+
+
+
+  // [1.5] DELETE /api/scene-templates/:id
+
+  app.delete('/api/scene-templates/:id', requireAuth, async (req, res) => {
+
+    try {
+
+      const template = await db.query.sceneTemplates.findFirst({
+
+        where: eq(sceneTemplates.id, req.params.id)
+
+      });
+
+
+
+      if (!template) return res.status(404).json({ error: "Template not found" });
+
+      if (template.tenantId !== req.tenantId) return res.status(403).json({ error: "Access denied" });
+
+
+
+      await db.delete(sceneTemplates).where(eq(sceneTemplates.id, req.params.id));
+
+      return res.status(204).send();
+
+    } catch (error) {
+
+      console.error("Error deleting template:", error);
+
+      return res.status(500).json({ error: "Internal server error" });
+
+    }
+
+  });
+
+// ... existing code ...

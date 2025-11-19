@@ -1,23 +1,38 @@
 import { Request, Response, NextFunction } from "express";
 
-// Default tenant ID for the stubbed multi-tenant architecture
-export const DEFAULT_TENANT_ID = 'tnt_revenueparty_default';
+// Hardcoded demo tenant ID - simplified for demo mode
+export const DEFAULT_TENANT_ID = 'demo_tenant_01';
+export const DEFAULT_USER_ID = 'demo_user_01';
 
-// Extend Express Request type to include tenantId
+// Extend Express Request type to include tenantId and mock user
 declare global {
   namespace Express {
     interface Request {
       tenantId: string;
+      userId?: string;
+      demoUser?: {
+        id: string;
+        username: string;
+        email: string;
+        tenantId: string;
+      };
     }
   }
 }
 
-// Tenant middleware - for now, always sets the default tenant
-// In the future (Phase 3), this will extract tenantId from subdomain or other source
+// Demo mode middleware - always sets demo tenant and mock user
 export function tenantMiddleware(req: Request, res: Response, next: NextFunction) {
-  // Stubbed: Always use default tenant
-  // Future: Extract from subdomain, JWT claim, or custom header
+  // Hardcoded demo values - no authentication required
   req.tenantId = DEFAULT_TENANT_ID;
+  req.userId = DEFAULT_USER_ID;
+  
+  // Mock user object for any code that expects user context
+  req.demoUser = {
+    id: DEFAULT_USER_ID,
+    username: 'demo_user',
+    email: 'demo@example.com',
+    tenantId: DEFAULT_TENANT_ID
+  };
   
   next();
 }

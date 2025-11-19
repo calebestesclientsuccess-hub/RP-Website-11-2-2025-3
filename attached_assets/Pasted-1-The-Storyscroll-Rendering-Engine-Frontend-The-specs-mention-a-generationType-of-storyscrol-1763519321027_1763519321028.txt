@@ -1,0 +1,49 @@
+1. The "Storyscroll" & Rendering Engine (Frontend)
+The specs mention a generationType of "storyscroll" versus "static".
+
+Animation Library: What specific library powers the director config? Are you using Framer Motion, GSAP (GreenSock), or a custom React Spring implementation?
+
+The "Director" Object: How does the sceneConfig.director JSON map to actual DOM behavior? Is there a central <DirectorProvider> that listens to scroll events and broadcasts them to components, or does each component handle its own IntersectionObserver?
+
+
+Component Hydration: For the "Toolkit Registry" , are you using React lazy and Suspense to load these dynamic components, or are they all bundled in the main build? (This impacts how "heavy" a page becomes).
+
+2. The AI "Assembler" Logic (Backend)
+We are moving from "generator" to "assembler" in Cygnus Phase 3.
+
+
+Context Window Strategy: When you inject <AVAILABLE_SCENE_TEMPLATES> into the prompt, are you sending the entire JSON blob for every template? If you have 50 templates, how do you handle the token limit? Do you summarize them (e.g., only sending name, category, and tags) or send the full schema?
+
+
+Validation Layer: When the AI returns a JSON array, does your Zod schema sceneConfigSchema  actively strip out hallucinated fields, or does it throw a hard error and fail the generation? (i.e., Is the system resilient or strict?)
+
+3. Data Integrity & Multi-Tenancy (Database)
+You mentioned strict tenantId enforcement.
+
+
+The "Orphan" Logic: In Cygnus Sprint 1, you built logic to handle "orphaned media" during recycling . When a user recycles a scene with media they don't own, does the system currently:
+
+A) Clone the media asset into their tenant bucket?
+
+B) Strip the media and leave a placeholder?
+
+C) Leave the URL pointing to the original source (breaking tenant isolation)?
+
+JSONB Indexing: You are using PostgreSQL JSONB. Have you set up GIN indexes on specific keys inside the sceneConfig (like type or tags) to speed up the "Add from Library" search, or are you relying on standard column filtering?
+
+4. The "Vibe Coder" Workflow (DevEx)
+You mentioned using "Vibe Coders" to build custom things.
+
+The Service Catalog: Does a "Service Catalog" currently exist where a Vibe Coder can register a new capability (e.g., "Add HubSpot CRM integration"), or is that currently done by manually editing the codebase?
+
+
+Deployment: When a Vibe Coder creates a new client_x toolkit, does that require a full deployment/rebuild of the React app, or can you inject new components at runtime (e.g., Module Federation)?
+
+5. Infrastructure & State
+
+State Management: Beyond React Query , are you using a global store (Zustand/Redux) to manage the "Wizard State"  across the multi-step generation process, or is it just URL params/local state?
+
+
+Hosting: Where does the actual Next.js/Vite app live? (Vercel, AWS Amplify, Docker on EC2?) This matters for the "Private UCaaS" and "SEO" goals you mentioned later.
+
+Which of these areas is the most "custom" or unique in your current build? That is usually where the hidden risks lie.

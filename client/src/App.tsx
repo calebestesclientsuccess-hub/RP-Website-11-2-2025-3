@@ -42,6 +42,7 @@ import PipelineAssessmentThankYou from "@/pages/PipelineAssessmentThankYou";
 import ManifestoPost from "@/pages/blog/ManifestoPost";
 import AssessmentRuntime from "@/pages/AssessmentRuntime";
 import AssessmentResult from "@/pages/AssessmentResult";
+import PreviewPortfolio from "@/pages/PreviewPortfolio";
 import NotFound from "@/pages/not-found";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -75,12 +76,16 @@ const TestimonialFormLazy = lazy(() => import("@/pages/admin/TestimonialForm"));
 const ProjectFormLazy = lazy(() => import("@/pages/admin/ProjectForm"));
 const JobPostingFormLazy = lazy(() => import("@/pages/admin/JobPostingForm"));
 const PortfolioBuilderLazy = lazy(() => import("@/pages/admin/PortfolioBuilder"));
+const PortfolioWizardLazy = lazy(() => import("@/pages/admin/PortfolioWizard"));
+const WizardLazy = lazy(() => import("@/pages/admin/Wizard"));
 const AIPromptSettingsLazy = lazy(() => import("@/pages/admin/AIPromptSettings"));
 const PortfolioPromptManagerLazy = lazy(() => import("@/pages/admin/PortfolioPromptManager"));
 const MediaLibraryLazy = lazy(() => import("@/pages/admin/MediaLibrary").catch(err => {
   console.error('Failed to load MediaLibrary:', err);
   return { default: () => <div className="p-8 text-center">Failed to load Media Library. Please refresh the page.</div> };
 }));
+const TemplateLibraryLazy = lazy(() => import("@/pages/admin/TemplateLibrary"));
+const ProjectSceneEditorLazy = lazy(() => import("@/pages/admin/ProjectSceneEditor"));
 
 // Loading fallback component
 function PageLoadingFallback() {
@@ -128,9 +133,13 @@ const TestimonialForm = withLazyLoading(TestimonialFormLazy);
 const ProjectForm = withLazyLoading(ProjectFormLazy);
 const JobPostingForm = withLazyLoading(JobPostingFormLazy);
 const PortfolioBuilder = withLazyLoading(PortfolioBuilderLazy);
+const PortfolioWizard = withLazyLoading(PortfolioWizardLazy);
+const Wizard = withLazyLoading(WizardLazy);
 const AIPromptSettings = withLazyLoading(AIPromptSettingsLazy);
 const PortfolioPromptManager = withLazyLoading(PortfolioPromptManagerLazy);
 const MediaLibrary = withLazyLoading(MediaLibraryLazy);
+const TemplateLibrary = withLazyLoading(TemplateLibraryLazy);
+const ProjectSceneEditor = withLazyLoading(ProjectSceneEditorLazy);
 
 
 function ScrollToTop() {
@@ -151,86 +160,94 @@ function Router() {
     <>
       <ScrollToTop />
       <Switch>
-      {/* Core Pages */}
-      <Route path="/" component={Home} />
-      <Route path="/problem" component={ProblemPage} />
-      <Route path="/gtm-engine" component={GTMEnginePage} />
-      <Route path="/results" component={ResultsPage} />
-      <Route path="/why-us" component={About} />
-      <Route path="/blog" component={BlogPage} />
-          <Route path="/blog/:slug" component={BlogPostPage} />
-      <Route path="/branding" component={BrandingPage} />
-      <Route path="/branding/:slug" component={BrandingProjectPage} />
-      <Route path="/audit" component={AuditPage} />
+        {/* Core Pages */}
+        <Route path="/" component={Home} />
+        <Route path="/problem" component={ProblemPage} />
+        <Route path="/gtm-engine" component={GTMEnginePage} />
+        <Route path="/results" component={ResultsPage} />
+        <Route path="/why-us" component={About} />
+        <Route path="/blog" component={BlogPage} />
+        <Route path="/blog/:slug" component={BlogPostPage} />
+        <Route path="/branding" component={BrandingPage} />
+        <Route path="/branding/:slug" component={BrandingProjectPage} />
+        <Route path="/audit" component={AuditPage} />
 
-      {/* Tools & Resources */}
-      <Route path="/roi-calculator" component={ROICalculator} />
-      <Route path="/assessment" component={AssessmentPage} />
-      <Route path="/pipeline-assessment" component={PipelineAssessmentPage} />
-      <Route path="/pipeline-assessment/thank-you" component={PipelineAssessmentThankYou} />
+        {/* Public Portfolio Preview Route */}
+        <Route path="/preview/:projectId" component={PreviewPortfolio} />
 
-      {/* Configurable Assessments (Public Runtime) */}
-      <Route path="/assessments/:slug" component={AssessmentRuntime} />
-      <Route path="/assessments/results/:sessionId" component={AssessmentResult} />
+        {/* Tools & Resources */}
+        <Route path="/roi-calculator" component={ROICalculator} />
+        <Route path="/assessment" component={AssessmentPage} />
+        <Route path="/pipeline-assessment" component={PipelineAssessmentPage} />
+        <Route path="/pipeline-assessment/thank-you" component={PipelineAssessmentThankYou} />
 
-      {/* Admin Routes - Lazy loaded with Suspense for code splitting */}
-      <Route path="/admin/login" component={LoginPage} />
-      <Route path="/admin/register" component={RegisterPage} />
-      <Route path="/admin/forgot-password" component={ForgotPasswordPage} />
-      <Route path="/admin/reset-password/:token" component={ResetPasswordPage} />
-      <Route path="/admin/welcome" component={WelcomePage} />
-      <Route path="/admin/content" component={ContentLibrary} />
-      <Route path="/admin/feature-flags" component={FeatureFlagsPage} />
-      <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin/assessment-submissions" component={AssessmentAdminDashboard} />
-      <Route path="/admin/assessments/new" component={AssessmentConfigForm} />
-      <Route path="/admin/assessments/:id/edit" component={AssessmentConfigForm} />
-      <Route path="/admin/assessments" component={AssessmentConfigsList} />
-      <Route path="/admin/campaigns/new" component={CampaignForm} />
-      <Route path="/admin/campaigns/:id/edit" component={CampaignForm} />
-      <Route path="/admin/campaigns" component={CampaignsList} />
-      <Route path="/admin/blog-posts/new" component={BlogPostForm} />
-      <Route path="/admin/blog-posts/:id/edit" component={BlogPostForm} />
-      <Route path="/admin/blog-posts" component={BlogPostsList} />
-      <Route path="/admin/video-posts/new" component={VideoPostForm} />
-      <Route path="/admin/video-posts/:id/edit" component={VideoPostForm} />
-      <Route path="/admin/video-posts" component={VideoPostsList} />
-      <Route path="/admin/testimonials/new" component={TestimonialForm} />
-      <Route path="/admin/testimonials/:id/edit" component={TestimonialForm} />
-      <Route path="/admin/projects/new" component={ProjectForm} />
-      <Route path="/admin/projects/:id/edit" component={ProjectForm} />
-      <Route path="/admin/portfolio-builder" element={<ProtectedRoute><PortfolioBuilder /></ProtectedRoute>} />
-      <Route path="/admin/portfolio-prompts" element={<ProtectedRoute><PortfolioPromptManager /></ProtectedRoute>} />
-      <Route path="/admin/ai-prompt-settings" component={AIPromptSettings} />
-          <Route path="/admin/media-library" component={MediaLibrary} />
-      <Route path="/admin/job-postings/new" component={JobPostingForm} />
-      <Route path="/admin/job-postings/:id/edit" component={JobPostingForm} />
-      <Route path="/admin/widget-config" component={WidgetConfigPage} />
+        {/* Configurable Assessments (Public Runtime) */}
+        <Route path="/assessments/:slug" component={AssessmentRuntime} />
+        <Route path="/assessments/results/:sessionId" component={AssessmentResult} />
 
-      {/* Resource Pillar Pages */}
-      <Route path="/resources/how-to-build-sdr-team-guide" component={InternalTrapGuide} />
-      <Route path="/resources/sdr-outsourcing-companies-guide" component={AgencyTrapGuide} />
-      <Route path="/resources/guide-to-sales-as-a-service" component={SalesAsAServiceGuide} />
-      <Route path="/resources/how-to-hire-cold-callers-guide" component={HireColdCallersGuide} />
-      <Route path="/resources/4-paths-hire-cold-caller" component={FourPathsToHireColdCaller} />
+        {/* Admin Routes - Lazy loaded with Suspense for code splitting */}
+        <Route path="/admin/login" component={LoginPage} />
+        <Route path="/admin/register" component={RegisterPage} />
+        <Route path="/admin/forgot-password" component={ForgotPasswordPage} />
+        <Route path="/admin/reset-password/:token" component={ResetPasswordPage} />
+        <Route path="/admin/welcome" component={WelcomePage} />
+        <Route path="/admin/content" component={ContentLibrary} />
+        <Route path="/admin/feature-flags" component={FeatureFlagsPage} />
+        <Route path="/admin" component={AdminDashboard} />
+        <Route path="/admin/assessment-submissions" component={AssessmentAdminDashboard} />
+        <Route path="/admin/assessments/new" component={AssessmentConfigForm} />
+        <Route path="/admin/assessments/:id/edit" component={AssessmentConfigForm} />
+        <Route path="/admin/assessments" component={AssessmentConfigsList} />
+        <Route path="/admin/campaigns/new" component={CampaignForm} />
+        <Route path="/admin/campaigns/:id/edit" component={CampaignForm} />
+        <Route path="/admin/campaigns" component={CampaignsList} />
+        <Route path="/admin/blog-posts/new" component={BlogPostForm} />
+        <Route path="/admin/blog-posts/:id/edit" component={BlogPostForm} />
+        <Route path="/admin/blog-posts" component={BlogPostsList} />
+        <Route path="/admin/video-posts/new" component={VideoPostForm} />
+        <Route path="/admin/video-posts/:id/edit" component={VideoPostForm} />
+        <Route path="/admin/video-posts" component={VideoPostsList} />
+        <Route path="/admin/testimonials/new" component={TestimonialForm} />
+        <Route path="/admin/testimonials/:id/edit" component={TestimonialForm} />
+        <Route path="/admin/projects/new" component={ProjectForm} />
+        <Route path="/admin/projects/:id/edit" component={ProjectForm} />
+        <Route path="/admin/portfolio/:slug" component={ProjectSceneEditor} />
+        <Route path="/admin/portfolio/:slug" component={ProjectSceneEditor} />
+        <Route path="/admin/portfolio-wizard" component={PortfolioWizard} />
+        <Route path="/admin/wizard" component={Wizard} />
+        <Route path="/admin/portfolio-builder" component={PortfolioBuilder} />
+        <Route path="/admin/portfolio-prompts" component={PortfolioPromptManager} />
+        <Route path="/admin/ai-prompt-settings" component={AIPromptSettings} />
+        <Route path="/admin/media-library" component={MediaLibrary} />
+        <Route path="/admin/template-library" component={TemplateLibrary} />
+        <Route path="/admin/job-postings/new" component={JobPostingForm} />
+        <Route path="/admin/job-postings/:id/edit" component={JobPostingForm} />
+        <Route path="/admin/widget-config" component={WidgetConfigPage} />
 
-      {/* GTM Assessment Tool */}
-      <Route path="/resources/gtm-assessment" component={GtmAssessmentPage} />
-      <Route path="/resources/gtm-assessment/path-1" component={GtmResultPath1} />
-      <Route path="/resources/gtm-assessment/path-2" component={GtmResultPath2} />
-      <Route path="/resources/gtm-assessment/path-3" component={GtmResultPath3} />
-      <Route path="/resources/gtm-assessment/path-4" component={GtmResultPath4} />
+        {/* Resource Pillar Pages */}
+        <Route path="/resources/how-to-build-sdr-team-guide" component={InternalTrapGuide} />
+        <Route path="/resources/sdr-outsourcing-companies-guide" component={AgencyTrapGuide} />
+        <Route path="/resources/guide-to-sales-as-a-service" component={SalesAsAServiceGuide} />
+        <Route path="/resources/how-to-hire-cold-callers-guide" component={HireColdCallersGuide} />
+        <Route path="/resources/4-paths-hire-cold-caller" component={FourPathsToHireColdCaller} />
 
-      {/* Blog Posts */}
-      <Route path="/blog/manifesto-the-lone-wolf-trap" component={ManifestoPost} />
+        {/* GTM Assessment Tool */}
+        <Route path="/resources/gtm-assessment" component={GtmAssessmentPage} />
+        <Route path="/resources/gtm-assessment/path-1" component={GtmResultPath1} />
+        <Route path="/resources/gtm-assessment/path-2" component={GtmResultPath2} />
+        <Route path="/resources/gtm-assessment/path-3" component={GtmResultPath3} />
+        <Route path="/resources/gtm-assessment/path-4" component={GtmResultPath4} />
 
-      {/* Company */}
-      <Route path="/pricing" component={PricingPage} />
-      <Route path="/faq" component={FAQPage} />
-      <Route path="/contact" component={ContactPage} />
+        {/* Blog Posts */}
+        <Route path="/blog/manifesto-the-lone-wolf-trap" component={ManifestoPost} />
 
-      {/* Fallback */}
-      <Route component={NotFound} />
+        {/* Company */}
+        <Route path="/pricing" component={PricingPage} />
+        <Route path="/faq" component={FAQPage} />
+        <Route path="/contact" component={ContactPage} />
+
+        {/* Fallback */}
+        <Route component={NotFound} />
       </Switch>
     </>
   );
@@ -241,8 +258,8 @@ function App() {
 
   // Set up global keyboard shortcuts - simplified to avoid initialization crashes
   useKeyboardShortcuts(
-    GLOBAL_SHORTCUTS.map(shortcut => 
-      shortcut.key === '?' 
+    GLOBAL_SHORTCUTS.map(shortcut =>
+      shortcut.key === '?'
         ? { ...shortcut, action: () => setShowShortcuts(true) }
         : shortcut
     ),
@@ -270,8 +287,8 @@ function App() {
                   <Toaster />
                   <ServiceWorker />
                   {/* Keyboard Shortcuts Modal */}
-                  <KeyboardShortcutsModal 
-                    open={showShortcuts} 
+                  <KeyboardShortcutsModal
+                    open={showShortcuts}
                     onOpenChange={setShowShortcuts}
                   />
                 </ErrorBoundary>

@@ -33,7 +33,9 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-export const db = drizzle(pool);
+import * as schema from "@shared/schema";
+
+export const db = drizzle(pool, { schema });
 
 // Export pool for session management
 export const sessionPool = pool;

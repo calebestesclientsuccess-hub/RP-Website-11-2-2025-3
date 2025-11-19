@@ -1,0 +1,63 @@
+I. The Frontend Engine ("The Storyscroll Physics")
+Animation Core: You mentioned "Storyscroll." Is this powered by GSAP (GreenSock) with ScrollTrigger, Framer Motion (specifically useScroll), or a custom requestAnimationFrame loop?
+
+Scroll Jacking: Does the system hijack native scrolling (like Locomotive Scroll or Lenis) to smooth out the experience, or is it relying on native browser scrolling?
+
+Timeline Scrubbing: When a user scrolls, are the animations triggered by viewport intersection (play once) or scrubbing (the scrollbar acts as the video playhead, moving animations forward/backward)?
+
+Asset Loading: For the "dancing" images/video, how do you handle pre-loading? Is there a global loader that waits for assets to mount before unlocking the scroll, or do elements hydrate lazily?
+
+Performance: Are you using React memo or useMemo heavily in the Scene components to prevent re-renders during the high-frequency scroll event loop?
+
+Mobile: How does the "Storyscroll" degrade on mobile? Does it turn into a static stack, or does the physics engine attempt to run on touch events?
+
+The "Director" Object: In your sceneConfig, is the director field a flat object or does it support nested timelines? (e.g., can Scene A trigger an animation in Scene B?)
+
+Renderer: Is the SceneRenderer essentially a giant switch statement, or is it a dynamic map that lazy-loads components to keep the initial bundle size low?
+
+CSS Architecture: Are you using Tailwind, styled-components, or raw CSS modules? How are dynamic values from the JSON (e.g., backgroundColor) applied? Inline styles or generated classes?
+
+II. The Data & Schema ("The Source of Truth")
+JSON Depth: How deep does the sceneConfig JSON go? Is it flat (Key/Value) or deeply nested (Arrays of Objects)?
+
+Orphan Handling: If a user deletes a media file from the library, does the database cascade delete the reference in sceneConfig, or does the frontend crash when trying to load a null URL?
+
+Validation: Are you validating the sceneConfig JSON before it hits the database (Zod/Yup on the server), or trusting the client?
+
+Indexing: For the scene_templates table, are you using a GIN index on the tags or category JSONB fields for faster searching, or standard B-Tree indexes on columns?
+
+Versioning: Does the project_scenes table have a history/versioning system? If the AI hallucinations break the page, can the user "Undo" to the previous JSON state?
+
+Tenancy: Is tenantId a column on every single table (including media_library, users, projects), or is it managed via a join table?
+
+Migration: Are you using Drizzle Kit for migrations? Have there been manual SQL alterations that aren't in the schema file?
+
+Soft Deletes: When a user deletes a project, is it deleted_at timestamped (Soft Delete) or actually removed (Hard Delete)?
+
+III. The AI Brain ("The Assembler")
+Context Window: When you send the AVAILABLE_SCENE_TEMPLATES to the AI, do you send the entire JSON schema for every template, or a summarized "manifest" (ID, Name, Description)?
+
+Token Limits: Have you hit token limits with Gemini yet when loading the full context? Do you have a strategy for "RAG" (Retrieval Augmented Generation) if the template library grows to 1,000 items?
+
+Strictness: Are you using Gemini's "JSON Mode" or structured output enforcement to guarantee the response is valid JSON, or are you parsing raw text and hoping for the best?
+
+Hallucinations: If the AI creates a type: "flying_dragon" scene that doesn't exist in your React Toolkit, does the frontend crash, render a blank div, or show an error boundary?
+
+Brand Injection: How exactly are you injecting the brandColors? Is it a system instruction ("Use only these hex codes") or a post-processing script that regex-replaces colors in the output?
+
+Media Selection: Does the AI actually pick specific mediaIds from the AVAILABLE_MEDIA_LIBRARY context, or does it just put placeholders like "image_1" that the user has to fill later?
+
+IV. Infrastructure & Workflow ("The Factory")
+State Management: When the user is in the "Wizard," is the state held in React Query cache, Zustand/Redux, or just URL parameters?
+
+Save State: Does the "Hybrid Studio" save on every keystroke (Optimistic UI), on blur, or only when the user clicks "Save"?
+
+Hosting: You mentioned "Vite" and "Replit." Is the production DB also on Replit, or is it an external Neon/Supabase/AWS RDS instance?
+
+Image Optimization: Are images served raw from the DB/Blob storage, or passed through an optimizer (like Cloudinary or Next.js Image) to resize them for the "Storyscroll" performance?
+
+Vibe Coder Access: How do your "Vibe Coders" currently add new components? do they pull the repo and PR, or is there a "Code Editor" inside the app itself?
+
+Security: How are you handling API keys for Gemini? Server-side proxy or client-side env variables? (Crucial for security).
+
+Preview: How does the /test preview route work? Is it a real-time subscription to the DB, or does it fetch the latest "Saved" snapshot?

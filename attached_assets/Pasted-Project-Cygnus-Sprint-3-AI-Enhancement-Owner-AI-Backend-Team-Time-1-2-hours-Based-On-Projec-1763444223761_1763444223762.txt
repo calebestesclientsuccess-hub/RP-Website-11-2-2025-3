@@ -1,0 +1,138 @@
+Project Cygnus - Sprint 3: AI Enhancement
+
+Owner: AI / Backend Team
+Time: 1-2 hours
+Based On: Project Cygnus Technical Specification v2.1
+
+1. Sprint Goal
+
+Evolve the AI from a pure "generator" to an "assembler" by making it "template-aware." This sprint teaches the AI to use the new template library as its first choice, improving the quality, consistency, and speed of AI-driven generation.
+
+2. Dependencies
+
+Sprint 0 must be complete. The scene_templates table must exist to be queried.
+
+3. Technical Tasks
+
+[3.1] Load Template Library in AI Endpoint
+
+File: server/routes.ts (or server/utils/portfolio-director.ts, wherever the AI prompt context is built).
+
+Location: Inside the POST /api/portfolio/generate-enhanced (or generate-ai) endpoint, before calling Gemini.
+
+Logic:
+
+After fetching availableMediaLibrary, add a new query:
+
+const availableTemplates = await db.query.sceneTemplates.findMany({
+  where: eq(sceneTemplates.tenantId, req.tenantId),
+  orderBy: [desc(sceneTemplates.usageCount), desc(sceneTemplates.createdAt)],
+  limit: 20, // Limit to top 20 most popular/recent
+});
+
+console.log(`[Portfolio Generation] Loaded ${availableTemplates.length} scene templates for tenant ${req.tenantId}`);
+
+
+[3.2] Inject Template Context into AI Prompt
+
+File: server/utils/portfolio-director.ts (or wherever the prompt string is constructed).
+
+Action: Prepend the following text block to the beginning of the system prompt context.
+
+Prompt Addition:
+
+<AVAILABLE_SCENE_TEMPLATES>
+${availableTemplates.length > 0 
+  ? availableTemplates.map(tmpl => `
+  ---
+  Template ID: ${tmpl.id}
+  Name: ${tmpl.name}
+  Description: ${tmpl.description || 'No description'}
+  Type: ${tmpl.sceneConfig.type}
+  Category: ${tmpl.category || 'general'}
+  Tags: ${tmpl.tags?.join(', ') || 'none'}
+
+  Director Config (USE THIS FOR CONSISTENCY):
+  ${JSON.stringify(tmpl.sceneConfig.director, null, 2)}
+
+  Content Structure (Use this for field names):
+  ${JSON.stringify(tmpl.sceneConfig.content, null, 2)}
+  ---
+  `).join('\n')
+  : 'No templates available - generate all scenes from scratch.'}
+</AVAILABLE_SCENE_TEMPLATES>
+
+<CRITICAL_INSTRUCTIONS_FOR_TEMPLATE_USAGE>
+1.  **PREFER TEMPLATES:** Your primary goal is to use <AVAILABLE_SCENE_TEMPLATES> when the user's request matches a template's purpose (e.g., user asks for "testimonial," you use a "testimonial" template).
+2.  **COPY DIRECTOR CONFIG:** You *must* use the template's exact `director` config (entryEffect, duration, colors, etc.) to ensure consistency.
+3.  **CUSTOMIZE CONTENT:** You *must* populate the template's `content` fields with the user's specific text, media, or other requirements.
+4.  **TRACK LINEAGE:** You *must* include `"_sourceTemplateId": "tmpl_xxx"` in the root of your generated `sceneConfig` object if you use a template.
+5.  **FALLBACK:** If no template matches the user's specific request, generate a new `sceneConfig` from scratch using animation best practices.
+
+**EXAMPLE of using a template:**
+User Request: "add a dark testimonial from Jane Smith"
+Your Process:
+1.  Find a template in the library with `category="testimonial"`.
+2.  Select `tmpl_quote_dark_01`.
+3.  Copy its `director` config *exactly*.
+4.  Populate its `content` fields with the user's data.
+5.  Add the `_sourceTemplateId` field.
+
+Your JSON Output for that scene:
+{
+  "type": "quote",
+  "content": {
+    "quote": "This product is amazing.",
+    "author": "Jane Smith",
+    "role": "CEO of Acme" 
+  },
+  "director": {
+    "entryEffect": "fade",
+    "entryDuration": 1.5,
+    "backgroundColor": "#111111",
+    "textColor": "#FFFFFF",
+    "parallaxIntensity": 0.2
+  },
+  "_sourceTemplateId": "tmpl_quote_dark_01" 
+}
+</CRITICAL_INSTRUCTIONS_FOR_TEMPLATE_USAGE>
+
+
+[3.3] Add Template Usage Logging
+
+File: server/routes.ts (or AI endpoint).
+
+Location: After receiving the portfolioResult.scenes array from Gemini.
+
+Logic:
+
+// Track template usage
+let templateUsageCount = 0;
+const templateUsageDetails: string[] = [];
+
+portfolioResult.scenes.forEach((scene, idx) => {
+  if (scene._sourceTemplateId) {
+    templateUsageCount++;
+    templateUsageDetails.push(
+      `Scene ${idx + 1} (${scene.type}): used template ${scene._sourceTemplateId}`
+    );
+  }
+});
+
+console.log(`[AI Template Usage] ${templateUsageCount}/${portfolioResult.scenes.length} scenes used templates`);
+if (templateUsageDetails.length > 0) {
+  console.log('[AI Template Details]:\n' + templateUsageDetails.join('\n'));
+}
+
+
+4. Definition of Done
+
+Sprint 3 is complete when:
+
+The system prompt sent to Gemini correctly includes the AVAILABLE_SCENE_TEMPLATES and CRITICAL_INSTRUCTIONS_FOR_TEMPLATE_USAGE sections.
+
+When a user makes a request (e.g., "add a testimonial") that matches a template, the generated sceneConfig includes the _sourceTemplateId field.
+
+The generated scene's director config exactly matches the template's director config.
+
+The server logs correctly print [AI Template Usage] statistics after a generation request.

@@ -5,8 +5,15 @@ import type { SceneConfig } from "@shared/schema";
 import { PlaceholderSlot } from "./PlaceholderSlot";
 import type { PlaceholderId } from "@shared/placeholder-config";
 import { ProgressiveImage } from "@/components/ui/progressive-image";
+import { PREMIUM_EASINGS, SCROLL_PRESETS, getIntensity } from "@/lib/animationConfig";
 
 gsap.registerPlugin(ScrollTrigger);
+
+// Configure global GSAP settings for premium performance
+gsap.config({
+  nullTargetWarn: false,
+  force3D: true,
+});
 
 interface SceneRendererProps {
   scenes: SceneConfig[];
@@ -409,23 +416,40 @@ function SceneItem({
         entryDuration: 0,
         exitDuration: 0,
         scrollScrub: false,
-        enableAnimations: false
+        enableAnimations: false,
+        intensity: 0
       };
     }
 
+    // Premium scroll speed mapping for smoother animation
     const scrollSpeedMap = {
-      'slow': 2,
-      'normal': 1,
-      'fast': 0.5
+      'slow': 2,      // Very smooth, dampened
+      'normal': 1.2,  // Smooth but responsive
+      'fast': 0.8     // More direct connection to scroll
     };
 
-    return {
-      entryDuration: scene.director.entryDuration,
-      exitDuration: scene.director.exitDuration,
-      scrollScrub: scrollSpeedMap[scene.director.scrollSpeed || 'normal'],
-      enableAnimations: true
+    // Determine scene category for optimal defaults
+    const getSceneCategory = () => {
+      if (scene.type === 'fullscreen' || scene.type === 'hero') return 'hero';
+      if (scene.type === 'gallery') return 'gallery';
+      if (scene.type === 'quote') return 'testimonial';
+      if (scene.type === 'text') return 'text';
+      return 'standard';
     };
-  }, [scene.director]);
+
+    const category = getSceneCategory();
+    const intensity = getIntensity();
+
+    return {
+      entryDuration: scene.director.entryDuration || (category === 'hero' ? 2.4 : 1.5),
+      exitDuration: scene.director.exitDuration || (category === 'hero' ? 1.6 : 1.0),
+      entryDelay: scene.director.entryDelay || 0.1,
+      scrollScrub: scrollSpeedMap[scene.director.scrollSpeed || 'normal'],
+      enableAnimations: true,
+      intensity,
+      category
+    };
+  }, [scene.director, scene.type]);
 
   useEffect(() => {
     if (!sceneRef.current || !contentRef.current || !animationConfig.enableAnimations) return;
@@ -436,58 +460,141 @@ function SceneItem({
     const sceneEl = sceneRef.current;
     const contentEl = contentRef.current;
 
-    // Helper to map easing names to GSAP easing functions
-    const getEasing = (easing: string) => {
+    // Premium easing function mapping
+    const getEasing = (easing?: string) => {
+      // Use premium easings from config as defaults
+      const defaultEasings = {
+        hero: PREMIUM_EASINGS.dramatic,
+        gallery: PREMIUM_EASINGS.natural,
+        testimonial: PREMIUM_EASINGS.smooth,
+        text: PREMIUM_EASINGS.smoothOut,
+        standard: PREMIUM_EASINGS.smooth
+      };
+
+      if (!easing) {
+        return defaultEasings[animationConfig.category] || PREMIUM_EASINGS.smooth;
+      }
+
       const easingMap: Record<string, string> = {
+        // Basic easings
         linear: "none",
-        ease: "power1.inOut",
-        "ease-in": "power1.in",
-        "ease-out": "power1.out",
-        "ease-in-out": "power1.inOut",
+        ease: "power2.inOut",
+        "ease-in": "power2.in",
+        "ease-out": "power2.out",
+        "ease-in-out": "power2.inOut",
+        
+        // Power easings (refined)
         power1: "power1.out",
         power2: "power2.out",
         power3: "power3.out",
         power4: "power4.out",
+        
+        // Premium easings
+        dramatic: PREMIUM_EASINGS.dramatic,
+        smooth: PREMIUM_EASINGS.smooth,
+        snappy: PREMIUM_EASINGS.snappy,
+        playful: PREMIUM_EASINGS.playful,
+        elastic: PREMIUM_EASINGS.elastic,
+        natural: PREMIUM_EASINGS.natural,
+        
+        // Custom presets
         back: "back.out(1.7)",
-        elastic: "elastic.out(1, 0.3)",
+        "back-subtle": "back.out(1.2)",
+        "elastic-subtle": "elastic.out(1, 0.7)",
         bounce: "bounce.out",
+        circ: "circ.out",
       };
-      return easingMap[easing] || "power1.out";
+      
+      return easingMap[easing] || defaultEasings[animationConfig.category] || "power2.out";
     };
 
-    // Entry animation configuration
+    // Premium entry animation configuration with refined values
     const getEntryAnimation = () => {
+      const intensity = animationConfig.intensity;
       const baseConfig = {
         opacity: 0,
         y: 0,
         x: 0,
         scale: 1,
         rotation: 0,
+        transformPerspective: 1000,
+        force3D: true, // GPU acceleration
       };
+
+      // Adjust animation intensity based on device/preferences
+      const adjustedValue = (val: number) => val * intensity;
 
       switch (director.entryEffect) {
         case "slide-up":
-          return { ...baseConfig, y: 100 };
+          return { 
+            ...baseConfig, 
+            y: adjustedValue(60), // Reduced from 100 for subtlety
+            scale: 0.98 // Slight scale for depth
+          };
         case "slide-down":
-          return { ...baseConfig, y: -100 };
+          return { 
+            ...baseConfig, 
+            y: adjustedValue(-60),
+            scale: 0.98
+          };
         case "slide-left":
-          return { ...baseConfig, x: 100 };
+          return { 
+            ...baseConfig, 
+            x: adjustedValue(80),
+            rotation: adjustedValue(-2) // Subtle rotation for organic feel
+          };
         case "slide-right":
-          return { ...baseConfig, x: -100 };
+          return { 
+            ...baseConfig, 
+            x: adjustedValue(-80),
+            rotation: adjustedValue(2)
+          };
         case "zoom-in":
-          return { ...baseConfig, scale: 0.8 };
+          return { 
+            ...baseConfig, 
+            scale: 0.92, // More subtle scale
+            filter: "blur(4px)" // Combine with blur for depth
+          };
         case "zoom-out":
-          return { ...baseConfig, scale: 1.2 };
+          return { 
+            ...baseConfig, 
+            scale: 1.08, // Reduced scale for elegance
+            filter: "blur(4px)"
+          };
         case "rotate-in":
-          return { ...baseConfig, rotation: 90, scale: 0.8 };
+          return { 
+            ...baseConfig, 
+            rotation: adjustedValue(45), // Reduced rotation
+            scale: 0.95,
+            transformOrigin: "center center"
+          };
         case "flip-in":
-          return { ...baseConfig, rotationY: 90 };
+          return { 
+            ...baseConfig, 
+            rotationY: adjustedValue(70), // Less extreme flip
+            transformOrigin: "center center",
+            backfaceVisibility: "hidden"
+          };
         case "spiral-in":
-          return { ...baseConfig, rotation: 360, scale: 0 };
+          return { 
+            ...baseConfig, 
+            rotation: adjustedValue(180), // Reduced spiral
+            scale: 0.8,
+            y: adjustedValue(40)
+          };
         case "blur-focus":
-          return { ...baseConfig, filter: "blur(20px)" };
+          return { 
+            ...baseConfig, 
+            filter: "blur(12px)", // Optimized blur amount
+            scale: 1.02
+          };
+        case "fade":
         default:
-          return baseConfig;
+          return { 
+            ...baseConfig,
+            y: adjustedValue(30), // Default subtle slide-up
+            scale: 0.98
+          };
       }
     };
 
@@ -525,62 +632,164 @@ function SceneItem({
       }
     };
 
-    // Create ScrollTrigger animation for the main content
-    const tl = gsap.timeline({
-      scrollTrigger: {
+    // Premium ScrollTrigger configuration based on scene type
+    const getScrollTriggerConfig = () => {
+      const baseConfig = {
         trigger: sceneEl,
-        start: "top 80%",
-        end: "bottom 20%",
         toggleActions: "play none none reverse",
-        // Use scrollScrub here if fade/scale/blur are enabled, otherwise default to false
-        scrub: (director.fadeOnScroll || director.scaleOnScroll || director.blurOnScroll) ? scrollScrub : false,
-      },
+        onUpdate: (self: ScrollTrigger) => {
+          // Add will-change during animation for better performance
+          if (self.isActive && contentEl) {
+            contentEl.style.willChange = "transform, opacity, filter";
+          } else if (contentEl) {
+            contentEl.style.willChange = "auto";
+          }
+        }
+      };
+
+      // Use premium presets based on scene type
+      if (animationConfig.category === 'hero') {
+        return {
+          ...baseConfig,
+          start: "top 90%", // Earlier trigger for anticipation
+          end: "bottom 10%",
+          scrub: director.scrollSpeed === 'slow' ? 2 : 1.5, // Smoother for hero scenes
+        };
+      } else if (animationConfig.category === 'gallery') {
+        return {
+          ...baseConfig,
+          start: "top bottom", // Start earlier for galleries
+          end: "bottom top",
+          scrub: scrollScrub || 1.2,
+        };
+      } else {
+        return {
+          ...baseConfig,
+          start: "top 80%",
+          end: "bottom 20%",
+          scrub: (director.fadeOnScroll || director.scaleOnScroll || director.blurOnScroll) ? scrollScrub : false,
+        };
+      }
+    };
+
+    // Create main timeline with premium settings
+    const tl = gsap.timeline({
+      scrollTrigger: getScrollTriggerConfig(),
+      defaults: {
+        overwrite: "auto", // Prevent conflicts
+      }
     });
 
-    // Entry animation
-    tl.fromTo(
-      contentEl,
-      getEntryAnimation(),
-      {
-        opacity: 1,
-        y: 0,
-        x: 0,
-        scale: 1,
-        rotation: 0,
-        rotationY: 0,
-        filter: "blur(0px)",
-        duration: director.entryDuration,
-        delay: director.entryDelay,
-        ease: getEasing(director.entryEasing),
-      }
-    );
+    // Entry animation with refined values
+    const entryAnimation = getEntryAnimation();
+    const entryTarget = {
+      opacity: 1,
+      y: 0,
+      x: 0,
+      scale: 1,
+      rotation: 0,
+      rotationY: 0,
+      filter: "blur(0px)",
+      duration: animationConfig.entryDuration,
+      delay: animationConfig.entryDelay,
+      ease: getEasing(director.entryEasing),
+      clearProps: "filter", // Clear filter after animation for performance
+    };
 
-    // Scroll effects (fade, scale, blur)
-    if (director.fadeOnScroll || director.scaleOnScroll || director.blurOnScroll) {
-      gsap.to(contentEl, {
-        scrollTrigger: {
-          trigger: sceneEl,
-          start: "top center",
-          end: "bottom center",
-          scrub: scrollScrub, // Apply scrollScrub here
+    // Check for child elements to stagger
+    const childElements = contentEl.querySelectorAll('h1, h2, h3, p, img, video, blockquote');
+    
+    if (childElements.length > 1 && (scene.type === 'text' || scene.type === 'gallery')) {
+      // Stagger child elements for progressive reveals
+      tl.fromTo(
+        childElements,
+        {
+          ...entryAnimation,
+          y: entryAnimation.y || 30, // Default slide-up for children
         },
-        opacity: director.fadeOnScroll ? 0.3 : 1,
-        scale: director.scaleOnScroll ? 1.1 : 1,
-        filter: director.blurOnScroll ? "blur(5px)" : "blur(0px)",
-      });
+        {
+          ...entryTarget,
+          stagger: {
+            each: scene.type === 'gallery' ? 0.12 : 0.08, // Different stagger for galleries
+            from: "start",
+            ease: "power2.inOut"
+          }
+        }
+      );
+    } else {
+      // Single element animation
+      tl.fromTo(contentEl, entryAnimation, entryTarget);
     }
 
-    // Parallax effect
-    if (director.parallaxIntensity > 0) {
+    // Premium scroll effects with refined values
+    if (director.fadeOnScroll || director.scaleOnScroll || director.blurOnScroll) {
+      const scrollEffectTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: sceneEl,
+          start: "top 75%", // Adjusted for better timing
+          end: "bottom 25%",
+          scrub: scrollScrub || 1.5, // Smooth scrub for scroll effects
+          onUpdate: (self) => {
+            // Progressive effect based on scroll position
+            const progress = self.progress;
+            if (director.fadeOnScroll) {
+              const opacity = 1 - (progress * 0.5); // Max 50% fade
+              gsap.set(contentEl, { opacity: Math.max(opacity, 0.5) });
+            }
+          }
+        }
+      });
+
+      // Add individual effects to timeline for better control
+      if (director.scaleOnScroll) {
+        scrollEffectTl.to(contentEl, {
+          scale: 1.05, // Subtle scale, not too dramatic
+          duration: 1,
+          ease: "power1.inOut"
+        }, 0);
+      }
+
+      if (director.blurOnScroll) {
+        scrollEffectTl.to(contentEl, {
+          filter: "blur(3px)", // Reduced blur for better readability
+          duration: 1,
+          ease: "power2.inOut"
+        }, 0);
+      }
+    }
+
+    // Premium parallax effect with optimized performance
+    if (director.parallaxIntensity && director.parallaxIntensity > 0) {
+      // Different parallax speeds for different element types
+      const parallaxMultiplier = animationConfig.category === 'hero' ? 0.5 : 0.3;
+      const yMovement = director.parallaxIntensity * 100 * parallaxMultiplier;
+      
       gsap.to(contentEl, {
         scrollTrigger: {
           trigger: sceneEl,
           start: "top bottom",
           end: "bottom top",
-          scrub: scrollScrub, // Apply scrollScrub here
+          scrub: 1.2, // Smooth parallax scrolling
+          invalidateOnRefresh: true, // Recalculate on resize
         },
-        y: `${director.parallaxIntensity * 100}%`,
+        y: `${yMovement}%`,
+        ease: "none", // Linear for parallax
       });
+
+      // Add depth with subtle rotation for hero scenes
+      if (animationConfig.category === 'hero' && director.parallaxIntensity > 0.5) {
+        gsap.to(contentEl, {
+          scrollTrigger: {
+            trigger: sceneEl,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 2,
+          },
+          rotationY: director.parallaxIntensity * 5, // Subtle 3D rotation
+          transformPerspective: 1200,
+          ease: "none"
+        });
+      }
     }
 
     // Scale effect for media elements

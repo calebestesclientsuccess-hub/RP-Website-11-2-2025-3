@@ -1,0 +1,149 @@
+Project Cygnus - Sprint 1: Backend API Layer
+
+Owner: Backend Team
+Time: 2-3 hours
+Based On: Project Cygnus Technical Specification v2.1
+
+1. Sprint Goal
+
+Implement the complete, production-ready backend API for scene_templates. This includes all CRUD operations, tenant isolation, media validation, and the core "recycle" logic. This sprint provides the functional endpoints the frontend will consume.
+
+2. Dependencies
+
+Sprint 0 must be complete. This code depends on the sceneTemplates schema and types from shared/schema.ts.
+
+3. Technical Tasks
+
+[1.1] POST /api/scene-templates/create-from-scene
+
+Action: "Save As Template."
+
+File: server/routes.ts (or equivalent controller).
+
+Request Validation: Use Zod schema: sceneId (string required), templateName (3-255 chars), description (max 1000 optional), category (enum optional), tags (array max 10 optional), previewImageUrl (URL optional).
+
+Security & Validation Logic (Critical):
+
+Fetch the source project_scene with a join to projects to get its tenantId.
+
+Verify sourceScene.project.tenantId === req.tenantId. Return 403 if mismatch.
+
+Validate sourceScene.sceneConfig against the sceneConfigSchema.
+
+Media Validation (Critical):
+
+Extract all mediaIds from sceneConfig.content (e.g., mediaId, mediaMediaId, images[].mediaId).
+
+Query media_library table: WHERE id IN (...) AND tenantId = req.tenantId.
+
+If mediaRecords.length !== mediaIdsToValidate.size, return a 403 error with the invalidMediaIds array. This prevents cross-tenant media theft.
+
+Logic:
+
+Auto-generate category from sceneConfig.type if not provided.
+
+Auto-generate previewImageUrl: use content.url or content.images[0].url if available.
+
+Create the new scene_templates row with all metadata.
+
+Response: 201 with the created SceneTemplate object.
+
+[1.2] GET /api/scene-templates
+
+Action: Lists available templates for the recycler modal.
+
+File: server/routes.ts.
+
+Query Parameters: category, tag, search, limit (default 50, max 100), offset (default 0), sortBy (enum: "recent" | "popular" | "name").
+
+Logic:
+
+Security: Start the query with a mandatory WHERE eq(sceneTemplates.tenantId, req.tenantId) clause.
+
+Add optional filters for category, tag (using sql${tag} = ANY(${sceneTemplates.tags})), and search(usingILIKEonname/description`).
+
+Implement ORDER BY logic for sortBy.
+
+Execute the paginated query and a separate count(*) query.
+
+Response: 200 with { templates: SceneTemplate[], total: number, limit: number, offset: number }.
+
+[1.3] POST /api/projects/:projectId/scenes/recycle
+
+Action: "Recycles" (clones) a template into a project.
+
+File: server/routes.ts.
+
+Request Body: templateId (string required), order (number optional), customizations (optional object with content and director overrides).
+
+Implementation (Use db.transaction(async (tx) => { ... }) for this entire block):
+
+Validation:
+
+Verify project (from :projectId) exists and project.tenantId === req.tenantId.
+
+Fetch template (from templateId) and verify template.tenantId === req.tenantId.
+
+Media Validation & Orphan Cleanup:
+
+Extract all mediaIds from template.sceneConfig.
+
+Query media_library for WHERE id IN (...) AND tenantId = req.tenantId.
+
+Identify orphanedMediaIds (IDs in template but not in DB or wrong tenant).
+
+Graceful Degradation: Create a cleanedSceneConfig by stripping the orphaned mediaId fields (but keeping urls). Log a warning.
+
+Auto-Link: For valid media, ensure it is associated with the target projectId.
+
+Apply Customizations: If customizations exist, merge them into cleanedSceneConfig.
+
+Add Lineage: Add _sourceTemplateId and _recycledAt to the cleanedSceneConfig.
+
+Scene Ordering:
+
+If order is not specified: finalOrder = (max order in project) + 1.
+
+If order is specified: finalOrder = order, and run UPDATE project_scenes SET order = order + 1 WHERE order >= finalOrder AND projectId = ... (using tx).
+
+Create Scene: tx.insert(projectScenes) with the projectId, cleanedSceneConfig, and finalOrder.
+
+Update Analytics: tx.update(sceneTemplates) to increment usageCount and set lastUsedAt.
+
+(Optional but Recommended) Version History: tx.insert(portfolioVersions) to log the recycle event for rollback.
+
+Response: 201 with { scene: newScene, warnings: orphanedMediaIds.length > 0 ? { ... } : null }.
+
+[1.4] PATCH /api/scene-templates/:id
+
+Action: Updates template metadata (name, description, etc. - NOT sceneConfig).
+
+File: server/routes.ts.
+
+Logic: Fetch template, verify tenantId, update fields, set updatedAt.
+
+Response: 200 with updated SceneTemplate.
+
+[1.5] DELETE /api/scene-templates/:id
+
+Action: Deletes a template.
+
+File: server/routes.ts.
+
+Logic: Fetch template, verify tenantId, delete.
+
+Response: 204 No Content.
+
+4. Definition of Done
+
+Sprint 1 is complete when:
+
+All 5 API endpoints are implemented in server/routes.ts.
+
+All endpoints are verifiable via a tool like Postman or curl.
+
+All endpoints strictly enforce tenantId isolation.
+
+create-from-scene and recycle endpoints correctly validate all mediaIds.
+
+The recycle endpoint correctly handles scene ordering and runs in a transaction.

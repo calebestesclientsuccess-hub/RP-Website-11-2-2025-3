@@ -1,0 +1,44 @@
+Answers to Replit's Questions
+1. Route Organization
+
+Decision: Create a new dedicated file. Please create server/routes/scene-templates.ts. server/routes.ts is already too large. Adding complex validation logic there will make it unmanageable. Please export a router function from the new file and register it in the main registerRoutes function.
+
+2. Authentication Middleware
+
+Decision: All endpoints must use requireAuth. There should be no public endpoints for templates in V1. Since templates are strictly isolated by tenantId, we must have an authenticated user session to determine which tenant data to return.
+
+3. Media Validation Reuse
+
+Decision: Extract to a shared utility. Please create server/utils/media-validator.ts. Since this logic handles the critical security check of "does this tenant own this media" and the logic for "graceful degradation" (stripping invalid IDs), it should be centralized. It will likely be reused by the AI generation endpoints later.
+
+4. Scene Ordering Strategy
+
+Decision: Implement exactly as specified (Integer Shifting). Web pages rarely have more than 50-100 scenes. A SQL UPDATE ... SET order = order + 1 is trivial for this dataset size. Fractional ordering (Lexorank) introduces float precision complexity that we don't need yet. Stick to the integer shift method.
+
+5. Portfolio Versions Integration
+
+Decision: Always create. As a "system of record," every destructive or additive action should be versioned. This allows for a future "Undo" button. Please insert a record into portfolioVersions with changeType: 'scene_recycled'.
+
+6. Error Response Format
+
+Decision: Yes, follow the existing pattern. Consistency is key for the frontend. Use:
+
+JSON
+
+{
+  "error": "Validation failed",
+  "details": "zod error message or specific string"
+}
+7. Orphaned Media Handling
+
+Decision: Full Details. The frontend SceneRecyclerModal needs to know specifically which assets were removed so it can potentially alert the user or show placeholders. Return structure:
+
+JSON
+
+"warnings": {
+  "message": "...",
+  "orphanedMediaIds": ["id_1", "id_2"]
+}
+8. Transaction Scope
+
+Decision: Include EVERYTHING. The transaction must include the Media Validation step because of the "Auto-Link" logic. We are performing an update (UPDATE media_library SET projectId...) to link unlinked assets. If the scene creation fails later, we want to roll back that auto-linking so the DB remains in a clean, consistent state. Wrap the entire logic block in db.transaction.

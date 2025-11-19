@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { tenants, blogPosts, videoPosts, widgetConfigs, testimonials, jobPostings } from "@shared/schema";
+import { tenants, blogPosts, videoPosts, widgetConfig, testimonials, jobPostings } from "@shared/schema";
 import { DEFAULT_TENANT_ID } from "./middleware/tenant";
 
 async function seed() {
@@ -17,6 +17,7 @@ async function seed() {
   // Seed blog posts
   await db.insert(blogPosts).values([
     {
+      tenantId: DEFAULT_TENANT_ID,
       title: "The Complete Guide to Building a GTM Engine That Actually Works",
       slug: "complete-guide-gtm-engine",
       excerpt: "Most B2B companies approach GTM like they're assembling IKEA furniture without the instructions. Here's how to build a revenue generation system that compounds over time.",
@@ -51,6 +52,7 @@ The difference between companies that win and companies that struggle isn't tale
       published: true,
     },
     {
+      tenantId: DEFAULT_TENANT_ID,
       title: "Why Your SDR Isn't Hitting Quota (And It's Not Their Fault)",
       slug: "why-bdrs-miss-quota",
       excerpt: "If your SDR is struggling, the problem probably isn't the SDR. It's the invisible infrastructure they need to succeed.",
@@ -95,6 +97,7 @@ They deploy SDRs as part of a complete systemâ€”talent plus tech plus strategyâ€
       published: true,
     },
     {
+      tenantId: DEFAULT_TENANT_ID,
       title: "The Signal Factory: How AI Finds Your Next Customer Before They Know They're Shopping",
       slug: "signal-factory-ai-buying-signals",
       excerpt: "The best time to reach a prospect is before they enter their buying journey. Here's how modern AI finds those invisible signals.",
@@ -136,6 +139,7 @@ That's the difference between winning 15% of deals and winning 60%.`,
   // Seed testimonials
   await db.insert(testimonials).values([
     {
+      tenantId: DEFAULT_TENANT_ID,
       name: "Sarah Chen",
       title: "VP of Sales",
       company: "TechFlow",
@@ -144,6 +148,7 @@ That's the difference between winning 15% of deals and winning 60%.`,
       featured: true,
     },
     {
+      tenantId: DEFAULT_TENANT_ID,
       name: "Marcus Johnson",
       title: "Founder & CEO",
       company: "DataPulse",
@@ -152,6 +157,7 @@ That's the difference between winning 15% of deals and winning 60%.`,
       featured: true,
     },
     {
+      tenantId: DEFAULT_TENANT_ID,
       name: "Emily Rodriguez",
       title: "Head of Growth",
       company: "CloudScale",
@@ -160,6 +166,7 @@ That's the difference between winning 15% of deals and winning 60%.`,
       featured: true,
     },
     {
+      tenantId: DEFAULT_TENANT_ID,
       name: "David Kim",
       title: "CRO",
       company: "SalesTech Inc",
@@ -172,6 +179,7 @@ That's the difference between winning 15% of deals and winning 60%.`,
   // Seed job postings
   await db.insert(jobPostings).values([
     {
+      tenantId: DEFAULT_TENANT_ID,
       title: "Senior GTM Strategist",
       department: "Strategy",
       location: "Remote (US)",
@@ -202,6 +210,7 @@ You'll be responsible for designing systems that generate millions in pipeline f
       active: true,
     },
     {
+      tenantId: DEFAULT_TENANT_ID,
       title: "Elite SDR (Client Deployment)",
       department: "Client Success",
       location: "Remote (US)",
@@ -235,6 +244,7 @@ This isn't a typical SDR role. You'll operate as a strategic extension of the cl
       active: true,
     },
     {
+      tenantId: DEFAULT_TENANT_ID,
       title: "Revenue Operations Analyst",
       department: "Operations",
       location: "Remote (US)",

@@ -61,6 +61,31 @@ The project utilizes a React (Vite) frontend with Tailwind CSS and an Express.js
             - Initial cinematic generation → POST `/api/portfolio/generate-cinematic` with catalog payload
             - Initial hybrid/refinement → POST `/api/portfolio/generate-enhanced` with scenes/conversation payload
         - **Navigation**: Accessible from admin sidebar with Sparkles icon
+- **Scene Recycler System (Sprints 0-2 Complete)**:
+    - **Database Schema**: `scene_templates` table with full tenant isolation, GIN full-text search index, usage analytics tracking
+    - **Template Storage**: Reusable scene configurations with metadata (name, description, category, tags, preview_image_url)
+    - **Source Tracking**: Links to original project/scene for template provenance (source_project_id, source_scene_id)
+    - **Usage Analytics**: Atomically tracks usage_count and last_used_at timestamp on recycle
+    - **Full-Text Search**: PostgreSQL GIN index using to_tsvector for production-grade search across name/description
+    - **Performance Indexes**: Tenant filtering (btree), category filtering (btree), full-text search (GIN)
+    - **Type Safety**: Zod validation schemas (insertSceneTemplateSchema, SceneTemplate, InsertSceneTemplate, UpdateSceneTemplate)
+    - **Backend API (8 endpoints)**:
+        - GET `/api/scene-templates` - List all templates with optional category filter
+        - GET `/api/scene-templates/search?q={query}` - Full-text search using plainto_tsquery
+        - GET `/api/scene-templates/:id` - Get single template details
+        - POST `/api/scene-templates` - Create template manually
+        - PATCH `/api/scene-templates/:id` - Update template metadata
+        - DELETE `/api/scene-templates/:id` - Delete template
+        - POST `/api/project-scenes/:sceneId/save-as-template` - Convert existing scene into template
+        - POST `/api/scene-templates/:id/recycle?projectId={id}` - Apply template to project (increments usage stats)
+    - **Frontend UI**:
+        - **Template Library Page** (`/admin/template-library`): Grid layout with category filters, search input, template preview modal
+        - **TemplateCard Component**: Displays preview image, name, description, category badge, tags, usage stats, with Preview/Use/Delete actions
+        - **TemplatePreviewModal**: Shows full template details including sceneConfig JSON and metadata
+        - **Save as Template Feature**: Bookmark icon button in ProjectSceneEditor opens SaveTemplateDialog with fields for name, description, category, tags
+        - **Navigation**: Template Library link in AdminSidebar (Bookmark icon) between Media Library and AI Prompts
+    - **React Query Integration**: Cache invalidation on mutations, hierarchical query keys for templates and scenes
+    - **Outstanding**: AI-powered template suggestions (Sprint 3) not yet implemented. End-to-end testing blocked by unrelated Portfolio Builder rendering issue.
 
 **System Design Choices:**
 - **Frontend**: React 18 (Vite), Tailwind CSS, Wouter (routing), React Query (data fetching), Shadcn UI.

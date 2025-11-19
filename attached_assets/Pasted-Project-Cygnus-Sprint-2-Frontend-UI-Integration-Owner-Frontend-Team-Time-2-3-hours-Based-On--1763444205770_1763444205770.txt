@@ -1,0 +1,136 @@
+Project Cygnus - Sprint 2: Frontend UI & Integration
+
+Owner: Frontend Team
+Time: 2-3 hours
+Based On: Project Cygnus Technical Specification v2.1
+
+1. Sprint Goal
+
+Build the complete frontend user experience for scene recycling. This includes the "Save As Template" button, the "Add from Library" modal, and the React Query hooks to power them. This sprint makes the feature tangible for the user.
+
+2. Dependencies
+
+Sprint 1 must be complete. This entire sprint consumes the APIs built in Sprint 1.
+
+3. Technical Tasks
+
+[2.1] Build useRecycleScene Hook
+
+File: client/src/hooks/useRecycleScene.ts
+
+Action: This hook is required by other components, so build it first.
+
+Logic:
+
+Use useMutation from @tanstack/react-query.
+
+mutationFn should call your apiRequest utility for POST /api/projects/:projectId/scenes/recycle.
+
+Implement the onSuccess callback:
+
+It must invalidate the project's scene list query:
+
+queryClient.invalidateQueries({ 
+  queryKey: ['/api/projects', projectId, 'scenes'] 
+});
+// Also invalidate the hydrated version if it exists
+queryClient.invalidateQueries({ 
+  queryKey: ['/api/projects', projectId, 'scenes', { hydrate: true }] 
+});
+
+
+Handle onError by showing a destructive toast.
+
+[2.2] Build SceneRecyclerModal Component
+
+File: client/src/components/admin/SceneRecyclerModal.tsx
+
+Props: projectId, isOpen, onClose, onSceneRecycled
+
+Features:
+
+Use Dialog components from shadcn/ui.
+
+State: Use useState for searchTerm, selectedCategory, selectedTag.
+
+Data Fetching: Use useQuery to call GET /api/scene-templates. The query key must include the filters (e.g., ['/api/scene-templates', { search, category, tag }]).
+
+UI - Filters:
+
+Input with Search icon for searchTerm. (Use debouncing).
+
+Tabs (TabsList, TabsTrigger) for selectedCategory (All, Hero, Testimonial, etc.).
+
+Badge components (in a flex-wrap container) for selectedTag.
+
+UI - Grid:
+
+Show Loader2 spinner on isLoading.
+
+Show AlertCircle on error.
+
+Show "No templates found" message if data.templates.length === 0.
+
+Render a responsive grid (cols-1 md:2 lg:3) of TemplateCard components.
+
+UI - Footer: Show stats: "Showing {data.templates.length} of {data.total} templates".
+
+[2.3] Build TemplateCard Sub-Component
+
+File: Can be inlined within SceneRecyclerModal.tsx.
+
+Props: template, onRecycle, isRecycling
+
+Logic:
+
+Preview: aspect-video div. Show previewImageUrl if it exists. If not, show a fallback icon based on sceneConfig.type.
+
+Metadata: Show usageCount badge, name, description (line-clamped), and tags.
+
+Action: Button ("Add to Project") that calls onRecycle(template.id). Show loading state (Loader2 spinner) if isRecycling is true.
+
+[2.4] Build SaveAsTemplateButton Component
+
+File: client/src/components/admin/SaveAsTemplateButton.tsx
+
+Features:
+
+A Button ("Save as Template") that opens a Dialog.
+
+Form: The dialog contains a form for templateName (with char counter), description (with char counter), and the tags input system (input + "Add" button + list of removable badges).
+
+Validation: Client-side validation for templateName.length >= 3.
+
+State: Use useMutation to call POST /api/scene-templates/create-from-scene.
+
+Callbacks:
+
+onSuccess: Invalidate ['/api/scene-templates'] query, show success toast, close dialog.
+
+onError: Show destructive toast.
+
+[2.5] Integration into ProjectSceneEditor (Critical)
+
+File: client/src/pages/admin/ProjectSceneEditor.tsx (or your main editor component).
+
+Actions:
+
+Add useState for [showRecyclerModal, setShowRecyclerModal].
+
+In the scene list header, add a new "Add from Library" Button. onClick sets setShowRecyclerModal(true).
+
+Render the <SceneRecyclerModal ... /> component, passing all required props.
+
+In the action menu for each scene card, render the <SaveAsTemplateButton sceneId={scene.id} ... />.
+
+4. Definition of Done
+
+Sprint 2 is complete when:
+
+A user can click a "Save as Template" button on a scene, fill out the form, and the template is created.
+
+A user can click "Add from Library," see the SceneRecyclerModal, and view a grid of templates.
+
+Search, category, and tag filters work in the modal.
+
+Clicking "Add to Project" on a template closes the modal and the new scene appears immediately in the ProjectSceneEditor list (verifying React Query invalidation).

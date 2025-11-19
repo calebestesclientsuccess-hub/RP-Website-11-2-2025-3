@@ -21,6 +21,8 @@ import { InternalHireCostCalculator } from "@/components/InternalHireCostCalcula
 import { Skeleton } from "@/components/ui/skeleton";
 import { InternalLinks } from "@/components/InternalLinks";
 import { getRelatedLinks } from "@/lib/content-graph";
+import { RecentProjects } from "@/components/RecentProjects";
+import { MobileOverlay } from "@/components/MobileOverlay";
 
 // Lazy load GSAP-heavy animation component
 const SimplifiedOrbitalPowers = lazy(() => import("@/components/SimplifiedOrbitalPowers").then(module => ({ default: module.SimplifiedOrbitalPowers })));
@@ -94,6 +96,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      <MobileOverlay 
+        maxWidth={768}
+        customMessage="For the best experience viewing our GTM Engine demos and interactive calculators, please visit on desktop."
+      />
       <SEO
         title="GTM Engine: Deploy Elite BDR Pods | Revenue Party"
         description="Stop hiring lone wolf SDRs. Deploy a complete GTM Engine with elite BDR pods, AI-powered Signal Factory, and guaranteed 20+ qualified appointments monthly. Own the system, not rent headcount."
@@ -226,6 +232,13 @@ export default function Home() {
           <div className="max-w-3xl mx-auto mt-16">
             <LeadMagnetHero />
           </div>
+        </div>
+      </section>
+
+      {/* Recent Projects Section */}
+      <section className="py-16 px-4 md:px-6 lg:px-8 bg-muted/30">
+        <div className="max-w-7xl mx-auto">
+          <RecentProjects maxProjects={9} />
         </div>
       </section>
 

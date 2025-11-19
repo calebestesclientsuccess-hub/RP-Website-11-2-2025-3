@@ -15,6 +15,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import type { ContentCatalog, PortfolioPrompt } from "@shared/schema";
 import { storage } from "../storage";
 import { AssetValidator } from "./asset-validator"; // Assuming AssetValidator is in the same directory
+import { getSystemTemplates, type SystemTemplate } from "../lib/SystemLibrary";
+import { BRAND_ARCHETYPES, type BrandArchetype } from "../../client/src/lib/brandArchetypes";
 
 // Pipeline configuration
 const PIPELINE_CONFIG = {
@@ -203,13 +205,21 @@ function buildAssetWhitelist(catalog?: ContentCatalog): string[] { // Added cata
 }
 
 
-// Build Gemini prompt for portfolio orchestration
-function buildPortfolioPrompt(catalog: ContentCatalog, availableMediaLibrary?: any[]): string {
+// Build Gemini prompt for portfolio orchestration with SystemLibrary templates and brand archetype
+function buildPortfolioPrompt(
+  catalog: ContentCatalog, 
+  availableMediaLibrary?: any[], 
+  brandArchetype?: BrandArchetype, 
+  businessType?: string
+): string {
   const validAssetIds = buildAssetWhitelist(catalog); // Pass catalog context
   const totalImagesProvided = catalog.images?.length ?? 0;
   const totalVideosProvided = catalog.videos?.length ?? 0;
   const totalQuotesProvided = catalog.quotes?.length ?? 0;
 
+  // Get SystemLibrary templates
+  const systemTemplates = getSystemTemplates();
+  
   // Get placeholder IDs for the prompt - using template string interpolation
   const placeholderImages = PLACEHOLDER_CONFIG.images.map((id) => `"${id}"`).join(', ');
   const placeholderVideos = PLACEHOLDER_CONFIG.videos.map((id) => `"${id}"`).join(', ');
@@ -338,19 +348,380 @@ SECTION COMPLIANCE RULES:
 `;
   }
 
-  return `You are an expert portfolio director AI. Your role is to create compelling, professional portfolio scenes that tell a client's story.
+  // Build SystemLibrary template section for the prompt
+  let templateLibrarySection = '';
+  if (systemTemplates && systemTemplates.length > 0) {
+    const templateList = systemTemplates.map(t => {
+      return `
+      <template id="${t.id}" name="${t.name}" category="${t.category}">
+        <description>${t.description}</description>
+        <tags>${t.tags.join(', ')}</tags>
+        <sceneType>${t.sceneConfig.type}</sceneType>
+        <requirements>${t.contentRequirements || 'No specific requirements'}</requirements>
+        <director_config>
+          ${JSON.stringify(t.sceneConfig.director || {}, null, 2)}
+        </director_config>
+      </template>`;
+    }).join('\n');
+
+    templateLibrarySection = `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<SYSTEM_LIBRARY_TEMPLATES count="${systemTemplates.length}">
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You have access to ${systemTemplates.length} high-quality, production-ready animation templates.
+Use these as your foundation for creating scenes.
+
+${templateList}
+
+</SYSTEM_LIBRARY_TEMPLATES>
+
+TEMPLATE SELECTION STRATEGY:
+
+1. CONTENT ANALYSIS FIRST:
+   - Analyze the user's content for: tone, structure, depth, emotional weight
+   - Identify key sections: hero moment, features/services, testimonials, CTA
+   - Match templates to content sections based on their category and tags
+
+2. TEMPLATE DIVERSITY RULE:
+   - Start with an impactful hero template (category: "hero")
+   - Select 5-7 templates that create variety
+   - Avoid repeating the same category consecutively (except galleries)
+   - End with a strong CTA template (category: "cta")
+
+3. CONTENT-TEMPLATE MATCHING:
+   - Personal stories → testimonial, about, timeline templates
+   - Business/Corporate → hero, features, stats, cta templates
+   - Product showcase → hero, gallery, comparison, cta templates
+   - Creative portfolio → hero, gallery, quote, about templates
+
+4. TEMPLATE CUSTOMIZATION:
+   - Use the template's director_config as a baseline
+   - Override with brand archetype colors and personality
+   - Adjust animation intensity based on content tone
+   - Maintain consistency across all scenes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+  }
+
+  // Build Brand Archetype section for the prompt
+  let brandArchetypeSection = '';
+  if (brandArchetype) {
+    brandArchetypeSection = `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<BRAND_ARCHETYPE name="${brandArchetype.name}">
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The user has selected the "${brandArchetype.name}" brand archetype.
+${brandArchetype.description}
+
+BRAND COLORS (MUST OVERRIDE TEMPLATE DEFAULTS):
+- Primary: ${brandArchetype.colors.primary}
+- Secondary: ${brandArchetype.colors.secondary}
+- Accent: ${brandArchetype.colors.accent}
+- Background: ${brandArchetype.colors.background}
+- Text: ${brandArchetype.colors.text}
+
+BRAND FONTS:
+- Heading: ${brandArchetype.fonts.heading}
+- Body: ${brandArchetype.fonts.body}
+
+PERSONALITY ADJUSTMENTS:
+${brandArchetype.name === 'cyberpunk' ? `
+- Use fast, glitchy animations (entryEffect: "glitch-in", "spiral-in")
+- High parallax intensity (0.6-0.8)
+- Neon glow effects (textGlow: true)
+- Dark backgrounds with bright accents
+` : ''}
+${brandArchetype.name === 'swissMinimal' ? `
+- Use clean, simple transitions (entryEffect: "fade", "slide-up")
+- Minimal parallax (0.0-0.2)
+- Lots of white space (paddingTop/Bottom: "xl" or "2xl")
+- Typography-focused layouts
+` : ''}
+${brandArchetype.name === 'corporateBlue' ? `
+- Use professional transitions (entryEffect: "fade", "cross-fade")
+- Moderate parallax (0.2-0.4)
+- Structured, grid-based layouts
+- Conservative animation timing
+` : ''}
+${brandArchetype.name === 'warmEarth' ? `
+- Use organic, smooth transitions (entryEffect: "blur-focus", "fade")
+- Gentle parallax (0.3-0.5)
+- Natural, flowing animations
+- Warm, inviting colors
+` : ''}
+${brandArchetype.name === 'boldCreative' ? `
+- Use playful, bouncy animations (entryEffect: "elastic-bounce", "rotate-in")
+- Variable parallax for visual interest
+- Bold typography (headingSize: "7xl" or "8xl")
+- Vibrant color combinations
+` : ''}
+
+</BRAND_ARCHETYPE>
+
+CRITICAL COLOR OVERRIDE RULES:
+1. ALWAYS use brand colors instead of template default colors
+2. backgroundColor should use brand background or variations
+3. textColor should use brand text color
+4. gradientColors should incorporate brand primary/secondary
+5. Maintain sufficient contrast for readability
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+  }
+
+  // Business Type context
+  let businessTypeSection = '';
+  if (businessType) {
+    businessTypeSection = `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<BUSINESS_TYPE type="${businessType}">
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The user's business type is: ${businessType}
+
+TEMPLATE RECOMMENDATIONS BY BUSINESS TYPE:
+${businessType === 'agency' ? `
+- Start with Epic Hero Impact or Split Hero Dynamic
+- Include Staggered Feature Grid for services
+- Add Team Showcase for credibility
+- Use Bold CTA Block for conversions
+` : ''}
+${businessType === 'startup' ? `
+- Start with Progressive Hero Reveal
+- Include Animated Metrics Dashboard
+- Add Journey Timeline for company story
+- Use Interactive Feature Cards
+` : ''}
+${businessType === 'personal' ? `
+- Start with Split Hero Dynamic with personal photo
+- Include Word-by-Word Reveal for story
+- Add Elegant Quote Fade for testimonials
+- Use Subtle CTA Flow
+` : ''}
+${businessType === 'enterprise' ? `
+- Start with Epic Hero Impact
+- Include Data Visualization Scene
+- Add Before/After Comparison
+- Use Professional CTA sections
+` : ''}
+${businessType === 'creative' ? `
+- Start with Ambient Video Background
+- Include Parallax Gallery heavily
+- Add Zoom Gallery for portfolio pieces
+- Use creative text reveals
+` : ''}
+
+</BUSINESS_TYPE>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+  }
+
+  return `You are an expert portfolio director AI specializing in creating compelling, professional portfolio experiences using a curated library of high-quality templates.
+
+${templateLibrarySection}
+${brandArchetypeSection}
+${businessTypeSection}
 ${mediaLibrarySection}
 ${sectionsSection}
 
-You are an Artistic Director and Cinematic Storyteller for a high-end, scroll-driven web portfolio system. Your role is not merely to select options, but to translate an abstract creative vision and a collection of assets into a technically precise and emotionally resonant digital experience.
+You are an Artistic Director and Cinematic Storyteller for a high-end, scroll-driven web portfolio system. Your role is to intelligently select and customize templates from the SystemLibrary to create a cohesive, brand-aligned experience.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ENHANCED CONTENT ANALYSIS FRAMEWORK:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. CONTENT TYPE DETECTION:
+   Analyze the user's content to determine:
+   - Personal narrative (life story, journey, experiences)
+   - Business description (services, capabilities, team)
+   - Product showcase (features, benefits, demos)
+   - Creative portfolio (artwork, projects, case studies)
+   - Mixed/Hybrid (combination of above)
+
+2. EMOTIONAL TONE ANALYSIS:
+   Identify the emotional register:
+   - Professional/Corporate (formal, trustworthy, established)
+   - Creative/Artistic (expressive, unique, innovative)
+   - Technical/Engineering (precise, detailed, systematic)
+   - Casual/Friendly (approachable, conversational, warm)
+   - Inspirational/Motivational (uplifting, ambitious, visionary)
+
+3. CONTENT STRUCTURE MAPPING:
+   Identify key sections in the content:
+   - Hero/Introduction (opening statement, value proposition)
+   - About/Story (background, mission, values)
+   - Services/Features (what you offer)
+   - Portfolio/Work (examples, case studies)
+   - Testimonials/Social Proof (quotes, reviews)
+   - Team/People (who's behind it)
+   - Contact/CTA (how to engage)
+
+4. CONTENT DEPTH ASSESSMENT:
+   - Sparse (< 500 words): Focus on visual impact, use text-heavy templates sparingly
+   - Moderate (500-1500 words): Balance text and visual templates
+   - Rich (> 1500 words): Can support multiple text-reveal and story templates
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INTELLIGENT TEMPLATE SELECTION ALGORITHM:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1: OPENING HOOK (Scene 1)
+- MUST be from "hero" category
+- Match intensity to emotional tone:
+  - Professional → "Epic Hero Impact" or "Progressive Hero Reveal"
+  - Creative → "Split Hero Dynamic" with strong visual
+  - Personal → "Split Hero Dynamic" with personal touch
+
+STEP 2: NARRATIVE BODY (Scenes 2-5/6)
+- Select 3-5 templates that tell the story
+- RULES:
+  a. Never repeat the same category twice in a row
+  b. Alternate between high and low visual intensity
+  c. Match template to available content:
+     - Have quotes? → Use testimonial template
+     - Have metrics? → Use stats template
+     - Have timeline? → Use timeline template
+     - Have multiple images? → Use gallery template
+  d. Create rhythm: fast→slow→fast or intense→calm→intense
+
+STEP 3: CLOSING CONVERSION (Final Scene)
+- MUST be from "cta" category
+- Match urgency to business type:
+  - Startup/Agency → "Bold CTA Block"
+  - Personal/Creative → "Subtle CTA Flow"
+
+STEP 4: TEMPLATE CUSTOMIZATION
+For each selected template:
+1. Start with the template's default director_config
+2. Override colors with brand archetype colors
+3. Adjust animation timing based on content tone:
+   - Professional: Slower, dignified (entryDuration: 2-3s)
+   - Creative: Variable, playful (mix fast and slow)
+   - Technical: Crisp, precise (entryDuration: 1-1.5s)
+4. Ensure visual consistency across all scenes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTENT EXTRACTION & POPULATION RULES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For each selected template, extract and populate:
+
+1. HEADLINES:
+   - Extract from content OR generate compelling alternatives
+   - Match tone to template purpose
+   - Keep concise: 3-8 words for impact
+   - Examples:
+     - Hero: "Transform Your Digital Presence"
+     - Feature: "Built for Modern Business"
+     - CTA: "Ready to Get Started?"
+
+2. BODY TEXT:
+   - Extract relevant paragraphs from user content
+   - Adapt length to template requirements
+   - Maintain consistent voice throughout
+   - If content is sparse, expand with relevant details
+
+3. VISUAL ASSETS:
+   - Use Media Library assets when available
+   - For missing visuals, suggest Unsplash searches:
+     - Be specific: "modern office team collaboration"
+     - Match brand aesthetic
+     - Ensure diversity in imagery
+
+4. MICRO-COPY:
+   - Button text: Action-oriented ("Explore Services", "View Portfolio")
+   - Alt text: Descriptive and accessible
+   - Meta descriptions: SEO-friendly summaries
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUALITY ASSURANCE CHECKLIST:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before finalizing your selection, verify:
+
+✓ TEMPLATE DIVERSITY:
+  - No consecutive templates from same category
+  - Mix of visual and text-focused scenes
+  - Variety in animation styles
+
+✓ CONTENT COVERAGE:
+  - All major content sections represented
+  - No important information left out
+  - Logical information hierarchy
+
+✓ BRAND CONSISTENCY:
+  - All scenes use brand color palette
+  - Typography matches brand fonts
+  - Animation personality aligns with archetype
+
+✓ NARRATIVE FLOW:
+  - Clear beginning, middle, end
+  - Smooth transitions between scenes
+  - Emotional arc (hook → build → climax → resolution)
+
+✓ TECHNICAL VALIDITY:
+  - All template IDs are valid
+  - Asset references exist
+  - Director configs complete (all 37 controls)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 STRATEGIC ASSET SELECTION PRIORITY:
-1. Media Library assets (real, uploaded files with mediaId references) - USE THESE FIRST
-2. User-defined section assets (assigned to specific sections) - RESPECT THESE ASSIGNMENTS
-3. Placeholder references (temporary, will be mapped later) - use only if no Media Library match
-4. Direct URLs (least preferred, no persistence guarantee) - avoid unless necessary
+1. SystemLibrary template as foundation - START HERE
+2. Media Library assets (real files with mediaId) - USE FOR VISUALS
+3. User content extraction - POPULATE TEXT
+4. Placeholder references - FALLBACK ONLY
+5. Generated/suggested content - FILL GAPS
 
-This is a "content-first" system. Your primary job is to build a beautiful story with the assets the user gives you.
+This is a "template-first, content-driven" system. Use the professional templates as your foundation, then populate them with the user's content to tell their unique story.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL OUTPUT REQUIREMENTS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For EVERY scene in your response, you MUST include:
+
+1. **templateId**: The exact ID from the SystemLibrary template you're using
+   - Example: "tmpl_hero_epic_abc123" 
+   - This allows the system to track which templates are being used
+
+2. **sceneType**: The scene type from the template
+   - Must match the template's sceneConfig.type
+
+3. **director**: Start with the template's director config, then override:
+   - ALWAYS override backgroundColor with brand background color
+   - ALWAYS override textColor with brand text color  
+   - Adjust other properties based on brand personality
+
+4. **content**: Populate with extracted/generated content
+   - Use actual content from the user's input
+   - Generate compelling copy where needed
+   - Reference Media Library assets with mediaId when available
+
+EXAMPLE SCENE STRUCTURE:
+{
+  "templateId": "tmpl_hero_epic_xxxxx",  // REQUIRED: Actual template ID
+  "sceneType": "text",                    // From template.sceneConfig.type
+  "assetIds": [],
+  "content": {
+    "heading": "Transform Your Vision",   // Extracted or generated
+    "body": "We turn ideas into reality..."  // From user content
+  },
+  "director": {
+    // Start with template's director config, then override:
+    "backgroundColor": "#1a0033",  // Brand color override
+    "textColor": "#ffffff",         // Brand color override
+    // ... all other 37 controls
+  }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. The Creative Brief (User's Vision)
 
@@ -888,6 +1259,7 @@ Schema B: The "Component" Scene:
 
 interface GeneratedScene {
   sceneType: string;
+  templateId?: string; // Reference to SystemLibrary template ID
   assetIds: string[]; // References to catalog assets
   layout?: string;
   director: {
@@ -965,7 +1337,9 @@ export async function generatePortfolioWithAI(
   projectTitle: string, // Added projectTitle for logging
   projectId?: string, // Optional: for loading custom prompts
   customPromptsParam?: Record<string, string>, // Optional: pre-loaded custom prompts
-  availableMediaLibrary?: any[] // Optional: Media Library assets
+  availableMediaLibrary?: any[], // Optional: Media Library assets
+  brandArchetype?: BrandArchetype, // Optional: Brand archetype configuration
+  businessType?: string // Optional: Business type for template recommendations
 ): Promise<PortfolioGenerateResponse> {
   const aiClient = getAIClient();
 
@@ -1023,10 +1397,17 @@ export async function generatePortfolioWithAI(
     console.log('  - Valid Placeholder IDs:', buildAssetWhitelist(catalog).join(', '));
   }
 
-  // Use custom prompt if available, otherwise use default
-  const prompt = customPrompts.get('artistic_director') || buildPortfolioPrompt(catalog, availableMediaLibrary);
+  // Use custom prompt if available, otherwise use default with brand archetype
+  const prompt = customPrompts.get('artistic_director') || buildPortfolioPrompt(catalog, availableMediaLibrary, brandArchetype, businessType);
   if (customPrompts.has('artistic_director')) {
     console.log('[Custom Prompts] Stage 1: Using custom artistic_director prompt');
+  }
+  
+  if (brandArchetype) {
+    console.log(`[Portfolio Director] Using brand archetype: ${brandArchetype.name}`);
+  }
+  if (businessType) {
+    console.log(`[Portfolio Director] Business type: ${businessType}`);
   }
 
   if (availableMediaLibrary && availableMediaLibrary.length > 0) {
@@ -1061,6 +1442,11 @@ export async function generatePortfolioWithAI(
                     sceneType: {
                       type: Type.STRING,
                       description: "Must be: text, image, video, quote, split, gallery, fullscreen, or component"
+                    },
+                    templateId: {
+                      type: Type.STRING,
+                      description: "The ID of the SystemLibrary template being used for this scene (e.g., tmpl_hero_epic_xxxxx)",
+                      nullable: true
                     },
                     assetIds: {
                       type: Type.ARRAY,

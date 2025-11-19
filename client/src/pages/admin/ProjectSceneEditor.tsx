@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Edit, Trash2, Copy, Sparkles, Loader2 as LoaderIcon, Loader2 } from "lucide-react";
+import { Plus, Edit, Trash2, Copy, Sparkles, Loader2 as LoaderIcon, Loader2, Bookmark } from "lucide-react";
 import { DirectorConfigForm } from "@/components/DirectorConfigForm";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 import { DEFAULT_DIRECTOR_CONFIG, type ProjectScene } from "@shared/schema";
@@ -35,11 +36,6 @@ import { PortfolioPromptsManager } from "@/components/admin/PortfolioPromptsMana
 
 // Extract SceneConfig type from ProjectScene
 type SceneConfig = ProjectScene['sceneConfig'];
-
-interface SceneEditorProps {
-  projectId: string;
-  id: string; // Assuming 'id' is also available and needed for PortfolioPromptsManager
-}
 
 const SCENE_TEMPLATES = {
   text: {
@@ -129,8 +125,74 @@ const quickModeSchema = z.object({
   director: z.any().optional(),
 });
 
-export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) {
+interface ProjectSceneEditorProps {
+  projectId?: string; // Optional prop for embedded usage (e.g. in ProjectForm)
+}
+
+export default function ProjectSceneEditor({ projectId: propProjectId }: ProjectSceneEditorProps = {}) {
   const { toast } = useToast();
+  const [, params] = useRoute("/admin/portfolio/:slug");
+  const slug = params?.slug;
+  
+  // Fetch project by slug only if we don't have a projectId prop
+  const { data: project, isLoading: isLoadingProject, error: projectError } = useQuery({
+    queryKey: [`/api/projects/slug/${slug}`],
+    enabled: !!slug && !propProjectId, // Only fetch if we have slug but no projectId prop
+  });
+  
+  // Use prop projectId if provided, otherwise use fetched project ID
+  const projectId = propProjectId || project?.id;
+  const id = projectId;
+  
+  // Show loading state while project is being fetched (only for standalone mode)
+  if (!propProjectId && isLoadingProject) {
+    return (
+      <div className="flex items-center justify-center min-h-screen" data-testid="loading-project">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading project...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show error state if project not found (only for standalone mode)
+  if (!propProjectId && (projectError || (!isLoadingProject && !project))) {
+    return (
+      <div className="flex items-center justify-center min-h-screen" data-testid="error-project">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>Project Not Found</CardTitle>
+            <CardDescription>
+              The project with slug "{slug}" could not be found.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild data-testid="button-back-to-projects">
+              <a href="/admin/projects">Back to Projects</a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
+  // If no projectId available (neither prop nor fetched), show error
+  if (!projectId) {
+    return (
+      <div className="flex items-center justify-center min-h-screen" data-testid="error-no-project">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle>No Project Selected</CardTitle>
+            <CardDescription>
+              Please select a project to edit scenes.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+  
   const [editingScene, setEditingScene] = useState<ProjectScene | null>(null);
   const [sceneJson, setSceneJson] = useState("");
   const [jsonError, setJsonError] = useState<string | null>(null);
@@ -140,6 +202,10 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
   const [mediaPickerField, setMediaPickerField] = useState<'url' | 'images' | 'media'>('url');
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
+  
+  // Save Template state
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [sceneToSave, setSceneToSave] = useState<ProjectScene | null>(null);
 
 
   // AI Generation state
@@ -246,6 +312,39 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
     },
     onError: () => {
       toast({ title: "Failed to delete scene", variant: "destructive" });
+    },
+  });
+
+  const saveTemplateMutation = useMutation({
+    mutationFn: async ({
+      sceneId,
+      name,
+      description,
+      category,
+      tags,
+    }: {
+      sceneId: string;
+      name: string;
+      description?: string;
+      category?: string;
+      tags?: string[];
+    }) => {
+      const response = await apiRequest("POST", `/api/project-scenes/${sceneId}/save-as-template`, {
+        name,
+        description,
+        category,
+        tags,
+      });
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/scene-templates'] });
+      toast({ title: "Scene saved as template successfully" });
+      setSaveTemplateOpen(false);
+      setSceneToSave(null);
+    },
+    onError: () => {
+      toast({ title: "Failed to save scene as template", variant: "destructive" });
     },
   });
 
@@ -498,6 +597,11 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
     setIsDialogOpen(true);
   };
 
+  const handleSaveAsTemplate = (scene: ProjectScene) => {
+    setSceneToSave(scene);
+    setSaveTemplateOpen(true);
+  };
+
   const getSceneType = (sceneConfig: SceneConfig | undefined): string => {
     return sceneConfig?.type || "unknown";
   };
@@ -541,6 +645,19 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
       if (data.mediaType) content.mediaType = data.mediaType;
       if (data.caption) content.caption = data.caption; // For image scenes
 
+      // MEDIA LIBRARY INTEGRATION: Extract mediaId from assetIds array
+      if (data.assetIds && Array.isArray(data.assetIds) && data.assetIds.length > 0) {
+        const mediaId = data.assetIds[0]; // Use first asset ID
+        
+        // Map to correct field based on scene type
+        if (normalizedType === 'image' || normalizedType === 'video') {
+          content.mediaId = mediaId;
+          console.log(`[AI Generation] Mapped Media Library asset ${mediaId} to content.mediaId`);
+        } else if (normalizedType === 'split' || normalizedType === 'fullscreen') {
+          content.mediaMediaId = mediaId;
+          console.log(`[AI Generation] Mapped Media Library asset ${mediaId} to content.mediaMediaId`);
+        }
+      }
 
       // Ensure required fields for text scenes (heading + body both required)
       if (normalizedType === "text") {
@@ -1518,6 +1635,14 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
                       <Button
                         size="icon"
                         variant="ghost"
+                        onClick={() => handleSaveAsTemplate(scene)}
+                        data-testid={`button-save-template-${scene.id}`}
+                      >
+                        <Bookmark className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
                         onClick={() => handleDelete(scene.id)}
                         data-testid={`button-delete-scene-${scene.id}`}
                       >
@@ -1531,6 +1656,106 @@ export default function ProjectSceneEditor({ projectId, id }: SceneEditorProps) 
           )}
         </TabsContent>
       </Tabs>
+      
+      <Dialog open={saveTemplateOpen} onOpenChange={setSaveTemplateOpen}>
+        <DialogContent data-testid="dialog-save-template">
+          <DialogHeader>
+            <DialogTitle>Save Scene as Template</DialogTitle>
+            <DialogDescription>
+              Save this scene configuration as a reusable template
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="template-name" className="text-sm font-medium">
+                Template Name *
+              </label>
+              <Input
+                id="template-name"
+                placeholder="e.g., Hero with CTA"
+                data-testid="input-template-name"
+              />
+            </div>
+            <div>
+              <label htmlFor="template-description" className="text-sm font-medium">
+                Description
+              </label>
+              <Textarea
+                id="template-description"
+                placeholder="Describe what this template is used for..."
+                data-testid="input-template-description"
+              />
+            </div>
+            <div>
+              <label htmlFor="template-category" className="text-sm font-medium">
+                Category
+              </label>
+              <Input
+                id="template-category"
+                placeholder="e.g., Hero, Testimonial, Stats"
+                data-testid="input-template-category"
+              />
+            </div>
+            <div>
+              <label htmlFor="template-tags" className="text-sm font-medium">
+                Tags (comma-separated)
+              </label>
+              <Input
+                id="template-tags"
+                placeholder="e.g., hero, cta, dark-theme"
+                data-testid="input-template-tags"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSaveTemplateOpen(false);
+                setSceneToSave(null);
+              }}
+              data-testid="button-cancel-save-template"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                const name = (document.getElementById('template-name') as HTMLInputElement)?.value;
+                const description = (document.getElementById('template-description') as HTMLTextAreaElement)?.value;
+                const category = (document.getElementById('template-category') as HTMLInputElement)?.value;
+                const tagsInput = (document.getElementById('template-tags') as HTMLInputElement)?.value;
+                const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(Boolean) : [];
+                
+                if (!name || !name.trim()) {
+                  toast({ title: "Template name is required", variant: "destructive" });
+                  return;
+                }
+                
+                if (sceneToSave) {
+                  saveTemplateMutation.mutate({
+                    sceneId: sceneToSave.id,
+                    name: name.trim(),
+                    description: description?.trim() || undefined,
+                    category: category?.trim() || undefined,
+                    tags: tags.length > 0 ? tags : undefined,
+                  });
+                }
+              }}
+              disabled={saveTemplateMutation.isPending}
+              data-testid="button-confirm-save-template"
+            >
+              {saveTemplateMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Template'
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

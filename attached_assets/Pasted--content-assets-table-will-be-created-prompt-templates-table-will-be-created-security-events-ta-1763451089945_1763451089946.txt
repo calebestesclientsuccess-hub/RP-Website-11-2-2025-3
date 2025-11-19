@@ -1,0 +1,65 @@
++ content_assets table will be created
++ prompt_templates table will be created
++ security_events table will be created
+--- all table conflicts resolved ---
+
+ Warning  Found data-loss statements:
+· You're about to delete session table with 22 items
+
+THIS ACTION WILL CAUSE DATA LOSS AND CANNOT BE REVERTED
+
+Do you still want to push changes?
+[x] All changes were aborted
+~/workspace$ bash: lsof: command not found
+kill: no process ID specified
+Try 'kill --help' for more information.
+bash: bash:: command not found
+bash: kill:: command not found
+bash: Try: command not found
+~/workspace$ npm run db:push
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/home/runner/workspace/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
++ api_key_usage_logs table will be created
++ api_keys table will be created
++ content_assets table will be created
++ prompt_templates table will be created
++ security_events table will be created
+--- all table conflicts resolved ---
+
+ Warning  Found data-loss statements:
+· You're about to delete session table with 22 items
+
+THIS ACTION WILL CAUSE DATA LOSS AND CANNOT BE REVERTED
+
+Do you still want to push changes?
+[x] All changes were aborted
+~/workspace$ npm run db:push
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/home/runner/workspace/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
++ api_key_usage_logs table will be created
++ api_keys table will be created
++ content_assets table will be created
++ prompt_templates table will be created
++ security_events table will be created
+--- all table conflicts resolved ---
+
+ Warning  Found data-loss statements:
+· You're about to delete session table with 22 items
+
+THIS ACTION WILL CAUSE DATA LOSS AND CANNOT BE REVERTED
+
+Do you still want to push changes?
+❯ No, abort
+  Yes, I want to remove 1 table, 

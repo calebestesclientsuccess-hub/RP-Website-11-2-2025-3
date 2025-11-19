@@ -1,0 +1,99 @@
+Look, I need the fastest path to some version of this:
+
+
+
+1. Logo, colors, fonts, assets
+
+2. Essay on story and style (the point of the webpage; the points they want to make; this can be formatted in any way they like)
+
+3. Out pops JSON
+
+4. see it in live preview
+
+5. prompt --> JSON update --> displays in preview
+
+
+
+I don't need scalable. If I get that far, I'll have developer around me to figure out the parts I am strugggling or at least getting bored with.
+
+
+
+With thgat in mind, what is my plan?
+
+Okay, cutting through the complexity to get you the fastest path to "Input Essay -> Output Webpage."
+
+Since you don't need massive scale right now, we can skip the rigorous database migrations, multi-tenant isolation, and complex "Toolkit Registry" engineering. We are going straight for a functional prototype.
+
+Here is your streamlined "Zero-to-Webpage" Plan:
+
+Phase 1: The "Director" Engine (Backend Logic)
+Goal: Build the brain that turns an essay into JSON.
+
+The Prompt Engineering (The Core): Forget dynamic toolkits. Hardcode the available components in the prompt.
+
+Create a generate-site endpoint.
+
+Input: brandColors (Hex codes), logoUrl, essay (The user's story).
+
+System Prompt:
+
+Plaintext
+You are a web director. Convert the user's essay into a JSON structure for a scrolling webpage.
+AVAILABLE COMPONENTS:
+- "hero": { headline, subheadline, backgroundImage, ctaText }
+- "text-block": { content (markdown), alignment (left/center/right) }
+- "image-grid": { images: [{url, caption}] }
+- "quote": { text, author }
+
+RULES:
+1. Use the user's essay to populate the content.
+2. Strictly use the provided brand colors: [Primary], [Secondary].
+3. Output ONLY valid JSON.
+The API Endpoint: A simple Express route (POST /api/generate) that calls Gemini with the above prompt and returns the JSON blob. No complex database saves yet—just return the JSON to the frontend.
+
+Phase 2: The "Viewer" (Frontend Rendering)
+Goal: Turn that JSON into pixels immediately.
+
+Hardcoded Components: Build 4 simple React components in client/src/components/:
+
+Hero.tsx: A big div with a background image and text.
+
+TextBlock.tsx: A div that renders text.
+
+ImageGrid.tsx: A CSS grid of images.
+
+Quote.tsx: A styled blockquote.
+
+The Renderer: A simple map function in your main page file.
+
+const renderer = { hero: Hero, 'text-block': TextBlock, ... }
+
+Loop through the JSON array: data.map(block => { const Component = renderer[block.type]; return <Component {...block.content} /> })
+
+Phase 3: The "Live Studio" (Interactive Editing)
+Goal: The "Prompt -> Update -> Display" loop.
+
+Split Screen UI:
+
+Left Side: A chat box.
+
+Right Side: The rendered page (from Phase 2).
+
+The "Update" Loop:
+
+When you type "Make the hero text bigger" in the chat box:
+
+Send the Current JSON + User Request back to Gemini.
+
+Prompt: "Here is the current website JSON. The user wants: [Request]. Modify the JSON to fulfill this request and return the NEW full JSON."
+
+Frontend receives new JSON -> Replaces state -> Page updates instantly.
+
+Your Immediate Action Items (Sprint 1)
+Forget the Database: For now, store the JSON in local state or a simple temporary file. Don't waste time on tenantId or sceneTemplates tables yet.
+
+Build the 4 Components: Create the visual building blocks first. If you can't render it, the AI can't generate it.
+
+Write the Prompt: Use the playground to test: "Here is an essay about [Topic]. Turn it into a JSON array of [Hero, Text, Image] components."
+
+Connect the Loop: Build the simple UI where Input -> API -> Render.

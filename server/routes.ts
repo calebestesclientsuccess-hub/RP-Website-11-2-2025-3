@@ -5,7 +5,7 @@ import crypto from "crypto";
 import multer from "multer";
 import path from "path";
 import { storage } from "./storage";
-import { DEFAULT_TENANT_ID } from "./middleware/tenant";
+import { DEFAULT_TENANT_ID, DEFAULT_USER_ID } from "./middleware/tenant";
 import cloudinary from "./cloudinary";
 import {
   insertEmailCaptureSchema,
@@ -47,6 +47,9 @@ import {
   sceneTemplates,
 } from "@shared/schema";
 import { eq, and, asc, inArray, or, isNull } from "drizzle-orm";
+import { buildLayoutPrompt, buildRefineSectionPrompt } from "./services/promptBuilder";
+import { generateLayoutFromPrompt } from "./services/layoutGenerator";
+import { RefinementPipeline } from "./utils/refinement-pipeline";
 import { calculatePointsBasedBucket, calculateDecisionTreeBucket } from "./utils/assessment-scoring";
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
@@ -79,31 +82,32 @@ const DEFAULT_DIRECTOR_CONFIG = {
   transition: "fade",
 };
 
+// COMMENTED OUT - Using external URLs instead of file uploads
 // Configure multer for memory storage (files will be uploaded to Cloudinary)
-const pdfUploadMulter = multer({ // Renamed to avoid conflict with imported pdfUpload
-  storage: multer.memoryStorage(),
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PDF files are allowed'));
-    }
-  },
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
-});
+// const pdfUploadMulter = multer({ // Renamed to avoid conflict with imported pdfUpload
+//   storage: multer.memoryStorage(),
+//   fileFilter: (req, file, cb) => {
+//     if (file.mimetype === 'application/pdf') {
+//       cb(null, true);
+//     } else {
+//       cb(new Error('Only PDF files are allowed'));
+//     }
+//   },
+//   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+// });
 
-const imageUploadMulter = multer({ // Renamed to avoid conflict with imported imageUpload
-  storage: multer.memoryStorage(),
-  fileFilter: (req, file, cb) => {
-    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (allowedMimes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files (JPEG, PNG, GIF, WebP) are allowed'));
-    }
-  },
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
-});
+// const imageUploadMulter = multer({ // Renamed to avoid conflict with imported imageUpload
+//   storage: multer.memoryStorage(),
+//   fileFilter: (req, file, cb) => {
+//     const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+//     if (allowedMimes.includes(file.mimetype)) {
+//       cb(null, true);
+//     } else {
+//       cb(new Error('Only image files (JPEG, PNG, GIF, WebP) are allowed'));
+//     }
+//   },
+//   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+// });
 
 // Multer configuration for media library uploads
 const mediaUpload = multer({
@@ -376,7 +380,6 @@ export async function registerRoutes(app: Express): Promise<void> {
       if (!user) {
         return res.json({ user: null });
       }
-
       return res.json({
         user: {
           id: user.id,
@@ -388,6 +391,157 @@ export async function registerRoutes(app: Express): Promise<void> {
       return res.status(500).json({ error: "Internal server error" });
     }
   });
+
+  // ----- Admin AI Layout Wizard Endpoints -----
+
+  // Save or update brand settings
+  app.post("/api/admin/brand-settings", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { logoUrl, colors, componentLibrary } = req.body;
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      // Upsert brand settings (simple replace for demo)
+      const existing = await storage.getBrandSettings(req.tenantId || DEFAULT_TENANT_ID);
+      if (existing) {
+        await storage.updateBrandSettings(tenantId, { logoUrl, colors, componentLibrary });
+      } else {
+        await storage.createBrandSettings({ tenantId, logoUrl, colors, componentLibrary });
+      }
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Brand settings error:", err);
+      res.status(500).json({ error: "Failed to save brand settings" });
+    }
+  });
+
+  // Get current layout draft
+  app.get("/api/admin/layout-draft", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const draft = await storage.getLayoutDraft(req.tenantId || DEFAULT_TENANT_ID, req.session.userId || DEFAULT_USER_ID);
+      if (!draft) {
+        return res.status(404).json({ error: "Draft not found" });
+      }
+      res.json(draft);
+    } catch (err) {
+      console.error("Get layout draft error:", err);
+      res.status(500).json({ error: "Failed to get layout draft" });
+    }
+  });
+
+  // Save layout draft (intermediate wizard state)
+  app.post("/api/admin/layout-draft", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { draftJson } = req.body;
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const userId = req.session.userId;
+      const existing = await storage.getLayoutDraft(tenantId, userId);
+      if (existing) {
+        await storage.updateLayoutDraft(existing.id, { draftJson });
+      } else {
+        await storage.createLayoutDraft({ tenantId, userId, draftJson });
+      }
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Layout draft error:", err);
+      res.status(500).json({ error: "Failed to save layout draft" });
+    }
+  });
+
+  // Generate final layout JSON via LLM
+  app.post("/api/admin/generate-layout", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const userId = req.session.userId;
+      const brand = await storage.getBrandSettings(tenantId);
+      const draft = await storage.getLayoutDraft(req.tenantId || DEFAULT_TENANT_ID, req.session.userId || DEFAULT_USER_ID);
+      if (!brand || !draft) {
+        return res.status(400).json({ error: "Brand settings or draft not found" });
+      }
+
+      // Initialize pipeline
+      const pipeline = new RefinementPipeline(process.env.GENAI_API_KEY || "");
+
+      // Stage 1: Generate V1 (Initial Layout)
+      // We pass brand and draft to the pipeline
+      const v1Scenes = await pipeline.stage1_initialGeneration(brand, draft);
+
+      // Construct V1 Layout JSON
+      const v1Layout = {
+        ...draft.draftJson, // keep existing draft metadata
+        sections: v1Scenes,
+        version: 1,
+        status: 'draft'
+      };
+
+      // Save V1 immediately
+      await storage.updateLayoutDraft(draft.id, {
+        draftJson: v1Layout,
+        updatedAt: new Date().toISOString()
+      });
+
+      // Send V1 to client immediately
+      res.json({ success: true, layout: v1Layout });
+
+      // Trigger Background Refinement (V1 -> V2)
+      // This runs asynchronously after the response is sent
+      (async () => {
+        try {
+          console.log("🚀 Starting Background Refinement for Draft ID:", draft.id);
+
+          const refinementResult = await pipeline.refineV1toV2(v1Scenes);
+
+          // Construct V2 Layout JSON
+          const v2Layout = {
+            ...v1Layout,
+            sections: refinementResult.scenes,
+            version: 2,
+            status: 'refined',
+            refinementStats: {
+              confidenceScore: refinementResult.confidenceScore,
+              totalTime: refinementResult.totalTime
+            }
+          };
+
+          // Save V2 to storage
+          await storage.updateLayoutDraft(draft.id, {
+            draftJson: v2Layout,
+            updatedAt: new Date().toISOString()
+          });
+
+          console.log("✅ Background Refinement Saved for Draft ID:", draft.id);
+        } catch (err) {
+          console.error("❌ Background Refinement Error:", err);
+          // Optionally update status to 'failed'
+        }
+      })();
+
+    } catch (error) {
+      console.error("Error generating layout:", error);
+      res.status(500).json({ error: "Failed to generate layout" });
+    }
+  });
+
+  // Refine a specific section via LLM
+  app.post("/api/admin/refine-section", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { section, instructions } = req.body;
+      if (!section || !instructions) {
+        return res.status(400).json({ error: "Missing section or instructions" });
+      }
+
+      // We can reuse the layout generator service since it just calls the LLM with a prompt
+      // But we need to import buildRefineSectionPrompt first.
+      // Note: We need to update imports in routes.ts to include buildRefineSectionPrompt
+      const prompt = buildRefineSectionPrompt(section, instructions);
+      const refinedSection = await generateLayoutFromPrompt(prompt);
+
+      res.json({ success: true, section: refinedSection });
+    } catch (err) {
+      console.error("Refine section error:", err);
+      res.status(500).json({ error: "Failed to refine section" });
+    }
+  });
+
+
 
   app.get("/api/auth/has-users", async (req, res) => {
     try {
@@ -589,19 +743,21 @@ export async function registerRoutes(app: Express): Promise<void> {
     res.json(result);
   });
 
+  // COMMENTED OUT - Using external URLs instead
   // PDF Upload endpoint (Cloudinary)
+  /* COMMENTED OUT - Using external URLs instead
   app.post("/api/upload/pdf", requireAuth, pdfUploadMulter.single('pdf'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No PDF file uploaded" });
       }
-
+  
       // Validate file content
       const validation = await validateUploadedFile(req.file, 'application/pdf');
       if (!validation.valid) {
         return res.status(400).json({ error: validation.error });
       }
-
+  
       // Upload to Cloudinary using buffer
       const uploadResult = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -618,7 +774,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         );
         uploadStream.end(req.file!.buffer);
       });
-
+  
       const pdfUrl = (uploadResult as any).secure_url;
       return res.json({ url: pdfUrl });
     } catch (error) {
@@ -626,20 +782,21 @@ export async function registerRoutes(app: Express): Promise<void> {
       return res.status(500).json({ error: "Failed to upload PDF" });
     }
   });
+  */
 
-  // Image Upload endpoint (Cloudinary)
+  /* COMMENTED OUT - Using external URLs instead
   app.post("/api/upload/image", requireAuth, imageUploadMulter.single('image'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No image file uploaded" });
       }
-
+  
       // Validate file content
       const validation = await validateUploadedFile(req.file, req.file.mimetype);
       if (!validation.valid) {
         return res.status(400).json({ error: validation.error });
       }
-
+  
       // Upload to Cloudinary using buffer with automatic optimization
       const uploadResult = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -658,7 +815,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         );
         uploadStream.end(req.file!.buffer);
       });
-
+  
       const imageUrl = (uploadResult as any).secure_url;
       return res.json({ url: imageUrl });
     } catch (error) {
@@ -666,6 +823,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       return res.status(500).json({ error: "Failed to upload image" });
     }
   });
+  */ // End of commented out image upload endpoint
 
   // Email Capture endpoint for ROI Calculator
   app.post("/api/email-capture", async (req, res) => {
@@ -717,8 +875,8 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.post("/api/share-roi-report", async (req, res) => {
     try {
       const { emails, ltv, closeRate, engineName, monthlyInvestment, monthlySQOs,
-              costPerMeeting, projectedDealsPerMonth, projectedLTVPerMonth, monthlyROI,
-              annualSQOs, projectedLTVPerYear } = req.body;
+        costPerMeeting, projectedDealsPerMonth, projectedLTVPerMonth, monthlyROI,
+        annualSQOs, projectedLTVPerYear } = req.body;
 
       if (!emails || !Array.isArray(emails) || emails.length === 0) {
         return res.status(400).json({
@@ -739,9 +897,9 @@ export async function registerRoutes(app: Express): Promise<void> {
 
       // Validate numeric fields
       if (typeof ltv !== 'number' || typeof closeRate !== 'number' ||
-          typeof monthlyInvestment !== 'number' || typeof monthlySQOs !== 'number' ||
-          typeof costPerMeeting !== 'number' || typeof projectedDealsPerMonth !== 'number' ||
-          typeof projectedLTVPerMonth !== 'number' || typeof monthlyROI !== 'number') {
+        typeof monthlyInvestment !== 'number' || typeof monthlySQOs !== 'number' ||
+        typeof costPerMeeting !== 'number' || typeof projectedDealsPerMonth !== 'number' ||
+        typeof projectedLTVPerMonth !== 'number' || typeof monthlyROI !== 'number') {
         return res.status(400).json({
           error: "Invalid data format - numeric fields required"
         });
@@ -898,7 +1056,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         });
       }
 
-      const lead = await storage.createLead(req.tenantId, {
+      const lead = await storage.createLead(req.tenantId || DEFAULT_TENANT_ID, {
         ...result.data,
         userAgent: req.headers['user-agent'],
         ipAddress: req.ip,
@@ -946,7 +1104,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
       const { fullName, workEmail, companyName, website, gtmChallenge } = result.data;
 
-      const lead = await storage.createLead(req.tenantId, {
+      const lead = await storage.createLead(req.tenantId || DEFAULT_TENANT_ID, {
         email: workEmail,
         name: fullName,
         company: companyName,
@@ -993,7 +1151,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         filters.endDate = new Date(req.query.endDate as string);
       }
 
-      const leads = await storage.getAllLeads(req.tenantId, filters);
+      const leads = await storage.getAllLeads(req.tenantId || DEFAULT_TENANT_ID, filters);
 
       return res.json({
         success: true,
@@ -1023,7 +1181,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.get("/api/admin/content", requireAuth, async (req, res) => {
     try {
       const { type, status, search } = req.query;
-      const tenantId = req.tenantId;
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
 
       // Fetch all content types in parallel
       const [blogs, videos, testimonials, portfolios, jobs] = await Promise.all([
@@ -1154,7 +1312,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       // Support ?publishedOnly=false query param for admin to see all posts (including drafts)
       const publishedOnly = req.query.publishedOnly !== 'false';
-      const posts = await storage.getAllBlogPosts(req.tenantId, publishedOnly);
+      const posts = await storage.getAllBlogPosts(req.tenantId || DEFAULT_TENANT_ID, publishedOnly);
       return res.json(posts);
     } catch (error) {
       console.error("Error fetching blog posts:", error);
@@ -1165,7 +1323,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Get blog post by ID (route must come before :slug to avoid conflicts)
   app.get("/api/blog-posts/by-id/:id", async (req, res) => {
     try {
-      const post = await storage.getBlogPostById(req.tenantId, req.params.id);
+      const post = await storage.getBlogPostById(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       if (!post) {
         return res.status(404).json({ error: "Blog post not found" });
       }
@@ -1178,7 +1336,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.get("/api/blog-posts/:slug", async (req, res) => {
     try {
-      const post = await storage.getBlogPostBySlug(req.tenantId, req.params.slug);
+      const post = await storage.getBlogPostBySlug(req.tenantId || DEFAULT_TENANT_ID, req.params.slug);
       if (!post) {
         return res.status(404).json({ error: "Blog post not found" });
       }
@@ -1199,7 +1357,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           details: validationError.message,
         });
       }
-      const post = await storage.createBlogPost(req.tenantId, result.data);
+      const post = await storage.createBlogPost(req.tenantId || DEFAULT_TENANT_ID, result.data);
       return res.status(201).json(post);
     } catch (error) {
       console.error("Error creating blog post:", error);
@@ -1217,7 +1375,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           details: validationError.message,
         });
       }
-      const post = await storage.updateBlogPost(req.tenantId, req.params.id, result.data);
+      const post = await storage.updateBlogPost(req.tenantId || DEFAULT_TENANT_ID, req.params.id, result.data);
       return res.json(post);
     } catch (error) {
       console.error("Error updating blog post:", error);
@@ -1227,7 +1385,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.delete("/api/blog-posts/:id", async (req, res) => {
     try {
-      await storage.deleteBlogPost(req.tenantId, req.params.id);
+      await storage.deleteBlogPost(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       return res.status(204).send();
     } catch (error) {
       console.error("Error deleting blog post:", error);
@@ -1240,7 +1398,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       // Support ?publishedOnly=false query param for admin to see all posts (including drafts)
       const publishedOnly = req.query.publishedOnly !== 'false';
-      const posts = await storage.getAllVideoPosts(req.tenantId, publishedOnly);
+      const posts = await storage.getAllVideoPosts(req.tenantId || DEFAULT_TENANT_ID, publishedOnly);
       return res.json(posts);
     } catch (error) {
       console.error("Error fetching video posts:", error);
@@ -1251,7 +1409,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Get video post by ID (route must come before :slug to avoid conflicts)
   app.get("/api/video-posts/by-id/:id", async (req, res) => {
     try {
-      const post = await storage.getVideoPostById(req.tenantId, req.params.id);
+      const post = await storage.getVideoPostById(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       if (!post) {
         return res.status(404).json({ error: "Video post not found" });
       }
@@ -1264,7 +1422,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.get("/api/video-posts/:slug", async (req, res) => {
     try {
-      const post = await storage.getVideoPostBySlug(req.tenantId, req.params.slug);
+      const post = await storage.getVideoPostBySlug(req.tenantId || DEFAULT_TENANT_ID, req.params.slug);
       if (!post) {
         return res.status(404).json({ error: "Video post not found" });
       }
@@ -1285,7 +1443,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           details: validationError.message,
         });
       }
-      const post = await storage.createVideoPost(req.tenantId, result.data);
+      const post = await storage.createVideoPost(req.tenantId || DEFAULT_TENANT_ID, result.data);
       return res.status(201).json(post);
     } catch (error) {
       console.error("Error creating video post:", error);
@@ -1303,7 +1461,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           details: validationError.message,
         });
       }
-      const post = await storage.updateVideoPost(req.tenantId, req.params.id, result.data);
+      const post = await storage.updateVideoPost(req.tenantId || DEFAULT_TENANT_ID, req.params.id, result.data);
       return res.json(post);
     } catch (error) {
       console.error("Error updating video post:", error);
@@ -1321,7 +1479,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           details: validationError.message,
         });
       }
-      const post = await storage.updateVideoPost(req.tenantId, req.params.id, result.data);
+      const post = await storage.updateVideoPost(req.tenantId || DEFAULT_TENANT_ID, req.params.id, result.data);
       return res.json(post);
     } catch (error) {
       console.error("Error updating video post:", error);
@@ -1331,7 +1489,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.delete("/api/video-posts/:id", async (req, res) => {
     try {
-      await storage.deleteVideoPost(req.tenantId, req.params.id);
+      await storage.deleteVideoPost(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       return res.status(204).send();
     } catch (error) {
       console.error("Error deleting video post:", error);
@@ -1342,7 +1500,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Widget configuration endpoints
   app.get("/api/widget-config", async (req, res) => {
     try {
-      const config = await storage.getActiveWidgetConfig(req.tenantId);
+      const config = await storage.getActiveWidgetConfig(req.tenantId || DEFAULT_TENANT_ID);
       return res.json(config);
     } catch (error) {
       console.error("Error fetching widget config:", error);
@@ -1360,7 +1518,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           details: validationError.message,
         });
       }
-      const config = await storage.createOrUpdateWidgetConfig(req.tenantId, result.data);
+      const config = await storage.createOrUpdateWidgetConfig(req.tenantId || DEFAULT_TENANT_ID, result.data);
       return res.json(config);
     } catch (error) {
       console.error("Error saving widget config:", error);
@@ -1372,7 +1530,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.get("/api/testimonials", async (req, res) => {
     try {
       const featured = req.query.featured === 'true';
-      const testimonials = await storage.getAllTestimonials(req.tenantId, featured);
+      const testimonials = await storage.getAllTestimonials(req.tenantId || DEFAULT_TENANT_ID, featured);
       return res.json(testimonials);
     } catch (error) {
       console.error("Error fetching testimonials:", error);
@@ -1390,7 +1548,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           details: validationError.message,
         });
       }
-      const testimonial = await storage.createTestimonial(req.tenantId, result.data);
+      const testimonial = await storage.createTestimonial(req.tenantId || DEFAULT_TENANT_ID, result.data);
       return res.status(201).json(testimonial);
     } catch (error) {
       console.error("Error creating testimonial:", error);
@@ -1400,7 +1558,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.get("/api/testimonials/:id", async (req, res) => {
     try {
-      const testimonial = await storage.getTestimonialById(req.tenantId, req.params.id);
+      const testimonial = await storage.getTestimonialById(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       if (!testimonial) {
         return res.status(404).json({ error: "Testimonial not found" });
       }
@@ -1413,7 +1571,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.patch("/api/testimonials/:id", requireAuth, async (req, res) => {
     try {
-      const existing = await storage.getTestimonialById(req.tenantId, req.params.id);
+      const existing = await storage.getTestimonialById(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       if (!existing) {
         return res.status(404).json({ error: "Testimonial not found" });
       }
@@ -1432,7 +1590,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         Object.entries(result.data).filter(([_, value]) => value !== undefined)
       );
 
-      const testimonial = await storage.updateTestimonial(req.tenantId, req.params.id, updateData);
+      const testimonial = await storage.updateTestimonial(req.tenantId || DEFAULT_TENANT_ID, req.params.id, updateData);
       return res.json(testimonial);
     } catch (error) {
       console.error("Error updating testimonial:", error);
@@ -1442,12 +1600,12 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.delete("/api/testimonials/:id", requireAuth, async (req, res) => {
     try {
-      const existing = await storage.getTestimonialById(req.tenantId, req.params.id);
+      const existing = await storage.getTestimonialById(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       if (!existing) {
         return res.status(404).json({ error: "Testimonial not found" });
       }
 
-      await storage.deleteTestimonial(req.tenantId, req.params.id);
+      await storage.deleteTestimonial(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       return res.status(204).send();
     } catch (error) {
       console.error("Error deleting testimonial:", error);
@@ -1457,7 +1615,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.patch("/api/testimonials/:id/featured", requireAuth, async (req, res) => {
     try {
-      const existing = await storage.getTestimonialById(req.tenantId, req.params.id);
+      const existing = await storage.getTestimonialById(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       if (!existing) {
         return res.status(404).json({ error: "Testimonial not found" });
       }
@@ -1466,7 +1624,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       if (typeof featured !== 'boolean') {
         return res.status(400).json({ error: "featured must be a boolean" });
       }
-      const testimonial = await storage.updateTestimonialFeaturedStatus(req.tenantId, req.params.id, featured);
+      const testimonial = await storage.updateTestimonialFeaturedStatus(req.tenantId || DEFAULT_TENANT_ID, req.params.id, featured);
       return res.json(testimonial);
     } catch (error) {
       console.error("Error updating testimonial featured status:", error);
@@ -1509,7 +1667,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.get("/api/job-postings", async (req, res) => {
     try {
       const active = req.query.active !== 'false';
-      const jobs = await storage.getAllJobPostings(req.tenantId, active);
+      const jobs = await storage.getAllJobPostings(req.tenantId || DEFAULT_TENANT_ID, active);
       return res.json(jobs);
     } catch (error) {
       console.error("Error fetching job postings:", error);
@@ -1519,7 +1677,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.get("/api/job-postings/:id", async (req, res) => {
     try {
-      const job = await storage.getJobPosting(req.tenantId, req.params.id);
+      const job = await storage.getJobPosting(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       if (!job) {
         return res.status(404).json({ error: "Job posting not found" });
       }
@@ -1540,7 +1698,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           details: validationError.message,
         });
       }
-      const job = await storage.createJobPosting(req.tenantId, result.data);
+      const job = await storage.createJobPosting(req.tenantId || DEFAULT_TENANT_ID, result.data);
       return res.status(201).json(job);
     } catch (error) {
       console.error("Error creating job posting:", error);
@@ -1550,7 +1708,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.patch("/api/job-postings/:id", requireAuth, async (req, res) => {
     try {
-      const existing = await storage.getJobPosting(req.tenantId, req.params.id);
+      const existing = await storage.getJobPosting(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       if (!existing) {
         return res.status(404).json({ error: "Job posting not found" });
       }
@@ -1564,7 +1722,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         });
       }
 
-      const job = await storage.updateJobPosting(req.tenantId, req.params.id, result.data);
+      const job = await storage.updateJobPosting(req.tenantId || DEFAULT_TENANT_ID, req.params.id, result.data);
       return res.json(job);
     } catch (error) {
       console.error("Error updating job posting:", error);
@@ -1574,12 +1732,12 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.delete("/api/job-postings/:id", requireAuth, async (req, res) => {
     try {
-      const existing = await storage.getJobPosting(req.tenantId, req.params.id);
+      const existing = await storage.getJobPosting(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       if (!existing) {
         return res.status(404).json({ error: "Job posting not found" });
       }
 
-      await storage.deleteJobPosting(req.tenantId, req.params.id);
+      await storage.deleteJobPosting(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       return res.status(204).send();
     } catch (error) {
       console.error("Error deleting job posting:", error);
@@ -1587,10 +1745,58 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  // Branding Projects endpoints
+  // Public portfolio preview endpoints (no auth required)
+  app.get("/api/projects/:projectId/public", async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const tenantId = req.session?.tenantId || DEFAULT_TENANT_ID;
+
+      const project = await storage.getProjectById(tenantId, projectId);
+
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Return only public-safe fields
+      return res.json({
+        id: project.id,
+        title: project.title,
+        slug: project.slug,
+        client: project.client,
+        description: project.description,
+      });
+    } catch (error) {
+      console.error("Error fetching public project:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get all scenes for a project (public/preview)
+  app.get("/api/projects/:projectId/scenes", async (req, res) => {
+    try {
+      const { projectId } = req.params;
+      const tenantId = req.session?.tenantId || DEFAULT_TENANT_ID;
+
+      // Verify project exists
+      const project = await storage.getProjectById(tenantId, projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      // Get scenes for the project
+      const scenes = await storage.getScenesByProjectId(tenantId, projectId);
+
+      return res.json(scenes);
+    } catch (error) {
+      console.error("Error fetching public scenes:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Branding Projects endpoints (protected)
   app.get("/api/projects", requireAuth, async (req, res) => {
     try {
-      const projectsList = await storage.getAllProjects(req.tenantId);
+      const projectsList = await storage.getAllProjects(req.tenantId || DEFAULT_TENANT_ID);
       return res.json(projectsList);
     } catch (error) {
       console.error("Error fetching projects:", error);
@@ -1603,15 +1809,15 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       const project = await db.query.projects.findFirst({
         where: and(
-          eq(projects.tenantId, req.tenantId),
+          eq(projects.tenantId, req.tenantId || DEFAULT_TENANT_ID),
           eq(projects.slug, req.params.slug)
         ),
       });
-      
+
       if (!project) {
         return res.status(404).json({ error: "Project not found" });
       }
-      
+
       return res.json(project);
     } catch (error) {
       console.error("Error fetching project by slug:", error);
@@ -1624,13 +1830,13 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       const result = insertProjectSchema.safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ 
-          error: "Validation failed", 
-          details: result.error.issues 
+        return res.status(400).json({
+          error: "Validation failed",
+          details: result.error.issues
         });
       }
-      
-      const project = await storage.createProject(req.tenantId, result.data);
+
+      const project = await storage.createProject(req.tenantId || DEFAULT_TENANT_ID, result.data);
       return res.status(201).json(project);
     } catch (error) {
       console.error("Error creating project:", error);
@@ -1645,30 +1851,30 @@ export async function registerRoutes(app: Express): Promise<void> {
       const existing = await db.query.projects.findFirst({
         where: and(
           eq(projects.id, req.params.id),
-          eq(projects.tenantId, req.tenantId)
+          eq(projects.tenantId, req.tenantId || DEFAULT_TENANT_ID)
         ),
       });
-      
+
       if (!existing) {
         return res.status(404).json({ error: "Project not found" });
       }
-      
+
       const result = insertProjectSchema.partial().safeParse(req.body);
       if (!result.success) {
-        return res.status(400).json({ 
-          error: "Validation failed", 
-          details: result.error.issues 
+        return res.status(400).json({
+          error: "Validation failed",
+          details: result.error.issues
         });
       }
-      
+
       const [updated] = await db.update(projects)
         .set(result.data)
         .where(and(
           eq(projects.id, req.params.id),
-          eq(projects.tenantId, req.tenantId)
+          eq(projects.tenantId, req.tenantId || DEFAULT_TENANT_ID)
         ))
         .returning();
-      
+
       return res.json(updated);
     } catch (error) {
       console.error("Error updating project:", error);
@@ -1741,7 +1947,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           const mediaRecords = await db.query.mediaLibrary.findMany({
             where: and(
               inArray(mediaLibrary.id, Array.from(mediaIds)),
-              eq(mediaLibrary.tenantId, project.tenantId) // Security: only same tenant
+              eq(mediaLibrary.tenantId, project.tenantId || DEFAULT_TENANT_ID) // Security: only same tenant
             )
           });
 
@@ -1831,7 +2037,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.post("/api/projects/:projectId/scenes", requireAuth, async (req, res) => {
     try {
       const projectId = req.params.projectId;
-      
+
       // LOG 1: Request received
       console.log('[Scene Create] Request received:', {
         projectId,
@@ -1842,13 +2048,13 @@ export async function registerRoutes(app: Express): Promise<void> {
       });
 
       const result = insertProjectSceneSchema.safeParse(req.body);
-      
+
       // LOG 2: Validation result
       console.log('[Scene Create] Validation result:', {
         success: result.success,
         errorCount: result.success ? 0 : result.error.issues.length
       });
-      
+
       if (!result.success) {
         const validationError = fromZodError(result.error);
         console.error('[Scene Create] Validation failed:', result.error.issues);
@@ -1884,7 +2090,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       // SECURITY: Validate all media references belong to same tenant
       if (mediaIdsToValidate.size > 0) {
         const projectId = req.params.projectId;
-        const tenantId = req.tenantId;
+        const tenantId = req.tenantId || DEFAULT_TENANT_ID;
 
         console.log(`[Scene Creation Security] Validating ${mediaIdsToValidate.size} media references for tenant ${tenantId}`);
         console.log(`[Scene Creation Security] Media IDs to validate:`, Array.from(mediaIdsToValidate));
@@ -1930,19 +2136,19 @@ export async function registerRoutes(app: Express): Promise<void> {
 
       // LOG 3: Calling storage layer
       console.log('[Scene Create] Calling storage.createProjectScene with:', {
-        tenantId: req.tenantId,
+        tenantId: req.tenantId || DEFAULT_TENANT_ID,
         projectId: req.params.projectId,
         hasSceneConfig: !!result.data.sceneConfig
       });
-      
-      const scene = await storage.createProjectScene(req.tenantId, req.params.projectId, result.data);
-      
+
+      const scene = await storage.createProjectScene(req.tenantId || DEFAULT_TENANT_ID, req.params.projectId, result.data);
+
       // LOG 4: Success
       console.log('[Scene Create] ✓ Scene created successfully:', {
         sceneId: scene.id,
         projectId: req.params.projectId
       });
-      
+
       return res.status(201).json(scene);
     } catch (error) {
       if (error instanceof Error && error.message === 'Project not found or access denied') {
@@ -1952,7 +2158,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         });
         return res.status(404).json({ error: "Project not found" });
       }
-      
+
       // LOG 5: Error details
       console.error('[Scene Create] ERROR:', {
         message: error instanceof Error ? error.message : String(error),
@@ -1961,7 +2167,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         projectId: req.params.projectId,
         tenantId: req.tenantId
       });
-      
+
       return res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -2099,7 +2305,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
       // Fetch available Media Library assets for this tenant (optionally filtered by project)
       const availableMediaLibrary = await db.query.mediaLibrary.findMany({
-        where: projectId 
+        where: projectId
           ? and(eq(mediaLibrary.tenantId, req.tenantId), eq(mediaLibrary.projectId, projectId))
           : eq(mediaLibrary.tenantId, req.tenantId),
         orderBy: [asc(mediaLibrary.createdAt)]
@@ -2265,9 +2471,10 @@ Your explanation should be conversational and reference specific scene numbers.`
     }
   });
 
-  app.get("/api/ai-prompt-templates/:key", requireAuth, async (req, res) => {
+  app.get("/api/ai-prompt-templates/:id", requireAuth, async (req, res) => {
     try {
-      const template = await storage.getPromptTemplateByKey(req.params.key);
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const template = await storage.getPromptTemplateById(tenantId, req.params.id);
       if (!template) {
         return res.status(404).json({ error: "Prompt template not found" });
       }
@@ -2280,7 +2487,9 @@ Your explanation should be conversational and reference specific scene numbers.`
 
   app.post("/api/ai-prompt-templates", requireAuth, async (req, res) => {
     try {
-      const template = await storage.createPromptTemplate(req.body);
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const userId = req.session?.userId || DEFAULT_USER_ID;
+      const template = await storage.createPromptTemplate(tenantId, userId, req.body);
       return res.json(template);
     } catch (error) {
       console.error("Error creating prompt template:", error);
@@ -2290,7 +2499,9 @@ Your explanation should be conversational and reference specific scene numbers.`
 
   app.put("/api/ai-prompt-templates/:id", requireAuth, async (req, res) => {
     try {
-      const template = await storage.updatePromptTemplate(req.params.id, req.body);
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const userId = req.session?.userId || DEFAULT_USER_ID;
+      const template = await storage.updatePromptTemplate(tenantId, req.params.id, userId, req.body);
       return res.json(template);
     } catch (error) {
       console.error("Error updating prompt template:", error);
@@ -2300,7 +2511,8 @@ Your explanation should be conversational and reference specific scene numbers.`
 
   app.delete("/api/ai-prompt-templates/:id", requireAuth, async (req, res) => {
     try {
-      await storage.deletePromptTemplate(req.params.id);
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      await storage.deletePromptTemplate(tenantId, req.params.id);
       return res.json({ success: true });
     } catch (error) {
       console.error("Error deleting prompt template:", error);
@@ -2400,528 +2612,844 @@ Your explanation should be conversational and reference specific scene numbers.`
       console.error("Error testing prompt:", error);
       return res.status(500).json({
         error: "Failed to test prompt",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
+        // Media Library Routes
+        app.get("/api/media-library", requireAuth, async (req: Request, res: Response) => {
+          try {
+            const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+            const projectId = req.query.projectId as string | undefined;
 
-  // Media Library endpoints
-  app.get("/api/media-library", requireAuth, async (req, res) => {
-    try {
-      const tenantId = (req as any).tenantId || "default";
-      const projectId = req.query.projectId as string | undefined;
-      const assets = await storage.getMediaAssets(tenantId, projectId);
-      return res.json(assets);
-    } catch (error) {
-      console.error("Error fetching media library:", error);
-      return res.status(500).json({ error: "Failed to fetch media library" });
-    }
-  });
+            const conditions = [eq(mediaLibrary.tenantId, tenantId)];
+            if (projectId) {
+              conditions.push(eq(mediaLibrary.projectId, projectId));
+            }
 
-  app.get("/api/projects/:projectId/media", requireAuth, async (req, res) => {
-    try {
-      const assets = await storage.getMediaAssetsByProject(req.params.projectId);
-      return res.json(assets);
-    } catch (error) {
-      console.error("Error fetching project media:", error);
-      return res.status(500).json({ error: "Failed to fetch project media" });
-    }
-  });
+            const assets = await db
+              .select()
+              .from(mediaLibrary)
+              .where(and(...conditions))
+              .orderBy(asc(mediaLibrary.createdAt));
 
-  // Custom multer error handler for media uploads
-  const handleMediaUpload = (req: any, res: any, next: any) => {
-    console.log('[Media Upload] Request received');
-    console.log('[Media Upload] Content-Type:', req.headers['content-type']);
-
-    mediaUpload.single('file')(req, res, (err: any) => {
-      if (err) {
-        console.error('[Media Upload] Multer error:', err);
-        return res.status(400).json({
-          error: 'File upload error',
-          details: err.message
+            return res.json(assets);
+          } catch (error) {
+            console.error("Error fetching media library:", error);
+            return res.status(500).json({ error: "Internal server error" });
+          }
         });
-      }
-      console.log('[Media Upload] Multer completed successfully, file present:', !!req.file);
-      next();
-    });
-  };
 
-  app.post("/api/media-library/upload", requireAuth, handleMediaUpload, async (req, res) => {
-    try {
-      const tenantId = (req as any).tenantId || "default";
+        app.post("/api/media-library/upload", requireAuth, mediaUpload.single("file"), async (req: Request, res: Response) => {
+          try {
+            if (!req.file) {
+              return res.status(400).json({ error: "No file uploaded" });
+            }
 
-      if (!req.file) {
-        console.error('[Media Upload] No file in request after multer');
-        return res.status(400).json({ error: "No file uploaded" });
-      }
+            const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+            const { label, tags, projectId } = req.body;
 
-      console.log('[Media Upload] Processing file:', {
-        filename: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size
-      });
+            // Upload to Cloudinary
+            const b64 = Buffer.from(req.file.buffer).toString("base64");
+            let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
 
-      const label = req.body.label || "";
-      const tags = req.body.tags ? req.body.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [];
-      const projectId = req.body.project_id ? parseInt(req.body.project_id) : null;
+            const result = await cloudinary.uploader.upload(dataURI, {
+              folder: "revenue_party",
+              resource_type: "auto",
+            });
 
+            // Determine media type
+            const mediaType = req.file.mimetype.startsWith("video/") ? "video" : "image";
 
-      // Upload to Cloudinary using buffer
-      console.log('[Media Upload] Starting Cloudinary upload...');
-      const uploadResult = await new Promise<any>((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            resource_type: req.file!.mimetype.startsWith("video/") ? "video" : "image",
-            folder: `tenants/${tenantId}/media-library`,
-          },
-          (error, result) => {
-            if (error) {
-              console.error('[Media Upload] Cloudinary error:', error);
-              reject(error);
-            } else {
-              resolve(result);
+            // Parse tags
+            let tagList: string[] = [];
+            if (tags) {
+              tagList = tags.split(",").map((t: string) => t.trim()).filter(Boolean);
+            }
+
+            // Insert into database
+            const [asset] = await db
+              .insert(mediaLibrary)
+              .values({
+                tenantId,
+                projectId: projectId || null,
+                cloudinaryPublicId: result.public_id,
+                cloudinaryUrl: result.secure_url,
+                mediaType,
+                label: label || req.file.originalname,
+                tags: tagList,
+              })
+              .returning();
+
+            return res.json(asset);
+          } catch (error) {
+            console.error("Error uploading media:", error);
+            return res.status(500).json({ error: "Upload failed" });
+          }
+        });
+
+        app.delete("/api/media-library/:id", requireAuth, async (req: Request, res: Response) => {
+          try {
+            const { id } = req.params;
+            const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+
+            const [asset] = await db
+              .select()
+              .from(mediaLibrary)
+              .where(and(eq(mediaLibrary.id, id), eq(mediaLibrary.tenantId, tenantId)))
+              .limit(1);
+
+            if (!asset) {
+              return res.status(404).json({ error: "Asset not found" });
+            }
+
+            // Delete from Cloudinary
+            await cloudinary.uploader.destroy(asset.cloudinaryPublicId, {
+              resource_type: asset.mediaType === "video" ? "video" : "image"
+            });
+
+            // Delete from database
+            await db
+              .delete(mediaLibrary)
+              .where(eq(mediaLibrary.id, id));
+
+            return res.json({ success: true });
+          } catch (error) {
+            console.error("Error deleting media:", error);
+            return res.status(500).json({ error: "Delete failed" });
+          }
+        });
+
+        app.get("/api/projects/:projectId/media", requireAuth, async (req, res) => {
+          try {
+            const assets = await storage.getMediaAssetsByProject(req.params.projectId);
+            return res.json(assets);
+          } catch (error) {
+            console.error("Error fetching project media:", error);
+            return res.status(500).json({ error: "Failed to fetch project media" });
+          }
+        });
+
+        /* COMMENTED OUT - Using external URLs instead
+        // Custom multer error handler for media uploads
+        const handleMediaUpload = (req: any, res: any, next: any) => {
+          console.log('[Media Upload] Request received');
+          console.log('[Media Upload] Content-Type:', req.headers['content-type']);
+        
+          mediaUpload.single('file')(req, res, (err: any) => {
+            if (err) {
+              console.error('[Media Upload] Multer error:', err);
+              return res.status(400).json({
+                error: 'File upload error',
+                details: err.message
+              });
+            }
+            console.log('[Media Upload] Multer completed successfully, file present:', !!req.file);
+            next();
+          });
+        };
+        
+        app.post("/api/media-library/upload", requireAuth, handleMediaUpload, async (req, res) => {
+          try {
+            const tenantId = (req as any).tenantId || "default";
+        
+            if (!req.file) {
+              console.error('[Media Upload] No file in request after multer');
+              return res.status(400).json({ error: "No file uploaded" });
+            }
+        
+            console.log('[Media Upload] Processing file:', {
+              filename: req.file.originalname,
+              mimetype: req.file.mimetype,
+              size: req.file.size
+            });
+        
+            const label = req.body.label || "";
+            const tags = req.body.tags ? req.body.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [];
+            const projectId = req.body.project_id ? parseInt(req.body.project_id) : null;
+        
+        
+            // Upload to Cloudinary using buffer
+            console.log('[Media Upload] Starting Cloudinary upload...');
+            const uploadResult = await new Promise<any>((resolve, reject) => {
+              const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                  resource_type: req.file!.mimetype.startsWith("video/") ? "video" : "image",
+                  folder: `tenants/${tenantId}/media-library`,
+                },
+                (error, result) => {
+                  if (error) {
+                    console.error('[Media Upload] Cloudinary error:', error);
+                    reject(error);
+                  } else {
+                    resolve(result);
+                  }
+                }
+              );
+              uploadStream.end(req.file!.buffer);
+            });
+        
+            const result = uploadResult as any;
+            console.log('[Media Upload] Cloudinary upload successful:', result.public_id);
+        
+            // Save to database
+            const asset = await storage.createMediaAsset({
+              tenantId,
+              cloudinaryPublicId: result.public_id,
+              cloudinaryUrl: result.secure_url,
+              mediaType: req.file.mimetype.startsWith("video/") ? "video" : "image",
+              label: label || undefined,
+              tags,
+              projectId,
+            });
+        
+            console.log('[Media Upload] Database record created:', asset.id);
+            return res.json(asset);
+          } catch (error) {
+            console.error("[Media Upload] Error:", error);
+            return res.status(500).json({
+              error: "Failed to upload media",
+              details: error instanceof Error ? error.message : "Unknown error"
+            });
+          }
+        });
+        */ // End of media library upload endpoint
+
+        /* COMMENTED OUT - Using external URLs instead
+        app.delete("/api/media-library/:id", requireAuth, async (req, res) => {
+          try {
+            const asset = await storage.getMediaAsset(req.params.id);
+            if (!asset) {
+              return res.status(404).json({ error: "Asset not found" });
+            }
+        
+            // Delete from Cloudinary
+            await cloudinary.uploader.destroy(asset.cloudinaryPublicId);
+        
+            // Delete from database
+            await storage.deleteMediaAsset(req.params.id);
+        
+            return res.json({ success: true });
+          } catch (error) {
+            console.error("Error deleting media:", error);
+            return res.status(500).json({ error: "Failed to delete media" });
+          }
+        });
+        */
+
+        // New Unsplash and External URL endpoints
+        app.post("/api/media/search-unsplash", requireAuth, async (req, res) => {
+          try {
+            const { searchUnsplashImages, unsplashSearchSchema } = await import("./services/unsplash");
+
+            const result = unsplashSearchSchema.safeParse(req.body);
+            if (!result.success) {
+              return res.status(400).json({
+                error: "Invalid search parameters",
+                details: fromZodError(result.error).message
+              });
+            }
+
+            const images = await searchUnsplashImages(result.data);
+
+            return res.json({
+              images,
+              query: result.data.query,
+              page: result.data.page,
+              perPage: result.data.perPage
+            });
+          } catch (error) {
+            console.error("Error searching Unsplash:", error);
+            return res.status(500).json({
+              error: "Failed to search images",
+              details: error instanceof Error ? error.message : "Unknown error"
+            });
+          }
+        });
+
+        app.post("/api/media/validate-url", requireAuth, async (req, res) => {
+          try {
+            const { validateImageUrl } = await import("./services/unsplash");
+
+            const { url } = req.body;
+            if (!url || typeof url !== 'string') {
+              return res.status(400).json({
+                error: "URL is required",
+                valid: false
+              });
+            }
+
+            const validation = await validateImageUrl(url);
+            return res.json(validation);
+          } catch (error) {
+            console.error("Error validating URL:", error);
+            return res.status(500).json({
+              error: "Failed to validate URL",
+              valid: false,
+              details: error instanceof Error ? error.message : "Unknown error"
+            });
+          }
+        });
+
+        // Portfolio-specific prompt overrides
+        app.get("/api/projects/:projectId/prompts", async (req, res) => {
+          try {
+            const prompts = await storage.getPortfolioPrompts(req.params.projectId);
+            return res.json(prompts);
+          } catch (error) {
+            console.error("Error fetching portfolio prompts:", error);
+            return res.status(500).json({ error: "Failed to fetch portfolio prompts" });
+          }
+        });
+
+        app.post("/api/projects/:projectId/prompts", async (req, res) => {
+          try {
+            const userId = req.userId || DEFAULT_USER_ID;
+            const prompt = await storage.upsertPortfolioPrompt({
+              projectId: req.params.projectId,
+              userId,
+              ...req.body
+            });
+            return res.json(prompt);
+          } catch (error) {
+            console.error("Error creating portfolio prompt:", error);
+            return res.status(500).json({ error: "Failed to create portfolio prompt" });
+          }
+        });
+
+        app.put("/api/portfolio-prompts/:id", async (req, res) => {
+          try {
+            const userId = req.userId || DEFAULT_USER_ID;
+            // Note: upsertPortfolioPrompt expects projectId and promptType, not id.
+            // Assuming the body contains necessary fields or we need to fetch the prompt first.
+            // For now, let's assume the body has the update data.
+            // But wait, upsertPortfolioPrompt takes a specific object structure.
+            // Let's check the usage.
+            // If we are updating by ID, we might need a different method or change how we call it.
+            // Given the interface, let's try to map it correctly.
+            const { projectId, promptType, customPrompt, isActive } = req.body;
+            const prompt = await storage.upsertPortfolioPrompt({
+              projectId,
+              promptType,
+              customPrompt,
+              isActive,
+              userId
+            });
+            return res.json(prompt);
+          } catch (error) {
+            console.error("Error updating portfolio prompt:", error);
+            return res.status(500).json({ error: "Failed to update portfolio prompt" });
+          }
+        });
+
+        app.delete("/api/portfolio-prompts/:id", async (req, res) => {
+          try {
+            await storage.deletePortfolioPrompt(req.params.id);
+            return res.json({ success: true });
+          } catch (error) {
+            console.error("Error deleting portfolio prompt:", error);
+            return res.status(500).json({ error: "Failed to delete portfolio prompt" });
+          }
+        });
+
+        app.post("/api/portfolio-prompts/:id/toggle", async (req, res) => {
+          try {
+            const userId = req.userId || DEFAULT_USER_ID;
+            const prompt = await storage.togglePortfolioPrompt(
+              req.params.id,
+              userId
+            );
+            return res.json(prompt);
+          } catch (error) {
+            console.error("Error toggling portfolio prompt:", error);
+            return res.status(500).json({ error: "Failed to toggle portfolio prompt" });
+          }
+        });
+
+        // Scene Template CRUD endpoints
+        app.get("/api/scene-templates", requireAuth, async (req, res) => {
+          try {
+            const category = req.query.category as string | undefined;
+            const tags = req.query.tags ? (req.query.tags as string).split(',') : undefined;
+
+            const templates = await storage.getAllSceneTemplates(req.tenantId, {
+              category,
+              tags,
+            });
+
+            return res.json(templates);
+          } catch (error) {
+            console.error("Error fetching scene templates:", error);
+            return res.status(500).json({ error: "Failed to fetch scene templates" });
+          }
+        });
+
+        app.get("/api/scene-templates/search", requireAuth, async (req, res) => {
+          try {
+            const query = req.query.q as string;
+
+            if (!query || query.trim().length === 0) {
+              return res.status(400).json({ error: "Search query is required" });
+            }
+
+            const templates = await storage.searchSceneTemplates(req.tenantId, query);
+            return res.json(templates);
+          } catch (error) {
+            console.error("Error searching scene templates:", error);
+            return res.status(500).json({ error: "Failed to search scene templates" });
+          }
+        });
+
+        app.get("/api/scene-templates/:id", async (req, res) => {
+          try {
+            const template = await storage.getSceneTemplateById(req.tenantId, req.params.id);
+
+            if (!template) {
+              return res.status(404).json({ error: "Scene template not found" });
+            }
+
+            return res.json(template);
+          } catch (error) {
+            console.error("Error fetching scene template:", error);
+            return res.status(500).json({ error: "Failed to fetch scene template" });
+          }
+        });
+
+        app.post("/api/scene-templates", async (req, res) => {
+          try {
+            const result = insertSceneTemplateSchema.safeParse(req.body);
+
+            if (!result.success) {
+              const validationError = fromZodError(result.error);
+              return res.status(400).json({
+                error: "Validation failed",
+                details: validationError.message,
+              });
+            }
+
+            const userId = req.userId || DEFAULT_USER_ID;
+            const template = await storage.createSceneTemplate(
+              req.tenantId,
+              userId,
+              result.data
+            );
+
+            return res.status(201).json(template);
+          } catch (error) {
+            console.error("Error creating scene template:", error);
+            return res.status(500).json({ error: "Failed to create scene template" });
+          }
+        });
+
+        app.patch("/api/scene-templates/:id", async (req, res) => {
+          try {
+            const existing = await storage.getSceneTemplateById(req.tenantId, req.params.id);
+
+            if (!existing) {
+              return res.status(404).json({ error: "Scene template not found" });
+            }
+
+            const result = updateSceneTemplateSchema.safeParse(req.body);
+
+            if (!result.success) {
+              const validationError = fromZodError(result.error);
+              return res.status(400).json({
+                error: "Validation failed",
+                details: validationError.message,
+              });
+            }
+
+            const template = await storage.updateSceneTemplate(
+              req.tenantId,
+              req.params.id,
+              result.data
+            );
+
+            return res.json(template);
+          } catch (error) {
+            console.error("Error updating scene template:", error);
+            return res.status(500).json({ error: "Failed to update scene template" });
+          }
+        });
+
+        app.delete("/api/scene-templates/:id", requireAuth, async (req, res) => {
+          try {
+            const existing = await storage.getSceneTemplateById(req.tenantId, req.params.id);
+
+            if (!existing) {
+              return res.status(404).json({ error: "Scene template not found" });
+            }
+
+            await storage.deleteSceneTemplate(req.tenantId, req.params.id);
+            return res.status(204).send();
+          } catch (error) {
+            console.error("Error deleting scene template:", error);
+            return res.status(500).json({ error: "Failed to delete scene template" });
+          }
+        });
+
+        app.post("/api/scene-templates/:id/recycle", async (req, res) => {
+          try {
+            const { projectId } = req.body;
+
+            if (!projectId) {
+              return res.status(400).json({ error: "projectId is required" });
+            }
+
+            // Verify template exists
+            const template = await storage.getSceneTemplateById(req.tenantId, req.params.id);
+            if (!template) {
+              return res.status(404).json({ error: "Scene template not found" });
+            }
+
+            // Verify project exists and user has access
+            const project = await storage.getProjectById(req.tenantId, projectId);
+            if (!project) {
+              return res.status(404).json({ error: "Project not found" });
+            }
+
+            // Recycle template into project
+            const newScene = await storage.recycleTemplate(req.tenantId, req.params.id, projectId);
+
+            return res.status(201).json(newScene);
+          } catch (error) {
+            console.error("Error recycling scene template:", error);
+            return res.status(500).json({ error: "Failed to recycle scene template" });
+          }
+        });
+
+        app.post("/api/project-scenes/:sceneId/save-as-template", async (req, res) => {
+          try {
+            const { name, description, category, tags, previewImageUrl } = req.body;
+
+            if (!name || name.trim().length === 0) {
+              return res.status(400).json({ error: "Template name is required" });
+            }
+
+            const userId = req.userId || DEFAULT_USER_ID;
+            const template = await storage.saveSceneAsTemplate(
+              req.tenantId,
+              req.params.sceneId,
+              userId,
+              {
+                name,
+                description,
+                category,
+                tags,
+                previewImageUrl,
+              }
+            );
+
+            return res.status(201).json(template);
+          } catch (error) {
+            console.error("Error saving scene as template:", error);
+
+            if (error instanceof Error && error.message === "Scene not found") {
+              return res.status(404).json({ error: "Scene not found" });
+            }
+
+            return res.status(500).json({ error: "Failed to save scene as template" });
+          }
+        });
+
+        // Simplified Portfolio Wizard Generation Endpoint with streaming support
+        app.post("/api/portfolio/generate", async (req, res) => {
+          try {
+            const { content, brandArchetype, businessType, addSampleImages, mode, streaming } = req.body;
+
+            // If this is from the simplified wizard, handle it differently
+            if (mode === "wizard") {
+              // Validate inputs
+              if (!content || content.length < 50) {
+                return res.status(400).json({ error: "Content must be at least 50 characters" });
+              }
+
+              if (!brandArchetype || !brandArchetype.id) {
+                return res.status(400).json({ error: "Brand archetype is required" });
+              }
+
+              // Use the demo tenant ID from middleware
+              const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+              const userId = req.userId || DEFAULT_USER_ID;
+
+              // Generate a simple project title from the content
+              const firstSentence = content.substring(0, 100).split(/[.!?]/)[0].trim();
+              const projectTitle = firstSentence || "My Portfolio";
+              const projectSlug = projectTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").substring(0, 50) + `-${Date.now()}`;
+
+              // Create a new project with brand colors from the archetype
+              const newProject = await storage.createProject(tenantId, {
+                title: projectTitle,
+                slug: projectSlug,
+                clientName: businessType || "personal",
+                categories: [brandArchetype.name, businessType].filter(Boolean),
+                challengeText: content.substring(0, 200),
+                solutionText: "Portfolio generated with wizard mode",
+                outcomeText: "Demo portfolio showcasing our work",
+              });
+
+              // Create the director configuration based on brand archetype
+              const directorConfig = {
+                timing: 5,
+                effects: "fade",
+                colors: {
+                  background: brandArchetype.colors.background,
+                  text: brandArchetype.colors.text,
+                  primary: brandArchetype.colors.primary,
+                  secondary: brandArchetype.colors.secondary,
+                  accent: brandArchetype.colors.accent,
+                },
+                transition: "smooth",
+                fonts: brandArchetype.fonts,
+              };
+
+              // Generate scenes based on content
+              // This is a simplified version - in production, you'd use AI to generate more sophisticated scenes
+              const scenes = [];
+
+              // Hero scene
+              scenes.push({
+                projectId: newProject.id,
+                sceneType: "fullscreen",
+                displayOrder: 1,
+                sceneConfig: {
+                  type: "fullscreen",
+                  content: {
+                    heading: projectTitle,
+                    body: content.substring(0, 200) + "...",
+                    mediaType: "image",
+                  },
+                  director: directorConfig,
+                },
+                tenantId: tenantId,
+              });
+
+              // Split the content into paragraphs for multiple text scenes
+              const paragraphs = content.split(/\n\n+/).filter(p => p.trim().length > 0);
+
+              // Add text scenes for content
+              paragraphs.slice(0, 3).forEach((paragraph, index) => {
+                scenes.push({
+                  projectId: newProject.id,
+                  sceneType: "text",
+                  displayOrder: 2 + index,
+                  sceneConfig: {
+                    type: "text",
+                    content: {
+                      heading: index === 0 ? "About" : index === 1 ? "Experience" : "Vision",
+                      body: paragraph,
+                    },
+                    director: directorConfig,
+                  },
+                  tenantId: tenantId,
+                });
+              });
+
+              // Gallery scene if sample images requested
+              if (addSampleImages) {
+                scenes.push({
+                  projectId: newProject.id,
+                  sceneType: "gallery",
+                  displayOrder: scenes.length + 1,
+                  sceneConfig: {
+                    type: "gallery",
+                    content: {
+                      heading: "Portfolio",
+                      images: "placeholder-gallery", // This would be replaced with actual images
+                    },
+                    director: directorConfig,
+                  },
+                  tenantId: tenantId,
+                });
+              }
+
+              // Quote scene (extract a good quote from content or use default)
+              const sentences = content.split(/[.!?]/).filter(s => s.trim().length > 20);
+              const quote = sentences[Math.floor(sentences.length / 2)] || "Creating amazing experiences";
+
+              scenes.push({
+                projectId: newProject.id,
+                sceneType: "quote",
+                displayOrder: scenes.length + 1,
+                sceneConfig: {
+                  type: "quote",
+                  content: {
+                    quote: quote.trim(),
+                    author: businessType === "personal" ? projectTitle.split(" ")[0] : projectTitle,
+                    role: businessType === "personal" ? "Designer" : businessType,
+                  },
+                  director: directorConfig,
+                },
+                tenantId: tenantId,
+              });
+
+              // Save all scenes
+              for (const scene of scenes) {
+                await storage.createProjectScene(tenantId, newProject.id, scene);
+              }
+
+              return res.json({
+                success: true,
+                projectId: newProject.id,
+                projectSlug: newProject.slug,
+                scenesCreated: scenes.length,
+                message: "Portfolio generated successfully!",
+              });
+            }
+
+            // If not from wizard mode, return error or fall through to other generation logic
+            return res.status(400).json({
+              error: "Invalid request. Use mode: 'wizard' for simplified generation."
+            });
+          } catch (error) {
+            console.error("Error generating portfolio from wizard:", error);
+            return res.status(500).json({
+              error: "Failed to generate portfolio",
+              details: error instanceof Error ? error.message : "Unknown error"
+            });
+          }
+        });
+
+        // Enhanced AI Portfolio Generation endpoint (scene-by-scene with per-scene AI prompts)
+        // This endpoint handles both "cinematic" and "hybrid" modes, AND refinement
+        app.post("/api/portfolio/generate-enhanced", async (req, res) => {
+          // Use demo user context from middleware
+          const userId = req.userId || DEFAULT_USER_ID;
+          const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+
+          // Log for debugging
+          console.log('[Portfolio Enhanced] Request received:', {
+            hasProjectId: !!req.body.projectId,
+            hasScenes: !!req.body.scenes,
+            hasCurrentPrompt: !!req.body.currentPrompt,
+            hasConversationHistory: !!req.body.conversationHistory,
+            hasCurrentSceneJson: !!req.body.currentSceneJson,
+          });
+
+          // Basic validation of required fields
+          const {
+            projectId,
+            newProjectTitle,
+            newProjectSlug,
+            newProjectClient,
+            mode,
+            scenes,
+            portfolioAiPrompt,
+            currentPrompt,
+            conversationHistory: clientConversationHistory = [],
+            currentSceneJson
+          } = req.body;
+
+          // Load conversation history from database if projectId exists
+          let conversationHistory = clientConversationHistory;
+          if (projectId) {
+            const dbHistory = await storage.getConversationHistory(projectId);
+            conversationHistory = dbHistory.map(msg => ({
+              role: msg.role,
+              content: msg.content
+            }));
+            console.log('[Portfolio Enhanced] Loaded conversation history from DB:', conversationHistory.length, 'messages');
+          }
+
+          // Determine if this is refinement mode
+          const isRefinementMode = !!(conversationHistory.length > 0 || currentSceneJson);
+
+          console.log('[Portfolio Enhanced] Mode detection:', {
+            isRefinementMode,
+            conversationHistoryLength: conversationHistory.length,
+            hasCurrentSceneJson: !!currentSceneJson
+          });
+
+          // Validate prompt based on mode
+          const promptToValidate = isRefinementMode ? currentPrompt : portfolioAiPrompt;
+
+          if (!promptToValidate || !promptToValidate.trim()) {
+            console.error('[Portfolio Enhanced] Missing prompt:', {
+              isRefinementMode,
+              hasCurrentPrompt: !!currentPrompt,
+              hasPortfolioPrompt: !!portfolioAiPrompt
+            });
+            return res.status(400).json({
+              error: "Validation failed",
+              details: isRefinementMode
+                ? "Please enter a message to refine your scenes"
+                : "Portfolio AI prompt is required"
+            });
+          }
+
+          // Validate based on mode
+          if (!isRefinementMode) {
+            // Initial generation mode - need project details and scenes
+            if (!projectId && (!newProjectTitle || !newProjectSlug)) {
+              console.error('[Portfolio Enhanced] Missing project identification');
+              return res.status(400).json({
+                error: "Validation failed",
+                details: "Either projectId or new project details (title, slug) are required"
+              });
+            }
+
+            if (!scenes || scenes.length === 0) {
+              console.error('[Portfolio Enhanced] Missing scenes array');
+              return res.status(400).json({
+                error: "Validation failed",
+                details: "At least one scene is required for initial generation"
+              });
+            }
+          } else {
+            // Refinement mode - need either projectId or currentSceneJson
+            if (!projectId && !currentSceneJson) {
+              console.error('[Portfolio Enhanced] Refinement mode missing context');
+              return res.status(400).json({
+                error: "Validation failed",
+                details: "Refinement requires either a projectId or currentSceneJson"
+              });
             }
           }
-        );
-        uploadStream.end(req.file!.buffer);
-      });
 
-      const result = uploadResult as any;
-      console.log('[Media Upload] Cloudinary upload successful:', result.public_id);
-
-      // Save to database
-      const asset = await storage.createMediaAsset({
-        tenantId,
-        cloudinaryPublicId: result.public_id,
-        cloudinaryUrl: result.secure_url,
-        mediaType: req.file.mimetype.startsWith("video/") ? "video" : "image",
-        label: label || undefined,
-        tags,
-        projectId,
-      });
-
-      console.log('[Media Upload] Database record created:', asset.id);
-      return res.json(asset);
-    } catch (error) {
-      console.error("[Media Upload] Error:", error);
-      return res.status(500).json({
-        error: "Failed to upload media",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  app.delete("/api/media-library/:id", requireAuth, async (req, res) => {
-    try {
-      const asset = await storage.getMediaAsset(req.params.id);
-      if (!asset) {
-        return res.status(404).json({ error: "Asset not found" });
-      }
-
-      // Delete from Cloudinary
-      await cloudinary.uploader.destroy(asset.cloudinaryPublicId);
-
-      // Delete from database
-      await storage.deleteMediaAsset(req.params.id);
-
-      return res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting media:", error);
-      return res.status(500).json({ error: "Failed to delete media" });
-    }
-  });
-
-  // Portfolio-specific prompt overrides
-  app.get("/api/projects/:projectId/prompts", requireAuth, async (req, res) => {
-    try {
-      const prompts = await storage.getPortfolioPrompts(req.params.projectId);
-      return res.json(prompts);
-    } catch (error) {
-      console.error("Error fetching portfolio prompts:", error);
-      return res.status(500).json({ error: "Failed to fetch portfolio prompts" });
-    }
-  });
-
-  app.post("/api/projects/:projectId/prompts", requireAuth, async (req, res) => {
-    try {
-      const prompt = await storage.createPortfolioPrompt(
-        req.params.projectId,
-        req.session.userId!,
-        req.body
-      );
-      return res.json(prompt);
-    } catch (error) {
-      console.error("Error creating portfolio prompt:", error);
-      return res.status(500).json({ error: "Failed to create portfolio prompt" });
-    }
-  });
-
-  app.put("/api/portfolio-prompts/:id", requireAuth, async (req, res) => {
-    try {
-      const prompt = await storage.updatePortfolioPrompt(
-        req.params.id,
-        req.session.userId!,
-        req.body
-      );
-      return res.json(prompt);
-    } catch (error) {
-      console.error("Error updating portfolio prompt:", error);
-      return res.status(500).json({ error: "Failed to update portfolio prompt" });
-    }
-  });
-
-  app.delete("/api/portfolio-prompts/:id", requireAuth, async (req, res) => {
-    try {
-      await storage.deletePortfolioPrompt(req.params.id);
-      return res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting portfolio prompt:", error);
-      return res.status(500).json({ error: "Failed to delete portfolio prompt" });
-    }
-  });
-
-  app.post("/api/portfolio-prompts/:id/toggle", requireAuth, async (req, res) => {
-    try {
-      const prompt = await storage.togglePortfolioPrompt(
-        req.params.id,
-        req.session.userId!
-      );
-      return res.json(prompt);
-    } catch (error) {
-      console.error("Error toggling portfolio prompt:", error);
-      return res.status(500).json({ error: "Failed to toggle portfolio prompt" });
-    }
-  });
-
-  // Scene Template CRUD endpoints
-  app.get("/api/scene-templates", requireAuth, async (req, res) => {
-    try {
-      const category = req.query.category as string | undefined;
-      const tags = req.query.tags ? (req.query.tags as string).split(',') : undefined;
-      
-      const templates = await storage.getAllSceneTemplates(req.tenantId, {
-        category,
-        tags,
-      });
-      
-      return res.json(templates);
-    } catch (error) {
-      console.error("Error fetching scene templates:", error);
-      return res.status(500).json({ error: "Failed to fetch scene templates" });
-    }
-  });
-
-  app.get("/api/scene-templates/search", requireAuth, async (req, res) => {
-    try {
-      const query = req.query.q as string;
-      
-      if (!query || query.trim().length === 0) {
-        return res.status(400).json({ error: "Search query is required" });
-      }
-      
-      const templates = await storage.searchSceneTemplates(req.tenantId, query);
-      return res.json(templates);
-    } catch (error) {
-      console.error("Error searching scene templates:", error);
-      return res.status(500).json({ error: "Failed to search scene templates" });
-    }
-  });
-
-  app.get("/api/scene-templates/:id", requireAuth, async (req, res) => {
-    try {
-      const template = await storage.getSceneTemplateById(req.tenantId, req.params.id);
-      
-      if (!template) {
-        return res.status(404).json({ error: "Scene template not found" });
-      }
-      
-      return res.json(template);
-    } catch (error) {
-      console.error("Error fetching scene template:", error);
-      return res.status(500).json({ error: "Failed to fetch scene template" });
-    }
-  });
-
-  app.post("/api/scene-templates", requireAuth, async (req, res) => {
-    try {
-      const result = insertSceneTemplateSchema.safeParse(req.body);
-      
-      if (!result.success) {
-        const validationError = fromZodError(result.error);
-        return res.status(400).json({
-          error: "Validation failed",
-          details: validationError.message,
-        });
-      }
-      
-      const template = await storage.createSceneTemplate(
-        req.tenantId,
-        req.session.userId!,
-        result.data
-      );
-      
-      return res.status(201).json(template);
-    } catch (error) {
-      console.error("Error creating scene template:", error);
-      return res.status(500).json({ error: "Failed to create scene template" });
-    }
-  });
-
-  app.patch("/api/scene-templates/:id", requireAuth, async (req, res) => {
-    try {
-      const existing = await storage.getSceneTemplateById(req.tenantId, req.params.id);
-      
-      if (!existing) {
-        return res.status(404).json({ error: "Scene template not found" });
-      }
-      
-      const result = updateSceneTemplateSchema.safeParse(req.body);
-      
-      if (!result.success) {
-        const validationError = fromZodError(result.error);
-        return res.status(400).json({
-          error: "Validation failed",
-          details: validationError.message,
-        });
-      }
-      
-      const template = await storage.updateSceneTemplate(
-        req.tenantId,
-        req.params.id,
-        result.data
-      );
-      
-      return res.json(template);
-    } catch (error) {
-      console.error("Error updating scene template:", error);
-      return res.status(500).json({ error: "Failed to update scene template" });
-    }
-  });
-
-  app.delete("/api/scene-templates/:id", requireAuth, async (req, res) => {
-    try {
-      const existing = await storage.getSceneTemplateById(req.tenantId, req.params.id);
-      
-      if (!existing) {
-        return res.status(404).json({ error: "Scene template not found" });
-      }
-      
-      await storage.deleteSceneTemplate(req.tenantId, req.params.id);
-      return res.status(204).send();
-    } catch (error) {
-      console.error("Error deleting scene template:", error);
-      return res.status(500).json({ error: "Failed to delete scene template" });
-    }
-  });
-
-  app.post("/api/scene-templates/:id/recycle", requireAuth, async (req, res) => {
-    try {
-      const { projectId } = req.body;
-      
-      if (!projectId) {
-        return res.status(400).json({ error: "projectId is required" });
-      }
-      
-      // Verify template exists
-      const template = await storage.getSceneTemplateById(req.tenantId, req.params.id);
-      if (!template) {
-        return res.status(404).json({ error: "Scene template not found" });
-      }
-      
-      // Verify project exists and user has access
-      const project = await storage.getProjectById(req.tenantId, projectId);
-      if (!project) {
-        return res.status(404).json({ error: "Project not found" });
-      }
-      
-      // Recycle template into project
-      const newScene = await storage.recycleTemplate(req.tenantId, req.params.id, projectId);
-      
-      return res.status(201).json(newScene);
-    } catch (error) {
-      console.error("Error recycling scene template:", error);
-      return res.status(500).json({ error: "Failed to recycle scene template" });
-    }
-  });
-
-  app.post("/api/project-scenes/:sceneId/save-as-template", requireAuth, async (req, res) => {
-    try {
-      const { name, description, category, tags, previewImageUrl } = req.body;
-      
-      if (!name || name.trim().length === 0) {
-        return res.status(400).json({ error: "Template name is required" });
-      }
-      
-      const template = await storage.saveSceneAsTemplate(
-        req.tenantId,
-        req.params.sceneId,
-        req.session.userId!,
-        {
-          name,
-          description,
-          category,
-          tags,
-          previewImageUrl,
-        }
-      );
-      
-      return res.status(201).json(template);
-    } catch (error) {
-      console.error("Error saving scene as template:", error);
-      
-      if (error instanceof Error && error.message === "Scene not found") {
-        return res.status(404).json({ error: "Scene not found" });
-      }
-      
-      return res.status(500).json({ error: "Failed to save scene as template" });
-    }
-  });
-
-  // Enhanced AI Portfolio Generation endpoint (scene-by-scene with per-scene AI prompts)
-  // This endpoint handles both "cinematic" and "hybrid" modes, AND refinement
-  app.post("/api/portfolio/generate-enhanced", requireAuth, async (req, res) => {
-    const userId = req.session?.userId;
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    // Log for debugging
-    console.log('[Portfolio Enhanced] Request received:', {
-      hasProjectId: !!req.body.projectId,
-      hasScenes: !!req.body.scenes,
-      hasCurrentPrompt: !!req.body.currentPrompt,
-      hasConversationHistory: !!req.body.conversationHistory,
-      hasCurrentSceneJson: !!req.body.currentSceneJson,
-    });
-
-    // Basic validation of required fields
-    const {
-      projectId,
-      newProjectTitle,
-      newProjectSlug,
-      newProjectClient,
-      mode,
-      scenes,
-      portfolioAiPrompt,
-      currentPrompt,
-      conversationHistory: clientConversationHistory = [],
-      currentSceneJson
-    } = req.body;
-
-    // Load conversation history from database if projectId exists
-    let conversationHistory = clientConversationHistory;
-    if (projectId) {
-      const dbHistory = await storage.getConversationHistory(projectId);
-      conversationHistory = dbHistory.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-      console.log('[Portfolio Enhanced] Loaded conversation history from DB:', conversationHistory.length, 'messages');
-    }
-
-    // Determine if this is refinement mode
-    const isRefinementMode = !!(conversationHistory.length > 0 || currentSceneJson);
-
-    console.log('[Portfolio Enhanced] Mode detection:', {
-      isRefinementMode,
-      conversationHistoryLength: conversationHistory.length,
-      hasCurrentSceneJson: !!currentSceneJson
-    });
-
-    // Validate prompt based on mode
-    const promptToValidate = isRefinementMode ? currentPrompt : portfolioAiPrompt;
-
-    if (!promptToValidate || !promptToValidate.trim()) {
-      console.error('[Portfolio Enhanced] Missing prompt:', {
-        isRefinementMode,
-        hasCurrentPrompt: !!currentPrompt,
-        hasPortfolioPrompt: !!portfolioAiPrompt
-      });
-      return res.status(400).json({
-        error: "Validation failed",
-        details: isRefinementMode
-          ? "Please enter a message to refine your scenes"
-          : "Portfolio AI prompt is required"
-      });
-    }
-
-    // Validate based on mode
-    if (!isRefinementMode) {
-      // Initial generation mode - need project details and scenes
-      if (!projectId && (!newProjectTitle || !newProjectSlug)) {
-        console.error('[Portfolio Enhanced] Missing project identification');
-        return res.status(400).json({
-          error: "Validation failed",
-          details: "Either projectId or new project details (title, slug) are required"
-        });
-      }
-
-      if (!scenes || scenes.length === 0) {
-        console.error('[Portfolio Enhanced] Missing scenes array');
-        return res.status(400).json({
-          error: "Validation failed",
-          details: "At least one scene is required for initial generation"
-        });
-      }
-    } else {
-      // Refinement mode - need either projectId or currentSceneJson
-      if (!projectId && !currentSceneJson) {
-        console.error('[Portfolio Enhanced] Refinement mode missing context');
-        return res.status(400).json({
-          error: "Validation failed",
-          details: "Refinement requires either a projectId or currentSceneJson"
-        });
-      }
-    }
-
-    // Fetch available Media Library assets for this tenant
-    const availableMediaLibrary = await db.query.mediaLibrary.findMany({
-      where: eq(mediaLibrary.tenantId, req.tenantId),
-      orderBy: [asc(mediaLibrary.createdAt)]
-    });
-
-    console.log(`[Portfolio Generation] Loaded ${availableMediaLibrary.length} Media Library assets for tenant ${req.tenantId}`);
-
-    // Lazy-load Gemini client
-    const { GoogleGenAI, Type } = await import("@google/genai");
-    const aiClient = new GoogleGenAI({
-      apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
-      httpOptions: {
-        apiVersion: "",
-        baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
-      },
-    });
-
-    let enhancedScenes: any[] = [];
-    let aiExplanation = "";
-    let currentScenes: any[] = []; // Define currentScenes here
-
-    if (isRefinementMode) {
-      // REFINEMENT MODE: Use conversation API with Gemini
-      console.log('[Portfolio Enhanced] REFINEMENT MODE: Using conversation API');
-
-      // Parse current scenes
-      if (currentSceneJson) {
-        try {
-          currentScenes = JSON.parse(currentSceneJson);
-          console.log(`[Portfolio Enhanced] Parsed ${currentScenes.length} scenes from JSON`);
-        } catch (error) {
-          console.error('[Portfolio Enhanced] Failed to parse currentSceneJson:', error);
-          return res.status(400).json({
-            error: "Invalid scene JSON",
-            details: "Could not parse currentSceneJson"
+          // Fetch available Media Library assets for this tenant
+          const availableMediaLibrary = await db.query.mediaLibrary.findMany({
+            where: eq(mediaLibrary.tenantId, req.tenantId),
+            orderBy: [asc(mediaLibrary.createdAt)]
           });
-        }
-      }
 
-      // Build conversation context for Gemini
-      const systemPrompt = `You are a cinematic director helping refine portfolio scenes through conversation.
+          console.log(`[Portfolio Generation] Loaded ${availableMediaLibrary.length} Media Library assets for tenant ${req.tenantId}`);
+
+          // Lazy-load Gemini client
+          const { GoogleGenAI, Type } = await import("@google/genai");
+          const aiClient = new GoogleGenAI({
+            apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
+            httpOptions: {
+              apiVersion: "",
+              baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
+            },
+          });
+
+          let enhancedScenes: any[] = [];
+          let aiExplanation = "";
+          let currentScenes: any[] = []; // Define currentScenes here
+
+          if (isRefinementMode) {
+            // REFINEMENT MODE: Use conversation API with Gemini
+            console.log('[Portfolio Enhanced] REFINEMENT MODE: Using conversation API');
+
+            // Parse current scenes
+            if (currentSceneJson) {
+              try {
+                currentScenes = JSON.parse(currentSceneJson);
+                console.log(`[Portfolio Enhanced] Parsed ${currentScenes.length} scenes from JSON`);
+              } catch (error) {
+                console.error('[Portfolio Enhanced] Failed to parse currentSceneJson:', error);
+                return res.status(400).json({
+                  error: "Invalid scene JSON",
+                  details: "Could not parse currentSceneJson"
+                });
+              }
+            }
+
+            // Build conversation context for Gemini
+            const systemPrompt = `You are a cinematic director helping refine portfolio scenes through conversation.
 
 CURRENT SCENES (JSON):
 ${JSON.stringify(currentScenes, null, 2)}
 
 USER'S REFINEMENT REQUEST:
-"${userPrompt}"
+"${currentPrompt}"
 
 AVAILABLE MEDIA LIBRARY ASSETS:
 ${availableMediaLibrary.length > 0 ? availableMediaLibrary.map(asset => `- ${asset.label || asset.id} (ID: ${asset.id}, Type: ${asset.mediaType})`).join('\n') : 'None available.'}
@@ -2941,586 +3469,586 @@ RESPONSE FORMAT:
 - explanation: Plain English explanation of changes made (which scenes were modified)
 - scenes: COMPLETE array of ALL ${currentScenes.length} scenes (modified + unmodified)`;
 
-      // Build conversation messages
-      const messages = [
-        { role: "user", parts: [{ text: systemPrompt }] },
-        ...conversationHistory.map((msg: any) => ({
-          role: msg.role === "user" ? "user" : "model",
-          parts: [{ text: msg.content }]
-        })),
-        { role: "user", parts: [{ text: `Now refine based on: "${userPrompt}"` }] }
-      ];
+            // Build conversation messages
+            const messages = [
+              { role: "user", parts: [{ text: systemPrompt }] },
+              ...conversationHistory.map((msg: any) => ({
+                role: msg.role === "user" ? "user" : "model",
+                parts: [{ text: msg.content }]
+              })),
+              { role: "user", parts: [{ text: `Now refine based on: "${currentPrompt}"` }] }
+            ];
 
-      console.log('[Portfolio Enhanced] Sending conversation to Gemini:', {
-        messageCount: messages.length,
-        currentPromptLength: currentPrompt.length
-      });
+            console.log('[Portfolio Enhanced] Sending conversation to Gemini:', {
+              messageCount: messages.length,
+              currentPromptLength: currentPrompt.length
+            });
 
-      const geminiResponse = await aiClient.models.generateContent({
-        model: "gemini-2.5-pro",
-        contents: messages,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              explanation: {
-                type: Type.STRING,
-                description: "Plain English explanation of changes made"
-              },
-              scenes: {
-                type: Type.ARRAY,
-                description: "Complete refined scenes array with ALL original structure preserved",
-                items: {
+            const geminiResponse = await aiClient.models.generateContent({
+              model: "gemini-2.5-pro",
+              contents: messages,
+              config: {
+                responseMimeType: "application/json",
+                responseSchema: {
                   type: Type.OBJECT,
                   properties: {
-                    type: { type: Type.STRING },
-                    content: { type: Type.OBJECT },
-                    director: { type: Type.OBJECT },
-                    layout: { type: Type.STRING }
+                    explanation: {
+                      type: Type.STRING,
+                      description: "Plain English explanation of changes made"
+                    },
+                    scenes: {
+                      type: Type.ARRAY,
+                      description: "Complete refined scenes array with ALL original structure preserved",
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          type: { type: Type.STRING },
+                          content: { type: Type.OBJECT },
+                          director: { type: Type.OBJECT },
+                          layout: { type: Type.STRING }
+                        },
+                        required: ["type", "content", "director"]
+                      }
+                    }
                   },
-                  required: ["type", "content", "director"]
+                  required: ["explanation", "scenes"]
                 }
               }
-            },
-            required: ["explanation", "scenes"]
+            });
+
+            const result = JSON.parse(geminiResponse.text || '{}');
+            enhancedScenes = result.scenes || [];
+            aiExplanation = result.explanation || "Scenes refined successfully";
+
+            console.log(`[Portfolio Enhanced] Gemini refined ${enhancedScenes.length} scenes`);
+
+            // CRITICAL VALIDATION: Check if scenes are actually populated
+            if (enhancedScenes.length > 0) {
+              const firstScene = enhancedScenes[0];
+              if (!firstScene.type || !firstScene.content || !firstScene.director) {
+                console.error('[Portfolio Enhanced] ❌ CRITICAL ERROR: Gemini returned empty scene objects!');
+                console.error('[Portfolio Enhanced] First scene structure:', JSON.stringify(firstScene, null, 2));
+                console.error('[Portfolio Enhanced] Full Gemini response:', geminiResponse.text?.substring(0, 1000));
+
+                // FALLBACK: Use original scenes and warn the user
+                enhancedScenes = currentScenes;
+                aiExplanation = "⚠️ AI refinement encountered an error and returned invalid data. Your original scenes have been preserved. Please try rephrasing your request or contact support if this persists.";
+
+                console.log('[Portfolio Enhanced] 🔄 Falling back to original scenes to prevent data loss');
+              }
+            }
+          } else {
+            // INITIAL GENERATION MODE: Process scenes one-by-one
+            console.log(`[Portfolio Enhanced] INITIAL MODE: Generating ${scenes.length} scenes`);
+
+            const { generateSceneWithGemini } = await import("./utils/gemini-client");
+
+            for (let i = 0; i < scenes.length; i++) {
+              const scene = scenes[i];
+              console.log(`[Portfolio Enhanced] Processing scene ${i + 1}: ${scene.sceneType}`);
+
+              const systemInstructions = `Portfolio Context: ${portfolioAiPrompt}\n\nThis is scene ${i + 1} of ${scenes.length}.`;
+
+              try {
+                const aiEnhanced = await generateSceneWithGemini(
+                  scene.aiPrompt,
+                  scene.sceneType,
+                  systemInstructions
+                );
+
+                const sceneConfig: any = {
+                  type: aiEnhanced.sceneType || scene.sceneType,
+                  content: {},
+                  director: {
+                    ...DEFAULT_DIRECTOR_CONFIG,
+                    ...(aiEnhanced.director || {}),
+                    ...(scene.director || {})
+                  }
+                };
+
+                // Map content based on scene type
+                if (sceneConfig.type === "text") {
+                  sceneConfig.content.heading = scene.content.heading || aiEnhanced.headline || "Untitled";
+                  sceneConfig.content.body = scene.content.body || aiEnhanced.bodyText || "";
+                } else if (sceneConfig.type === "image") {
+                  sceneConfig.content.url = scene.content.url || aiEnhanced.mediaUrl || "";
+                  sceneConfig.content.alt = scene.content.alt || aiEnhanced.alt || "Image";
+                } else if (sceneConfig.type === "quote") {
+                  sceneConfig.content.quote = scene.content.quote || aiEnhanced.quote || "";
+                  sceneConfig.content.author = scene.content.author || aiEnhanced.author || "";
+                }
+
+                enhancedScenes.push(sceneConfig);
+              } catch (error) {
+                console.error(`[Portfolio Enhanced] Scene ${i + 1} generation failed:`, error);
+                throw new Error(`Failed to generate scene ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+              }
+            }
+
+            aiExplanation = `Generated ${enhancedScenes.length} scenes successfully`;
+            console.log(`[Portfolio Enhanced] All ${enhancedScenes.length} scenes generated`);
           }
-        }
-      });
 
-      const result = JSON.parse(geminiResponse.text || '{}');
-      enhancedScenes = result.scenes || [];
-      aiExplanation = result.explanation || "Scenes refined successfully";
+          // Save to database (only if we have a project to save to)
+          let finalProjectId = projectId;
+          const selectedProjectId = projectId; // Keep original projectId for linking media
 
-      console.log(`[Portfolio Enhanced] Gemini refined ${enhancedScenes.length} scenes`);
+          if (!isRefinementMode || !projectId) {
+            // Create new project if needed
+            if (!newProjectTitle || !newProjectSlug) {
+              return res.status(400).json({
+                error: "Cannot save scenes without project context"
+              });
+            }
 
-      // CRITICAL VALIDATION: Check if scenes are actually populated
-      if (enhancedScenes.length > 0) {
-        const firstScene = enhancedScenes[0];
-        if (!firstScene.type || !firstScene.content || !firstScene.director) {
-          console.error('[Portfolio Enhanced] ❌ CRITICAL ERROR: Gemini returned empty scene objects!');
-          console.error('[Portfolio Enhanced] First scene structure:', JSON.stringify(firstScene, null, 2));
-          console.error('[Portfolio Enhanced] Full Gemini response:', geminiResponse.text?.substring(0, 1000));
+            try {
+              const [newProject] = await db.insert(projects).values({
+                tenantId: req.tenantId,
+                title: newProjectTitle,
+                slug: newProjectSlug,
+                clientName: newProjectClient,
+                description: `AI-generated portfolio with ${enhancedScenes.length} scenes`,
+                thumbnailUrl: "",
+              }).returning();
 
-          // FALLBACK: Use original scenes and warn the user
-          enhancedScenes = currentScenes;
-          aiExplanation = "⚠️ AI refinement encountered an error and returned invalid data. Your original scenes have been preserved. Please try rephrasing your request or contact support if this persists.";
+              finalProjectId = newProject.id;
+              console.log(`[Portfolio Enhanced] Created new project ${finalProjectId}`);
+            } catch (error) {
+              console.error('[Portfolio Enhanced] Project creation failed:', error);
+              return res.status(500).json({
+                error: "Failed to create project",
+                details: error instanceof Error ? error.message : "Unknown error"
+              });
+            }
+          }
 
-          console.log('[Portfolio Enhanced] 🔄 Falling back to original scenes to prevent data loss');
-        }
-      }
-    } else {
-      // INITIAL GENERATION MODE: Process scenes one-by-one
-      console.log(`[Portfolio Enhanced] INITIAL MODE: Generating ${scenes.length} scenes`);
+          // Persist conversation to database
+          if (finalProjectId) {
+            try {
+              // Save user message
+              await storage.createConversationMessage(
+                finalProjectId,
+                'user',
+                isRefinementMode ? currentPrompt : portfolioAiPrompt
+              );
 
-      const { generateSceneWithGemini } = await import("./utils/gemini-client");
+              // Save assistant response
+              await storage.createConversationMessage(
+                finalProjectId,
+                'assistant',
+                aiExplanation
+              );
 
-      for (let i = 0; i < scenes.length; i++) {
-        const scene = scenes[i];
-        console.log(`[Portfolio Enhanced] Processing scene ${i + 1}: ${scene.sceneType}`);
+              // Get current version number
+              const latestVersion = await storage.getLatestPortfolioVersion(finalProjectId);
+              const nextVersionNumber = latestVersion ? latestVersion.versionNumber + 1 : 1;
 
-        const systemInstructions = `Portfolio Context: ${portfolioAiPrompt}\n\nThis is scene ${i + 1} of ${scenes.length}.`;
+              // Save version
+              const savedVersion = await storage.createPortfolioVersion(
+                finalProjectId,
+                nextVersionNumber,
+                enhancedScenes,
+                undefined, // confidenceScore - calculate if needed
+                undefined, // confidenceFactors
+                isRefinementMode ? currentPrompt : portfolioAiPrompt
+              );
 
-        try {
-          const aiEnhanced = await generateSceneWithGemini(
-            scene.aiPrompt,
-            scene.sceneType,
-            systemInstructions
-          );
+              console.log('[Portfolio Enhanced] Persisted conversation and version to DB');
 
-          const sceneConfig: any = {
-            type: aiEnhanced.sceneType || scene.sceneType,
-            content: {},
-            director: {
-              ...DEFAULT_DIRECTOR_CONFIG,
-              ...(aiEnhanced.director || {}),
-              ...(scene.director || {})
+              // Return response with conversation context
+              const responseData = {
+                success: true,
+                scenes: enhancedScenes,
+                explanation: aiExplanation,
+                projectId: finalProjectId,
+                // Include conversation data for frontend to update state
+                conversationUpdate: {
+                  userMessage: isRefinementMode ? currentPrompt : portfolioAiPrompt,
+                  assistantMessage: aiExplanation
+                },
+                // Version data for frontend
+                versionData: {
+                  id: savedVersion.id,
+                  timestamp: Date.now(),
+                  label: isRefinementMode ? `Iteration ${nextVersionNumber}` : "Initial Generation",
+                  json: JSON.stringify(enhancedScenes, null, 2),
+                  changeDescription: isRefinementMode ? currentPrompt : portfolioAiPrompt,
+                  versionNumber: nextVersionNumber
+                }
+              };
+
+              console.log('[Portfolio Enhanced] Returning response:', {
+                sceneCount: enhancedScenes.length,
+                hasProjectId: !!finalProjectId,
+                isRefinement: isRefinementMode,
+                versionNumber: nextVersionNumber
+              });
+
+              return res.json(responseData);
+            } catch (dbError) {
+              console.error('[Portfolio Enhanced] Failed to persist to DB:', dbError);
+              // Continue with response even if DB save fails
+              const responseData = {
+                success: true,
+                scenes: enhancedScenes,
+                explanation: aiExplanation,
+                projectId: finalProjectId,
+                conversationUpdate: {
+                  userMessage: isRefinementMode ? currentPrompt : portfolioAiPrompt,
+                  assistantMessage: aiExplanation
+                },
+                versionData: {
+                  id: `v-${Date.now()}`,
+                  timestamp: Date.now(),
+                  label: isRefinementMode ? `Iteration ${conversationHistory.length / 2 + 1}` : "Initial Generation",
+                  json: JSON.stringify(enhancedScenes, null, 2),
+                  changeDescription: isRefinementMode ? currentPrompt : portfolioAiPrompt
+                },
+                warning: 'Changes saved but history persistence failed'
+              };
+              return res.json(responseData);
+            }
+          }
+
+          // Fallback if no projectId (shouldn't happen but handle gracefully)
+          const responseData = {
+            success: true,
+            scenes: enhancedScenes,
+            explanation: aiExplanation,
+            conversationUpdate: {
+              userMessage: isRefinementMode ? currentPrompt : portfolioAiPrompt,
+              assistantMessage: aiExplanation
+            },
+            versionData: {
+              id: `v-${Date.now()}`,
+              timestamp: Date.now(),
+              label: isRefinementMode ? `Iteration ${conversationHistory.length / 2 + 1}` : "Initial Generation",
+              json: JSON.stringify(enhancedScenes, null, 2),
+              changeDescription: isRefinementMode ? currentPrompt : portfolioAiPrompt
             }
           };
+          return res.json(responseData);
+        });
 
-          // Map content based on scene type
-          if (sceneConfig.type === "text") {
-            sceneConfig.content.heading = scene.content.heading || aiEnhanced.headline || "Untitled";
-            sceneConfig.content.body = scene.content.body || aiEnhanced.bodyText || "";
-          } else if (sceneConfig.type === "image") {
-            sceneConfig.content.url = scene.content.url || aiEnhanced.mediaUrl || "";
-            sceneConfig.content.alt = scene.content.alt || aiEnhanced.alt || "Image";
-          } else if (sceneConfig.type === "quote") {
-            sceneConfig.content.quote = scene.content.quote || aiEnhanced.quote || "";
-            sceneConfig.content.author = scene.content.author || aiEnhanced.author || "";
+        // CINEMATIC MODE: Full AI Director (4-stage pipeline)
+        app.post("/api/portfolio/generate-cinematic", requireAuth, async (req, res) => {
+          try {
+            const { catalog, projectId, newProjectTitle, newProjectSlug, newProjectClient } = portfolioGenerateRequestSchema.parse(req.body);
+            // Add debugMode from req.body
+            const { debugMode } = req.body;
+
+            // Store debug mode in environment for this request
+            if (debugMode) {
+              process.env.PORTFOLIO_DEBUG_MODE = 'true';
+            }
+
+            // Validate catalog has sections
+            if (!catalog.sections || catalog.sections.length === 0) {
+              return res.status(400).json({
+                error: "Cinematic mode requires section-level structure in catalog",
+              });
+            }
+
+            console.log(`[Cinematic Mode] Generating from ${catalog.sections.length} sections`);
+
+            // Lazy-load cinematic director
+            const { generateCinematicPortfolio } = await import("./utils/cinematic-director");
+
+            // Generate using 4-stage pipeline
+            const cinematicResult = await generateCinematicPortfolio(catalog);
+
+            // Convert to scene configs (same format as existing system)
+            const { convertToSceneConfigs } = await import("./utils/portfolio-director");
+            const sceneConfigs = convertToSceneConfigs(cinematicResult.scenes, catalog);
+
+            // Save to database
+            const isNewProject = !projectId || projectId === null;
+            let finalProjectId: string;
+
+            if (isNewProject) {
+              if (!newProjectTitle || !newProjectSlug) {
+                return res.status(400).json({ error: "New project requires title and slug" });
+              }
+
+              const newProject = await storage.createProject({
+                slug: newProjectSlug,
+                title: newProjectTitle,
+                clientName: newProjectClient || null,
+                thumbnailUrl: catalog.images[0]?.url || null,
+                categories: [],
+              }, req.tenantId);
+
+              finalProjectId = newProject.id;
+            } else {
+              finalProjectId = projectId;
+            }
+
+            // Create scenes
+            for (let i = 0; i < sceneConfigs.length; i++) {
+              await storage.createProjectScene({
+                projectId: finalProjectId,
+                sceneConfig: sceneConfigs[i],
+                order: i,
+              });
+            }
+
+            res.json({
+              success: true,
+              projectId: finalProjectId,
+              scenes: cinematicResult.scenes,
+              storyboard: cinematicResult.storyboard,
+              confidenceScore: cinematicResult.confidenceScore,
+              warnings: cinematicResult.warnings,
+              message: `Cinematic generation complete (${cinematicResult.scenes.length} scenes)`,
+            });
+          } catch (error: any) {
+            console.error('[Portfolio Generation] Error:', error);
+            res.status(500).json({
+              message: error.message || 'Failed to generate portfolio',
+              error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            });
+          } finally {
+            // Clean up debug mode flag
+            delete process.env.PORTFOLIO_DEBUG_MODE;
           }
-
-          enhancedScenes.push(sceneConfig);
-        } catch (error) {
-          console.error(`[Portfolio Enhanced] Scene ${i + 1} generation failed:`, error);
-          throw new Error(`Failed to generate scene ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      }
-
-      aiExplanation = `Generated ${enhancedScenes.length} scenes successfully`;
-      console.log(`[Portfolio Enhanced] All ${enhancedScenes.length} scenes generated`);
-    }
-
-    // Save to database (only if we have a project to save to)
-    let finalProjectId = projectId;
-    const selectedProjectId = projectId; // Keep original projectId for linking media
-
-    if (!isRefinementMode || !projectId) {
-      // Create new project if needed
-      if (!newProjectTitle || !newProjectSlug) {
-        return res.status(400).json({
-          error: "Cannot save scenes without project context"
         });
-      }
 
-      try {
-        const [newProject] = await db.insert(projects).values({
-          tenantId: req.tenantId,
-          title: newProjectTitle,
-          slug: newProjectSlug,
-          clientName: newProjectClient,
-          description: `AI-generated portfolio with ${enhancedScenes.length} scenes`,
-          thumbnailUrl: "",
-        }).returning();
+        // HYBRID MODE: AI Portfolio Generation (original content catalog orchestration)
+        app.post("/api/portfolio/generate-ai", requireAuth, async (req, res) => {
+          try {
+            const { catalog, projectId, newProjectTitle, newProjectSlug, newProjectClient } = portfolioGenerateRequestSchema.parse(req.body);
+            // Add debugMode from req.body
+            const { debugMode } = req.body;
 
-        finalProjectId = newProject.id;
-        console.log(`[Portfolio Enhanced] Created new project ${finalProjectId}`);
-      } catch (error) {
-        console.error('[Portfolio Enhanced] Project creation failed:', error);
-        return res.status(500).json({
-          error: "Failed to create project",
-          details: error instanceof Error ? error.message : "Unknown error"
-        });
-      }
-    }
+            // Store debug mode in environment for this request
+            if (debugMode) {
+              process.env.PORTFOLIO_DEBUG_MODE = 'true';
+            }
 
-    // Persist conversation to database
-    if (finalProjectId) {
-      try {
-        // Save user message
-        await storage.createConversationMessage(
-          finalProjectId,
-          'user',
-          isRefinementMode ? currentPrompt : portfolioAiPrompt
-        );
+            // Validate catalog has at least one asset
+            const totalAssets = catalog.texts.length + catalog.images.length + catalog.videos.length + catalog.quotes.length;
+            if (totalAssets === 0) {
+              return res.status(400).json({
+                error: "Catalog must contain at least one asset (text, image, video, or quote)",
+              });
+            }
 
-        // Save assistant response
-        await storage.createConversationMessage(
-          finalProjectId,
-          'assistant',
-          aiExplanation
-        );
+            // Validate new project requirements
+            const isNewProject = !projectId || projectId === null;
+            if (isNewProject && (!newProjectTitle || !newProjectSlug)) {
+              return res.status(400).json({
+                error: "New project requires title and slug",
+              });
+            }
 
-        // Get current version number
-        const latestVersion = await storage.getLatestPortfolioVersion(finalProjectId);
-        const nextVersionNumber = latestVersion ? latestVersion.versionNumber + 1 : 1;
+            console.log(`[Portfolio AI] Processing request - Project: ${isNewProject ? 'NEW' : projectId}, Assets: ${totalAssets}`);
 
-        // Save version
-        const savedVersion = await storage.createPortfolioVersion(
-          finalProjectId,
-          nextVersionNumber,
-          enhancedScenes,
-          undefined, // confidenceScore - calculate if needed
-          undefined, // confidenceFactors
-          isRefinementMode ? currentPrompt : portfolioAiPrompt
-        );
+            // Lazy-load portfolio director
+            const { generatePortfolio } = await import("./utils/portfolio-director");
 
-        console.log('[Portfolio Enhanced] Persisted conversation and version to DB');
+            // Call AI to orchestrate scenes
+            console.log(`[Portfolio AI] Generating scenes for ${catalog.texts.length} texts, ${catalog.images.length} images, ${catalog.videos.length} videos, ${catalog.quotes.length} quotes`);
 
-        // Return response with conversation context
-        const responseData = {
-          success: true,
-          scenes: enhancedScenes,
-          explanation: aiExplanation,
-          projectId: finalProjectId,
-          // Include conversation data for frontend to update state
-          conversationUpdate: {
-            userMessage: isRefinementMode ? currentPrompt : portfolioAiPrompt,
-            assistantMessage: aiExplanation
-          },
-          // Version data for frontend
-          versionData: {
-            id: savedVersion.id,
-            timestamp: Date.now(),
-            label: isRefinementMode ? `Iteration ${nextVersionNumber}` : "Initial Generation",
-            json: JSON.stringify(enhancedScenes, null, 2),
-            changeDescription: isRefinementMode ? currentPrompt : portfolioAiPrompt,
-            versionNumber: nextVersionNumber
+            let portfolioResult;
+            try {
+              // Generate portfolio using AI director
+              portfolioResult = await generatePortfolio({
+                projectTitle: newProjectTitle || (catalog.title ? `Portfolio: ${catalog.title}` : "AI Generated Portfolio"), // Use new project title if available, else catalog title, else default
+                projectDescription: catalog.description || "AI generated portfolio from content catalog",
+                projectSlug: newProjectSlug || crypto.randomBytes(6).toString('hex'), // Generate a random slug if new project and no slug provided
+                contentCatalog: catalog,
+                directorConfig: {}, // Placeholder for director config if needed
+                briefingNotes: req.body.briefingNotes, // Pass briefing notes if provided
+                projectId: projectId || undefined, // Pass projectId for custom prompt loading
+              });
+
+              console.log(`[Portfolio AI] Generated ${portfolioResult.scenes.length} scenes`);
+            } catch (aiError) {
+              console.error('[Portfolio AI] Portfolio generation failed:', aiError);
+              return res.status(500).json({
+                error: "AI portfolio generation failed",
+                details: aiError instanceof Error ? aiError.message : "Unknown error"
+              });
+            }
+
+            // Convert AI scenes to database scene configs
+            // NOTE: This part might need adjustment based on the actual output format of `generatePortfolio`
+            // Assuming `generatePortfolio` returns an array of scene configurations compatible with `convertToSceneConfigs`
+            // If `generatePortfolio` returns structured data, we might need to adapt `convertToSceneConfigs` or replace it.
+            // For this example, let's assume a direct mapping is possible or `convertToSceneConfigs` handles the output.
+
+            // Let's assume `generatePortfolio` returns scenes in a format that can be directly used or needs minimal transformation.
+            // If `convertToSceneConfigs` is a separate utility, we'd call it here.
+            // If `generatePortfolio` already returns scene configs, we can use that directly.
+            // For this example, let's assume `portfolioResult.scenes` is the array of scene configs.
+
+            // Wrap project creation and scene inserts in a transaction for atomicity
+            const result_data = await db.transaction(async (tx) => {
+              // Determine or create project
+              let finalProjectId: string;
+
+              if (projectId && projectId !== null && projectId !== '') {
+                // Verify existing project access
+                const [existingProject] = await tx.select()
+                  .from(projects)
+                  .where(and(eq(projects.tenantId, req.tenantId), eq(projects.id, projectId)));
+
+                if (!existingProject) {
+                  throw new Error('Project not found or access denied');
+                }
+                finalProjectId = projectId;
+                console.log(`[Portfolio AI] Using existing project: ${finalProjectId}`);
+              } else {
+                // Create new project within transaction using tx client
+                // Use provided title and slug, or fallback if not available
+                const projectTitle = newProjectTitle || (catalog.title ? `Portfolio: ${catalog.title}` : "AI Generated Portfolio");
+                const projectSlug = newProjectSlug || crypto.randomBytes(6).toString('hex'); // Generate a unique slug
+
+                const [newProject] = await tx.insert(projects).values({
+                  tenantId: req.tenantId,
+                  title: projectTitle,
+                  slug: projectSlug,
+                  clientName: newProjectClient || catalog.clientName || null,
+                  thumbnailUrl: catalog.images[0]?.url || null,
+                  categories: catalog.categories || [],
+                  challengeText: catalog.challenge,
+                  solutionText: catalog.solution,
+                  outcomeText: catalog.outcome,
+                  modalMediaType: "video", // Default or derived from catalog
+                  modalMediaUrls: catalog.videos.map(v => v.url) || [],
+                  testimonialText: catalog.testimonial?.text || null,
+                  testimonialAuthor: catalog.testimonial?.author || null,
+                  description: `AI-generated portfolio based on catalog. ${portfolioResult.scenes.length} scenes generated.`,
+                }).returning();
+                finalProjectId = newProject.id;
+                console.log(`[Portfolio AI] Created new project: ${finalProjectId}`);
+              }
+
+              // Bulk create scenes within transaction using tx client
+              const createdScenes = [];
+              for (let i = 0; i < portfolioResult.scenes.length; i++) {
+                const sceneConfig = portfolioResult.scenes[i];
+                const [scene] = await tx.insert(projectScenes).values({
+                  projectId: finalProjectId,
+                  sceneConfig,
+                  order: i,
+                }).returning();
+                createdScenes.push(scene);
+              }
+
+              console.log(`[Portfolio AI] Created ${createdScenes.length} scenes for project ${finalProjectId}`);
+
+              return {
+                projectId: finalProjectId,
+                scenesCreated: createdScenes.length,
+                scenes: createdScenes,
+              };
+            });
+
+            res.json({
+              success: true,
+              scenes: portfolioResult.scenes,
+              confidenceScore: portfolioResult.confidenceScore,
+              confidenceFactors: portfolioResult.confidenceFactors,
+              message: `Generated ${portfolioResult.scenes.length} scenes successfully (Confidence: ${portfolioResult.confidenceScore}%)`,
+            });
+          } catch (error: any) {
+            console.error("Error generating portfolio with AI:", error);
+            return res.status(500).json({
+              error: "Failed to generate portfolio",
+              details: error.message || "Unknown error"
+            });
+          } finally {
+            // Clean up debug mode flag
+            delete process.env.PORTFOLIO_DEBUG_MODE;
           }
-        };
-
-        console.log('[Portfolio Enhanced] Returning response:', {
-          sceneCount: enhancedScenes.length,
-          hasProjectId: !!finalProjectId,
-          isRefinement: isRefinementMode,
-          versionNumber: nextVersionNumber
         });
 
-        return res.json(responseData);
-      } catch (dbError) {
-        console.error('[Portfolio Enhanced] Failed to persist to DB:', dbError);
-        // Continue with response even if DB save fails
-        const responseData = {
-          success: true,
-          scenes: enhancedScenes,
-          explanation: aiExplanation,
-          projectId: finalProjectId,
-          conversationUpdate: {
-            userMessage: isRefinementMode ? currentPrompt : portfolioAiPrompt,
-            assistantMessage: aiExplanation
-          },
-          versionData: {
-            id: `v-${Date.now()}`,
-            timestamp: Date.now(),
-            label: isRefinementMode ? `Iteration ${conversationHistory.length / 2 + 1}` : "Initial Generation",
-            json: JSON.stringify(enhancedScenes, null, 2),
-            changeDescription: isRefinementMode ? currentPrompt : portfolioAiPrompt
-          },
-          warning: 'Changes saved but history persistence failed'
-        };
-        return res.json(responseData);
-      }
-    }
+        // ===========================
+        // PORTFOLIO PROMPTS MANAGEMENT
+        // ===========================
 
-    // Fallback if no projectId (shouldn't happen but handle gracefully)
-    const responseData = {
-      success: true,
-      scenes: enhancedScenes,
-      explanation: aiExplanation,
-      conversationUpdate: {
-        userMessage: isRefinementMode ? currentPrompt : portfolioAiPrompt,
-        assistantMessage: aiExplanation
-      },
-      versionData: {
-        id: `v-${Date.now()}`,
-        timestamp: Date.now(),
-        label: isRefinementMode ? `Iteration ${conversationHistory.length / 2 + 1}` : "Initial Generation",
-        json: JSON.stringify(enhancedScenes, null, 2),
-        changeDescription: isRefinementMode ? currentPrompt : portfolioAiPrompt
-      }
-    };
-    return res.json(responseData);
-  });
-
-  // CINEMATIC MODE: Full AI Director (4-stage pipeline)
-  app.post("/api/portfolio/generate-cinematic", requireAuth, async (req, res) => {
-    try {
-      const { catalog, projectId, newProjectTitle, newProjectSlug, newProjectClient } = portfolioGenerateRequestSchema.parse(req.body);
-      // Add debugMode from req.body
-      const { debugMode } = req.body;
-
-      // Store debug mode in environment for this request
-      if (debugMode) {
-        process.env.PORTFOLIO_DEBUG_MODE = 'true';
-      }
-
-      // Validate catalog has sections
-      if (!catalog.sections || catalog.sections.length === 0) {
-        return res.status(400).json({
-          error: "Cinematic mode requires section-level structure in catalog",
-        });
-      }
-
-      console.log(`[Cinematic Mode] Generating from ${catalog.sections.length} sections`);
-
-      // Lazy-load cinematic director
-      const { generateCinematicPortfolio } = await import("./utils/cinematic-director");
-
-      // Generate using 4-stage pipeline
-      const cinematicResult = await generateCinematicPortfolio(catalog);
-
-      // Convert to scene configs (same format as existing system)
-      const { convertToSceneConfigs } = await import("./utils/portfolio-director");
-      const sceneConfigs = convertToSceneConfigs(cinematicResult.scenes, catalog);
-
-      // Save to database
-      const isNewProject = !projectId || projectId === null;
-      let finalProjectId: string;
-
-      if (isNewProject) {
-        if (!newProjectTitle || !newProjectSlug) {
-          return res.status(400).json({ error: "New project requires title and slug" });
-        }
-
-        const newProject = await storage.createProject({
-          slug: newProjectSlug,
-          title: newProjectTitle,
-          clientName: newProjectClient || null,
-          thumbnailUrl: catalog.images[0]?.url || null,
-          categories: [],
-        }, req.tenantId);
-
-        finalProjectId = newProject.id;
-      } else {
-        finalProjectId = projectId;
-      }
-
-      // Create scenes
-      for (let i = 0; i < sceneConfigs.length; i++) {
-        await storage.createProjectScene({
-          projectId: finalProjectId,
-          sceneConfig: sceneConfigs[i],
-          order: i,
-        });
-      }
-
-      res.json({
-        success: true,
-        projectId: finalProjectId,
-        scenes: cinematicResult.scenes,
-        storyboard: cinematicResult.storyboard,
-        confidenceScore: cinematicResult.confidenceScore,
-        warnings: cinematicResult.warnings,
-        message: `Cinematic generation complete (${cinematicResult.scenes.length} scenes)`,
-      });
-    } catch (error: any) {
-      console.error('[Portfolio Generation] Error:', error);
-      res.status(500).json({
-        message: error.message || 'Failed to generate portfolio',
-        error: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      });
-    } finally {
-      // Clean up debug mode flag
-      delete process.env.PORTFOLIO_DEBUG_MODE;
-    }
-  });
-
-  // HYBRID MODE: AI Portfolio Generation (original content catalog orchestration)
-  app.post("/api/portfolio/generate-ai", requireAuth, async (req, res) => {
-    try {
-      const { catalog, projectId, newProjectTitle, newProjectSlug, newProjectClient } = portfolioGenerateRequestSchema.parse(req.body);
-      // Add debugMode from req.body
-      const { debugMode } = req.body;
-
-      // Store debug mode in environment for this request
-      if (debugMode) {
-        process.env.PORTFOLIO_DEBUG_MODE = 'true';
-      }
-
-      // Validate catalog has at least one asset
-      const totalAssets = catalog.texts.length + catalog.images.length + catalog.videos.length + catalog.quotes.length;
-      if (totalAssets === 0) {
-        return res.status(400).json({
-          error: "Catalog must contain at least one asset (text, image, video, or quote)",
-        });
-      }
-
-      // Validate new project requirements
-      const isNewProject = !projectId || projectId === null;
-      if (isNewProject && (!newProjectTitle || !newProjectSlug)) {
-        return res.status(400).json({
-          error: "New project requires title and slug",
-        });
-      }
-
-      console.log(`[Portfolio AI] Processing request - Project: ${isNewProject ? 'NEW' : projectId}, Assets: ${totalAssets}`);
-
-      // Lazy-load portfolio director
-      const { generatePortfolio } = await import("./utils/portfolio-director");
-
-      // Call AI to orchestrate scenes
-      console.log(`[Portfolio AI] Generating scenes for ${catalog.texts.length} texts, ${catalog.images.length} images, ${catalog.videos.length} videos, ${catalog.quotes.length} quotes`);
-
-      let portfolioResult;
-      try {
-        // Generate portfolio using AI director
-        portfolioResult = await generatePortfolio({
-          projectTitle: newProjectTitle || (catalog.title ? `Portfolio: ${catalog.title}` : "AI Generated Portfolio"), // Use new project title if available, else catalog title, else default
-          projectDescription: catalog.description || "AI generated portfolio from content catalog",
-          projectSlug: newProjectSlug || crypto.randomBytes(6).toString('hex'), // Generate a random slug if new project and no slug provided
-          contentCatalog: catalog,
-          directorConfig: {}, // Placeholder for director config if needed
-          briefingNotes: req.body.briefingNotes, // Pass briefing notes if provided
-          projectId: projectId || undefined, // Pass projectId for custom prompt loading
-        });
-
-        console.log(`[Portfolio AI] Generated ${portfolioResult.scenes.length} scenes`);
-      } catch (aiError) {
-        console.error('[Portfolio AI] Portfolio generation failed:', aiError);
-        return res.status(500).json({
-          error: "AI portfolio generation failed",
-          details: aiError instanceof Error ? aiError.message : "Unknown error"
-        });
-      }
-
-      // Convert AI scenes to database scene configs
-      // NOTE: This part might need adjustment based on the actual output format of `generatePortfolio`
-      // Assuming `generatePortfolio` returns an array of scene configurations compatible with `convertToSceneConfigs`
-      // If `generatePortfolio` returns structured data, we might need to adapt `convertToSceneConfigs` or replace it.
-      // For this example, let's assume a direct mapping is possible or `convertToSceneConfigs` handles the output.
-
-      // Let's assume `generatePortfolio` returns scenes in a format that can be directly used or needs minimal transformation.
-      // If `convertToSceneConfigs` is a separate utility, we'd call it here.
-      // If `generatePortfolio` already returns scene configs, we can use that directly.
-      // For this example, let's assume `portfolioResult.scenes` is the array of scene configs.
-
-      // Wrap project creation and scene inserts in a transaction for atomicity
-      const result_data = await db.transaction(async (tx) => {
-        // Determine or create project
-        let finalProjectId: string;
-
-        if (projectId && projectId !== null && projectId !== '') {
-          // Verify existing project access
-          const [existingProject] = await tx.select()
-            .from(projects)
-            .where(and(eq(projects.tenantId, req.tenantId), eq(projects.id, projectId)));
-
-          if (!existingProject) {
-            throw new Error('Project not found or access denied');
+        // Get all prompts for a project
+        app.get("/api/portfolio-prompts/:projectId", requireAuth, async (req, res) => {
+          try {
+            const { projectId } = req.params;
+            const prompts = await storage.getPortfolioPrompts(projectId);
+            res.json(prompts);
+          } catch (error) {
+            console.error("Error fetching portfolio prompts:", error);
+            res.status(500).send("Failed to fetch prompts");
           }
-          finalProjectId = projectId;
-          console.log(`[Portfolio AI] Using existing project: ${finalProjectId}`);
-        } else {
-          // Create new project within transaction using tx client
-          // Use provided title and slug, or fallback if not available
-          const projectTitle = newProjectTitle || (catalog.title ? `Portfolio: ${catalog.title}` : "AI Generated Portfolio");
-          const projectSlug = newProjectSlug || crypto.randomBytes(6).toString('hex'); // Generate a unique slug
+        });
 
-          const [newProject] = await tx.insert(projects).values({
-            tenantId: req.tenantId,
-            title: projectTitle,
-            slug: projectSlug,
-            clientName: newProjectClient || catalog.clientName || null,
-            thumbnailUrl: catalog.images[0]?.url || null,
-            categories: catalog.categories || [],
-            challengeText: catalog.challenge,
-            solutionText: catalog.solution,
-            outcomeText: catalog.outcome,
-            modalMediaType: "video", // Default or derived from catalog
-            modalMediaUrls: catalog.videos.map(v => v.url) || [],
-            testimonialText: catalog.testimonial?.text || null,
-            testimonialAuthor: catalog.testimonial?.author || null,
-            description: `AI-generated portfolio based on catalog. ${portfolioResult.scenes.length} scenes generated.`,
-          }).returning();
-          finalProjectId = newProject.id;
-          console.log(`[Portfolio AI] Created new project: ${finalProjectId}`);
-        }
+        // Create or update a portfolio prompt
+        app.post("/api/portfolio-prompts", requireAuth, async (req, res) => {
+          try {
+            const { projectId, promptType, customPrompt, isActive } = req.body;
 
-        // Bulk create scenes within transaction using tx client
-        const createdScenes = [];
-        for (let i = 0; i < portfolioResult.scenes.length; i++) {
-          const sceneConfig = portfolioResult.scenes[i];
-          const [scene] = await tx.insert(projectScenes).values({
-            projectId: finalProjectId,
-            sceneConfig,
-            order: i,
-          }).returning();
-          createdScenes.push(scene);
-        }
+            if (!projectId || !promptType) {
+              return res.status(400).send("Missing required fields");
+            }
 
-        console.log(`[Portfolio AI] Created ${createdScenes.length} scenes for project ${finalProjectId}`);
+            const userId = req.session?.userId;
+            const result = await storage.upsertPortfolioPrompt({
+              projectId,
+              promptType,
+              customPrompt: customPrompt || null,
+              isActive: isActive ?? false,
+              userId,
+            });
 
-        return {
-          projectId: finalProjectId,
-          scenesCreated: createdScenes.length,
-          scenes: createdScenes,
-        };
-      });
+            res.json(result);
+          } catch (error) {
+            console.error("Error saving portfolio prompt:", error);
+            res.status(500).send("Failed to save prompt");
+          }
+        });
 
-      res.json({
-        success: true,
-        scenes: portfolioResult.scenes,
-        confidenceScore: portfolioResult.confidenceScore,
-        confidenceFactors: portfolioResult.confidenceFactors,
-        message: `Generated ${portfolioResult.scenes.length} scenes successfully (Confidence: ${portfolioResult.confidenceScore}%)`,
-      });
-    } catch (error: any) {
-      console.error("Error generating portfolio with AI:", error);
-      return res.status(500).json({
-        error: "Failed to generate portfolio",
-        details: error.message || "Unknown error"
-      });
-    } finally {
-      // Clean up debug mode flag
-      delete process.env.PORTFOLIO_DEBUG_MODE;
-    }
-  });
+        // ===========================
+        // PORTFOLIO GENERATION ENDPOINTS
+        // ===========================
 
-  // ===========================
-  // PORTFOLIO PROMPTS MANAGEMENT
-  // ===========================
+        // AI Prompt Templates - GET all templates
+        app.get("/api/ai-prompt-templates", async (req, res, next) => {
+          try {
+            const templates = await db.query.aiPromptTemplates.findMany({
+              orderBy: (templates, { asc }) => [asc(templates.promptKey)],
+            });
+            res.json(templates);
+          } catch (error) {
+            next(error);
+          }
+        });
 
-  // Get all prompts for a project
-  app.get("/api/portfolio-prompts/:projectId", requireAuth, async (req, res) => {
-    try {
-      const { projectId } = req.params;
-      const prompts = await storage.getPortfolioPrompts(projectId);
-      res.json(prompts);
-    } catch (error) {
-      console.error("Error fetching portfolio prompts:", error);
-      res.status(500).send("Failed to fetch prompts");
-    }
-  });
+        // AI Prompt Templates - UPDATE template
+        app.put("/api/ai-prompt-templates/:id", async (req, res, next) => {
+          try {
+            const { id } = req.params;
+            const updates = req.body;
 
-  // Create or update a portfolio prompt
-  app.post("/api/portfolio-prompts", requireAuth, async (req, res) => {
-    try {
-      const { projectId, promptType, customPrompt, isActive } = req.body;
+            const [updated] = await db
+              .update(aiPromptTemplates)
+              .set({
+                ...updates,
+                updatedAt: new Date(),
+              })
+              .where(eq(aiPromptTemplates.id, id))
+              .returning();
 
-      if (!projectId || !promptType) {
-        return res.status(400).send("Missing required fields");
+            res.json(updated);
+          } catch (error) {
+            next(error);
+          }
+        });
+
+
+        // SEO health check
+        app.use(seoHealthRouter);
+        app.use(sitemapRouter);
+        app.use(internalLinkingRouter);
+        app.use(relatedContentRouter);
+        app.use(analyticsRouter);
+
+        return;
       }
-
-      const userId = req.session?.userId;
-      const result = await storage.upsertPortfolioPrompt({
-        projectId,
-        promptType,
-        customPrompt: customPrompt || null,
-        isActive: isActive ?? false,
-        userId,
-      });
-
-      res.json(result);
-    } catch (error) {
-      console.error("Error saving portfolio prompt:", error);
-      res.status(500).send("Failed to save prompt");
-    }
-  });
-
-  // ===========================
-  // PORTFOLIO GENERATION ENDPOINTS
-  // ===========================
-
-  // AI Prompt Templates - GET all templates
-  app.get("/api/ai-prompt-templates", async (req, res, next) => {
-    try {
-      const templates = await db.query.aiPromptTemplates.findMany({
-        orderBy: (templates, { asc }) => [asc(templates.promptKey)],
-      });
-      res.json(templates);
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  // AI Prompt Templates - UPDATE template
-  app.put("/api/ai-prompt-templates/:id", async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      const updates = req.body;
-
-      const [updated] = await db
-        .update(aiPromptTemplates)
-        .set({
-          ...updates,
-          updatedAt: new Date(),
-        })
-        .where(eq(aiPromptTemplates.id, id))
-        .returning();
-
-      res.json(updated);
-    } catch (error) {
-      next(error);
-    }
-  });
-
-
-  // SEO health check
-  app.use(seoHealthRouter);
-  app.use(sitemapRouter);
-  app.use(internalLinkingRouter);
-  app.use(relatedContentRouter);
-  app.use(analyticsRouter);
-
-  return;
-}

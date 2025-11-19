@@ -56,14 +56,16 @@ export interface GeneratedSceneConfig {
  * @param prompt - The user's creative direction for the scene
  * @param sceneType - Optional scene type constraint (e.g., 'hero', 'testimonial')
  * @param systemInstructions - Additional system-level guidance for the AI
+ * @param availableMediaLibrary - Optional array of uploaded media assets with mediaId
  * @returns Structured scene configuration with hybrid composition support
  */
 export async function generateSceneWithGemini(
   prompt: string,
   sceneType?: string,
-  systemInstructions?: string
+  systemInstructions?: string,
+  availableMediaLibrary?: any[]
 ): Promise<GeneratedSceneConfig> {
-  const fullPrompt = buildScenePrompt(prompt, sceneType, systemInstructions);
+  const fullPrompt = buildScenePrompt(prompt, sceneType, systemInstructions, availableMediaLibrary);
 
   const response = await ai.models.generateContent({
     model: "gemini-2.5-pro", // Pro model for complex scene reasoning
@@ -212,11 +214,50 @@ export async function generateSceneWithGemini(
 function buildScenePrompt(
   instruction: string,
   sceneType?: string,
-  systemInstructions?: string
+  systemInstructions?: string,
+  availableMediaLibrary?: any[]
 ): string {
+  // Build Media Library section if assets are available
+  let mediaLibrarySection = '';
+  if (availableMediaLibrary && availableMediaLibrary.length > 0) {
+    const mediaList = availableMediaLibrary.map(m => {
+      const label = m.label || m.cloudinaryPublicId || m.id;
+      const type = m.mediaType === 'image' ? '🖼️ Image' : '🎥 Video';
+      return `  - ${type} "${label}" (ID: ${m.id}, URL: ${m.cloudinaryUrl})`;
+    }).join('\n');
+
+    mediaLibrarySection = `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 MEDIA LIBRARY ASSETS (${availableMediaLibrary.length} available)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You have access to ${availableMediaLibrary.length} pre-uploaded media assets.
+ALWAYS prefer using these real assets over placeholder URLs when appropriate.
+
+${mediaList}
+
+CRITICAL: When using Media Library assets, you MUST include BOTH the ID and URL:
+- For IMAGE/VIDEO scenes: Set both "mediaUrl" AND include "mediaId" in assetIds array
+- For SPLIT/FULLSCREEN scenes: Set both "mediaUrl" AND include "mediaId" in assetIds array
+
+Example response using Media Library:
+{
+  "sceneType": "image",
+  "assetIds": ["<media-library-id>"],
+  "mediaUrl": "<cloudinaryUrl from above>",
+  "mediaType": "image",
+  ...
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+  }
+
   return `You are a cinematic director creating a portfolio scene. You MUST consider ALL 37 configuration options for professional-grade output.
 
 ${systemInstructions ? `SYSTEM CONTEXT:\n${systemInstructions}\n` : ''}
+${mediaLibrarySection}
 
 USER INSTRUCTION:
 ${instruction}

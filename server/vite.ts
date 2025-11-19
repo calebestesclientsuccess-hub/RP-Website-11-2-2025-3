@@ -40,7 +40,7 @@ export async function setupVite(app: Express, server: Server) {
       middlewareMode: true,
       hmr: {
         server,
-        protocol: 'ws',
+        protocol: 'wss',
         timeout: 30000,
         overlay: true
       },

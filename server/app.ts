@@ -4,15 +4,10 @@
  */
 import express, { type Request, Response, NextFunction } from "express";
 import { createServer } from "http";
-import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
-import crypto from "crypto";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { sessionPool } from "./db";
 import { securityHeaders } from "./middleware/security-headers";
 import { tenantMiddleware } from "./middleware/tenant";
-import { sessionTimeoutMiddleware } from './middleware/session-timeout'; // Import session timeout middleware
 import { compressionMiddleware, cacheControl } from "./middleware/compression";
 import { queryMonitoring } from "./middleware/query-monitoring";
 import { errorHandler } from "./middleware/error-handler";
@@ -47,40 +42,8 @@ import { blockSuspiciousIPs, detectSuspiciousPatterns, enhancedRateLimiter } fro
 app.use(blockSuspiciousIPs);
 app.use(detectSuspiciousPatterns);
 
-// Session configuration
-const PgSession = connectPgSimple(session);
-// Session timeout: 30 minutes of inactivity
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
-
-app.use(
-  session({
-    store: new PgSession({
-      pool: sessionPool,
-      tableName: "session",
-      createTableIfMissing: true,
-    }),
-    secret: process.env.SESSION_SECRET || "your-secret-key-change-in-production",
-    resave: false,
-    saveUninitialized: false,
-    rolling: true, // Reset expiration on each request
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      maxAge: SESSION_TIMEOUT_MS,
-      // Tenant-specific cookies (if using subdomains)
-      domain: process.env.NODE_ENV === "production" ? ".revenueparty.com" : undefined,
-      sameSite: "lax",
-    },
-    // Add tenant to session
-    genid: (req) => {
-      const tenantPrefix = (req as any).tenantId?.substring(0, 8) || 'default';
-      return `${tenantPrefix}_${crypto.randomBytes(16).toString('hex')}`;
-    },
-  })
-);
-
-// Session timeout middleware
-app.use(sessionTimeoutMiddleware);
+// Demo mode - no session/auth required
+// All requests are treated as coming from the demo user
 
 // Comprehensive security headers middleware
 app.use((req, res, next) => {

@@ -1,0 +1,172 @@
+Project Genesis - Sprint 2: The Hybrid Studio
+
+Owner: Frontend & Backend Teams
+Time: 2-3 hours
+Based On: Project Genesis Technical Specification v1.0
+
+1. Sprint Goal
+
+Build the hybrid editing environment. This includes the admin-only /test preview, the direct JSON editor, and the "re-prompt" chat interface that allows users to iteratively refine the AI-generated page.
+
+2. Dependencies
+
+Sprint 1 must be complete. This sprint edits the project_scenes JSON that the Generation Wizard created.
+
+3. Technical Tasks
+
+[3.1] Backend: Admin-Only Preview Route
+
+File: server/routes.ts
+
+Action: Create a new GET route that dynamically renders a project for admins.
+
+Logic:
+
+// Add this route BEFORE any wildcard client-side routing
+app.get('/:slug/test', requireAdminAuth, async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    // 1. Find project by slug
+    const project = await db.query.projects.findFirst({
+      where: and(
+        eq(projects.slug, slug),
+        eq(projects.tenantId, req.tenantId) // Ensure tenant isolation
+      )
+    });
+
+    if (!project) {
+      return res.status(404).send("Project not found");
+    }
+
+    // 2. Fetch all scenes for this project
+    const scenes = await db.query.projectScenes.findMany({
+      where: eq(projectScenes.projectId, project.id),
+      orderBy: [asc(projectScenes.order)]
+    });
+
+    // 3. Hydrate Media (This is your existing logic)
+    // const hydratedScenes = await hydrateMedia(scenes, req.tenantId);
+
+    // 4. Render the page
+    // This part depends on your SSR setup. You might send the
+    // client-side app with this data, or render it server-side.
+    // For a Vite/React app, you'd typically send the main HTML
+    // with the scene data embedded as a JSON blob.
+
+    // Example: Sending data to the client to render
+    res.render('index.html', {
+      // Embed data for the client app to pick up
+      __PROJECT_DATA__: {
+        project,
+        scenes, // or hydratedScenes
+      }
+    });
+
+  } catch (error) {
+    res.status(500).send("Error rendering test page");
+  }
+});
+
+
+[3.2] Frontend: The Hybrid Editor UI
+
+File: client/src/pages/admin/ProjectEditor.tsx (This is your existing ProjectSceneEditor.tsx).
+
+Goal: Create a two-column layout.
+
+Left Column: The editing interface.
+
+Right Column: The live preview (in an <iframe> pointing to the /test URL).
+
+Left Column Components:
+
+JSON Editor:
+
+A tab containing a text editor (like Monaco or a simple <textarea>) displaying the full scenes JSON array.
+
+A "Save JSON" button that calls PATCH /api/projects/:id/scenes (a new endpoint to bulk-save the entire JSON array).
+
+ChatPanel.tsx (New Component):
+
+A new chat interface.
+
+Displays portfolio_conversations history.
+
+A text input for the user to type new prompts (e.g., "Make the hero section's text bigger").
+
+[3.3] Backend: The "Re-Prompt" (Chat) Endpoint
+
+File: server/routes.ts
+
+Endpoint: POST /api/projects/:id/chat
+
+Action: Receives a single chat message and regenerates the project.
+
+Logic:
+
+This is a "lite" version of the POST /api/projects/:id/generate endpoint.
+
+Save Message: Save the user's new message to portfolio_conversations.
+
+Build Context:
+
+Fetch project, tenant (for brand), mediaLibrary, sceneTemplates.
+
+Fetch the complete portfolio_conversations history.
+
+Fetch the current project_scenes JSON.
+
+Build Prompt: Create a new system prompt for "editing":
+
+<SESSION_GOAL>
+You are editing an existing web page. The user will provide a new instruction.
+You MUST return the *complete, new* JSON array of 'sceneConfig' objects.
+Do NOT just return the change. Return the full page.
+</SESSION_GOAL>
+
+<CURRENT_PAGE_JSON>
+${JSON.stringify(currentScenes, null, 2)}
+</CURRENT_PAGE_JSON>
+
+<BRAND_CONFIG>...</BRAND_CONFIG>
+<AVAILABLE_MEDIA_LIBRARY>...</AVAILABLE_MEDIA_LIBRARY>
+<AVAILABLE_SCENE_TEMPLATES>...</AVAILABLE_SCENE_TEMPLATES>
+<CRITICAL_INSTRUCTIONS>...</CRITICAL_INSTRUCTIONS>
+
+<CONVERSATION_HISTORY>
+${conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
+</CONVERSATION_HISTORY>
+
+<USER_LATEST_REQUEST>
+${latestUserMessage}
+</USER_LATEST_REQUEST>
+
+Respond with the *complete, updated* JSON array.
+
+
+Execute: Call Gemini, get the new JSON array.
+
+Save: Replace the old project_scenes with the new ones. (Or use a diffing library for advanced optimization).
+
+Response: 200 with the new scenes array.
+
+[3.4] Frontend: Connecting the Loop
+
+The ChatPanel.tsx's "Send" button calls POST /api/projects/:id/chat.
+
+The useMutation hook for this call must invalidate the project scenes query.
+
+This will automatically refresh the <iframe> on the right (or you can force a reload) to show the user's change live.
+
+4. Definition of Done
+
+Sprint 2 is complete when:
+
+Admins can navigate to /:slug/test and see a preview of the page.
+
+The ProjectEditor.tsx shows a JSON editor and a ChatPanel.tsx.
+
+A user can type "Make the hero headline 'Hello World'" into the chat, press send, and see the preview on the right update with "Hello World."
+
+A user can manually edit the JSON, click "Save JSON," and see the preview update.
