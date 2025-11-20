@@ -52,6 +52,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useKeyboardShortcuts, GLOBAL_SHORTCUTS } from "@/hooks/use-keyboard-shortcuts";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 import { SkipLink } from "./components/SkipLink";
+import { ShortcutRegistryProvider, useShortcutRegistry } from "@/context/ShortcutRegistryContext";
 
 // Lazy load admin pages (reduces initial bundle by ~300KB)
 const LoginPageLazy = lazy(() => import("@/pages/admin/LoginPage"));
@@ -77,7 +78,6 @@ const ProjectFormLazy = lazy(() => import("@/pages/admin/ProjectForm"));
 const JobPostingFormLazy = lazy(() => import("@/pages/admin/JobPostingForm"));
 const PortfolioBuilderLazy = lazy(() => import("@/pages/admin/PortfolioBuilder"));
 const PortfolioWizardLazy = lazy(() => import("@/pages/admin/PortfolioWizard"));
-const WizardLazy = lazy(() => import("@/pages/admin/Wizard"));
 const AIPromptSettingsLazy = lazy(() => import("@/pages/admin/AIPromptSettings"));
 const PortfolioPromptManagerLazy = lazy(() => import("@/pages/admin/PortfolioPromptManager"));
 const MediaLibraryLazy = lazy(() => import("@/pages/admin/MediaLibrary").catch(err => {
@@ -134,12 +134,19 @@ const ProjectForm = withLazyLoading(ProjectFormLazy);
 const JobPostingForm = withLazyLoading(JobPostingFormLazy);
 const PortfolioBuilder = withLazyLoading(PortfolioBuilderLazy);
 const PortfolioWizard = withLazyLoading(PortfolioWizardLazy);
-const Wizard = withLazyLoading(WizardLazy);
 const AIPromptSettings = withLazyLoading(AIPromptSettingsLazy);
 const PortfolioPromptManager = withLazyLoading(PortfolioPromptManagerLazy);
 const MediaLibrary = withLazyLoading(MediaLibraryLazy);
 const TemplateLibrary = withLazyLoading(TemplateLibraryLazy);
 const ProjectSceneEditor = withLazyLoading(ProjectSceneEditorLazy);
+function RedirectToBuilder() {
+  const [, navigate] = useLocation();
+  useEffect(() => {
+    navigate("/admin/portfolio-builder");
+  }, [navigate]);
+  return null;
+}
+
 
 
 function ScrollToTop() {
@@ -214,7 +221,7 @@ function Router() {
         <Route path="/admin/portfolio/:slug" component={ProjectSceneEditor} />
         <Route path="/admin/portfolio/:slug" component={ProjectSceneEditor} />
         <Route path="/admin/portfolio-wizard" component={PortfolioWizard} />
-        <Route path="/admin/wizard" component={Wizard} />
+        <Route path="/admin/wizard" component={RedirectToBuilder} />
         <Route path="/admin/portfolio-builder" component={PortfolioBuilder} />
         <Route path="/admin/portfolio-prompts" component={PortfolioPromptManager} />
         <Route path="/admin/ai-prompt-settings" component={AIPromptSettings} />
@@ -253,8 +260,9 @@ function Router() {
   );
 }
 
-function App() {
+function AppShell() {
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const { shortcuts } = useShortcutRegistry();
 
   // Set up global keyboard shortcuts - simplified to avoid initialization crashes
   useKeyboardShortcuts(
@@ -290,6 +298,7 @@ function App() {
                   <KeyboardShortcutsModal
                     open={showShortcuts}
                     onOpenChange={setShowShortcuts}
+                    additionalShortcuts={shortcuts}
                   />
                 </ErrorBoundary>
               </CampaignBootstrap>
@@ -298,6 +307,14 @@ function App() {
         </ThemeProvider>
       </HelmetProvider>
     </QueryClientProvider>
+  );
+}
+
+function App() {
+  return (
+    <ShortcutRegistryProvider>
+      <AppShell />
+    </ShortcutRegistryProvider>
   );
 }
 

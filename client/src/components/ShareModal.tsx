@@ -24,13 +24,17 @@ interface ShareModalProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   projectTitle: string;
+  versionId?: string | null;
+  versionLabel?: string;
 }
 
 export function ShareModal({ 
   open, 
   onOpenChange, 
   projectId,
-  projectTitle 
+  projectTitle,
+  versionId,
+  versionLabel
 }: ShareModalProps) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
@@ -41,7 +45,9 @@ export function ShareModal({
     if (open && projectId) {
       // Generate the preview URL
       const baseUrl = window.location.origin;
-      const url = `${baseUrl}/preview/${projectId}`;
+      const url = versionId
+        ? `${baseUrl}/preview/${projectId}?version=${encodeURIComponent(versionId)}`
+        : `${baseUrl}/preview/${projectId}`;
       setPreviewUrl(url);
       
       // Generate QR code using API
@@ -109,7 +115,9 @@ export function ShareModal({
             Share Your Portfolio
           </DialogTitle>
           <DialogDescription>
-            Your portfolio is ready to share! Use the link below or scan the QR code.
+            {versionLabel
+              ? `Share version ${versionLabel} with stakeholders via link or QR code.`
+              : "Your portfolio is ready to share! Use the link below or scan the QR code."}
           </DialogDescription>
         </DialogHeader>
 
