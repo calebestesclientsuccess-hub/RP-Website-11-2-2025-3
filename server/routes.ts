@@ -46,7 +46,7 @@ import {
   aiPromptTemplates,
   sceneTemplates,
 } from "@shared/schema";
-import { eq, and, asc, inArray, or, isNull } from "drizzle-orm";
+import { eq, and, asc, desc, inArray, or, isNull } from "drizzle-orm";
 import { buildLayoutPrompt, buildRefineSectionPrompt } from "./services/promptBuilder";
 import { generateLayoutFromPrompt } from "./services/layoutGenerator";
 import { RefinementPipeline } from "./utils/refinement-pipeline";
@@ -81,6 +81,360 @@ const DEFAULT_DIRECTOR_CONFIG = {
   colors: { background: "#000000", text: "#FFFFFF" },
   transition: "fade",
 };
+
+type PipelineStageStatus = "pending" | "running" | "succeeded" | "failed";
+
+interface PipelineStageState {
+  key: string;
+  label: string;
+  status: PipelineStageStatus;
+  startedAt?: string;
+  completedAt?: string;
+  error?: string;
+}
+
+const PIPELINE_STAGE_DEFINITIONS: Array<{ key: string; label: string }> = [
+  { key: "stage1_initial", label: "Stage 1: Initial Generation" },
+  { key: "stage2_self_audit", label: "Stage 2: Self-Audit" },
+  { key: "stage3_improvements", label: "Stage 3: Generate Improvements" },
+  { key: "stage4_auto_fix", label: "Stage 4: Auto-Apply Fixes" },
+  { key: "stage5_regeneration", label: "Stage 5: Final Regeneration" },
+  { key: "stage6_validation", label: "Stage 6: Final Validation" },
+];
+
+const HEX_COLOR_REGEX = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
+
+const journeyBrandSchema = z.object({
+  logoUrl: z.string().url().optional().nullable(),
+  colors: z.object({
+    primary: z.string().regex(HEX_COLOR_REGEX, "Invalid hex color").optional(),
+    secondary: z.string().regex(HEX_COLOR_REGEX, "Invalid hex color").optional(),
+    accent: z.string().regex(HEX_COLOR_REGEX, "Invalid hex color").optional(),
+    neutral: z.string().regex(HEX_COLOR_REGEX, "Invalid hex color").optional(),
+  }).partial().optional(),
+  componentLibrary: z.string().optional(),
+  assetPlan: z.array(z.object({
+    assetId: z.string(),
+    label: z.string().optional(),
+    sectionKey: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+  })).optional(),
+});
+
+const sectionPlanItemSchema = z.object({
+  sectionKey: z.string().min(1),
+  label: z.string().min(1).optional(),
+  featureType: z.string().min(1),
+  orderIndex: z.number().int().nonnegative().optional(),
+  enablePerSectionPrompt: z.boolean().optional(),
+  prompt: z.string().optional(),
+  featureConfig: z.record(z.any()).optional(),
+  selectedAssets: z.array(z.object({
+    assetId: z.string(),
+    label: z.string().optional(),
+  })).optional(),
+  metrics: z.record(z.any()).optional(),
+});
+
+const sectionPlanPayloadSchema = z.object({
+  sections: z.array(sectionPlanItemSchema).min(1, "At least one section is required"),
+});
+
+const sectionPromptSchema = z.object({
+  sectionKey: z.string().min(1),
+  prompt: z.string().min(1),
+});
+
+const pipelineStartSchema = z.object({
+  prompt: z.string().min(1, "Prompt is required"),
+  autoContinue: z.boolean().optional().default(true),
+  sectionPrompts: z.array(sectionPromptSchema).optional(),
+});
+
+function createInitialStageStates(): PipelineStageState[] {
+  const now = new Date().toISOString();
+  return PIPELINE_STAGE_DEFINITIONS.map((stage, index) => ({
+    ...stage,
+    status: index === 0 ? "running" : "pending",
+    startedAt: index === 0 ? now : undefined,
+    completedAt: undefined,
+    error: undefined,
+  }));
+}
+
+async function mutatePipelineRunStages(
+  runId: string,
+  mutateStages: (stages: PipelineStageState[]) => PipelineStageState[],
+  options?: {
+    status?: string;
+    currentStageIndex?: number;
+    latestVersionNumber?: number;
+    metadataPatch?: Record<string, any>;
+    completedAt?: Date;
+  }
+) {
+  const [run] = await db
+    .select()
+    .from(portfolioPipelineRuns)
+    .where(eq(portfolioPipelineRuns.id, runId))
+    .limit(1);
+
+  if (!run) return null;
+
+  const baseStages: PipelineStageState[] = Array.isArray(run.stages) && run.stages.length > 0
+    ? run.stages as PipelineStageState[]
+    : PIPELINE_STAGE_DEFINITIONS.map((stage) => ({ ...stage, status: "pending" as PipelineStageStatus }));
+
+  const updatedStages = mutateStages(baseStages.map((stage) => ({ ...stage })));
+  const metadata = options?.metadataPatch
+    ? { ...(run.metadata || {}), ...options.metadataPatch }
+    : run.metadata;
+
+  const updatePayload: Record<string, any> = {
+    stages: updatedStages,
+    updatedAt: new Date(),
+  };
+
+  if (options?.status) updatePayload.status = options.status;
+  if (typeof options?.currentStageIndex === "number") updatePayload.currentStageIndex = options.currentStageIndex;
+  if (typeof options?.latestVersionNumber === "number") updatePayload.latestVersionNumber = options.latestVersionNumber;
+  if (options?.completedAt) updatePayload.completedAt = options.completedAt;
+  if (options?.metadataPatch) updatePayload.metadata = metadata;
+
+  const [updated] = await db
+    .update(portfolioPipelineRuns)
+    .set(updatePayload)
+    .where(eq(portfolioPipelineRuns.id, runId))
+    .returning();
+
+  return updated;
+}
+
+async function getNextVersionNumber(projectId: string) {
+  const latest = await db
+    .select({ version: portfolioVersions.versionNumber })
+    .from(portfolioVersions)
+    .where(eq(portfolioVersions.projectId, projectId))
+    .orderBy(desc(portfolioVersions.versionNumber))
+    .limit(1);
+
+  return ((latest[0]?.version as number) || 0) + 1;
+}
+
+function buildBrandPayload(project: any) {
+  return {
+    title: project?.title,
+    clientName: project?.clientName,
+    logoUrl: project?.brandLogoUrl,
+    colors: project?.brandColors || {},
+    componentLibrary: project?.componentLibrary || "shadcn",
+  };
+}
+
+function buildDraftPayload(
+  sections: any[],
+  assetPlan: any[],
+  prompt: string,
+  sectionPrompts?: Array<{ sectionKey: string; prompt: string }>
+) {
+  const sectionPromptMap = new Map(sectionPrompts?.map((entry) => [entry.sectionKey, entry.prompt]));
+  return {
+    prompt,
+    structure: sections.map((section) => section.sectionKey),
+    features: sections.map((section) => ({
+      sectionKey: section.sectionKey,
+      featureType: section.featureType,
+      label: section.label,
+      config: section.featureConfig || {},
+      enablePerSectionPrompt: !!section.enablePerSectionPrompt,
+      prompt: sectionPromptMap.get(section.sectionKey) || section.prompt,
+    })),
+    assetPlan: assetPlan || [],
+  };
+}
+
+function kickOffBackgroundPipeline({
+  runId,
+  projectId,
+  pipeline,
+  initialScenes,
+  issuesSeed,
+}: {
+  runId: string;
+  projectId: string;
+  pipeline: RefinementPipeline;
+  initialScenes: any[];
+  issuesSeed?: any[];
+}) {
+  setImmediate(async () => {
+    let scenes = initialScenes;
+    let issues = issuesSeed || [];
+    let improvements: any[] = [];
+
+    let activeStageKey: string | null = null;
+    try {
+      // Stage 2
+      activeStageKey = "stage2_self_audit";
+      await mutatePipelineRunStages(runId, (stages) =>
+        stages.map((stage) =>
+          stage.key === "stage2_self_audit"
+            ? { ...stage, status: "running", startedAt: new Date().toISOString(), error: undefined }
+            : stage
+        ), { currentStageIndex: 1 }
+      );
+
+      issues = await pipeline.stage2_selfAudit(scenes);
+
+      await mutatePipelineRunStages(
+        runId,
+        (stages) =>
+          stages.map((stage) => {
+            if (stage.key === "stage2_self_audit") {
+              return { ...stage, status: "succeeded", completedAt: new Date().toISOString() };
+            }
+            if (stage.key === "stage3_improvements") {
+              return { ...stage, status: "running", startedAt: new Date().toISOString(), error: undefined };
+            }
+            return stage;
+          }),
+        {
+          currentStageIndex: 2,
+          metadataPatch: { stage2Issues: issues.length },
+        }
+      );
+
+      // Stage 3
+      activeStageKey = "stage3_improvements";
+      improvements = await pipeline.stage3_generateImprovements(scenes, issues);
+
+      await mutatePipelineRunStages(
+        runId,
+        (stages) =>
+          stages.map((stage) => {
+            if (stage.key === "stage3_improvements") {
+              return { ...stage, status: "succeeded", completedAt: new Date().toISOString() };
+            }
+            if (stage.key === "stage4_auto_fix") {
+              return { ...stage, status: "running", startedAt: new Date().toISOString(), error: undefined };
+            }
+            return stage;
+          }),
+        {
+          currentStageIndex: 3,
+          metadataPatch: { stage3Improvements: improvements.length },
+        }
+      );
+
+      // Stage 4
+      activeStageKey = "stage4_auto_fix";
+      scenes = await pipeline.stage4_autoApplyFixes(scenes, improvements);
+
+      await mutatePipelineRunStages(
+        runId,
+        (stages) =>
+          stages.map((stage) => {
+            if (stage.key === "stage4_auto_fix") {
+              return { ...stage, status: "succeeded", completedAt: new Date().toISOString() };
+            }
+            if (stage.key === "stage5_regeneration") {
+              return { ...stage, status: "running", startedAt: new Date().toISOString(), error: undefined };
+            }
+            return stage;
+          }),
+        { currentStageIndex: 4 }
+      );
+
+      // Stage 5
+      activeStageKey = "stage5_regeneration";
+      scenes = await pipeline.stage5_finalRegeneration(scenes, issues);
+
+      await mutatePipelineRunStages(
+        runId,
+        (stages) =>
+          stages.map((stage) => {
+            if (stage.key === "stage5_regeneration") {
+              return { ...stage, status: "succeeded", completedAt: new Date().toISOString() };
+            }
+            if (stage.key === "stage6_validation") {
+              return { ...stage, status: "running", startedAt: new Date().toISOString(), error: undefined };
+            }
+            return stage;
+          }),
+        { currentStageIndex: 5 }
+      );
+
+      // Stage 6
+      activeStageKey = "stage6_validation";
+      const validation = await pipeline.stage6_finalValidation(scenes);
+
+      await mutatePipelineRunStages(
+        runId,
+        (stages) =>
+          stages.map((stage) =>
+            stage.key === "stage6_validation"
+              ? { ...stage, status: "succeeded", completedAt: new Date().toISOString() }
+              : stage
+          ),
+        {
+          currentStageIndex: PIPELINE_STAGE_DEFINITIONS.length - 1,
+          metadataPatch: {
+            confidenceScore: validation.confidenceScore,
+            confidenceFactors: validation.confidenceFactors,
+          },
+        }
+      );
+
+      const finalVersionNumber = await getNextVersionNumber(projectId);
+
+      const [finalVersion] = await db
+        .insert(portfolioVersions)
+        .values({
+          projectId,
+          pipelineRunId: runId,
+          stageKey: "stage6_validation",
+          versionNumber: finalVersionNumber,
+          scenesJson: scenes,
+          confidenceScore: validation.confidenceScore,
+          confidenceFactors: validation.confidenceFactors,
+          changeDescription: "Stage 6: Final Validation",
+        })
+        .returning();
+
+      await mutatePipelineRunStages(
+        runId,
+        (stages) => stages,
+        {
+          status: "completed",
+          latestVersionNumber: finalVersion.versionNumber,
+          completedAt: new Date(),
+        }
+      );
+
+      console.log('[Pipeline Run] Completed', {
+        runId,
+        projectId,
+        finalVersion: finalVersion.versionNumber,
+        confidence: validation.confidenceScore,
+        totalStages: PIPELINE_STAGE_DEFINITIONS.length,
+      });
+    } catch (error) {
+      const failedStageKey = activeStageKey || "stage6_validation";
+
+      await mutatePipelineRunStages(
+        runId,
+        (stages) =>
+          stages.map((stage) =>
+            stage.key === failedStageKey
+              ? { ...stage, status: "failed", error: error instanceof Error ? error.message : "Unknown error", completedAt: new Date().toISOString() }
+              : stage
+          ),
+        { status: "failed" }
+      );
+
+      console.error(`[Pipeline Run ${runId}] Failed at ${failedStageKey}:`, error);
+    }
+  });
+}
 
 // COMMENTED OUT - Using external URLs instead of file uploads
 // Configure multer for memory storage (files will be uploaded to Cloudinary)
@@ -410,6 +764,399 @@ export async function registerRoutes(app: Express): Promise<void> {
     } catch (err) {
       console.error("Brand settings error:", err);
       res.status(500).json({ error: "Failed to save brand settings" });
+    }
+  });
+
+  // Journey orchestration helpers
+  const fetchProjectForTenant = async (tenantId: string, projectId: string) => {
+    const [project] = await db
+      .select()
+      .from(projects)
+      .where(and(eq(projects.tenantId, tenantId), eq(projects.id, projectId)))
+      .limit(1);
+    return project;
+  };
+
+  app.get("/api/projects/:projectId/journey", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const { projectId } = req.params;
+      const project = await fetchProjectForTenant(tenantId, projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      const sections = await db
+        .select()
+        .from(projectSectionPlans)
+        .where(eq(projectSectionPlans.projectId, projectId))
+        .orderBy(asc(projectSectionPlans.orderIndex));
+
+      const pipelineRunsList = await db
+        .select()
+        .from(portfolioPipelineRuns)
+        .where(eq(portfolioPipelineRuns.projectId, projectId))
+        .orderBy(desc(portfolioPipelineRuns.createdAt))
+        .limit(5);
+
+      const versions = await db
+        .select()
+        .from(portfolioVersions)
+        .where(eq(portfolioVersions.projectId, projectId))
+        .orderBy(desc(portfolioVersions.versionNumber))
+        .limit(5);
+
+      return res.json({
+        project,
+        sections,
+        pipelineRuns: pipelineRunsList,
+        versions,
+      });
+    } catch (error) {
+      console.error("Journey fetch error:", error);
+      return res.status(500).json({ error: "Failed to load journey state" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/brand", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const { projectId } = req.params;
+      const project = await fetchProjectForTenant(tenantId, projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      const result = journeyBrandSchema.safeParse(req.body);
+      if (!result.success) {
+        const validationError = fromZodError(result.error);
+        return res.status(400).json({ error: "Validation failed", details: validationError.message });
+      }
+
+      const payload: Record<string, any> = {};
+      if ("logoUrl" in result.data) payload.brandLogoUrl = result.data.logoUrl ?? null;
+      if (result.data.colors) payload.brandColors = result.data.colors;
+      if (result.data.componentLibrary) payload.componentLibrary = result.data.componentLibrary;
+      if (result.data.assetPlan) payload.assetPlan = result.data.assetPlan;
+
+      if (Object.keys(payload).length === 0) {
+        return res.status(400).json({ error: "No brand fields provided" });
+      }
+
+      const [updated] = await db
+        .update(projects)
+        .set(payload)
+        .where(eq(projects.id, projectId))
+        .returning();
+
+      return res.json({
+        project: updated,
+      });
+    } catch (error) {
+      console.error("Brand update error:", error);
+      return res.status(500).json({ error: "Failed to update brand configuration" });
+    }
+  });
+
+  app.put("/api/projects/:projectId/sections", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const { projectId } = req.params;
+      const project = await fetchProjectForTenant(tenantId, projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      const parsed = sectionPlanPayloadSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const validationError = fromZodError(parsed.error);
+        return res.status(400).json({ error: "Validation failed", details: validationError.message });
+      }
+
+      await db
+        .delete(projectSectionPlans)
+        .where(eq(projectSectionPlans.projectId, projectId));
+
+      const inserts = parsed.data.sections.map((section, index) => ({
+        projectId,
+        sectionKey: section.sectionKey,
+        label: section.label ?? section.sectionKey,
+        featureType: section.featureType,
+        featureConfig: section.featureConfig || {},
+        orderIndex: section.orderIndex ?? index,
+        enablePerSectionPrompt: section.enablePerSectionPrompt ?? false,
+        prompt: section.prompt ?? null,
+        selectedAssets: section.selectedAssets || [],
+        metrics: section.metrics || null,
+      }));
+
+      if (inserts.length > 0) {
+        await db.insert(projectSectionPlans).values(inserts);
+      }
+
+      const sections = await db
+        .select()
+        .from(projectSectionPlans)
+        .where(eq(projectSectionPlans.projectId, projectId))
+        .orderBy(asc(projectSectionPlans.orderIndex));
+
+      return res.json({ sections });
+    } catch (error) {
+      console.error("Section planner error:", error);
+      return res.status(500).json({ error: "Failed to save sections" });
+    }
+  });
+
+  app.get("/api/projects/:projectId/pipeline-runs", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const { projectId } = req.params;
+      const project = await fetchProjectForTenant(tenantId, projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      const runs = await db
+        .select()
+        .from(portfolioPipelineRuns)
+        .where(eq(portfolioPipelineRuns.projectId, projectId))
+        .orderBy(desc(portfolioPipelineRuns.createdAt))
+        .limit(10);
+
+      return res.json({ runs });
+    } catch (error) {
+      console.error("Pipeline run list error:", error);
+      return res.status(500).json({ error: "Failed to load pipeline runs" });
+    }
+  });
+
+  app.get("/api/projects/:projectId/pipeline-runs/:runId", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const { projectId, runId } = req.params;
+      const project = await fetchProjectForTenant(tenantId, projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      const [run] = await db
+        .select()
+        .from(portfolioPipelineRuns)
+        .where(and(
+          eq(portfolioPipelineRuns.projectId, projectId),
+          eq(portfolioPipelineRuns.id, runId)
+        ))
+        .limit(1);
+
+      if (!run) {
+        return res.status(404).json({ error: "Pipeline run not found" });
+      }
+
+      return res.json({ run });
+    } catch (error) {
+      console.error("Pipeline run fetch error:", error);
+      return res.status(500).json({ error: "Failed to load pipeline run" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/pipeline-runs", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const { projectId } = req.params;
+      const project = await fetchProjectForTenant(tenantId, projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      const sections = await db
+        .select()
+        .from(projectSectionPlans)
+        .where(eq(projectSectionPlans.projectId, projectId))
+        .orderBy(asc(projectSectionPlans.orderIndex));
+
+      if (sections.length === 0) {
+        return res.status(400).json({ error: "Configure at least one section before running the pipeline" });
+      }
+
+      if (!process.env.AI_INTEGRATIONS_GEMINI_API_KEY) {
+        return res.status(500).json({ error: "Gemini API key not configured" });
+      }
+
+      const parsed = pipelineStartSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const validationError = fromZodError(parsed.error);
+        return res.status(400).json({ error: "Validation failed", details: validationError.message });
+      }
+
+      const stageStates = createInitialStageStates();
+      const initialStatus = parsed.data.autoContinue ? "running" : "paused";
+
+      const [pipelineRun] = await db
+        .insert(portfolioPipelineRuns)
+        .values({
+          projectId,
+          status: initialStatus,
+          stages: stageStates,
+          currentStageIndex: 0,
+          totalStages: PIPELINE_STAGE_DEFINITIONS.length,
+          metadata: { prompt: parsed.data.prompt, autoContinue: parsed.data.autoContinue },
+        })
+        .returning();
+
+      console.log('[Pipeline Run] Started', {
+        runId: pipelineRun.id,
+        projectId,
+        promptLength: parsed.data.prompt.length,
+        sectionPrompts: parsed.data.sectionPrompts?.length || 0,
+      });
+
+      const pipeline = new RefinementPipeline(process.env.AI_INTEGRATIONS_GEMINI_API_KEY);
+      const brandPayload = buildBrandPayload(project);
+      const draftPayload = buildDraftPayload(
+        sections,
+        project.assetPlan || [],
+        parsed.data.prompt,
+        parsed.data.sectionPrompts
+      );
+
+      let stage1Scenes: any[] = [];
+      try {
+        stage1Scenes = await pipeline.stage1_initialGeneration(brandPayload, draftPayload);
+      } catch (error) {
+        await mutatePipelineRunStages(
+          pipelineRun.id,
+          (stages) =>
+            stages.map((stage) =>
+              stage.key === "stage1_initial"
+                ? { ...stage, status: "failed", error: error instanceof Error ? error.message : "Stage 1 failed", completedAt: new Date().toISOString() }
+                : stage
+            ),
+          { status: "failed" }
+        );
+        throw error;
+      }
+
+      const stage1VersionNumber = await getNextVersionNumber(projectId);
+
+      const [version] = await db
+        .insert(portfolioVersions)
+        .values({
+          projectId,
+          pipelineRunId: pipelineRun.id,
+          stageKey: "stage1_initial",
+          versionNumber: stage1VersionNumber,
+          scenesJson: stage1Scenes,
+          changeDescription: "Stage 1: Initial Generation",
+        })
+        .returning();
+
+      const updatedRun = await mutatePipelineRunStages(
+        pipelineRun.id,
+        (stages) =>
+          stages.map((stage) => {
+            if (stage.key === "stage1_initial") {
+              return { ...stage, status: "succeeded", completedAt: new Date().toISOString() };
+            }
+            return stage;
+          }),
+        {
+          status: parsed.data.autoContinue ? "running" : "paused",
+          currentStageIndex: 1,
+          latestVersionNumber: stage1VersionNumber,
+        }
+      );
+
+      if (parsed.data.autoContinue) {
+        kickOffBackgroundPipeline({
+          runId: pipelineRun.id,
+          projectId,
+          pipeline,
+          initialScenes: stage1Scenes,
+        });
+      }
+
+      console.log('[Pipeline Run] Stage 1 complete', {
+        runId: pipelineRun.id,
+        versionNumber: version.versionNumber,
+        stageKey: version.stageKey,
+        scenes: Array.isArray(stage1Scenes) ? stage1Scenes.length : 0,
+      });
+
+      return res.status(202).json({
+        pipelineRun: updatedRun,
+        version,
+      });
+    } catch (error) {
+      console.error("Pipeline start error:", error);
+      return res.status(500).json({
+        error: "Failed to start pipeline",
+        details: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
+  app.post("/api/projects/:projectId/pipeline-runs/:runId/resume", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const { projectId, runId } = req.params;
+      const project = await fetchProjectForTenant(tenantId, projectId);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      if (!process.env.AI_INTEGRATIONS_GEMINI_API_KEY) {
+        return res.status(500).json({ error: "Gemini API key not configured" });
+      }
+
+      const [run] = await db
+        .select()
+        .from(portfolioPipelineRuns)
+        .where(and(eq(portfolioPipelineRuns.projectId, projectId), eq(portfolioPipelineRuns.id, runId)))
+        .limit(1);
+
+      if (!run) {
+        return res.status(404).json({ error: "Pipeline run not found" });
+      }
+
+      if (run.status !== "paused") {
+        return res.status(400).json({ error: "Pipeline run is not paused" });
+      }
+
+      const [stage1Version] = await db
+        .select()
+        .from(portfolioVersions)
+        .where(and(eq(portfolioVersions.pipelineRunId, runId), eq(portfolioVersions.stageKey, "stage1_initial")))
+        .orderBy(desc(portfolioVersions.versionNumber))
+        .limit(1);
+
+      if (!stage1Version) {
+        return res.status(400).json({ error: "Stage 1 data missing; cannot resume" });
+      }
+
+      const pipeline = new RefinementPipeline(process.env.AI_INTEGRATIONS_GEMINI_API_KEY);
+
+      await mutatePipelineRunStages(
+        runId,
+        (stages) =>
+          stages.map((stage) =>
+            stage.key === "stage2_self_audit"
+              ? { ...stage, status: "running", startedAt: new Date().toISOString(), error: undefined }
+              : stage
+          ),
+        { status: "running" }
+      );
+
+      kickOffBackgroundPipeline({
+        runId,
+        projectId,
+        pipeline,
+        initialScenes: stage1Version.scenesJson,
+      });
+
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Pipeline resume error:", error);
+      return res.status(500).json({ error: "Failed to resume pipeline" });
     }
   });
 
@@ -2612,8 +3359,13 @@ Your explanation should be conversational and reference specific scene numbers.`
       console.error("Error testing prompt:", error);
       return res.status(500).json({
         error: "Failed to test prompt",
-        // Media Library Routes
-        app.get("/api/media-library", requireAuth, async (req: Request, res: Response) => {
+        details: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
+  // Media Library Routes
+  app.get("/api/media-library", requireAuth, async (req: Request, res: Response) => {
           try {
             const tenantId = req.tenantId || DEFAULT_TENANT_ID;
             const projectId = req.query.projectId as string | undefined;

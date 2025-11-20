@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean, integer, json, jsonb, unique, uniqueIndex, index, bigint } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, integer, json, jsonb, unique, uniqueIndex, index, bigint, AnyPgColumn } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { nanoid } from 'nanoid';
@@ -238,21 +238,6 @@ export const assessmentAnswers = pgTable("assessment_answers", {
   order: integer("order").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-
-export const portfolioVersions = pgTable("portfolio_versions", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
-  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
-  versionNumber: integer("version_number").notNull(),
-  scenesJson: jsonb("scenes_json").notNull(),
-  confidenceScore: integer("confidence_score"),
-  confidenceFactors: jsonb("confidence_factors"),
-  changeDescription: text("change_description"),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (table) => ({
-  projectIdx: index("idx_portfolio_versions_project").on(table.projectId),
-  createdIdx: index("idx_portfolio_versions_created").on(table.createdAt),
-  uniqueVersion: unique().on(table.projectId, table.versionNumber),
-}));
 
 // Scene Templates - Reusable scene configurations
 export const sceneTemplates = pgTable("scene_templates", {
@@ -737,6 +722,19 @@ export const projects = pgTable("projects", {
   modalMediaUrls: text("modal_media_urls").array(), // Array of Cloudinary URLs
   testimonialText: text("testimonial_text"),
   testimonialAuthor: text("testimonial_author"),
+  brandLogoUrl: text("brand_logo_url"),
+  brandColors: jsonb("brand_colors").$type<{
+    primary?: string;
+    secondary?: string;
+    accent?: string;
+    neutral?: string;
+  }>().default(sql`'{}'::jsonb`),
+  componentLibrary: text("component_library").default("shadcn"),
+  assetPlan: jsonb("asset_plan").$type<Array<{
+    assetId: string;
+    label?: string;
+    sectionKey?: string;
+  }>>().default(sql`'[]'::jsonb`),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -758,6 +756,66 @@ export const projectScenes = pgTable("project_scenes", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
   projectIdIdx: index("project_scenes_project_id_idx").on(table.projectId),
+}));
+
+export const projectSectionPlans = pgTable("project_section_plans", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  sectionKey: text("section_key").notNull(),
+  label: text("label"),
+  featureType: text("feature_type").notNull(),
+  featureConfig: jsonb("feature_config").$type<Record<string, any>>().default(sql`'{}'::jsonb`),
+  orderIndex: integer("order_index").default(0).notNull(),
+  enablePerSectionPrompt: boolean("enable_per_section_prompt").default(false).notNull(),
+  prompt: text("prompt"),
+  selectedAssets: jsonb("selected_assets").$type<Array<{ assetId: string; label?: string }>>().default(sql`'[]'::jsonb`),
+  metrics: jsonb("metrics").$type<Record<string, any>>(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  projectIdx: index("idx_project_section_plans_project").on(table.projectId),
+  uniqueSection: unique().on(table.projectId, table.sectionKey),
+}));
+
+export const portfolioPipelineRuns = pgTable("portfolio_pipeline_runs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  status: text("status").default("pending").notNull(),
+  stages: jsonb("stages").$type<Array<{
+    key: string;
+    label: string;
+    status: "pending" | "running" | "succeeded" | "failed";
+    startedAt?: string;
+    completedAt?: string;
+    error?: string;
+  }>>().default(sql`'[]'::jsonb`),
+  currentStageIndex: integer("current_stage_index").default(0),
+  totalStages: integer("total_stages").default(6),
+  latestVersionNumber: integer("latest_version_number"),
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  metadata: jsonb("metadata").$type<Record<string, any>>().default(sql`'{}'::jsonb`),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  projectIdx: index("idx_portfolio_pipeline_runs_project").on(table.projectId),
+}));
+
+export const portfolioVersions = pgTable("portfolio_versions", {
+  id: text("id").primaryKey().default(sql`gen_random_uuid()::text`),
+  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  pipelineRunId: text("pipeline_run_id").references(() => portfolioPipelineRuns.id, { onDelete: "set null" }),
+  stageKey: text("stage_key"),
+  versionNumber: integer("version_number").notNull(),
+  scenesJson: jsonb("scenes_json").notNull(),
+  confidenceScore: integer("confidence_score"),
+  confidenceFactors: jsonb("confidence_factors"),
+  changeDescription: text("change_description"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  projectIdx: index("idx_portfolio_versions_project").on(table.projectId),
+  createdIdx: index("idx_portfolio_versions_created").on(table.createdAt),
+  uniqueVersion: unique().on(table.projectId, table.versionNumber),
 }));
 
 // AI-powered scene generation prompt templates
@@ -833,6 +891,23 @@ export const insertProjectSchema = createInsertSchema(projects).omit({
     (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
     z.string().nullable().optional()
   ),
+  brandLogoUrl: z.preprocess(
+    (val) => (!val || (typeof val === 'string' && val.trim() === '') ? null : val),
+    z.string().url().nullable().optional()
+  ),
+  brandColors: z.object({
+    primary: z.string().optional(),
+    secondary: z.string().optional(),
+    accent: z.string().optional(),
+    neutral: z.string().optional(),
+  }).partial().optional(),
+  componentLibrary: z.string().optional(),
+  assetPlan: z.array(z.object({
+    assetId: z.string(),
+    label: z.string().optional(),
+    sectionKey: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+  })).optional(),
 });
 
 export const updateProjectSchema = insertProjectSchema.partial();
@@ -1209,6 +1284,10 @@ export type UpdatePromptTemplate = z.infer<typeof updatePromptTemplateSchema>;
 
 export type PortfolioVersion = typeof portfolioVersions.$inferSelect;
 export type InsertPortfolioVersion = typeof portfolioVersions.$inferInsert;
+export type ProjectSectionPlan = typeof projectSectionPlans.$inferSelect;
+export type InsertProjectSectionPlan = typeof projectSectionPlans.$inferInsert;
+export type PortfolioPipelineRun = typeof portfolioPipelineRuns.$inferSelect;
+export type InsertPortfolioPipelineRun = typeof portfolioPipelineRuns.$inferInsert;
 
 export const insertSceneTemplateSchema = createInsertSchema(sceneTemplates)
   .omit({
@@ -1335,7 +1414,7 @@ export const apiKeys = pgTable("api_keys", {
   createdBy: varchar("created_by", { length: 255 }).references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   rotatedAt: timestamp("rotated_at"),
-  rotatedFrom: varchar("rotated_from", { length: 255 }).references(() => apiKeys.id),
+  rotatedFrom: varchar("rotated_from", { length: 255 }).references((): AnyPgColumn => apiKeys.id),
 });
 
 export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
@@ -1348,7 +1427,7 @@ export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
 
 export const apiKeyUsageLogs = pgTable("api_key_usage_logs", {
   id: varchar("id", { length: 255 }).primaryKey().notNull().default(sql`gen_random_uuid()`),
-  apiKeyId: varchar("api_key_id", { length: 255 }).notNull().references(() => apiKeys.id, { onDelete: 'cascade' }),
+  apiKeyId: varchar("api_key_id", { length: 255 }).notNull().references((): AnyPgColumn => apiKeys.id, { onDelete: 'cascade' }),
   endpoint: text("endpoint").notNull(),
   method: varchar("method", { length: 10 }).notNull(),
   ipAddress: varchar("ip_address", { length: 45 }),
