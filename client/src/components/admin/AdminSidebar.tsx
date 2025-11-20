@@ -38,11 +38,6 @@ const menuItems = [
     icon: Palette,
   },
   {
-    title: "AI Layout Wizard",
-    url: "/admin/wizard",
-    icon: Wand2,
-  },
-  {
     title: "Media Library",
     url: "/admin/media-library",
     icon: Upload,
@@ -54,7 +49,7 @@ const menuItems = [
   },
   {
     title: "Default AI Prompts",
-    url: "/admin/ai-prompts",
+    url: "/admin/ai-prompt-settings",
     icon: Sparkles,
   },
   {

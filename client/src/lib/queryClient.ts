@@ -1,10 +1,76 @@
-import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { QueryClient, QueryFunction, type QueryKey } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
     throw new Error(`${res.status}: ${text}`);
   }
+}
+
+function buildRequestUrl(queryKey: QueryKey): string {
+  if (typeof queryKey === "string") {
+    return queryKey;
+  }
+
+  if (!Array.isArray(queryKey)) {
+    return String(queryKey ?? "");
+  }
+
+  const searchParams = new URLSearchParams();
+  const pathSegments: string[] = [];
+  let absoluteBase = "";
+
+  for (const segment of queryKey) {
+    if (segment === undefined || segment === null || segment === "") {
+      continue;
+    }
+
+    if (typeof segment === "object" && !Array.isArray(segment)) {
+      for (const [key, value] of Object.entries(segment)) {
+        if (value === undefined || value === null || value === "") {
+          continue;
+        }
+
+        if (Array.isArray(value)) {
+          value.forEach((entry) => {
+            if (entry !== undefined && entry !== null && entry !== "") {
+              searchParams.append(key, String(entry));
+            }
+          });
+        } else {
+          searchParams.append(key, String(value));
+        }
+      }
+      continue;
+    }
+
+    const value = Array.isArray(segment) ? segment.join("/") : String(segment);
+    if (!value) {
+      continue;
+    }
+
+    if (!absoluteBase && value.startsWith("http")) {
+      absoluteBase = value.replace(/\/$/, "");
+    } else {
+      pathSegments.push(value);
+    }
+  }
+
+  let path = pathSegments.join("/");
+
+  if (absoluteBase) {
+    const normalizedPath = path.replace(/^\/*/, "");
+    path = normalizedPath ? `${absoluteBase}/${normalizedPath}` : absoluteBase;
+  } else if (path && !path.startsWith("/")) {
+    path = `/${path}`;
+  }
+
+  const paramsString = searchParams.toString();
+  if (paramsString) {
+    path += path.includes("?") ? `&${paramsString}` : `?${paramsString}`;
+  }
+
+  return path || "/";
 }
 
 export async function apiRequest(
@@ -48,7 +114,8 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    const requestUrl = buildRequestUrl(queryKey);
+    const res = await fetch(requestUrl, {
       credentials: "include",
     });
 
