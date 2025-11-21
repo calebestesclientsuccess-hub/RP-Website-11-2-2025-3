@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -31,13 +31,21 @@ import { useToast } from "@/hooks/use-toast";
 
 interface DynamicFormProps {
   config: FormConfig;
-  onSubmit?: (data: Record<string, any>) => void;
+  onSubmit?: (data: Record<string, any>) => Promise<void> | void;
   className?: string;
   theme?: "light" | "dark" | "auto";
   size?: "small" | "medium" | "large";
+  initialValues?: Record<string, any>;
 }
 
-export function DynamicForm({ config, onSubmit, className, theme, size }: DynamicFormProps) {
+export function DynamicForm({
+  config,
+  onSubmit,
+  className,
+  theme,
+  size,
+  initialValues,
+}: DynamicFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const { toast } = useToast();
@@ -114,13 +122,22 @@ export function DynamicForm({ config, onSubmit, className, theme, size }: Dynami
     }, {} as Record<string, z.ZodTypeAny>)
   );
 
-  const form = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues: config.fields.reduce((acc, field) => {
+  const defaultValues = useMemo(() => {
+    const baseValues = config.fields.reduce((acc, field) => {
       acc[field.name] = field.type === "checkbox" ? false : "";
       return acc;
-    }, {} as Record<string, any>),
+    }, {} as Record<string, any>);
+    return { ...baseValues, ...(initialValues || {}) };
+  }, [config.fields, initialValues]);
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues,
   });
+
+  useEffect(() => {
+    form.reset(defaultValues);
+  }, [defaultValues, form]);
 
   const handleSubmit = async (data: Record<string, any>) => {
     setIsSubmitting(true);

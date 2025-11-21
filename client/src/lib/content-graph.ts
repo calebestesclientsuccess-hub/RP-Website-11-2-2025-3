@@ -54,7 +54,7 @@ export const contentGraph = {
   gtmEngine: [
     {
       title: "Schedule Your GTM Audit",
-      href: "/gtm-audit",
+      href: "/audit",
       description: "Get a custom GTM architecture designed for your business"
     },
     {
@@ -73,7 +73,7 @@ export const contentGraph = {
   results: [
     {
       title: "Schedule Your GTM Audit",
-      href: "/gtm-audit",
+      href: "/audit",
       description: "Start building your own GTM Engine"
     },
     {
@@ -111,7 +111,7 @@ export const contentGraph = {
   assessment: [
     {
       title: "Schedule GTM Audit",
-      href: "/gtm-audit",
+      href: "/audit",
       description: "Work with our architects to build your engine"
     },
     {
@@ -130,7 +130,7 @@ export const contentGraph = {
   pricing: [
     {
       title: "Schedule Discovery Call",
-      href: "/gtm-audit",
+      href: "/audit",
       description: "Discuss your GTM architecture needs"
     },
     {
@@ -149,7 +149,7 @@ export const contentGraph = {
   resources: [
     {
       title: "Schedule GTM Audit",
-      href: "/gtm-audit",
+      href: "/audit",
       description: "Get expert guidance on your GTM strategy"
     },
     {

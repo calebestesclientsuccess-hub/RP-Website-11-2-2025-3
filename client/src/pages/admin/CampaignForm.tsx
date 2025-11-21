@@ -18,6 +18,7 @@ import {
   insertCampaignSchema,
   type Campaign,
   type AssessmentConfig,
+  type CampaignVariant,
   calculatorConfigSchema,
   formConfigSchema,
   type CalculatorInput,
@@ -128,25 +129,27 @@ export default function CampaignForm() {
   const [targetPages, setTargetPages] = useState<string[]>(["home"]);
   const [allPagesChecked, setAllPagesChecked] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      campaignName: "",
-      contentType: "calculator",
-      displayAs: "inline",
-      displaySize: "standard",
-      targetZone: "zone-1",
-      isActive: true,
-      widgetConfig: "",
-      theme: "auto",
-      size: "medium",
-      overlayOpacity: 50,
-      dismissible: true,
-      animation: "fade",
-      targetPages: ["home"],
-      seoMetadata: "",
-    },
-  });
+const form = useForm<z.infer<typeof formSchema>>({
+  resolver: zodResolver(formSchema),
+  defaultValues: {
+    campaignName: "",
+    contentType: "calculator",
+    displayAs: "inline",
+    displaySize: "standard",
+    targetZone: "zone-1",
+    isActive: true,
+    widgetConfig: "",
+    theme: "auto",
+    size: "medium",
+    overlayOpacity: 50,
+    dismissible: true,
+    animation: "fade",
+    targetPages: ["home"],
+    seoMetadata: "",
+  },
+});
+const [variantJson, setVariantJson] = useState("");
+const [variantError, setVariantError] = useState<string | null>(null);
 
   const contentType = form.watch("contentType");
   const displayAs = form.watch("displayAs");
@@ -156,7 +159,25 @@ export default function CampaignForm() {
   // Helper function to build payload, assuming it's defined elsewhere or needs to be added.
   // For now, we'll assume it exists and takes the form data.
   // If it doesn't exist, this would be a point of failure.
-  const buildPayload = (data: z.infer<typeof formSchema>) => data;
+const buildPayload = (data: z.infer<typeof formSchema>) => {
+  let variantsPayload: CampaignVariant[] = [];
+  if (variantJson.trim()) {
+    try {
+      variantsPayload = JSON.parse(variantJson);
+      setVariantError(null);
+    } catch (error) {
+      setVariantError("Variants JSON must be valid JSON.");
+      throw new Error("Invalid variants JSON");
+    }
+  } else {
+    setVariantError(null);
+  }
+
+  return {
+    ...data,
+    variants: variantsPayload,
+  };
+};
 
 
   useEffect(() => {
@@ -177,6 +198,14 @@ export default function CampaignForm() {
       const pages = campaign.targetPages || ["home"];
       setTargetPages(pages);
       setAllPagesChecked(pages.includes("all"));
+
+      setVariantJson(
+        JSON.stringify(
+          campaign.variants && campaign.variants.length > 0 ? campaign.variants : [],
+          null,
+          2
+        )
+      );
 
       form.reset({
         campaignName: campaign.campaignName,
@@ -1875,6 +1904,36 @@ export default function CampaignForm() {
                     </CardContent>
                   </Card>
                 )}
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Variant Testing</CardTitle>
+                  <CardDescription>
+                    Paste a JSON array of variants to run weighted A/B tests. Each variant supports
+                    <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">id</code>,
+                    <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">label</code>,
+                    <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">weight</code>,
+                    optional <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">widgetConfig</code>, and
+                    <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">seoMetadata</code>.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Textarea
+                    value={variantJson}
+                    onChange={(event) => setVariantJson(event.target.value)}
+                    rows={8}
+                    placeholder='[{"id":"variant-a","label":"Hero CTA A","weight":1,"seoMetadata":{"metaTitle":"A/B Variant Title","metaDescription":"Unique description"}}]'
+                  />
+                  {variantError && (
+                    <p className="text-sm text-destructive" data-testid="text-variant-error">
+                      {variantError}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty to disable testing. Weights default to 1 when omitted.
+                  </p>
+                </CardContent>
+              </Card>
 
                     <div className="flex gap-4">
                       <Button

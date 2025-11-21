@@ -4,6 +4,7 @@
 - Give builders a single linear flow: brand setup → asset prep → section/feature planning → staged AI prompting → preview + version control.
 - Reuse existing admin surfaces (AI Layout Wizard, Portfolio Builder, Media Library) where possible, but eliminate context switching.
 - Ensure every step persists to backend tables so Gemini prompts have deterministic context.
+- Keep brand identity canonical: wizard + builder share the same layered palette, logo, component library, and asset plan so the first portfolio feels “done” immediately.
 
 ### Current Building Blocks
 - `Wizard.tsx`: multi-step shell already supports brand colors, asset upload, structure list, and polling for refinements.
@@ -40,12 +41,14 @@
 ### Current Implementation Highlights (Nov 2025)
 - **Brand & Asset Sheet** now lives inside `PortfolioBuilder.tsx`. Once a project exists, admins can:
   - Upload logos directly to the media library (`/api/media-library/upload`) and bind them to the active project.
-  - Manage component library + four-color palette with validation.
-  - Curate an `assetPlan` by toggling tenant assets inline—no context switching to the Media Library screen.
+  - Manage a 1–5 layer palette via the shared `ColorLayerEditor`, which enforces primary/secondary requirements while letting users rank usage (background/text/accent/neutral). The same editor powers both the inline Step 2 card and the Brand sheet so changes stay in sync.
+  - See inline `AssetStatusIndicator` feedback plus a “Commit Assets” action that immediately persists references to `/api/projects/:id/brand`, eliminating the old 900 ms auto-save race.
+  - Curate an `assetPlan` by toggling tenant assets inline—no context switching to the Media Library screen—and know exactly when the save finished.
 - **Section & Feature Planner** sits beneath the project setup accordion. Each section row lets users:
   - Name/slug sections, assign feature templates (CTA, assessment, ebook, hero, etc.).
   - Toggle per-section prompts and capture the instruction snippet that rides along with the pipeline request.
   - Persist the plan via `PUT /api/projects/:projectId/sections`, which hydrates the new `project_section_plans` table.
+- **Step-aware Builder Header** now shows “Step X of 7” progress, keeps “Share” + “Brand & Assets” as the only primary buttons, and tucks every other utility (guided tour, dev JSON panel toggle, preview toggle) inside a `Builder Tools` dropdown so the run/commit buttons feel magical instead of overwhelming.
 - **Staged Prompt Runner** exposes the six-stage Gemini pipeline:
   - Users author a global prompt, optionally leveraging the per-section prompts they configured.
   - `/api/projects/:id/pipeline-runs` kicks off Stage 1 synchronously (returning Version 1 JSON) and streams Stages 2-6 in the background.
@@ -54,6 +57,9 @@
 - **Version Timeline & Preview Hooks**
   - Journey responses now include the five most recent `portfolio_versions` rows (stage key, confidence, scenes).
   - Selecting a version updates both `previewScenes` and the raw JSON editor, effectively acting as a rollback/light diff surface.
+- **Wizard → Builder Hand-off**:
+  - The streamlined `/api/portfolio/generate` flow now creates a project with a layered palette derived from the selected archetype. When users jump into `/admin/portfolio-builder?projectId=...`, Step 2 already lists the prioritized colors and Step 3 defaults to the same `shadcn/ui` library, so their “first build” feels instantaneous instead of redundant.
+  - Wizard-run projects immediately show up in “Recent Projects,” allowing builders to continue refinement without repeating any setup.
 
 ### Testing & Telemetry Checklist
 - **Manual walk-through**

@@ -437,7 +437,7 @@ export default function WhyRevPartyPage() {
               Stop choosing between bad options. Schedule an audit with our Architects and let's design a system that wins.
             </p>
             <Button size="lg" className="text-lg px-8 py-6 shadow-lg" data-testid="button-cta-schedule" asChild>
-              <Link href="/gtm-audit">Schedule My GTM Audit</Link>
+              <Link href="/audit">Schedule My GTM Audit</Link>
             </Button>
           </div>
         </section>

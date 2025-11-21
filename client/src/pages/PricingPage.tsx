@@ -270,7 +270,7 @@ export default function PricingPage() {
                     variant={plan.isMostPopular ? "default" : "outline"}
                     data-testid={`button-select-${plan.id}`}
                   >
-                    <Link href="/gtm-audit">
+                    <Link href="/audit">
                       {plan.id === 'enterprise' ? 'Contact Sales' : 'Get Started'}
                     </Link>
                   </Button>
@@ -284,7 +284,7 @@ export default function PricingPage() {
               Not sure which plan is right for you?
             </p>
             <Button asChild variant="outline" data-testid="button-schedule-audit">
-              <Link href="/gtm-audit">Schedule a Free GTM Audit</Link>
+              <Link href="/audit">Schedule a Free GTM Audit</Link>
             </Button>
           </div>
         </div>
@@ -483,7 +483,7 @@ export default function PricingPage() {
             className="text-lg px-8 py-6"
             data-testid="button-final-cta"
           >
-            <Link href="/gtm-audit">Schedule My GTM Audit</Link>
+            <Link href="/audit">Schedule My GTM Audit</Link>
           </Button>
           <p className="text-sm text-muted-foreground mt-4">
             No-obligation consultation • Free GTM Leverage Audit • Custom blueprint

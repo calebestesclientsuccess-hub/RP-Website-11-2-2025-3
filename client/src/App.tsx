@@ -85,7 +85,10 @@ const MediaLibraryLazy = lazy(() => import("@/pages/admin/MediaLibrary").catch(e
   return { default: () => <div className="p-8 text-center">Failed to load Media Library. Please refresh the page.</div> };
 }));
 const TemplateLibraryLazy = lazy(() => import("@/pages/admin/TemplateLibrary"));
+const UnifiedCreatorLazy = lazy(() => import("@/pages/admin/UnifiedCreator"));
 const ProjectSceneEditorLazy = lazy(() => import("@/pages/admin/ProjectSceneEditor"));
+const FieldManagerLazy = lazy(() => import("@/pages/admin/FieldManager"));
+const CrmWorkspaceLazy = lazy(() => import("@/pages/admin/CrmWorkspace"));
 
 // Loading fallback component
 function PageLoadingFallback() {
@@ -138,7 +141,10 @@ const AIPromptSettings = withLazyLoading(AIPromptSettingsLazy);
 const PortfolioPromptManager = withLazyLoading(PortfolioPromptManagerLazy);
 const MediaLibrary = withLazyLoading(MediaLibraryLazy);
 const TemplateLibrary = withLazyLoading(TemplateLibraryLazy);
+const UnifiedCreator = withLazyLoading(UnifiedCreatorLazy);
 const ProjectSceneEditor = withLazyLoading(ProjectSceneEditorLazy);
+const FieldManager = withLazyLoading(FieldManagerLazy);
+const CrmWorkspace = withLazyLoading(CrmWorkspaceLazy);
 function RedirectToBuilder() {
   const [, navigate] = useLocation();
   useEffect(() => {
@@ -227,6 +233,9 @@ function Router() {
         <Route path="/admin/ai-prompt-settings" component={AIPromptSettings} />
         <Route path="/admin/media-library" component={MediaLibrary} />
         <Route path="/admin/template-library" component={TemplateLibrary} />
+        <Route path="/admin/crm/fields" component={FieldManager} />
+        <Route path="/admin/crm/workspace" component={CrmWorkspace} />
+        <Route path="/admin/create" component={UnifiedCreator} />
         <Route path="/admin/job-postings/new" component={JobPostingForm} />
         <Route path="/admin/job-postings/:id/edit" component={JobPostingForm} />
         <Route path="/admin/widget-config" component={WidgetConfigPage} />

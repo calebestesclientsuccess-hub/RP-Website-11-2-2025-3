@@ -1,4 +1,4 @@
-import { pgTable, serial, text, jsonb, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, jsonb, varchar, timestamp } from 'drizzle-orm/pg-core';
 import { InferModel } from 'drizzle-orm';
 
 export const brandSettings = pgTable('brand_settings', {
@@ -7,8 +7,8 @@ export const brandSettings = pgTable('brand_settings', {
   logoUrl: text('logo_url'),
   colors: jsonb('colors'), // { primary: '#...', secondary: '#...' }
   componentLibrary: varchar('component_library', { length: 50 }),
-  createdAt: text('created_at').defaultNow(),
-  updatedAt: text('updated_at').defaultNow(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 export type BrandSettings = InferModel<typeof brandSettings>;

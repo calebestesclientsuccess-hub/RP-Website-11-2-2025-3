@@ -21,3 +21,11 @@ export const leadLimiter = rateLimit({
   max: 3, // limit lead submissions
   message: 'Too many submissions, please try again later.',
 });
+
+export const aiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10,
+  message: 'Too many AI generation requests. Please wait a moment and try again.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});

@@ -24,7 +24,7 @@ import { Helmet } from "react-helmet-async";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useLocation, useRoute } from "wouter";
-import { Loader2, Link as LinkIcon, Lightbulb } from "lucide-react";
+import { Loader2, Link as LinkIcon, Lightbulb, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { BlogPost, InsertBlogPost } from "@shared/schema";
 import { insertBlogPostSchema } from "@shared/schema";
@@ -34,12 +34,31 @@ import { z } from "zod";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { useEffect, useState } from "react";
 
+const preprocessEmptyString = <T,>(schema: z.ZodType<T>) =>
+  z.preprocess((value) => {
+    if (typeof value === "string" && value.trim() === "") {
+      return undefined;
+    }
+    return value;
+  }, schema);
+
 const formSchema = insertBlogPostSchema.extend({
   title: z.string().min(1, "Title is required"),
   slug: z.string().min(1, "Slug is required"),
   excerpt: z.string().min(1, "Excerpt is required"),
   content: z.string().min(1, "Content is required"),
   author: z.string().min(1, "Author is required"),
+  metaTitle: preprocessEmptyString(
+    z.string().max(60, "Meta title must be under 60 characters").optional()
+  ),
+  metaDescription: preprocessEmptyString(
+    z
+      .string()
+      .min(50, "Meta description should be at least 50 characters")
+      .max(160, "Meta description must be under 160 characters")
+      .optional()
+  ),
+  canonicalUrl: preprocessEmptyString(z.string().url("Enter a valid URL").optional()),
   status: z.enum(["draft", "scheduled", "published"]),
 });
 
@@ -125,6 +144,7 @@ export default function BlogPostForm() {
   const [match, params] = useRoute("/admin/blog-posts/:id/edit");
   const isEdit = !!match;
   const postId = params?.id;
+  const [isGeneratingSeo, setIsGeneratingSeo] = useState(false);
 
   const style = {
     "--sidebar-width": "16rem",
@@ -147,6 +167,9 @@ export default function BlogPostForm() {
       featuredImage: "",
       videoUrl: "",
       category: "",
+    metaTitle: "",
+    metaDescription: "",
+    canonicalUrl: "",
       scheduledFor: undefined,
       published: false,
       status: "draft",
@@ -170,6 +193,9 @@ export default function BlogPostForm() {
         featuredImage: post.featuredImage || "",
         videoUrl: post.videoUrl || "",
         category: post.category || "",
+        metaTitle: post.metaTitle || "",
+        metaDescription: post.metaDescription || "",
+        canonicalUrl: post.canonicalUrl || "",
         scheduledFor: post.scheduledFor || undefined,
         published: post.published,
         status,
@@ -180,7 +206,6 @@ export default function BlogPostForm() {
   const title = form.watch("title");
   const status = form.watch("status");
   const content = form.watch("content");
-  const setContent = form.setValue("content", _, true);
 
   useEffect(() => {
     if (title && !isEdit) {
@@ -234,11 +259,61 @@ export default function BlogPostForm() {
     },
   });
 
+  const handleGenerateSeo = async () => {
+    const body = form.getValues("content");
+    if (!body || body.trim().length === 0) {
+      toast({
+        title: "Content required",
+        description: "Add content before generating SEO copy.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingSeo(true);
+    try {
+      const aiResponse = await apiRequest("POST", "/api/ai/text", {
+        brandVoice: "Revenue Party authoritative, data-driven, confident",
+        topic: form.getValues("title") || "Revenue Party GTM Playbook",
+        type: "seo-metadata",
+        content: body,
+      });
+      const metadata = await aiResponse.json();
+      if (metadata.slug) {
+        form.setValue("slug", slugify(metadata.slug), { shouldDirty: true });
+      }
+      if (metadata.metaTitle) {
+        form.setValue("metaTitle", metadata.metaTitle, { shouldDirty: true });
+      }
+      if (metadata.metaDescription) {
+        form.setValue("metaDescription", metadata.metaDescription, { shouldDirty: true });
+      }
+      toast({
+        title: "SEO suggestions ready",
+        description: "Slug and metadata updated with AI recommendations.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Failed to generate SEO copy",
+        description: error?.message || "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingSeo(false);
+    }
+  };
+
   const onSubmit = (data: FormValues) => {
     const { status: statusField, ...rest } = data;
+    const metaTitle = rest.metaTitle?.trim();
+    const metaDescription = rest.metaDescription?.trim();
+    const canonicalUrl = rest.canonicalUrl?.trim();
 
     const postData: Partial<InsertBlogPost> = {
       ...rest,
+      metaTitle: metaTitle || undefined,
+      metaDescription: metaDescription || undefined,
+      canonicalUrl: canonicalUrl || undefined,
       published: statusField === "published",
       scheduledFor: statusField === "scheduled" ? rest.scheduledFor : undefined,
     };
@@ -336,6 +411,103 @@ export default function BlogPostForm() {
                         </FormItem>
                       )}
                     />
+
+                    <div className="rounded-lg border p-4 space-y-4">
+                      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <h3 className="text-base font-semibold">SEO Metadata</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Provide a compelling SERP snippet or let AI generate one for you.
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={handleGenerateSeo}
+                          disabled={isGeneratingSeo}
+                          data-testid="button-generate-seo"
+                        >
+                          {isGeneratingSeo ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Generate SEO
+                            </>
+                          )}
+                        </Button>
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="metaTitle"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Meta Title</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                value={field.value || ""}
+                                placeholder="GTM Engine: Deploy Elite Pods in 45 Days"
+                                data-testid="input-meta-title"
+                              />
+                            </FormControl>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {(field.value?.length ?? 0)}/60 characters
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="metaDescription"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Meta Description</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                value={field.value || ""}
+                                rows={3}
+                                placeholder="Build a GTM engine that multiplies pipeline 3-5x in 90 days..."
+                                data-testid="textarea-meta-description"
+                              />
+                            </FormControl>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {(field.value?.length ?? 0)}/160 characters
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="canonicalUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Canonical URL</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                value={field.value || ""}
+                                placeholder="https://revenueparty.com/blog/gtm-engine"
+                                data-testid="input-canonical-url"
+                              />
+                            </FormControl>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Leave blank to use the live URL automatically.
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
                     <FormField
                       control={form.control}

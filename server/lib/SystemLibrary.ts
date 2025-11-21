@@ -8,39 +8,12 @@
  */
 
 import { nanoid } from 'nanoid';
-
-// Types matching the schema structure
-interface DirectorConfig {
-  // Animation & Timing
-  entryDuration?: number;
-  exitDuration?: number;
-  entryDelay?: number;
-  exitDelay?: number;
-  backgroundColor?: string;
-  textColor?: string;
-  gradientColors?: string[];
-  gradientDirection?: string;
-  
-  // Typography
-  headingSize?: "4xl" | "5xl" | "6xl" | "7xl" | "8xl";
-  bodySize?: "base" | "lg" | "xl" | "2xl";
-  fontWeight?: "normal" | "medium" | "semibold" | "bold";
-  alignment?: "left" | "center" | "right";
-  
-  // Scroll Effects
-  scrollSpeed?: "slow" | "normal" | "fast";
-  parallaxIntensity?: number;
-  animationDuration?: number;
-  animationEasing?: string;
-  fadeOnScroll?: boolean;
-  scaleOnScroll?: boolean;
-  blurOnScroll?: boolean;
-}
+import type { DirectorConfig } from '@shared/schema';
 
 interface SceneConfig {
   type: "text" | "image" | "video" | "split" | "gallery" | "quote" | "fullscreen";
   content: any;
-  director?: DirectorConfig;
+  director?: Partial<DirectorConfig>;
 }
 
 export interface SystemTemplate {

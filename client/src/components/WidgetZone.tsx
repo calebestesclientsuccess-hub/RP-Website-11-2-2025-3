@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Helmet } from "react-helmet-async";
 import DOMPurify from "dompurify";
@@ -14,7 +14,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { trackEvent } from "@/lib/trackEvent";
 import { useCampaigns, getCampaignsCacheKey, getTenantId } from "@/lib/campaignCache";
 import { filterCampaigns, getZoneFallback } from "@/lib/filterCampaigns";
-import type { Campaign, CalculatorConfig, FormConfig, SeoMetadata } from "@shared/schema";
+import type { Campaign, CalculatorConfig, FormConfig, SeoMetadata, CampaignVariant } from "@shared/schema";
 import { cn } from "@/lib/utils";
 import { PopupEngine } from "./PopupEngine";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -78,6 +78,21 @@ const getPageNames = (path: string): string[] => {
   }
 
   return names;
+};
+
+const getVariantStorageKey = (campaignId: string) => `campaign_variant_${campaignId}`;
+
+const pickVariant = (variants: CampaignVariant[]): CampaignVariant => {
+  const totalWeight = variants.reduce((sum, variant) => sum + (variant.weight ?? 1), 0);
+  const threshold = Math.random() * totalWeight;
+  let cumulative = 0;
+  for (const variant of variants) {
+    cumulative += variant.weight ?? 1;
+    if (threshold <= cumulative) {
+      return variant;
+    }
+  }
+  return variants[0];
 };
 
 // Get display size CSS classes based on campaign.displaySize
@@ -151,6 +166,29 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
   // Get the first matching campaign (or null if none)
   const campaign = allCampaigns?.[0] || null;
 
+  const activeVariant = useMemo(() => {
+    if (!campaign?.variants || campaign.variants.length === 0) {
+      return null;
+    }
+    if (typeof window === "undefined") {
+      return campaign.variants[0];
+    }
+    try {
+      const storageKey = getVariantStorageKey(campaign.id);
+      const storedVariantId = window.sessionStorage.getItem(storageKey);
+      const storedVariant = campaign.variants.find((variant) => variant.id === storedVariantId);
+      if (storedVariant) {
+        return storedVariant;
+      }
+      const chosen = pickVariant(campaign.variants);
+      window.sessionStorage.setItem(storageKey, chosen.id);
+      return chosen;
+    } catch (error) {
+      console.warn("[WidgetZone] Failed to select variant, using default.", error);
+      return campaign.variants[0];
+    }
+  }, [campaign?.id, campaign?.variants]);
+
   // Derive display size and minHeight from multiple sources (priority order):
   // 1. Live campaign data (if available)
   // 2. Cached campaign data (read synchronously)
@@ -190,10 +228,11 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
       trackEvent('campaign_viewed', campaign.id, {
         zone,
         page: currentPage,
-        contentType: campaign.contentType
+        contentType: campaign.contentType,
+        variantId: activeVariant?.id,
       });
     }
-  }, [campaign?.id, zone, currentPage, campaign?.contentType]);
+  }, [campaign?.id, zone, currentPage, campaign?.contentType, activeVariant?.id]);
 
   // Handle loading state - show skeleton with deterministic dimensions to prevent layout shift
   if (isLoading) {
@@ -211,11 +250,13 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
     return null;
   }
 
+  const widgetConfigSource = activeVariant?.widgetConfig ?? campaign.widgetConfig;
+
   // Parse widgetConfig if it exists (stored as JSON string)
   let parsedConfig: any = null;
-  if (campaign.widgetConfig) {
+  if (widgetConfigSource) {
     try {
-      parsedConfig = JSON.parse(campaign.widgetConfig);
+      parsedConfig = JSON.parse(widgetConfigSource);
     } catch (error) {
       console.error(`[WidgetZone] Error parsing widgetConfig for campaign ${campaign.id}:`, error);
       return null;
@@ -230,6 +271,9 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
     } catch (error) {
       console.error(`[WidgetZone] Error parsing seoMetadata for campaign ${campaign.id}:`, error);
     }
+  }
+  if (activeVariant?.seoMetadata) {
+    seoMetadata = { ...(seoMetadata || {}), ...activeVariant.seoMetadata };
   }
 
   // Handle form submission for DynamicForm
@@ -255,7 +299,8 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
         campaignName: campaign.campaignName,
         zone,
         page: currentPage,
-        contentType: campaign.contentType
+        contentType: campaign.contentType,
+        variantId: activeVariant?.id,
       });
 
       // Invalidate lead captures cache

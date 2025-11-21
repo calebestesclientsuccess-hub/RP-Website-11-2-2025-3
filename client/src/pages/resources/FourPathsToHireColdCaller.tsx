@@ -258,8 +258,8 @@ export default function FourPathsToHireColdCaller() {
           <p className="mb-6 text-sm">
             The Sprint is priced at $2,000/hour, preceded by a free 1-hour GTM Audit to ensure you qualify.
           </p>
-          <Button variant="default" data-testid="button-gtm-audit">
-            Book Your Free GTM Audit Hour
+          <Button variant="default" data-testid="button-audit" asChild>
+            <Link href="/audit">Book Your Free GTM Audit Hour</Link>
           </Button>
         </div>
 

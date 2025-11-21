@@ -72,6 +72,10 @@ import sitemapRouter from './routes/sitemap';
 import internalLinkingRouter from './routes/internal-linking';
 import relatedContentRouter from './routes/related-content';
 import analyticsRouter from './routes/analytics';
+import leadsRouter from './routes/leads';
+import aiGenerationRouter from './routes/ai-generation';
+import crmRouter from './routes/crm';
+import { requireAuth } from './middleware/auth';
 
 
 // Define default director configuration for new scenes
@@ -481,12 +485,8 @@ const mediaUpload = multer({
 });
 
 // Middleware to check if user is authenticated
-function requireAuth(req: Request, res: Response, next: NextFunction) {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-  next();
-}
+// requireAuth is now imported from ./middleware/auth
+
 
 /**
  * Generate a unique slug from a title for assessment configs
@@ -3359,8 +3359,13 @@ Your explanation should be conversational and reference specific scene numbers.`
       console.error("Error testing prompt:", error);
       return res.status(500).json({
         error: "Failed to test prompt",
-        // Media Library Routes
-        app.get("/api/media-library", requireAuth, async (req: Request, res: Response) => {
+        details: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
+  // Media Library Routes
+  app.get("/api/media-library", requireAuth, async (req: Request, res: Response) => {
           try {
             const tenantId = req.tenantId || DEFAULT_TENANT_ID;
             const projectId = req.query.projectId as string | undefined;
@@ -4665,7 +4670,6 @@ RESPONSE FORMAT:
                   modalMediaUrls: catalog.videos.map(v => v.url) || [],
                   testimonialText: catalog.testimonial?.text || null,
                   testimonialAuthor: catalog.testimonial?.author || null,
-                  description: `AI-generated portfolio based on catalog. ${portfolioResult.scenes.length} scenes generated.`,
                 }).returning();
                 finalProjectId = newProject.id;
                 console.log(`[Portfolio AI] Created new project: ${finalProjectId}`);
@@ -4796,6 +4800,9 @@ RESPONSE FORMAT:
         app.use(internalLinkingRouter);
         app.use(relatedContentRouter);
         app.use(analyticsRouter);
+        app.use('/api', leadsRouter);
+        app.use('/api', aiGenerationRouter);
+        app.use('/api', crmRouter);
 
         return;
       }

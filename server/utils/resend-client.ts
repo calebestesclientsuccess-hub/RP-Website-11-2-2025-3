@@ -3,6 +3,14 @@ import { Resend } from 'resend';
 let connectionSettings: any;
 
 async function getCredentials() {
+  // 1. Check for direct API Key (Vercel/Local)
+  if (process.env.RESEND_API_KEY) {
+    return { 
+      apiKey: process.env.RESEND_API_KEY, 
+      fromEmail: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev' 
+    };
+  }
+
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY
     ? 'repl ' + process.env.REPL_IDENTITY
@@ -11,6 +19,14 @@ async function getCredentials() {
     : null;
 
   if (!xReplitToken) {
+    // Return null or throw if neither env var nor Replit token exists
+    // But original code threw error.
+    // Let's keep throwing if we can't find credentials.
+    if (!process.env.RESEND_API_KEY) {
+       // If we are here, RESEND_API_KEY is missing AND we might be on Replit.
+       // If hostname is missing, we definitely can't use Replit.
+       if (!hostname) throw new Error('Resend API Key not configured (RESEND_API_KEY)');
+    }
     throw new Error('X_REPLIT_TOKEN not found for repl/depl');
   }
 

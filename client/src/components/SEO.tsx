@@ -17,8 +17,23 @@ export function SEO({
   keywords = "GTM system, sales development, BDR pod, revenue generation, pipeline growth"
 }: SEOProps) {
   const siteUrl = 'https://revenueparty.com';
-  const fullCanonical = canonical ? `${siteUrl}${canonical}` : siteUrl;
-  const pathname = canonical || (typeof window !== 'undefined' ? window.location.pathname : '/');
+  const canonicalIsAbsolute = canonical?.startsWith('http');
+  let fullCanonical = siteUrl;
+  let pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+
+  if (canonical) {
+    if (canonicalIsAbsolute) {
+      fullCanonical = canonical;
+      try {
+        pathname = new URL(canonical).pathname || pathname;
+      } catch {
+        pathname = canonical;
+      }
+    } else {
+      fullCanonical = `${siteUrl}${canonical}`;
+      pathname = canonical;
+    }
+  }
 
   return (
     <>

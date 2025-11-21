@@ -767,50 +767,36 @@ export default function PortfolioBuilderChatFirst() {
     () => Array.from(new Set(sectionPlan.map((section) => section.featureType))).filter(Boolean) as string[],
     [sectionPlan]
   );
-  const scheduleBrandAutosave = useCallback(
-    (payload: BrandFormState) => {
-      pendingBrandPayloadRef.current = payload;
-      setBrandFormDirty(true);
-      if (brandAutoSaveTimeoutRef.current) {
-        clearTimeout(brandAutoSaveTimeoutRef.current);
-      }
-      brandAutoSaveTimeoutRef.current = setTimeout(async () => {
-        const projectId = await ensureProject();
-        if (!projectId || !pendingBrandPayloadRef.current) {
-          setBrandFormDirty(false);
-          return;
-        }
-        try {
-          const response = await apiRequest("POST", `/api/projects/${projectId}/brand`, pendingBrandPayloadRef.current);
-          if (!response.ok) {
-            throw new Error("Auto-save failed");
-          }
-        } catch (error) {
-          console.error("Brand auto-save error", error);
-          toastWithMood("error", "Auto-save failed", error instanceof Error ? error.message : "Unknown error");
-        } finally {
-          setBrandFormDirty(false);
-          pendingBrandPayloadRef.current = null;
-          if (brandAutoSaveTimeoutRef.current) {
-            clearTimeout(brandAutoSaveTimeoutRef.current);
-          }
-          brandAutoSaveTimeoutRef.current = null;
-        }
-      }, 900);
+
+  // Data fetching
+  const { data: projects } = useQuery<Project[]>({
+    queryKey: ["/api/projects"],
+  });
+
+  const { data: existingProjectScenes, isLoading: isLoadingScenes } = useQuery<any[]>({
+    queryKey: ["/api/projects", selectedProjectId, "scenes", { hydrate: true }],
+    enabled: !isNewProject && !!selectedProjectId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: journeyData, isFetching: isJourneyLoading, refetch: refetchJourney, error: journeyError } = useQuery({
+    queryKey: ["project-journey", selectedProjectId],
+    enabled: !!selectedProjectId && !isNewProject,
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/projects/${selectedProjectId}/journey`);
+      return response.json();
     },
-    [ensureProject, toastWithMood]
-  );
-  const setBrandFormWithAutosave = useCallback<Dispatch<SetStateAction<BrandFormState>>>(
-    (updater) => {
-      setBrandForm((prev) => {
-        const next =
-          typeof updater === "function" ? (updater as (prev: BrandFormState) => BrandFormState)(prev) : updater;
-        scheduleBrandAutosave(next);
-        return next;
-      });
+  });
+
+  const { data: mediaAssets, isFetching: isMediaLoading, refetch: refetchMediaAssets } = useQuery<MediaAsset[]>({
+    queryKey: ["media-library", selectedProjectId],
+    enabled: !!selectedProjectId && !isNewProject,
+    queryFn: async () => {
+      const url = selectedProjectId ? `/api/media-library?projectId=${selectedProjectId}` : "/api/media-library";
+      const response = await apiRequest("GET", url);
+      return response.json();
     },
-    [scheduleBrandAutosave]
-  );
+  });
   const ensureProject = useCallback(
     async (options?: { title?: string; slugHint?: string; client?: string }) => {
       // If we already have a project ID and we're not in "new project" mode, just return it.
@@ -891,6 +877,52 @@ export default function PortfolioBuilderChatFirst() {
       selectedProjectId,
       toastWithMood,
     ]
+  );
+
+  const scheduleBrandAutosave = useCallback(
+    (payload: BrandFormState) => {
+      pendingBrandPayloadRef.current = payload;
+      setBrandFormDirty(true);
+      if (brandAutoSaveTimeoutRef.current) {
+        clearTimeout(brandAutoSaveTimeoutRef.current);
+      }
+      brandAutoSaveTimeoutRef.current = setTimeout(async () => {
+        const projectId = await ensureProject();
+        if (!projectId || !pendingBrandPayloadRef.current) {
+          setBrandFormDirty(false);
+          return;
+        }
+        try {
+          const response = await apiRequest("POST", `/api/projects/${projectId}/brand`, pendingBrandPayloadRef.current);
+          if (!response.ok) {
+            throw new Error("Auto-save failed");
+          }
+        } catch (error) {
+          console.error("Brand auto-save error", error);
+          toastWithMood("error", "Auto-save failed", error instanceof Error ? error.message : "Unknown error");
+        } finally {
+          setBrandFormDirty(false);
+          pendingBrandPayloadRef.current = null;
+          if (brandAutoSaveTimeoutRef.current) {
+            clearTimeout(brandAutoSaveTimeoutRef.current);
+          }
+          brandAutoSaveTimeoutRef.current = null;
+        }
+      }, 900);
+    },
+    [ensureProject, toastWithMood]
+  );
+
+  const setBrandFormWithAutosave = useCallback<Dispatch<SetStateAction<BrandFormState>>>(
+    (updater) => {
+      setBrandForm((prev) => {
+        const next =
+          typeof updater === "function" ? (updater as (prev: BrandFormState) => BrandFormState)(prev) : updater;
+        scheduleBrandAutosave(next);
+        return next;
+      });
+    },
+    [scheduleBrandAutosave]
   );
   
   // AI Chat state with enhanced typing
@@ -984,36 +1016,6 @@ export default function PortfolioBuilderChatFirst() {
       return next;
     });
   }, [toastWithMood]);
-  
-  // Data fetching
-  const { data: projects } = useQuery<Project[]>({
-    queryKey: ["/api/projects"],
-  });
-  
-  const { data: existingProjectScenes, isLoading: isLoadingScenes } = useQuery<any[]>({
-    queryKey: ["/api/projects", selectedProjectId, "scenes", { hydrate: true }],
-    enabled: !isNewProject && !!selectedProjectId,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: journeyData, isFetching: isJourneyLoading, refetch: refetchJourney, error: journeyError } = useQuery({
-    queryKey: ["project-journey", selectedProjectId],
-    enabled: !!selectedProjectId && !isNewProject,
-    queryFn: async () => {
-      const response = await apiRequest("GET", `/api/projects/${selectedProjectId}/journey`);
-      return response.json();
-    },
-  });
-
-  const { data: mediaAssets, isFetching: isMediaLoading, refetch: refetchMediaAssets } = useQuery<MediaAsset[]>({
-    queryKey: ["media-library", selectedProjectId],
-    enabled: !!selectedProjectId && !isNewProject,
-    queryFn: async () => {
-      const url = selectedProjectId ? `/api/media-library?projectId=${selectedProjectId}` : "/api/media-library";
-      const response = await apiRequest("GET", url);
-      return response.json();
-    },
-  });
   
   const style = {
     "--sidebar-width": "16rem",

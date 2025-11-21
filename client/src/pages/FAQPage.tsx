@@ -195,7 +195,7 @@ export default function FAQPage() {
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto" data-testid="text-cta-description">
             The best way to get your specific questions answered is in a GTM Audit. Spend 30 minutes with an Architect to get a transparent, no-obligation blueprint for your business.
           </p>
-          <Link href="/gtm-audit">
+          <Link href="/audit">
             <Button size="lg" data-testid="button-schedule-audit">
               Schedule My GTM Audit
             </Button>

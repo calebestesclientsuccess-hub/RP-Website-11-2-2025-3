@@ -1,4 +1,4 @@
-import { pgTable, serial, text, jsonb, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, jsonb, varchar, timestamp } from 'drizzle-orm/pg-core';
 import { InferModel } from 'drizzle-orm';
 
 export const layoutDrafts = pgTable('layout_drafts', {
@@ -6,8 +6,8 @@ export const layoutDrafts = pgTable('layout_drafts', {
     tenantId: varchar('tenant_id', { length: 36 }).notNull(),
     userId: varchar('user_id', { length: 36 }).notNull(),
     draftJson: jsonb('draft_json'), // stores the intermediate wizard state
-    createdAt: text('created_at').defaultNow(),
-    updatedAt: text('updated_at').defaultNow(),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 export type LayoutDraft = InferModel<typeof layoutDrafts>;

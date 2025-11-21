@@ -1,3 +1,5 @@
+import { MagneticButton } from "@/components/ui/magnetic-button";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -175,23 +177,27 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  size="lg"
-                  className="text-lg px-8 py-6 shadow-lg btn-gradient-text"
-                  data-testid="button-hero-schedule"
-                  asChild
-                >
-                  <Link href="/gtm-audit">Schedule My GTM Audit</Link>
-                </Button>
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="secondary-cta text-lg px-8 py-6"
-                  data-testid="button-hero-take-assessment"
-                  asChild
-                >
-                  <Link href="/assessment">Take Assessment</Link>
-                </Button>
+                <MagneticButton>
+                  <Button
+                    size="lg"
+                    className="text-lg px-8 py-6 shadow-lg btn-gradient-text"
+                    data-testid="button-hero-schedule"
+                    asChild
+                  >
+                    <Link href="/audit">Schedule My GTM Audit</Link>
+                  </Button>
+                </MagneticButton>
+                <MagneticButton strength={0.3}>
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="secondary-cta text-lg px-8 py-6"
+                    data-testid="button-hero-take-assessment"
+                    asChild
+                  >
+                    <Link href="/assessment">Take Assessment</Link>
+                  </Button>
+                </MagneticButton>
               </div>
             </div>
 
@@ -271,7 +277,7 @@ export default function Home() {
               className="flex"
             >
               {/* Card 1: Your Fully Loaded Sales Team */}
-              <div
+              <SpotlightCard
                 role="button"
                 tabIndex={0}
                 aria-expanded={allCardsExpanded}
@@ -285,12 +291,13 @@ export default function Home() {
                   allCardsExpanded && "bg-card/70 border-rose-600/50"
                 )}
                 onClick={toggleAllCards}
-                onKeyDown={(e) => {
+                onKeyDown={(e: any) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     toggleAllCards();
                   }
                 }}
+                spotlightColor="rgba(225, 29, 72, 0.2)"
               >
                 {/* Icon with coordinated glow */}
                 <div className="mb-6 flex justify-center">
@@ -323,13 +330,15 @@ export default function Home() {
                       )}
                     </p>
                   </div>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleAllCards();
                     }}
                     aria-label={allCardsExpanded ? 'Show less information' : 'Read more information'}
-                    className="flex items-center justify-center gap-2 mt-auto pt-3 text-sm font-semibold text-rose-600 hover:text-rose-600/90 transition-all duration-300 hover:gap-3 group/btn touch-manipulation"
+                    className="flex items-center justify-center gap-2 mt-auto pt-3 text-sm font-semibold text-rose-600 hover:text-rose-600/90 transition-all duration-300 hover:gap-3 group/btn touch-manipulation hover:bg-transparent p-0 h-auto"
                   >
                     <span className="relative">
                       {allCardsExpanded ? 'Show less' : 'Read more'}
@@ -339,9 +348,9 @@ export default function Home() {
                       "w-4 h-4 transition-all duration-500 ease-out group-hover/btn:scale-110",
                       allCardsExpanded && 'rotate-180'
                     )} />
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </SpotlightCard>
             </motion.div>
 
             <motion.div
@@ -352,7 +361,7 @@ export default function Home() {
               className="flex"
             >
               {/* Card 2: Your Playbook */}
-              <div
+              <SpotlightCard
                 role="button"
                 tabIndex={0}
                 aria-expanded={allCardsExpanded}
@@ -366,12 +375,13 @@ export default function Home() {
                   allCardsExpanded && "bg-card/70 border-indigo-500/50"
                 )}
                 onClick={toggleAllCards}
-                onKeyDown={(e) => {
+                onKeyDown={(e: any) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     toggleAllCards();
                   }
                 }}
+                spotlightColor="rgba(99, 102, 241, 0.2)"
               >
                 {/* Icon with coordinated glow */}
                 <div className="mb-6 flex justify-center">
@@ -404,13 +414,15 @@ export default function Home() {
                       )}
                     </p>
                   </div>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleAllCards();
                     }}
                     aria-label={allCardsExpanded ? 'Show less information' : 'Read more information'}
-                    className="flex items-center justify-center gap-2 mt-auto pt-3 text-sm font-semibold text-indigo-500 hover:text-indigo-500/90 transition-all duration-300 hover:gap-3 group/btn touch-manipulation"
+                    className="flex items-center justify-center gap-2 mt-auto pt-3 text-sm font-semibold text-indigo-500 hover:text-indigo-500/90 transition-all duration-300 hover:gap-3 group/btn touch-manipulation hover:bg-transparent p-0 h-auto"
                   >
                     <span className="relative">
                       {allCardsExpanded ? 'Show less' : 'Read more'}
@@ -420,9 +432,9 @@ export default function Home() {
                       "w-4 h-4 transition-all duration-500 ease-out group-hover/btn:scale-110",
                       allCardsExpanded && 'rotate-180'
                     )} />
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </SpotlightCard>
             </motion.div>
 
             <motion.div
@@ -433,7 +445,7 @@ export default function Home() {
               className="flex"
             >
               {/* Card 3: Your Signal Factory */}
-              <div
+              <SpotlightCard
                 role="button"
                 tabIndex={0}
                 aria-expanded={allCardsExpanded}
@@ -447,12 +459,13 @@ export default function Home() {
                   allCardsExpanded && "bg-card/70 border-emerald-500/50"
                 )}
                 onClick={toggleAllCards}
-                onKeyDown={(e) => {
+                onKeyDown={(e: any) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     toggleAllCards();
                   }
                 }}
+                spotlightColor="rgba(16, 185, 129, 0.2)"
               >
                 {/* Icon with coordinated glow */}
                 <div className="mb-6 flex justify-center">
@@ -485,13 +498,15 @@ export default function Home() {
                       )}
                     </p>
                   </div>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleAllCards();
                     }}
                     aria-label={allCardsExpanded ? 'Show less information' : 'Read more information'}
-                    className="flex items-center justify-center gap-2 mt-auto pt-3 text-sm font-semibold text-emerald-500 hover:text-emerald-500/90 transition-all duration-300 hover:gap-3 group/btn touch-manipulation"
+                    className="flex items-center justify-center gap-2 mt-auto pt-3 text-sm font-semibold text-emerald-500 hover:text-emerald-500/90 transition-all duration-300 hover:gap-3 group/btn touch-manipulation hover:bg-transparent p-0 h-auto"
                   >
                     <span className="relative">
                       {allCardsExpanded ? 'Show less' : 'Read more'}
@@ -501,9 +516,9 @@ export default function Home() {
                       "w-4 h-4 transition-all duration-500 ease-out group-hover/btn:scale-110",
                       allCardsExpanded && 'rotate-180'
                     )} />
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </SpotlightCard>
             </motion.div>
           </div>
 
@@ -791,7 +806,7 @@ export default function Home() {
               data-testid="button-final-schedule"
               asChild
             >
-              <Link href="/gtm-audit">Schedule My GTM Audit</Link>
+              <Link href="/audit">Schedule My GTM Audit</Link>
             </Button>
 
             {/* Secondary CTA / Lead Magnet Module */}

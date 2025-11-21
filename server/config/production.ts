@@ -6,6 +6,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   SESSION_SECRET: z.string().min(32),
   GEMINI_API_KEY: z.string(),
+  REPLICATE_API_TOKEN: z.string().optional(),
   CLOUDINARY_CLOUD_NAME: z.string(),
   CLOUDINARY_API_KEY: z.string(),
   CLOUDINARY_API_SECRET: z.string(),

@@ -29,15 +29,18 @@ export default function BlogPostPage() {
   }
 
   const htmlContent = DOMPurify.sanitize(marked(post.content) as string);
+  const metaTitle = post.metaTitle?.trim() || `${post.title} | Revenue Party Blog`;
+  const metaDescription = post.metaDescription?.trim() || post.excerpt;
+  const canonicalValue = post.canonicalUrl?.trim() || `/blog/${post.slug}`;
 
   return (
     <>
       <ReadingProgressBar />
       <SEO
-        title={`${post.title} | Revenue Party Blog`}
-        description={post.excerpt}
+        title={metaTitle}
+        description={metaDescription}
         keywords={post.tags?.join(", ")}
-        canonical={`/blog/${post.slug}`}
+        canonical={canonicalValue}
         ogImage={post.featuredImage}
       />
       <ArticleSchema

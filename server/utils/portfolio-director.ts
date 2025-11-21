@@ -1893,7 +1893,7 @@ Scene Sequence to Audit
 
 You previously generated this scene sequence JSON:
 
-${JSON.JSON.stringify(result, null, 2)}
+${JSON.stringify(result, null, 2)}
 
 MANDATORY TECHNICAL AUDIT CHECKLIST (DUAL-TRACK)
 
@@ -2015,7 +2015,7 @@ Valid IDs: ${getAllPlaceholderIds().join(', ')}
   // STAGE 3: Generate 10 Improvements
   const improvementsPrompt = `You previously generated this scene sequence:
 
-${JSON.JSON.stringify(result, null, 2)}
+${JSON.stringify(result, null, 2)}
 
 User requirements from director notes:
 ${catalog.directorNotes}
@@ -2753,8 +2753,10 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
         scene.director = {};
     }
     for (const field in DEFAULT_DIRECTOR_CONFIG) {
-        if (scene.director[field] === undefined) {
-            scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field];
+        const key = field as keyof typeof DEFAULT_DIRECTOR_CONFIG;
+        if (scene.director[key] === undefined) {
+            // @ts-ignore
+            scene.director[key] = DEFAULT_DIRECTOR_CONFIG[key];
         }
     }
 
@@ -2768,8 +2770,9 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 
     // Validate all 37 required controls
     for (const [field, spec] of Object.entries(requiredDirectorControls)) {
+      const key = field as keyof typeof requiredDirectorControls;
       // Get the value, considering that nullable fields might be undefined
-      const value = scene.director[field];
+      const value = scene.director[key];
 
       // Check if field is missing (undefined or null if it's supposed to be non-nullable)
       if (value === undefined || value === null) {
@@ -2778,7 +2781,8 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 
         if (!isNullableField) {
           warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Missing required field '${field}' - applying default`);
-          scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? (spec.type === 'boolean' ? false : spec.type === 'number' ? 0 : '');
+          // @ts-ignore
+          scene.director[key] = DEFAULT_DIRECTOR_CONFIG[key] ?? (spec.type === 'boolean' ? false : spec.type === 'number' ? 0 : '');
           confidenceScore -= 3;
           continue;
         }
@@ -2788,43 +2792,50 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
       // Type validation
       if (spec.type === 'number' && typeof value !== 'number') {
         warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be number, got ${typeof value}. Applying default.`);
-        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? 0; // Default to 0 for numbers
+        // @ts-ignore
+        scene.director[key] = DEFAULT_DIRECTOR_CONFIG[key] ?? 0; // Default to 0 for numbers
         confidenceScore -= 2;
       } else if (spec.type === 'string' && typeof value !== 'string') {
         warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be string, got ${typeof value}. Applying default.`);
-        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? ''; // Default to empty string
+        // @ts-ignore
+        scene.director[key] = DEFAULT_DIRECTOR_CONFIG[key] ?? ''; // Default to empty string
         confidenceScore -= 2;
       } else if (spec.type === 'boolean' && typeof value !== 'boolean') {
         warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' should be boolean, got ${typeof value}. Applying default.`);
-        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? false; // Default to false
+        // @ts-ignore
+        scene.director[key] = DEFAULT_DIRECTOR_CONFIG[key] ?? false; // Default to false
         confidenceScore -= 2;
       }
 
       // Enum validation
-      if (spec.enum && typeof value === 'string' && !spec.enum.includes(value)) {
+      if ('enum' in spec && spec.enum && typeof value === 'string' && !(spec.enum as readonly string[]).includes(value)) {
         warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' has invalid value '${value}'. Must be one of: ${spec.enum.join(', ')}. Applying default.`);
-        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? spec.enum[0]; // Default to first enum value
+        // @ts-ignore
+        scene.director[key] = DEFAULT_DIRECTOR_CONFIG[key] ?? spec.enum[0]; // Default to first enum value
         confidenceScore -= 3;
       }
 
       // Range validation
       if (spec.type === 'number') {
-        if (spec.min !== undefined && value < spec.min) {
+        if ('min' in spec && spec.min !== undefined && typeof value === 'number' && value < spec.min) {
           warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value ${value} is below minimum ${spec.min}. Applying default.`);
-          scene.director[field] = Math.max(value, spec.min); // Clamp to min
+          // @ts-ignore
+          scene.director[key] = Math.max(value, spec.min); // Clamp to min
           confidenceScore -= 2;
         }
-        if (spec.max !== undefined && value > spec.max) {
+        if ('max' in spec && spec.max !== undefined && typeof value === 'number' && value > spec.max) {
           warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value ${value} exceeds maximum ${spec.max}. Applying default.`);
-          scene.director[field] = Math.min(value, spec.max); // Clamp to max
+          // @ts-ignore
+          scene.director[key] = Math.min(value, spec.max); // Clamp to max
           confidenceScore -= 2;
         }
       }
 
       // Pattern validation (for hex colors)
-      if (spec.pattern && typeof value === 'string' && !spec.pattern.test(value)) {
+      if ('pattern' in spec && spec.pattern && typeof value === 'string' && !spec.pattern.test(value)) {
         warnings.push(`Scene ${finalResult.scenes.indexOf(scene) + 1}: Field '${field}' value '${value}' doesn't match required pattern. Applying default.`);
-        scene.director[field] = DEFAULT_DIRECTOR_CONFIG[field] ?? '#000000'; // Default to black
+        // @ts-ignore
+        scene.director[key] = DEFAULT_DIRECTOR_CONFIG[key] ?? '#000000'; // Default to black
         confidenceScore -= 3;
       }
     }
@@ -3253,7 +3264,7 @@ Critical Context:
   ${catalog.directorNotes}
 
 Original Scene JSON:
-${JSON.JSON.stringify(scene, null, 2)}
+${JSON.stringify(scene, null, 2)}
 
 Key Refinement Goals for Split Scenes
 
@@ -3378,7 +3389,7 @@ Critical Context:
   ${catalog.directorNotes}
 
 Original Scene JSON:
-${JSON.JSON.stringify(scene, null, 2)}
+${JSON.stringify(scene, null, 2)}
 
 Key Refinement Goals for Gallery Scenes
 
@@ -3523,7 +3534,7 @@ Critical Context:
   ${catalog.directorNotes}
 
 Original Scene JSON:
-${JSON.JSON.stringify(scene, null, 2)}
+${JSON.stringify(scene, null, 2)}
 
 Key Refinement Goals for Quote Scenes
 
@@ -3619,10 +3630,10 @@ export function buildFullscreenScenePrompt(scene: GeneratedScene, catalog: Conte
   return `You are refining a FULLSCREEN scene (immersive media takeover) for maximum cinematic impact.
 
 CURRENT SCENE CONFIGURATION:
-${JSON.JSON.stringify(scene, null, 2)}
+${JSON.stringify(scene, null, 2)}
 
 AVAILABLE CONTENT CATALOG:
-${JSON.JSON.stringify(catalog, null, 2)}
+${JSON.stringify(catalog, null, 2)}
 
 REFINEMENT GOALS:
 1. **Immersive Entry**: Dramatic zoom-in or dissolve (2.5s+ duration)
@@ -3674,7 +3685,7 @@ export function buildPortfolioCoherencePrompt(scenes: GeneratedScene[], catalog:
   return `You are performing a FINAL COHERENCE CHECK on a complete portfolio sequence.
 
 FULL SCENE SEQUENCE:
-${JSON.JSON.stringify(scenes, null, 2)}
+${JSON.stringify(scenes, null, 2)}
 
 DIRECTOR'S VISION:
 ${catalog.directorNotes}

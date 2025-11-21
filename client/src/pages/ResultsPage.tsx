@@ -315,7 +315,7 @@ export default function ResultsPage() {
               Let's apply these same principles to your business. Schedule a free GTM Audit to get your custom blueprint. Stop renting activity and start building your engine.
             </p>
             <Button size="lg" className="text-lg px-8 py-6 shadow-lg" data-testid="button-cta-schedule" asChild>
-              <Link href="/gtm-audit">Schedule My GTM Audit</Link>
+              <Link href="/audit">Schedule My GTM Audit</Link>
             </Button>
           </div>
         </section>

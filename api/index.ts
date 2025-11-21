@@ -11,9 +11,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     res.setHeader("Content-Type", "application/json");
     res.end(JSON.stringify({
       error: "Internal Server Error",
-      details: err?.message || "Unknown error",
-      stack: process.env.NODE_ENV === "development" ? err?.stack : undefined
+      details: err.message || "Unknown error",
+      stack: process.env.NODE_ENV === "development" ? err.stack : undefined
     }));
   }
 }
-

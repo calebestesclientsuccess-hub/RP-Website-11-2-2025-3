@@ -46,8 +46,6 @@ export default defineConfig({
               'localhost'),
       clientPort: 443,
       timeout: 30000,
-      // Force secure WebSocket
-      secure: true,
     },
   },
 });

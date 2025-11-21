@@ -1,5 +1,5 @@
 
-import { validateMetaDescription, validateAltText } from '../../lib/seo-utils';
+import { validateMetaDescription, validateAltText, extractHeadings } from '../../lib/seo-utils';
 import { Alert, AlertDescription } from '../ui/alert';
 import { CheckCircle2, XCircle } from 'lucide-react';
 
@@ -14,6 +14,25 @@ export function SEOChecklist({ title, description, content, images = [] }: SEOCh
   const descValidation = validateMetaDescription(description);
   const titleLength = title.length;
   const wordCount = content.split(/\s+/).length;
+  const plainText = content.replace(/<[^>]+>/g, ' ');
+  const words = plainText.split(/\s+/).filter(Boolean);
+  const first100Words = words.slice(0, 100).join(' ').toLowerCase();
+  const candidateKeyword = title
+    .toLowerCase()
+    .split(/\s+/)
+    .find((word) => word.length > 4) || title.toLowerCase();
+  const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const keywordRegex = new RegExp(`\\b${escapeRegExp(candidateKeyword)}\\b`, 'g');
+  const keywordMatches = (first100Words.match(keywordRegex) || []).length;
+  const keywordValid = keywordMatches >= 1;
+
+  const headings = extractHeadings(content);
+  const h1Count = headings.filter((heading) => heading.level === 1).length;
+  const headingHierarchyValid = headings.every((heading, index) => {
+    if (index === 0) return true;
+    const previousLevel = headings[index - 1].level;
+    return heading.level - previousLevel <= 1;
+  });
   
   const checks = [
     {
@@ -35,6 +54,21 @@ export function SEOChecklist({ title, description, content, images = [] }: SEOCh
       label: 'All images have valid alt text',
       valid: images.every(img => validateAltText(img.alt)),
       current: `${images.filter(img => validateAltText(img.alt)).length}/${images.length} valid`
+    },
+    {
+      label: 'Exactly one H1 heading',
+      valid: h1Count === 1,
+      current: `${h1Count} H1 tags`
+    },
+    {
+      label: 'Heading hierarchy intact',
+      valid: headingHierarchyValid,
+      current: headingHierarchyValid ? 'No skipped levels' : 'Check heading order'
+    },
+    {
+      label: 'Primary keyword in first 100 words',
+      valid: keywordValid,
+      current: keywordValid ? 'Keyword present' : 'Missing keyword in intro'
     }
   ];
 

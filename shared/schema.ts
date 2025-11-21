@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean, integer, json, jsonb, unique, uniqueIndex, index, bigint } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, integer, json, jsonb, unique, uniqueIndex, index, bigint, AnyPgColumn } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { nanoid } from 'nanoid';
@@ -61,6 +61,9 @@ export const blogPosts = pgTable("blog_posts", {
   publishedAt: timestamp("published_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   published: boolean("published").default(true).notNull(),
+  metaTitle: text("meta_title"),
+  metaDescription: text("meta_description"),
+  canonicalUrl: text("canonical_url"),
 });
 
 export const videoPosts = pgTable("video_posts", {
@@ -381,9 +384,28 @@ export const campaigns = pgTable("campaigns", {
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
   seoMetadata: text("seo_metadata"),
+  variants: jsonb("variants").$type<CampaignVariant[]>().default(sql`'[]'::jsonb`),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const seoIssues = pgTable("seo_issues", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  url: text("url").notNull(),
+  entityType: text("entity_type").notNull(),
+  entityId: text("entity_id"),
+  issueType: text("issue_type").notNull(),
+  severity: text("severity").notNull().default("medium"),
+  status: text("status").notNull().default("open"),
+  details: text("details"),
+  lastChecked: timestamp("last_checked").notNull().defaultNow(),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueIssue: uniqueIndex("seo_issues_unique").on(table.tenantId, table.issueType, table.entityId),
+}));
 
 export const events = pgTable("events", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -409,6 +431,174 @@ export const leads = pgTable("leads", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const companies = pgTable("companies", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  name: text("name").notNull(),
+  domain: text("domain"),
+  industry: text("industry"),
+  website: text("website"),
+  customFields: jsonb("custom_fields").$type<Record<string, any>>().default(sql`'{}'::jsonb`).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  tenantDomainIdx: uniqueIndex("companies_tenant_domain_idx")
+    .on(table.tenantId, table.domain)
+    .where(sql`${table.domain} IS NOT NULL`),
+}));
+
+export const contacts = pgTable("contacts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  companyId: varchar("company_id").references(() => companies.id),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  title: text("title"),
+  customFields: jsonb("custom_fields").$type<Record<string, any>>().default(sql`'{}'::jsonb`).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  tenantEmailIdx: uniqueIndex("contacts_tenant_email_idx").on(table.tenantId, table.email),
+  companyIdx: index("contacts_company_id_idx").on(table.companyId),
+}));
+
+export const customFieldDefinitions = pgTable("custom_field_definitions", {
+  id: varchar("id", { length: 255 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  objectType: text("object_type").notNull(),
+  fieldKey: text("field_key").notNull(),
+  fieldLabel: text("field_label").notNull(),
+  fieldType: text("field_type").notNull(),
+  description: text("description"),
+  required: boolean("required").notNull().default(false),
+  options: jsonb("options").$type<Array<{ label: string; value: string }>>().default(sql`'[]'::jsonb`).notNull(),
+  validation: jsonb("validation").$type<Record<string, any>>().default(sql`'{}'::jsonb`).notNull(),
+  defaultValue: jsonb("default_value").$type<any>(),
+  orderIndex: integer("order_index").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueFieldPerObject: uniqueIndex("custom_field_unique_idx").on(table.tenantId, table.objectType, table.fieldKey),
+  tenantIdx: index("custom_field_tenant_idx").on(table.tenantId),
+}));
+
+export const deals = pgTable("deals", {
+  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  companyId: varchar("company_id", { length: 255 }).references(() => companies.id, { onDelete: "set null" }),
+  contactId: varchar("contact_id", { length: 255 }).references(() => contacts.id, { onDelete: "set null" }),
+  ownerId: varchar("owner_id", { length: 255 }).references(() => users.id, { onDelete: "set null" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  stage: text("stage").notNull().default("qualification"),
+  status: text("status").notNull().default("open"),
+  amount: integer("amount"),
+  currency: text("currency").notNull().default("USD"),
+  probability: integer("probability"),
+  source: text("source"),
+  closeDate: timestamp("close_date"),
+  customFields: jsonb("custom_fields").$type<Record<string, any>>().default(sql`'{}'::jsonb`).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  tenantStatusIdx: index("deals_tenant_status_idx").on(table.tenantId, table.status),
+  companyIdx: index("deals_company_idx").on(table.companyId),
+  contactIdx: index("deals_contact_idx").on(table.contactId),
+  ownerIdx: index("deals_owner_idx").on(table.ownerId),
+}));
+
+export const emails = pgTable("emails", {
+  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  companyId: varchar("company_id", { length: 255 }).references(() => companies.id, { onDelete: "set null" }),
+  contactId: varchar("contact_id", { length: 255 }).references(() => contacts.id, { onDelete: "set null" }),
+  dealId: varchar("deal_id", { length: 255 }).references(() => deals.id, { onDelete: "set null" }),
+  ownerId: varchar("owner_id", { length: 255 }).references(() => users.id, { onDelete: "set null" }),
+  subject: text("subject").notNull(),
+  body: text("body"),
+  direction: text("direction").notNull().default("outbound"),
+  status: text("status").notNull().default("logged"),
+  sentAt: timestamp("sent_at"),
+  customFields: jsonb("custom_fields").$type<Record<string, any>>().default(sql`'{}'::jsonb`).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  tenantIdx: index("emails_tenant_idx").on(table.tenantId, table.direction),
+  contactIdx: index("emails_contact_idx").on(table.contactId),
+  dealIdx: index("emails_deal_idx").on(table.dealId),
+}));
+
+export const phoneCalls = pgTable("phone_calls", {
+  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  companyId: varchar("company_id", { length: 255 }).references(() => companies.id, { onDelete: "set null" }),
+  contactId: varchar("contact_id", { length: 255 }).references(() => contacts.id, { onDelete: "set null" }),
+  dealId: varchar("deal_id", { length: 255 }).references(() => deals.id, { onDelete: "set null" }),
+  ownerId: varchar("owner_id", { length: 255 }).references(() => users.id, { onDelete: "set null" }),
+  callType: text("call_type").notNull().default("outbound"),
+  subject: text("subject"),
+  notes: text("notes"),
+  durationSeconds: integer("duration_seconds"),
+  calledAt: timestamp("called_at"),
+  outcome: text("outcome"),
+  customFields: jsonb("custom_fields").$type<Record<string, any>>().default(sql`'{}'::jsonb`).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  tenantIdx: index("phone_calls_tenant_idx").on(table.tenantId, table.callType),
+  contactIdx: index("phone_calls_contact_idx").on(table.contactId),
+  dealIdx: index("phone_calls_deal_idx").on(table.dealId),
+}));
+
+export const meetings = pgTable("meetings", {
+  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  companyId: varchar("company_id", { length: 255 }).references(() => companies.id, { onDelete: "set null" }),
+  contactId: varchar("contact_id", { length: 255 }).references(() => contacts.id, { onDelete: "set null" }),
+  dealId: varchar("deal_id", { length: 255 }).references(() => deals.id, { onDelete: "set null" }),
+  ownerId: varchar("owner_id", { length: 255 }).references(() => users.id, { onDelete: "set null" }),
+  title: text("title").notNull(),
+  agenda: text("agenda"),
+  meetingType: text("meeting_type"),
+  status: text("status").notNull().default("scheduled"),
+  startTime: timestamp("start_time"),
+  endTime: timestamp("end_time"),
+  location: text("location"),
+  conferencingLink: text("conferencing_link"),
+  customFields: jsonb("custom_fields").$type<Record<string, any>>().default(sql`'{}'::jsonb`).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  tenantIdx: index("meetings_tenant_idx").on(table.tenantId, table.status),
+  contactIdx: index("meetings_contact_idx").on(table.contactId),
+  dealIdx: index("meetings_deal_idx").on(table.dealId),
+}));
+
+export const tasks = pgTable("tasks", {
+  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id", { length: 255 }).notNull().references(() => tenants.id, { onDelete: "cascade" }),
+  companyId: varchar("company_id", { length: 255 }).references(() => companies.id, { onDelete: "set null" }),
+  contactId: varchar("contact_id", { length: 255 }).references(() => contacts.id, { onDelete: "set null" }),
+  dealId: varchar("deal_id", { length: 255 }).references(() => deals.id, { onDelete: "set null" }),
+  ownerId: varchar("owner_id", { length: 255 }).references(() => users.id, { onDelete: "set null" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("open"),
+  priority: text("priority").notNull().default("normal"),
+  dueDate: timestamp("due_date"),
+  completedAt: timestamp("completed_at"),
+  reminderAt: timestamp("reminder_at"),
+  customFields: jsonb("custom_fields").$type<Record<string, any>>().default(sql`'{}'::jsonb`).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  tenantIdx: index("tasks_tenant_idx").on(table.tenantId, table.status),
+  contactIdx: index("tasks_contact_idx").on(table.contactId),
+  dealIdx: index("tasks_deal_idx").on(table.dealId),
+  ownerIdx: index("tasks_owner_idx").on(table.ownerId),
+}));
+
 export const featureFlags = pgTable("feature_flags", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
@@ -419,6 +609,68 @@ export const featureFlags = pgTable("feature_flags", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const formFieldSchema = z.object({
+  name: z.string().min(1, "Field name is required"),
+  label: z.string().min(1, "Field label is required"),
+  type: z.enum(["text", "email", "tel", "number", "textarea", "select", "checkbox", "radio"]),
+  required: z.boolean().default(false),
+  placeholder: z.string().optional(),
+  validation: z.object({
+    min: z.number().optional(),
+    max: z.number().optional(),
+    pattern: z.string().optional(),
+    message: z.string().optional(),
+  }).optional(),
+  options: z.array(z.object({
+    label: z.string(),
+    value: z.string(),
+  })).optional(),
+});
+
+export const formConfigSchema = z.object({
+  title: z.string().min(1, "Form title is required"),
+  description: z.string().optional(),
+  fields: z.array(formFieldSchema).min(1, "At least one field is required"),
+  submitButtonText: z.string().default("Submit"),
+  successMessage: z.string().default("Thank you for your submission!"),
+});
+
+export const calculatorInputSchema = z.object({
+  name: z.string().min(1, "Input name is required"),
+  label: z.string().min(1, "Input label is required"),
+  type: z.enum(["number", "slider", "toggle"]),
+  defaultValue: z.number().default(0),
+  min: z.number().optional(),
+  max: z.number().optional(),
+  step: z.number().optional(),
+  unit: z.string().optional(),
+});
+
+export const calculatorConfigSchema = z.object({
+  title: z.string().min(1, "Calculator title is required"),
+  description: z.string().optional(),
+  inputs: z.array(calculatorInputSchema).min(1, "At least one input is required"),
+  formula: z.string().min(1, "Formula is required"),
+  resultLabel: z.string().default("Result"),
+  resultUnit: z.string().optional(),
+});
+
+export const seoMetadataSchema = z.object({
+  metaTitle: z.string().optional(),
+  metaDescription: z.string().optional(),
+  ogImage: z.string().optional(),
+});
+
+export const campaignVariantSchema = z.object({
+  id: z.string(),
+  label: z.string().optional(),
+  weight: z.number().min(0).optional(),
+  widgetConfig: z.string().optional(),
+  seoMetadata: seoMetadataSchema.optional(),
+});
+
+export type CampaignVariant = z.infer<typeof campaignVariantSchema>;
 
 export const insertTenantSchema = createInsertSchema(tenants).omit({
   createdAt: true,
@@ -581,6 +833,8 @@ export const insertCampaignSchema = createInsertSchema(campaigns).omit({
   tenantId: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  variants: z.array(campaignVariantSchema).optional(),
 });
 
 export const insertEventSchema = createInsertSchema(events).omit({
@@ -607,10 +861,114 @@ export const insertFeatureFlagSchema = createInsertSchema(featureFlags).omit({
   updatedAt: true,
 });
 
+export const insertSeoIssueSchema = createInsertSchema(seoIssues).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+  updatedAt: true,
+  resolvedAt: true,
+});
+
+export const insertCompanySchema = createInsertSchema(companies).omit({
+  id: true,
+  tenantId: true, // managed by middleware/context
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  customFields: z.record(z.any()).optional(),
+});
+
+export const insertContactSchema = createInsertSchema(contacts).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  customFields: z.record(z.any()).optional(),
+});
+
+export const insertCustomFieldDefinitionSchema = createInsertSchema(customFieldDefinitions)
+  .omit({
+    id: true,
+    tenantId: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    options: z
+      .array(z.object({ label: z.string().min(1), value: z.string().min(1) }))
+      .optional(),
+    validation: z.record(z.any()).optional(),
+    required: z.boolean().optional(),
+    isActive: z.boolean().optional(),
+    defaultValue: z
+      .union([z.string(), z.number(), z.boolean(), z.array(z.any()), z.record(z.any())])
+      .optional(),
+  });
+
+export const insertDealSchema = createInsertSchema(deals).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  customFields: z.record(z.any()).optional(),
+});
+
+export const insertEmailSchema = createInsertSchema(emails).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+}).extend({
+  customFields: z.record(z.any()).optional(),
+});
+
+export const insertPhoneCallSchema = createInsertSchema(phoneCalls).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+}).extend({
+  customFields: z.record(z.any()).optional(),
+});
+
+export const insertMeetingSchema = createInsertSchema(meetings).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  customFields: z.record(z.any()).optional(),
+});
+
+export const insertTaskSchema = createInsertSchema(tasks).omit({
+  id: true,
+  tenantId: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  customFields: z.record(z.any()).optional(),
+});
+
 export type InsertTenant = z.infer<typeof insertTenantSchema>;
 export type Tenant = typeof tenants.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type Company = typeof companies.$inferSelect;
+export type InsertCompany = z.infer<typeof insertCompanySchema>;
+export type Contact = typeof contacts.$inferSelect;
+export type InsertContact = z.infer<typeof insertContactSchema>;
+export type CustomFieldDefinition = typeof customFieldDefinitions.$inferSelect;
+export type InsertCustomFieldDefinition = z.infer<typeof insertCustomFieldDefinitionSchema>;
+export type Deal = typeof deals.$inferSelect;
+export type InsertDeal = z.infer<typeof insertDealSchema>;
+export type EmailActivity = typeof emails.$inferSelect;
+export type InsertEmailActivity = z.infer<typeof insertEmailSchema>;
+export type PhoneCall = typeof phoneCalls.$inferSelect;
+export type InsertPhoneCall = z.infer<typeof insertPhoneCallSchema>;
+export type Meeting = typeof meetings.$inferSelect;
+export type InsertMeeting = z.infer<typeof insertMeetingSchema>;
+export type Task = typeof tasks.$inferSelect;
+export type InsertTask = z.infer<typeof insertTaskSchema>;
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type InsertPasswordResetToken = z.infer<typeof insertPasswordResetTokenSchema>;
 export type EmailCapture = typeof emailCaptures.$inferSelect;
@@ -653,58 +1011,8 @@ export type Lead = typeof leads.$inferSelect;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
 export type FeatureFlag = typeof featureFlags.$inferSelect;
 export type InsertFeatureFlag = z.infer<typeof insertFeatureFlagSchema>;
-
-export const formFieldSchema = z.object({
-  name: z.string().min(1, "Field name is required"),
-  label: z.string().min(1, "Field label is required"),
-  type: z.enum(["text", "email", "tel", "number", "textarea", "select", "checkbox", "radio"]),
-  required: z.boolean().default(false),
-  placeholder: z.string().optional(),
-  validation: z.object({
-    min: z.number().optional(),
-    max: z.number().optional(),
-    pattern: z.string().optional(),
-    message: z.string().optional(),
-  }).optional(),
-  options: z.array(z.object({
-    label: z.string(),
-    value: z.string(),
-  })).optional(),
-});
-
-export const formConfigSchema = z.object({
-  title: z.string().min(1, "Form title is required"),
-  description: z.string().optional(),
-  fields: z.array(formFieldSchema).min(1, "At least one field is required"),
-  submitButtonText: z.string().default("Submit"),
-  successMessage: z.string().default("Thank you for your submission!"),
-});
-
-export const calculatorInputSchema = z.object({
-  name: z.string().min(1, "Input name is required"),
-  label: z.string().min(1, "Input label is required"),
-  type: z.enum(["number", "slider", "toggle"]),
-  defaultValue: z.number().default(0),
-  min: z.number().optional(),
-  max: z.number().optional(),
-  step: z.number().optional(),
-  unit: z.string().optional(),
-});
-
-export const calculatorConfigSchema = z.object({
-  title: z.string().min(1, "Calculator title is required"),
-  description: z.string().optional(),
-  inputs: z.array(calculatorInputSchema).min(1, "At least one input is required"),
-  formula: z.string().min(1, "Formula is required"),
-  resultLabel: z.string().default("Result"),
-  resultUnit: z.string().optional(),
-});
-
-export const seoMetadataSchema = z.object({
-  metaTitle: z.string().optional(),
-  metaDescription: z.string().optional(),
-  ogImage: z.string().optional(),
-});
+export type SeoIssue = typeof seoIssues.$inferSelect;
+export type InsertSeoIssue = z.infer<typeof insertSeoIssueSchema>;
 
 // Branding Portfolio Tables
 export const projects = pgTable("projects", {
@@ -1372,6 +1680,18 @@ export const contentSectionSchema = z.object({
 });
 
 export const contentCatalogSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  clientName: z.string().optional(),
+  categories: z.array(z.string()).optional(),
+  challenge: z.string().optional(),
+  solution: z.string().optional(),
+  outcome: z.string().optional(),
+  testimonial: z.object({
+    text: z.string(),
+    author: z.string(),
+  }).optional(),
+  directorNotes: z.string().optional(),
   globalPrompt: z.string().min(1), // Overall narrative vision
   sections: z.array(contentSectionSchema).min(1), // Section-by-section structure
   texts: z.array(textAssetSchema),
@@ -1414,7 +1734,7 @@ export const apiKeys = pgTable("api_keys", {
   createdBy: varchar("created_by", { length: 255 }).references(() => users.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   rotatedAt: timestamp("rotated_at"),
-  rotatedFrom: varchar("rotated_from", { length: 255 }).references(() => apiKeys.id),
+  rotatedFrom: varchar("rotated_from", { length: 255 }).references((): AnyPgColumn => apiKeys.id),
 });
 
 export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
@@ -1427,7 +1747,7 @@ export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
 
 export const apiKeyUsageLogs = pgTable("api_key_usage_logs", {
   id: varchar("id", { length: 255 }).primaryKey().notNull().default(sql`gen_random_uuid()`),
-  apiKeyId: varchar("api_key_id", { length: 255 }).notNull().references(() => apiKeys.id, { onDelete: 'cascade' }),
+  apiKeyId: varchar("api_key_id", { length: 255 }).notNull().references((): AnyPgColumn => apiKeys.id, { onDelete: 'cascade' }),
   endpoint: text("endpoint").notNull(),
   method: varchar("method", { length: 10 }).notNull(),
   ipAddress: varchar("ip_address", { length: 45 }),
