@@ -43,6 +43,27 @@
       "when": 1762391605380,
       "tag": "0005_eminent_lake",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1763798815763,
+      "tag": "202511220300_add_security_state_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1763820000000,
+      "tag": "202511220400_add_ai_generation_jobs",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1763820600000,
+      "tag": "202511220500_add_replicate_jobs",
+      "breakpoints": true
     }
   ]
 }

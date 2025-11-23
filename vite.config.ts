@@ -1,21 +1,21 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+import { visualizer } from "rollup-plugin-visualizer";
+
+const analyzeBundle = process.env.ANALYZE === "true";
 
 export default defineConfig({
   plugins: [
     react(),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
+    ...(analyzeBundle
       ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-          await import("@replit/vite-plugin-dev-banner").then((m) =>
-            m.devBanner(),
-          ),
+          visualizer({
+            filename: "dist/bundle-report.html",
+            template: "sunburst",
+            gzipSize: true,
+            brotliSize: true,
+          }),
         ]
       : []),
   ],
@@ -31,6 +31,16 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 750,
+    rollupOptions: {
+      output: {
+        entryFileNames: "assets/[name]-[hash].js",
+        chunkFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash][extname]",
+      },
+    },
+    sourcemap: process.env.NODE_ENV !== "production",
   },
   server: {
     fs: {
@@ -38,14 +48,5 @@ export default defineConfig({
       deny: ["**/.*"],
     },
     allowedHosts: true,
-    hmr: {
-      protocol: 'wss',
-      host: process.env.REPLIT_DEV_DOMAIN?.replace(/^https?:\/\//, '') || 
-            (process.env.REPL_SLUG && process.env.REPL_OWNER ? 
-              `${process.env.REPL_SLUG}-${process.env.REPL_OWNER}.replit.dev` : 
-              'localhost'),
-      clientPort: 443,
-      timeout: 30000,
-    },
   },
 });

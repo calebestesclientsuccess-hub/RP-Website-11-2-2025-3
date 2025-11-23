@@ -5,15 +5,37 @@ declare global {
       eventName: string,
       params?: Record<string, any>
     ) => void;
+    dataLayer?: Array<Record<string, any>>;
+    __revpartyAnalyticsConsent?: boolean;
   }
 }
+
+let analyticsAllowed = false;
+
+export function setAnalyticsConsent(allowed: boolean) {
+  analyticsAllowed = allowed;
+  if (typeof window !== "undefined") {
+    window.__revpartyAnalyticsConsent = allowed;
+  }
+}
+
+export function getAnalyticsConsent(): boolean {
+  return analyticsAllowed;
+}
+
+const canTrack = () =>
+  analyticsAllowed &&
+  typeof window !== "undefined" &&
+  typeof window.gtag === "function";
 
 export const trackEvent = (
   eventName: string,
   params?: Record<string, any>
 ) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', eventName, params);
+  if (canTrack()) {
+    window.gtag!("event", eventName, params);
+  } else if (analyticsAllowed && typeof window !== "undefined" && window.dataLayer) {
+    window.dataLayer.push({ event: eventName, ...params });
   }
 };
 

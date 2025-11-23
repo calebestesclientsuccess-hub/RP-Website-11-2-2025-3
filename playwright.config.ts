@@ -35,5 +35,9 @@ export default defineConfig({
     url: 'http://0.0.0.0:5000',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
+    env: {
+      NODE_ENV: 'test',
+      TEST_DATABASE_URL: process.env.TEST_DATABASE_URL || '',
+    },
   },
 });

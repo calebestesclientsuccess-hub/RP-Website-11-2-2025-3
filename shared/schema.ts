@@ -401,6 +401,7 @@ export const seoIssues = pgTable("seo_issues", {
   details: text("details"),
   lastChecked: timestamp("last_checked").notNull().defaultNow(),
   resolvedAt: timestamp("resolved_at"),
+  resolvedBy: varchar("resolved_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
@@ -867,6 +868,7 @@ export const insertSeoIssueSchema = createInsertSchema(seoIssues).omit({
   createdAt: true,
   updatedAt: true,
   resolvedAt: true,
+  resolvedBy: true,
 });
 
 export const insertCompanySchema = createInsertSchema(companies).omit({
@@ -1778,6 +1780,24 @@ export const insertSecurityEventSchema = createInsertSchema(securityEvents).omit
   createdAt: true,
 });
 
+export const ipReputation = pgTable("ip_reputation", {
+  ip: text("ip").primaryKey().notNull(),
+  violations: integer("violations").notNull().default(0),
+  lastViolation: timestamp("last_violation"),
+  blockUntil: timestamp("block_until"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const loginAttemptTracker = pgTable("login_attempts", {
+  identifier: text("identifier").primaryKey().notNull(),
+  count: integer("count").notNull().default(0),
+  lastAttempt: timestamp("last_attempt"),
+  lockedUntil: timestamp("locked_until"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const aiPromptTemplates = pgTable("ai_prompt_templates", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   promptKey: text("prompt_key").notNull().unique(), // e.g., "artistic_director", "technical_director"
@@ -1798,6 +1818,51 @@ export const insertAiPromptTemplateSchema = createInsertSchema(aiPromptTemplates
 
 export type InsertAiPromptTemplate = z.infer<typeof insertAiPromptTemplateSchema>;
 export type AiPromptTemplate = typeof aiPromptTemplates.$inferSelect;
+
+export const aiGenerationJobs = pgTable("ai_generation_jobs", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  jobId: text("job_id").notNull(),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  jobType: text("job_type").notNull(),
+  provider: text("provider").notNull(),
+  modelName: text("model_name").notNull(),
+  status: text("status").notNull().default("queued"),
+  errorMessage: text("error_message"),
+  resultSnippet: text("result_snippet"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+}, (table) => ({
+  jobIdUnique: uniqueIndex("ai_gen_jobs_job_id_idx").on(table.jobId),
+  tenantIdx: index("ai_gen_jobs_tenant_idx").on(table.tenantId),
+}));
+
+export type AiGenerationJob = typeof aiGenerationJobs.$inferSelect;
+export type InsertAiGenerationJob = typeof aiGenerationJobs.$inferInsert;
+
+export const replicateJobs = pgTable("replicate_jobs", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  jobId: text("job_id").notNull(),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  userId: varchar("user_id").references(() => users.id),
+  prompt: text("prompt").notNull(),
+  aspectRatio: text("aspect_ratio").notNull(),
+  stylize: integer("stylize").default(100).notNull(),
+  count: integer("count").default(1).notNull(),
+  status: text("status").notNull().default("queued"),
+  replicatePredictionId: text("replicate_prediction_id"),
+  outputUrls: jsonb("output_urls"),
+  mediaLibraryAssetIds: jsonb("media_library_asset_ids"),
+  errorMessage: text("error_message"),
+  durationMs: integer("duration_ms"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  jobIdUnique: uniqueIndex("replicate_jobs_job_id_idx").on(table.jobId),
+  tenantIdx: index("replicate_jobs_tenant_idx").on(table.tenantId),
+}));
+
+export type ReplicateJob = typeof replicateJobs.$inferSelect;
+export type InsertReplicateJob = typeof replicateJobs.$inferInsert;
 
 // Portfolio-specific prompt overrides
 export const portfolioPrompts = pgTable("portfolio_prompts", {

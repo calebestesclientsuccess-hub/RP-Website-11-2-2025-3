@@ -70,6 +70,11 @@ describe('SEO Utils', () => {
       const result = validateMetaDescription(validDesc);
       expect(result.valid).toBe(true);
     });
+
+    it('should treat boundary lengths as valid', () => {
+      expect(validateMetaDescription('a'.repeat(120)).valid).toBe(true);
+      expect(validateMetaDescription('a'.repeat(160)).valid).toBe(true);
+    });
   });
 
   describe('extractHeadings', () => {

@@ -1,71 +1,127 @@
-
-import { Router } from 'express';
-import { db } from '../db';
-import { sql } from 'drizzle-orm';
+import { Router } from "express";
+import { sql } from "drizzle-orm";
+import { db } from "../db";
+import { redisConnection } from "../queues/connection";
+import { env } from "../config/env";
+import cloudinary, { cloudinaryEnabled } from "../cloudinary";
 
 const router = Router();
+const GOOGLE_AI_KEY = env.GOOGLE_AI_KEY;
+const GEMINI_BASE_URL =
+  env.AI_INTEGRATIONS_GEMINI_BASE_URL ||
+  "https://generativelanguage.googleapis.com";
 
-// Basic liveness check
-router.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+router.get("/", async (req, res) => {
+  const health: Record<string, string> = {
+    status: "healthy",
+    uptime: process.uptime().toFixed(2),
+    timestamp: new Date().toISOString(),
+  };
+
+  let statusCode = 200;
+
+  // Check Database
+  try {
+    await db.execute(sql`SELECT 1`);
+    health.database = "connected";
+  } catch (error: any) {
+    health.database = "disconnected";
+    health.databaseError = error.message;
+    health.status = "unhealthy";
+    statusCode = 503;
+  }
+
+  // Check Redis
+  try {
+    if (redisConnection && redisConnection.status === "ready") {
+      health.redis = "connected";
+    } else {
+      health.redis = "disconnected";
+      health.status = "degraded"; // Redis failure might not be fatal for all apps
+    }
+  } catch (error: any) {
+    health.redis = "error";
+    health.redisError = error.message;
+  }
+
+  res.status(statusCode).json(health);
 });
 
-// Detailed readiness check
-router.get('/health/ready', async (req, res) => {
+router.get("/ready", async (_req, res) => {
   const checks = {
     database: false,
-    gemini: false,
-    cloudinary: false,
+    gemini: !GOOGLE_AI_KEY,
+    cloudinary: !cloudinaryEnabled,
+    replicate: !env.REPLICATE_API_TOKEN,
   };
-  
+  const timings: Record<string, number> = {};
+
   try {
-    // Database check
+    const start = Date.now();
     await db.execute(sql`SELECT 1`);
     checks.database = true;
+    timings.database = Date.now() - start;
   } catch (error) {
-    console.error('Database health check failed:', error);
+    console.error("Database health check failed:", error);
   }
-  
-  try {
-    // Gemini API check (if key exists)
-    if (process.env.GEMINI_API_KEY) {
-      checks.gemini = true;
-    }
-  } catch (error) {
-    console.error('Gemini health check failed:', error);
-  }
-  
-  try {
-    // Cloudinary check
-    if (process.env.CLOUDINARY_CLOUD_NAME) {
-      checks.cloudinary = true;
-    }
-  } catch (error) {
-    console.error('Cloudinary health check failed:', error);
-  }
-  
-  const allHealthy = Object.values(checks).every(v => v);
-  
-  res.status(allHealthy ? 200 : 503).json({
-    status: allHealthy ? 'ready' : 'degraded',
-    checks,
-    timestamp: new Date().toISOString(),
-  });
-});
 
-// Metrics endpoint
-router.get('/health/metrics', async (req, res) => {
-  const uptime = process.uptime();
-  const memoryUsage = process.memoryUsage();
-  
-  res.json({
-    uptime: Math.floor(uptime),
-    memory: {
-      rss: Math.round(memoryUsage.rss / 1024 / 1024) + ' MB',
-      heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + ' MB',
-      heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + ' MB',
-    },
-    nodejs: process.version,
+  if (cloudinaryEnabled) {
+    try {
+      const start = Date.now();
+      await cloudinary.api.ping();
+      checks.cloudinary = true;
+      timings.cloudinary = Date.now() - start;
+    } catch (error) {
+      console.error("Cloudinary health check failed:", error);
+    }
+  }
+
+  if (GOOGLE_AI_KEY) {
+    const start = Date.now();
+    try {
+      const response = await fetch(
+        `${GEMINI_BASE_URL.replace(/\/$/, "")}/v1/models?key=${GOOGLE_AI_KEY}&pageSize=1`,
+      );
+      checks.gemini = response.ok;
+    } catch (error) {
+      console.error("Gemini health check failed:", error);
+    } finally {
+      timings.gemini = Date.now() - start;
+    }
+  }
+
+  if (env.REPLICATE_API_TOKEN) {
+    const start = Date.now();
+    try {
+      const response = await fetch("https://api.replicate.com/v1/models", {
+        headers: {
+          Authorization: `Token ${env.REPLICATE_API_TOKEN}`,
+        },
+      });
+      checks.replicate = response.ok;
+    } catch (error) {
+      console.error("Replicate health check failed:", error);
+      checks.replicate = false;
+    } finally {
+      timings.replicate = Date.now() - start;
+    }
+  }
+
+  const requiredHealthy = checks.database && (cloudinaryEnabled ? checks.cloudinary : true);
+  const optionalHealthy =
+    (!GOOGLE_AI_KEY || checks.gemini) &&
+    (!env.REPLICATE_API_TOKEN || checks.replicate);
+  const status = requiredHealthy
+    ? optionalHealthy
+      ? "ready"
+      : "degraded"
+    : "down";
+  const statusCode = requiredHealthy ? 200 : 503;
+
+  res.status(statusCode).json({
+    status,
+    checks,
+    timings,
     timestamp: new Date().toISOString(),
   });
 });

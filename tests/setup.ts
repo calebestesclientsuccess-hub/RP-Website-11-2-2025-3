@@ -1,7 +1,9 @@
+// Import mocks first to ensure they're registered before any other imports
+import './setup-mocks';
+
 import { beforeAll, afterAll, afterEach, beforeEach } from 'vitest';
 import { db } from '../server/db';
 import { sql } from 'drizzle-orm';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
 // Set test environment
 process.env.NODE_ENV = 'test';
@@ -18,19 +20,6 @@ if (!process.env.VERBOSE_TESTS) {
   console.log = () => {};
   console.debug = () => {};
 }
-
-beforeAll(async () => {
-  console.log('🔧 Setting up test database...');
-
-  try {
-    // Run migrations to ensure schema is up to date
-    await migrate(db, { migrationsFolder: './migrations' });
-    console.log('✅ Test database migrations complete');
-  } catch (error) {
-    console.error('❌ Migration failed:', error);
-    throw error;
-  }
-});
 
 // Global transaction context for each test
 let testTransaction: any;

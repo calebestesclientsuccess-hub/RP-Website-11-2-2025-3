@@ -2,6 +2,7 @@ import { db } from "../server/db";
 import { tenants, users, companies } from "@shared/schema";
 import { DEFAULT_TENANT_ID } from "../server/middleware/tenant";
 import bcrypt from "bcryptjs";
+import { PASSWORD_HASH_ROUNDS } from "../server/utils/password-validator";
 
 async function seedInitialOrg() {
   console.log("Seeding initial organization...");
@@ -30,7 +31,7 @@ async function seedInitialOrg() {
     });
 
     if (!existingUser) {
-      const hashedPassword = await bcrypt.hash("test1234", 10);
+      const hashedPassword = await bcrypt.hash("test1234", PASSWORD_HASH_ROUNDS);
       await db.insert(users).values({
         tenantId: DEFAULT_TENANT_ID,
         username: email,

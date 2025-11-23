@@ -1,15 +1,24 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import type { ContentCatalog } from "@shared/schema";
+import { env } from "../config/env";
 
 let ai: GoogleGenAI | null = null;
+const GOOGLE_AI_KEY = env.GOOGLE_AI_KEY;
+const GEMINI_BASE_URL =
+  env.AI_INTEGRATIONS_GEMINI_BASE_URL ||
+  "https://generativelanguage.googleapis.com";
+const CINEMATIC_MODEL_ID = "gemini-2.0-thinking-exp";
 function getAIClient(): GoogleGenAI {
   if (!ai) {
+    if (!GOOGLE_AI_KEY) {
+      throw new Error("Gemini API key not configured");
+    }
     ai = new GoogleGenAI({
-      apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
+      apiKey: GOOGLE_AI_KEY,
       httpOptions: {
         apiVersion: "",
-        baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
+        baseUrl: GEMINI_BASE_URL,
       },
     });
   }
@@ -80,7 +89,7 @@ Describe how to tell this story through SCROLL-DRIVEN CINEMATIC SEQUENCES. For e
 Think in FILM TERMS, not code. Describe the cinematic experience you want to create.`;
 
   const response = await aiClient.models.generateContent({
-    model: "gemini-2.0-flash-exp",
+    model: CINEMATIC_MODEL_ID,
     contents: [{ role: "user", parts: [{ text: prompt }] }],
     config: {
       responseMimeType: "application/json",
@@ -137,7 +146,7 @@ Suggest 5-10 SPECIFIC improvements. For each:
 Return improved storyboard with changes applied.`;
 
   const response = await aiClient.models.generateContent({
-    model: "gemini-2.0-flash-exp",
+    model: CINEMATIC_MODEL_ID,
     contents: [{ role: "user", parts: [{ text: prompt }] }],
     config: {
       responseMimeType: "application/json",
@@ -238,7 +247,7 @@ CUSTOM CSS EXAMPLES:
 - Parallax layering with transform-3d`;
 
   const response = await aiClient.models.generateContent({
-    model: "gemini-2.0-flash-exp",
+    model: CINEMATIC_MODEL_ID,
     contents: [{ role: "user", parts: [{ text: prompt }] }],
     config: {
       responseMimeType: "application/json",

@@ -1,7 +1,9 @@
 
-import { db } from '../db';
-import { securityEvents } from '@shared/schema';
-import { Request } from 'express';
+import { db } from "../db";
+import { securityEvents } from "@shared/schema";
+import { Request } from "express";
+import { env } from "../config/env";
+import { getUncachableResendClient } from "./resend-client";
 
 export type SecurityEventType =
   | 'failed_login'
@@ -15,6 +17,56 @@ export type SecurityEventType =
   | 'brute_force_attempt';
 
 export type SecuritySeverity = 'low' | 'medium' | 'high' | 'critical';
+
+async function notifySecurityChannels(
+  eventType: SecurityEventType,
+  severity: SecuritySeverity,
+  details: {
+    tenantId?: string;
+    userId?: string;
+    ipAddress?: string;
+    endpoint?: string;
+    metadata?: Record<string, any>;
+  },
+) {
+  const message = {
+    text: `[${severity.toUpperCase()}] Security event: ${eventType}`,
+    details,
+  };
+
+  if (env.SECURITY_ALERT_WEBHOOK_URL) {
+    try {
+      await fetch(env.SECURITY_ALERT_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(message),
+      });
+    } catch (error) {
+      console.error("Failed to send security webhook:", error);
+    }
+  }
+
+  if (env.SECURITY_ALERT_EMAIL) {
+    try {
+      const { client, fromEmail } = await getUncachableResendClient();
+      const payload = `
+        <h1>[${severity.toUpperCase()}] Security event</h1>
+        <p><strong>Type:</strong> ${eventType}</p>
+        <p><strong>Endpoint:</strong> ${details.endpoint || "N/A"}</p>
+        <p><strong>IP:</strong> ${details.ipAddress || "N/A"}</p>
+        <pre>${JSON.stringify(details.metadata || {}, null, 2)}</pre>
+      `;
+      await client.emails.send({
+        from: fromEmail,
+        to: env.SECURITY_ALERT_EMAIL,
+        subject: `[${severity.toUpperCase()}] Security event: ${eventType}`,
+        html: payload,
+      });
+    } catch (error) {
+      console.error("Failed to send security email:", error);
+    }
+  }
+}
 
 /**
  * Log a security event
@@ -46,13 +98,13 @@ export async function logSecurityEvent(
       resolved: false,
     });
 
-    // Alert on critical events
-    if (severity === 'critical') {
-      console.error(`🚨 CRITICAL SECURITY EVENT: ${eventType}`, details);
-      // TODO: Send email/Slack notification
+    // Alert on high/critical events
+    if (severity === 'critical' || severity === 'high') {
+      console.error(`🚨 ${severity.toUpperCase()} SECURITY EVENT: ${eventType}`, details);
+      await notifySecurityChannels(eventType, severity, details);
     }
   } catch (error) {
-    console.error('Failed to log security event:', error);
+    console.error("Failed to log security event:", error);
   }
 }
 

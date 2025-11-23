@@ -1,38 +1,58 @@
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
+import { env, isProduction } from "../config/env";
 
-// Hardcoded demo tenant ID - simplified for demo mode
-export const DEFAULT_TENANT_ID = 'demo_tenant_01';
-export const DEFAULT_USER_ID = 'demo_user_01';
+const PUBLIC_TENANT_ID = env.PUBLIC_TENANT_ID?.trim();
+const DEV_TENANT_FALLBACK =
+  !isProduction ? env.DEV_TENANT_FALLBACK?.trim() || "dev_local_tenant" : "";
 
-// Extend Express Request type to include tenantId and mock user
+export const DEFAULT_TENANT_ID = PUBLIC_TENANT_ID || DEV_TENANT_FALLBACK || "";
+
 declare global {
   namespace Express {
     interface Request {
       tenantId: string;
       userId?: string;
-      demoUser?: {
-        id: string;
-        username: string;
-        email: string;
-        tenantId: string;
-      };
+      requestId?: string;
     }
   }
 }
 
-// Demo mode middleware - always sets demo tenant and mock user
-export function tenantMiddleware(req: Request, res: Response, next: NextFunction) {
-  // Hardcoded demo values - no authentication required
-  req.tenantId = DEFAULT_TENANT_ID;
-  req.userId = DEFAULT_USER_ID;
+export function tenantMiddleware(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+) {
+  // 1. Prefer session context
+  if (req.session?.tenantId) {
+    req.tenantId = req.session.tenantId;
+    req.userId = req.session.userId;
+    return next();
+  }
+
+  // 2. Fallback to configured public tenant (for static sites/landing pages)
+  if (DEFAULT_TENANT_ID) {
+    req.tenantId = DEFAULT_TENANT_ID;
+    return next();
+  }
+
+  // 3. Fail closed if no valid tenant context is configured
+  if (req.path.startsWith("/api") || req.path.startsWith("/admin")) {
+    return _res.status(401).json({ error: "Tenant context is not configured for this environment" });
+  }
   
-  // Mock user object for any code that expects user context
-  req.demoUser = {
-    id: DEFAULT_USER_ID,
-    username: 'demo_user',
-    email: 'demo@example.com',
-    tenantId: DEFAULT_TENANT_ID
-  };
-  
-  next();
+  return next(new Error("Tenant context is not configured"));
+}
+
+export function requireUserContext(
+  req: Request,
+  res: Response,
+): string | null {
+  const userId = req.session?.userId;
+
+  if (userId) {
+    return userId;
+  }
+
+  res.status(401).json({ error: "Authentication required." });
+  return null;
 }

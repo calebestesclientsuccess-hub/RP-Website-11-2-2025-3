@@ -1,4 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
+import { env } from "../config/env";
+import { invokeWithAiBackoff } from "./aiClientFactory";
 
 /**
  * Call the Gemini/Google Generative AI model with the provided prompt and return parsed JSON.
@@ -6,15 +8,18 @@ import { GoogleGenAI } from '@google/genai';
  * @param prompt - The prompt string built by the promptBuilder.
  * @returns Parsed JSON object representing the layout.
  */
+const LAYOUT_MODEL_ID = "gemini-2.0-thinking-exp";
+
 export async function generateLayoutFromPrompt(prompt: string): Promise<any> {
-    // Initialize the client – the library expects the API key in the environment.
-    const genAI = new GoogleGenAI({ apiKey: process.env.GENAI_API_KEY });
+    const genAI = new GoogleGenAI({ apiKey: env.GOOGLE_AI_KEY });
 
     try {
-        const result = await genAI.models.generateContent({
-            model: 'gemini-1.5-flash',
-            contents: [{ parts: [{ text: prompt }] }]
-        });
+        const result = await invokeWithAiBackoff("layout-generation", () =>
+            genAI.models.generateContent({
+                model: LAYOUT_MODEL_ID,
+                contents: [{ parts: [{ text: prompt }] }]
+            }),
+        );
 
         // In the new SDK, result might have a text() method or we access candidates.
         // Assuming result.text() is available as a helper, or result.response.text()

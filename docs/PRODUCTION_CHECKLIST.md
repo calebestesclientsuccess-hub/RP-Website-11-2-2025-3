@@ -4,36 +4,78 @@
 ## Pre-Deployment
 
 ### Security
-- [ ] All sensitive data moved to Replit Secrets
+- [ ] All sensitive data stored in your hosting provider's secrets manager
 - [ ] SESSION_SECRET is at least 32 characters
 - [ ] Database credentials are secure
 - [ ] API keys have appropriate scopes
 - [ ] Rate limiting is enabled
 - [ ] CORS origins are restricted
 - [ ] Security headers are configured
-- [ ] CSP policy is strict
+- [ ] CSP policy is strict (see `docs/CSP_NONCE_AUDIT.md` for current status and remediation plan)
+- [ ] Inline JSON-LD scripts moved from `index.html` to React components with nonce support
+- [ ] `react-helmet-async` configured to inject CSP nonces into dynamically added scripts
+- [ ] No CSP violations in browser console when testing in production mode
+- [ ] `DISABLE_INLINE_STYLE_ATTR=true` has been tested (after removing inline React style attributes) before enabling in production
+
+### Privacy & Compliance
+- [ ] Cookie consent banner is displayed on first visit (`CookieConsentBanner` component)
+- [ ] Analytics tracking respects user consent (gated by `analyticsAllowed` in `lib/analytics.ts`)
+- [ ] User can accept/reject analytics via banner
+- [ ] Consent choice persists in localStorage (`revparty_analytics_consent_v1`)
+- [ ] Privacy policy page is accessible and up-to-date
+- [ ] Terms of service page is accessible and up-to-date
+- [ ] GDPR compliance: users can request data export/deletion
+- [ ] CCPA compliance: "Do Not Sell My Personal Information" link available (if applicable)
+
+### Accessibility (WCAG 2.1 AA)
+- [ ] All pages pass `@axe-core/playwright` scans (run `npm run test:e2e tests/e2e/accessibility.spec.ts`)
+- [ ] No critical or serious accessibility violations on primary routes (home, assessment, audit, pricing, contact, blog)
+- [ ] All interactive elements have sufficient contrast (4.5:1 for normal text, 3:1 for large text)
+- [ ] All form inputs have associated labels (via `<label>`, `aria-label`, or `aria-labelledby`)
+- [ ] All images have meaningful alt text (or `alt=""` for decorative images)
+- [ ] Touch targets are at least 44x44px (WCAG 2.1 Level AAA guideline)
+- [ ] Keyboard navigation works on all interactive elements (test with Tab/Shift+Tab)
+- [ ] Skip-to-main-content link is available and functional (`SkipLink` component)
+- [ ] Focus indicators are visible on all interactive elements
+- [ ] Page titles are descriptive and unique (`SEO` component with proper `title` prop)
+- [ ] Heading hierarchy is logical (h1 → h2 → h3, no skipped levels)
+- [ ] Color is not the only means of conveying information
 
 ### Environment Variables
-Required secrets in Replit:
+Store these in your platform's secret manager (Render, Fly.io, AWS, etc.):
 ```
 DATABASE_URL=postgresql://...
 SESSION_SECRET=<32+ character random string>
-GEMINI_API_KEY=<your-key>
+PUBLIC_TENANT_ID=<tenant id for public forms>
+GOOGLE_AI_KEY=<single Google AI Studio key used for text + image>
 CLOUDINARY_CLOUD_NAME=<your-cloud>
 CLOUDINARY_API_KEY=<your-key>
 CLOUDINARY_API_SECRET=<your-secret>
+REPLICATE_API_TOKEN=<your-token>
+RESEND_API_KEY=<your-key>
+RESEND_FROM_EMAIL=notifications@your-domain.com
+APP_BASE_URL=https://app.your-domain.com
+REPLICATE_WEBHOOK_SECRET=<replicate-webhook-secret>
+REDIS_URL=redis://<host>:6379
 NODE_ENV=production
-ALLOWED_ORIGINS=https://your-domain.replit.app
+ALLOWED_ORIGINS=https://app.your-domain.com
 ```
 
-Optional:
+> Legacy variables like `GPT_3_PRO_THINKING_KEY` or `NANA_BANNA_*` will temporarily fall back to `GOOGLE_AI_KEY`, but they log a warning and will be removed soon—migrate now.
+
+Optional configuration:
 ```
-RESEND_API_KEY=<your-key>
-GMAIL_USER=<email>
-GMAIL_APP_PASSWORD=<app-password>
+DISABLE_INLINE_STYLE_ATTR=false
+SUPABASE_URL=<if using supabase>
+SUPABASE_SERVICE_ROLE_KEY=<if using supabase>
+SECURITY_ALERT_WEBHOOK_URL=<slack/webhook>
+SECURITY_ALERT_EMAIL=<security@your-domain.com>
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
 MAX_REQUEST_SIZE=10mb
+DEV_TENANT_FALLBACK=dev_local_tenant
+TEST_DATABASE_URL=postgresql://<test-user>:<password>@<host>/<db>
+MAX_RESPONSE_SIZE_BYTES=1048576
 ```
 
 ### Database
@@ -42,55 +84,60 @@ MAX_REQUEST_SIZE=10mb
 - [ ] Connection pooling configured
 - [ ] Backup strategy in place
 
+#### Testing database
+- [ ] Provision a dedicated Neon branch (or database) for tests
+- [ ] Set `TEST_DATABASE_URL` in `.env.test.local` / CI secrets
+- [ ] Run `npm run test:setup` before executing `npm run test:unit` / `npm run test:e2e`
+
 ### Performance
-- [ ] Compression enabled
-- [ ] Cache headers configured
+- [ ] Compression enabled (via `server/middleware/compression.ts`)
+- [ ] Cache headers configured (see `server/vite.ts` for static asset caching)
+- [ ] Service worker cache strategy implemented (see `client/public/sw.js`):
+  - Navigation: Network First (offline fallback)
+  - Assets: Cache First (long-term caching)
+  - Fonts/styles/images: Stale While Revalidate
+  - API: Network First with cache
+- [ ] Service worker enabled in production (set `VITE_ENABLE_PWA=true` to enable)
 - [ ] Static assets optimized
 - [ ] Database queries optimized
-- [ ] Bundle size < 500KB
+- [ ] Code splitting implemented (React.lazy for all admin routes, vendor chunk splitting in `vite.config.ts`)
+- [ ] Bundle size within budget (verify with `npm run bundle:check`)
+- [ ] Bundle analysis available (`ANALYZE=true npm run build` generates `dist/bundle-report.html`)
 
 ### Monitoring
 - [ ] Health check endpoints working
-- [ ] Error logging configured
+- [ ] Structured logging implemented (see `docs/LOGGING.md`)
+- [ ] Log shipping configured (set `LOG_SHIP_URL` for Datadog/Mezmo/etc.)
+- [ ] Critical server code migrated from `console.log` to `logger` (see `server/lib/logger.ts`)
+- [ ] Error logging configured with proper context
 - [ ] Performance monitoring active
 - [ ] Slow query logging enabled
 
-## Deployment on Replit
+## Deployment
 
-### Using Autoscale Deployments (Recommended)
+### Build & Release Steps
+1. Run tests and database migrations locally.
+2. Build the client + server bundle:
+   ```bash
+   npm run build
+   ```
+3. Package the server (Docker, Heroku release, etc.) so that `npm run start` boots the API.
+4. Configure your process manager or platform to run:
+   ```bash
+   NODE_ENV=production npm run start
+   ```
+5. Point your load balancer / CDN to the deployment URL and update `ALLOWED_ORIGINS`.
 
-1. Click "Deploy" button in Replit
-2. Select "Autoscale Deployment"
-3. Configure:
-   - Min instances: 1 (keeps one warm)
-   - Max instances: 5 (scales up to 5 under load)
-   - Machine size: 0.5 vCPU / 1 GiB (upgrade if needed)
-4. Set build command: `npm run build`
-5. Set run command: `npm run start`
-6. Deploy!
-
-### Deployment Configuration
-Build command should compile TypeScript and prepare assets:
-```bash
-npm run build
-```
-
-Run command should start the production server:
-```bash
-NODE_ENV=production tsx server/index.ts
-```
-
-### Custom Domain (Optional)
-1. Go to Deployment settings
-2. Click "Add custom domain"
-3. Follow DNS configuration instructions
-4. Update ALLOWED_ORIGINS to include your domain
+### Scaling Guidance
+- Start with 1–2 instances (1 vCPU / 1–2 GB RAM) for low traffic.
+- Enable horizontal autoscaling once CPU > 70% sustained.
+- Use a CDN (Cloudflare/Fastly) for static assets and Cloudinary for media.
 
 ## Post-Deployment
 
 ### Verification
 - [ ] Visit /health - should return 200 OK
-- [ ] Visit /health/ready - all checks should pass
+- [ ] Visit /health/ready - database, Gemini, Cloudinary, and Replicate checks should pass
 - [ ] Test authentication flow
 - [ ] Test portfolio creation
 - [ ] Test admin functions
@@ -145,7 +192,7 @@ All logged to security_events table.
 ## Backup & Recovery
 
 ### Database Backups
-Replit PostgreSQL includes automatic backups.
+Ensure your managed Postgres provider has automated backups enabled (Neon, RDS, etc.).
 
 ### Application State
 - Portfolio versions stored in database
@@ -153,7 +200,7 @@ Replit PostgreSQL includes automatic backups.
 - User data in PostgreSQL
 
 ### Recovery Steps
-1. Restore from Replit database backup
+1. Restore from latest managed database backup
 2. Verify data integrity
 3. Test critical flows
 4. Notify users if needed
@@ -176,12 +223,12 @@ Replit PostgreSQL includes automatic backups.
 If issues arise:
 1. Check health endpoints
 2. Review error logs
-3. Check Replit status page
-4. Contact Replit support
+3. Check your hosting provider status page
+4. Contact platform support if needed
 5. Rollback if critical
 
 ---
 
-**Production URL**: https://your-app.replit.app
-**Admin Panel**: https://your-app.replit.app/admin
-**Health Check**: https://your-app.replit.app/health
+**Production URL**: https://app.your-domain.com
+**Admin Panel**: https://app.your-domain.com/admin
+**Health Check**: https://app.your-domain.com/health

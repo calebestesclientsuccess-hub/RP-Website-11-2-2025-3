@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import React, { useMemo, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,8 @@ import { Slider } from "@/components/ui/slider";
 import { Loader2, Copy, Save, ImageIcon, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { runTextGenerationJob } from "@/lib/ai-text";
+import { runImageGenerationJob } from "@/lib/ai-image";
 
 export default function AiGenerationPage() {
   const { toast } = useToast();
@@ -24,25 +26,29 @@ export default function AiGenerationPage() {
   const [aspectRatio, setAspectRatio] = useState("16:9");
   const [stylize, setStylize] = useState(100);
   const [count, setCount] = useState(4);
-  const [generatedImages, setGeneratedImages] = useState<string[]>([]); // Placeholder for result URLs
+  const [generatedImages, setGeneratedImages] = useState<Array<{ id?: string; url: string }>>([]);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [lastImageJobId, setLastImageJobId] = useState<string | null>(null);
+
+  const { data: imageMetrics } = useQuery({
+    queryKey: ["/api/ai/image/metrics"],
+  });
 
   // Text Mutation
   const textMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/ai/text", {
+      return runTextGenerationJob({
         brandVoice,
         topic,
-        type: "blog-outline" // or make selectable
+        type: "blog-outline",
       });
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({}));
-        throw new Error(error.error || "Failed to generate text");
-      }
-      return res.json();
     },
-    onSuccess: (data) => {
-      setTextResult(data.text);
+    onSuccess: (data: any) => {
+      const resultText =
+        typeof data?.text === "string"
+          ? data.text
+          : JSON.stringify(data, null, 2);
+      setTextResult(resultText);
       toast({ title: "Text Generated", description: "Your outline is ready." });
     },
     onError: (error: any) => {
@@ -58,60 +64,36 @@ export default function AiGenerationPage() {
   const imageMutation = useMutation({
     mutationFn: async () => {
       setIsGeneratingImage(true);
-      // 1. Initiate generation
-      const res = await apiRequest("POST", "/api/ai/image", {
+      return runImageGenerationJob({
         prompt: imagePrompt,
         aspectRatio,
         stylize,
         count,
       });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({}));
-        throw new Error(error.error || "Failed to start generation");
-      }
-
-      const { predictions } = await res.json(); // Expect array of predictions
-      
-      // 2. Poll for results (simplified for MVP)
-      // Wait for ALL to complete
-      const results = await Promise.all(predictions.map(async (p: any) => {
-        return new Promise((resolve, reject) => {
-          const interval = setInterval(async () => {
-            try {
-              const pollRes = await apiRequest("GET", `/api/ai/image/${p.id}`);
-              const status = await pollRes.json();
-              if (status.status === "succeeded") {
-                clearInterval(interval);
-                resolve(status.output); // Replicate usually returns array of URLs or single string
-              } else if (status.status === "failed" || status.status === "canceled") {
-                clearInterval(interval);
-                resolve(null); // Handle failure gracefully
-              }
-            } catch (e) {
-              clearInterval(interval);
-              resolve(null);
-            }
-          }, 2000);
-        });
-      }));
-
-      // Flatten results (Replicate output might be string or string[])
-      const flatImages = results
-        .filter(Boolean)
-        .flatMap(r => Array.isArray(r) ? r : [r])
-        .filter(url => typeof url === 'string');
-      
-      return flatImages;
     },
-    onSuccess: (data: any[]) => {
+    onSuccess: (data: any) => {
       setIsGeneratingImage(false);
-      const images = Array.isArray(data) ? data : [data];
-      setGeneratedImages(images);
-      if (images.length === 0) {
-        toast({ title: "No images returned", description: "Try adjusting your prompt and settings." });
+      setLastImageJobId(data.jobId ?? null);
+      const assets = Array.isArray(data.assets) ? data.assets : [];
+      const fallback =
+        assets.length > 0
+          ? assets
+          : Array.isArray(data.outputUrls)
+          ? data.outputUrls.map((url: string) => ({ url }))
+          : [];
+      setGeneratedImages(fallback);
+      if (fallback.length === 0) {
+        toast({
+          title: "No images returned",
+          description: "Try adjusting your prompt and settings.",
+        });
       } else {
-        toast({ title: "Images Generated", description: "Select an image to save." });
+        toast({
+          title: "Images Generated",
+          description: data.durationMs
+            ? `Ready in ${(data.durationMs / 1000).toFixed(1)}s`
+            : "Select an image to save.",
+        });
       }
     },
     onError: (error: any) => {
@@ -124,11 +106,42 @@ export default function AiGenerationPage() {
     }
   });
 
-  const saveImage = async (url: string) => {
-    // Mock saving to assets
-    toast({ title: "Saved", description: "Image saved to project assets." });
-    // TODO: Implement actual save logic (POST /api/media-library)
+  const saveImage = async (image: { id?: string; url: string }) => {
+    if (!image.id || !lastImageJobId) {
+      toast({
+        title: "Save unavailable",
+        description: "This image can't be saved automatically. Regenerate to persist.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await apiRequest("POST", `/api/ai/image/${lastImageJobId}/save`, {
+        assetId: image.id,
+      });
+      toast({ title: "Saved", description: "Image saved to media library." });
+    } catch (error: any) {
+      toast({
+        title: "Save failed",
+        description: error?.message || "Could not save image.",
+        variant: "destructive",
+      });
+    }
   };
+
+  const metricsSummary = useMemo(() => {
+    if (!imageMetrics) {
+      return null;
+    }
+    const summaryData = imageMetrics as any;
+    return {
+      totalJobs: summaryData.totalJobs,
+      succeeded: summaryData.succeeded,
+      failed: summaryData.failed,
+      averageDurationMs: summaryData.averageDurationMs,
+    };
+  }, [imageMetrics]);
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
@@ -136,6 +149,37 @@ export default function AiGenerationPage() {
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Nano Banna AI Studio</h1>
         <p className="text-muted-foreground">Generate high-quality text and images for your portfolio.</p>
       </div>
+
+      {metricsSummary && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Total Jobs (7d)</CardTitle>
+            </CardHeader>
+            <CardContent className="text-3xl font-semibold">
+              {metricsSummary.totalJobs}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Success / Failed</CardTitle>
+            </CardHeader>
+            <CardContent className="text-lg font-medium">
+              {metricsSummary.succeeded} / {metricsSummary.failed}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Avg Duration</CardTitle>
+            </CardHeader>
+            <CardContent className="text-lg font-medium">
+              {metricsSummary.averageDurationMs
+                ? `${(metricsSummary.averageDurationMs / 1000).toFixed(1)}s`
+                : "—"}
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Tabs defaultValue="text" className="w-full h-full space-y-6">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
@@ -274,14 +318,19 @@ export default function AiGenerationPage() {
                    </div>
                 ) : generatedImages.length > 0 ? (
                   <div className="grid grid-cols-2 gap-4">
-                    {generatedImages.map((url, i) => (
+                    {generatedImages.map((image, i) => (
                       <div key={i} className="group relative rounded-lg overflow-hidden border bg-muted aspect-video">
-                        <img src={url} alt={`Generated ${i}`} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                        <img src={image.url} alt={`Generated ${i}`} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                          <Button variant="secondary" size="sm" onClick={() => saveImage(url)}>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            disabled={!image.id || !lastImageJobId}
+                            onClick={() => saveImage(image)}
+                          >
                             <Save className="h-4 w-4 mr-2" /> Save Asset
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => window.open(url, '_blank')}>
+                          <Button variant="outline" size="sm" onClick={() => window.open(image.url, '_blank')}>
                             Full Size
                           </Button>
                         </div>

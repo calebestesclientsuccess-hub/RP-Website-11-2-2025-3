@@ -24,6 +24,16 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
 
     steps:
       - uses: actions/checkout@v3
@@ -37,32 +47,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run database migrations
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-        run: npm run db:push
-
-      - name: Run unit tests
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-        run: npm run test:unit
-
-      - name: Run integration tests
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-        run: npm run test:integration
-
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run E2E tests
-        run: npm run test:e2e
-
-      - name: Run Accessibility tests
-        run: npx playwright test tests/e2e/accessibility.spec.ts
+      - name: Run test suite (setup + unit + e2e)
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET || 'test-session-secret-min-32-chars-long-for-ci' }}
+          GOOGLE_AI_KEY: ${{ secrets.GOOGLE_AI_KEY || 'test-google-ai-key' }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME || 'test-cloud' }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY || 'test-key' }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET || 'test-secret' }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY || 'test-resend-key' }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL || 'test@example.com' }}
+          REPLICATE_WEBHOOK_SECRET: ${{ secrets.REPLICATE_WEBHOOK_SECRET || 'test-webhook-secret' }}
+          APP_BASE_URL: http://0.0.0.0:5000
+          ALLOWED_ORIGINS: http://localhost:5173,http://0.0.0.0:5000
+        run: npm run test:ci
 
       - name: Upload test results
         if: always()
@@ -72,10 +76,7 @@ jobs:
           path: |
             test-results/
             playwright-report/
-
-      - name: Generate coverage report
-        if: always()
-        run: npm run test:coverage
+            coverage/
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

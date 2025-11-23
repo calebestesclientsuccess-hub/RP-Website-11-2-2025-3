@@ -1,7 +1,7 @@
 
-import { Request, Response, NextFunction } from 'express';
-import createDOMPurify from 'isomorphic-dompurify';
-import validator from 'validator';
+import { Request, Response, NextFunction } from "express";
+import createDOMPurify from "isomorphic-dompurify";
+import validator from "validator";
 
 const DOMPurify = createDOMPurify();
 
@@ -26,21 +26,34 @@ export function sanitizeText(text: string): string {
   return validator.escape(text.trim());
 }
 
+interface SanitizeOptions {
+  excludeFields?: string[];
+}
+
 /**
  * Recursively sanitize object properties
  */
-function sanitizeObject(obj: any, htmlFields: string[] = []): any {
-  if (typeof obj !== 'object' || obj === null) {
+function sanitizeObject(
+  obj: any,
+  htmlFields: string[] = [],
+  excludeFields: Set<string> = new Set(),
+): any {
+  if (typeof obj !== "object" || obj === null) {
     return obj;
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(item => sanitizeObject(item, htmlFields));
+    return obj.map((item) => sanitizeObject(item, htmlFields, excludeFields));
   }
 
   const sanitized: any = {};
   for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'string') {
+    if (excludeFields.has(key)) {
+      sanitized[key] = value;
+      continue;
+    }
+
+    if (typeof value === "string") {
       // Rich text fields get HTML sanitization
       if (htmlFields.includes(key)) {
         sanitized[key] = sanitizeHtml(value);
@@ -48,8 +61,8 @@ function sanitizeObject(obj: any, htmlFields: string[] = []): any {
         // Other strings get escaped
         sanitized[key] = sanitizeText(value);
       }
-    } else if (typeof value === 'object' && value !== null) {
-      sanitized[key] = sanitizeObject(value, htmlFields);
+    } else if (typeof value === "object" && value !== null) {
+      sanitized[key] = sanitizeObject(value, htmlFields, excludeFields);
     } else {
       sanitized[key] = value;
     }
@@ -61,10 +74,14 @@ function sanitizeObject(obj: any, htmlFields: string[] = []): any {
  * Middleware to sanitize request body
  * @param htmlFields - Array of field names that contain rich text/HTML
  */
-export function sanitizeInput(htmlFields: string[] = []) {
+export function sanitizeInput(
+  htmlFields: string[] = [],
+  options?: SanitizeOptions,
+) {
+  const excludeFields = new Set(options?.excludeFields ?? []);
   return (req: Request, res: Response, next: NextFunction) => {
-    if (req.body && typeof req.body === 'object') {
-      req.body = sanitizeObject(req.body, htmlFields);
+    if (req.body && typeof req.body === "object") {
+      req.body = sanitizeObject(req.body, htmlFields, excludeFields);
     }
     next();
   };

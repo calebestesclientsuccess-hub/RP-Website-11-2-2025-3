@@ -1,13 +1,7 @@
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes of inactivity
-
-declare module 'express-session' {
-  interface SessionData {
-    lastActivity?: number;
-  }
-}
 
 /**
  * Track session activity and enforce inactivity timeout

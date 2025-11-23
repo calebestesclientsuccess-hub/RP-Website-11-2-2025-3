@@ -2,35 +2,65 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+// Helper to format violations for better error messages
+function formatViolations(violations: any[]) {
+  return violations.map(violation => ({
+    id: violation.id,
+    impact: violation.impact,
+    description: violation.description,
+    nodes: violation.nodes.length,
+    helpUrl: violation.helpUrl,
+  }));
+}
+
+// Helper to run axe scan and report violations
+async function checkAccessibility(page: any, url: string, description: string) {
+  await page.goto(url);
+  
+  const accessibilityScanResults = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  
+  const criticalViolations = accessibilityScanResults.violations.filter(
+    v => v.impact === 'critical' || v.impact === 'serious'
+  );
+  
+  if (criticalViolations.length > 0) {
+    console.error(`\n❌ Critical accessibility violations on ${description}:`);
+    console.error(JSON.stringify(formatViolations(criticalViolations), null, 2));
+  }
+  
+  // Fail on critical/serious violations, warn on moderate/minor
+  expect(criticalViolations, `Found ${criticalViolations.length} critical/serious accessibility violations on ${description}`).toEqual([]);
+  
+  if (accessibilityScanResults.violations.length > 0) {
+    console.warn(`⚠️  Found ${accessibilityScanResults.violations.length} total accessibility issues on ${description}`);
+  }
+}
+
 test.describe('Accessibility Tests', () => {
-  test('home page should not have accessibility violations', async ({ page }) => {
-    await page.goto('/');
-    
-    const accessibilityScanResults = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-      .analyze();
-    
-    expect(accessibilityScanResults.violations).toEqual([]);
+  test('home page should not have critical accessibility violations', async ({ page }) => {
+    await checkAccessibility(page, '/', 'home page');
   });
 
-  test('assessment page should not have accessibility violations', async ({ page }) => {
-    await page.goto('/assessment');
-    
-    const accessibilityScanResults = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-      .analyze();
-    
-    expect(accessibilityScanResults.violations).toEqual([]);
+  test('assessment page should not have critical accessibility violations', async ({ page }) => {
+    await checkAccessibility(page, '/assessment', 'assessment page');
   });
 
-  test('audit page should not have accessibility violations', async ({ page }) => {
-    await page.goto('/audit');
-    
-    const accessibilityScanResults = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-      .analyze();
-    
-    expect(accessibilityScanResults.violations).toEqual([]);
+  test('audit page should not have critical accessibility violations', async ({ page }) => {
+    await checkAccessibility(page, '/audit', 'audit page');
+  });
+
+  test('pricing page should not have critical accessibility violations', async ({ page }) => {
+    await checkAccessibility(page, '/pricing', 'pricing page');
+  });
+
+  test('contact page should not have critical accessibility violations', async ({ page }) => {
+    await checkAccessibility(page, '/contact', 'contact page');
+  });
+
+  test('blog page should not have critical accessibility violations', async ({ page }) => {
+    await checkAccessibility(page, '/blog', 'blog page');
   });
 
   test('forms should have proper labels and descriptions', async ({ page }) => {

@@ -1,4 +1,4 @@
-import { sendGmailEmail } from "./gmail-client";
+import { getUncachableResendClient } from "./resend-client";
 import { storage } from "../storage";
 import type { Lead } from "@shared/schema";
 
@@ -149,19 +149,24 @@ export async function sendLeadNotificationEmail(lead: Lead): Promise<void> {
       </html>
     `;
 
-    // Send email to all users
-    const emailPromises = usersWithEmails.map(user => 
-      sendGmailEmail({
-        to: user.email!,
-        subject: `New Lead: ${lead.name || lead.email} from ${lead.source}`,
-        html: emailHtml,
-      }).catch(error => {
-        console.error(`Failed to send lead notification to ${user.email}:`, error);
-      })
+    const { client, fromEmail } = await getUncachableResendClient();
+
+    // Send email to all users via Resend
+    const emailPromises = usersWithEmails.map(user =>
+      client.emails
+        .send({
+          from: fromEmail,
+          to: user.email!,
+          subject: `New Lead: ${lead.name || lead.email} from ${lead.source}`,
+          html: emailHtml,
+        })
+        .catch((error) => {
+          console.error(`Failed to send lead notification to ${user.email}:`, error);
+        }),
     );
 
     await Promise.all(emailPromises);
-    console.log(`Lead notification sent to ${usersWithEmails.length} user(s)`);
+    console.log(`Lead notification sent to ${usersWithEmails.length} user(s) via Resend`);
   } catch (error) {
     console.error("Error sending lead notification email:", error);
     // Don't throw - we don't want email failures to block lead capture

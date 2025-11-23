@@ -5,6 +5,11 @@
  */
 
 import { GoogleGenAI } from "@google/genai";
+import { env } from "../config/env";
+const REFINEMENT_MODEL_ID = "gemini-2.0-thinking-exp";
+const GEMINI_BASE_URL =
+  env.AI_INTEGRATIONS_GEMINI_BASE_URL ||
+  "https://generativelanguage.googleapis.com";
 
 import { generateLayoutFromPrompt } from "../services/layoutGenerator";
 import { buildLayoutPrompt } from "../services/promptBuilder";
@@ -33,11 +38,14 @@ export class RefinementPipeline {
   private stages: RefinementStage[] = [];
 
   constructor(apiKey: string) {
+    if (!apiKey) {
+      throw new Error("Gemini API key not configured");
+    }
     this.ai = new GoogleGenAI({
       apiKey,
       httpOptions: {
         apiVersion: "",
-        baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASEURL || "",
+        baseUrl: GEMINI_BASE_URL,
       },
     });
   }
@@ -91,7 +99,7 @@ Return JSON array of issues:
 }]`;
 
     const response = await this.ai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
+      model: REFINEMENT_MODEL_ID,
       contents: [{ role: "user", parts: [{ text: auditPrompt }] }],
       config: {
         responseMimeType: "application/json",
@@ -129,7 +137,7 @@ Return JSON array:
 }]`;
 
     const response = await this.ai.models.generateContent({
-      model: "gemini-2.0-flash-exp",
+      model: REFINEMENT_MODEL_ID,
       contents: [{ role: "user", parts: [{ text: improvementPrompt }] }],
       config: {
         responseMimeType: "application/json",

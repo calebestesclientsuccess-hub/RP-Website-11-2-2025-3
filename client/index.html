@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
@@ -13,6 +13,7 @@
     <!-- SEO Performance Optimization -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
 
     <!-- Security Headers for SEO Trust -->
@@ -43,12 +44,15 @@
     <!-- Resource Hints -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://plausible.io" />
     <link rel="dns-prefetch" href="https://revenueparty.com" />
 
     <!-- Sitemap -->
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap-index.xml" />
 
-    <!-- Structured Data (JSON-LD) -->
+    <!-- Structured Data (JSON-LD) - nonces will be injected by server -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -84,6 +88,11 @@
     <!-- Preload critical fonts -->
     <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="preload" href="/fonts/jetbrains-mono-var.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    
+    <!-- Preload LCP Image Candidate (Logo or Hero) -->
+    <!-- Adjust this path if the hero image is dynamic or different -->
+    <!-- <link rel="preload" as="image" href="/assets/hero-bg.jpg"> -->
+
   </head>
   <body>
     <div id="root"></div>

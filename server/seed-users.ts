@@ -1,6 +1,7 @@
 import { db } from "./db";
 import { users } from "@shared/schema";
 import bcrypt from "bcryptjs";
+import { PASSWORD_HASH_ROUNDS } from "./utils/password-validator";
 
 const userAccounts = [
   {
@@ -39,7 +40,7 @@ async function seedUsers() {
   console.log("Starting user account creation...");
   
   const temporaryPassword = "test1234";
-  const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+  const hashedPassword = await bcrypt.hash(temporaryPassword, PASSWORD_HASH_ROUNDS);
   
   for (const account of userAccounts) {
     try {

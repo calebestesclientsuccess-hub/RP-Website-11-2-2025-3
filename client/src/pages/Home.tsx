@@ -25,6 +25,7 @@ import { InternalLinks } from "@/components/InternalLinks";
 import { getRelatedLinks } from "@/lib/content-graph";
 import { RecentProjects } from "@/components/RecentProjects";
 import { MobileOverlay } from "@/components/MobileOverlay";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Lazy load GSAP-heavy animation component
 const SimplifiedOrbitalPowers = lazy(() => import("@/components/SimplifiedOrbitalPowers").then(module => ({ default: module.SimplifiedOrbitalPowers })));
@@ -33,7 +34,9 @@ const SimplifiedOrbitalPowers = lazy(() => import("@/components/SimplifiedOrbita
 const podVideo = "/sdr-pod-video.mp4";
 
 export default function Home() {
+  console.log('🏠 Home component rendering...');
   const videoRef = useRef<HTMLVideoElement>(null);
+
   const [hasPlayed, setHasPlayed] = useState(false);
   const scrollAwayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollAwayStartRef = useRef<number | null>(null);
@@ -98,10 +101,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <MobileOverlay 
-        maxWidth={768}
-        customMessage="For the best experience viewing our GTM Engine demos and interactive calculators, please visit on desktop."
-      />
       <SEO
         title="GTM Engine: Deploy Elite BDR Pods | Revenue Party"
         description="Stop hiring lone wolf SDRs. Deploy a complete GTM Engine with elite BDR pods, AI-powered Signal Factory, and guaranteed 20+ qualified appointments monthly. Own the system, not rent headcount."
@@ -122,8 +121,8 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-32 px-4 md:px-6 lg:px-8 overflow-hidden gradient-mesh-container">
-        {/* Animated gradient mesh background */}
-        <StaticGradientBg />
+        {/* Subtle gradient backdrop replacing animated constellation */}
+        <StaticGradientBg className="opacity-80" />
 
         {/* Light grid dots pattern (light mode only) */}
         <div className="light-grid-dots" />
@@ -524,14 +523,16 @@ export default function Home() {
 
           {/* Video Showcase - Seamlessly Integrated */}
           <div className="mt-24">
-            <Suspense fallback={
-              <div className="flex flex-col items-center justify-center min-h-[600px] gap-4" data-testid="loading-orbital-powers">
-                <Skeleton className="h-96 w-full max-w-4xl rounded-lg" />
-                <Skeleton className="h-8 w-64" />
-              </div>
-            }>
-              <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={
+                <div className="flex flex-col items-center justify-center min-h-[600px] gap-4" data-testid="loading-orbital-powers">
+                  <Skeleton className="h-96 w-full max-w-4xl rounded-lg" />
+                  <Skeleton className="h-8 w-64" />
+                </div>
+              }>
+                <SimplifiedOrbitalPowers videoSrc={podVideo} videoRef={videoRef} />
+              </Suspense>
+            </ErrorBoundary>
           </div>
 
           {/* CTA */}
@@ -750,8 +751,7 @@ export default function Home() {
             <div className="text-center mt-16">
               <Button
                 size="lg"
-                variant="secondary"
-                className="secondary-cta text-lg px-8 py-6"
+                className="gradient-button-crimson-blue shadow-lg text-lg px-8 py-6"
                 data-testid="button-calculate-savings"
                 asChild
               >

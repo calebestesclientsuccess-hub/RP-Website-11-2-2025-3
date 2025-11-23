@@ -798,7 +798,7 @@ export default function PortfolioBuilderChatFirst() {
     },
   });
   const ensureProject = useCallback(
-    async (options?: { title?: string; slugHint?: string; client?: string }) => {
+    async (options?: { title?: string; slugHint?: string; client?: string; colors?: any }) => {
       // If we already have a project ID and we're not in "new project" mode, just return it.
       if (selectedProjectId && !isNewProject) {
         return selectedProjectId;
@@ -826,11 +826,25 @@ export default function PortfolioBuilderChatFirst() {
 
       const creationPromise = (async () => {
         try {
-          const response = await apiRequest("POST", "/api/projects", {
+          const payload: any = {
             title: resolvedTitle,
             slug,
             clientName: options?.client || newProjectClient || null,
-          });
+          };
+          
+          // Include colors if provided (from initial creation inputs)
+          if (options?.colors) {
+            payload.brandColors = options.colors;
+          } else if (isNewProject) {
+            // Fallback to state values if not passed explicitly
+            payload.brandColors = {
+              primary: brandColorPrimary,
+              secondary: brandColorSecondary,
+              accent: brandColorTertiary,
+            };
+          }
+
+          const response = await apiRequest("POST", "/api/projects", payload);
           
           if (!response.ok) {
             throw new Error("Failed to create project");
@@ -876,6 +890,9 @@ export default function PortfolioBuilderChatFirst() {
       newProjectTitle,
       selectedProjectId,
       toastWithMood,
+      brandColorPrimary,
+      brandColorSecondary,
+      brandColorTertiary
     ]
   );
 
@@ -1191,7 +1208,16 @@ export default function PortfolioBuilderChatFirst() {
     
     // Small delay to prevent rapid typing from triggering creation
     const timer = setTimeout(() => {
-      ensureProject({ title: newProjectTitle, client: newProjectClient }).catch(err => {
+      const colorsPayload = {
+        primary: brandColorPrimary,
+        secondary: brandColorSecondary,
+        accent: brandColorTertiary,
+      };
+      ensureProject({ 
+        title: newProjectTitle, 
+        client: newProjectClient,
+        colors: colorsPayload 
+      }).catch(err => {
         console.error("Auto-create error:", err);
       }).finally(() => {
         autoCreateTriggeredRef.current = false;
@@ -2186,7 +2212,7 @@ export default function PortfolioBuilderChatFirst() {
         <title>Portfolio Builder | Admin</title>
       </Helmet>
       
-      <SidebarProvider style={style as React.CSSProperties}>
+      <SidebarProvider defaultOpen={false} style={style as React.CSSProperties}>
         <div className="flex h-screen w-full">
           <AdminSidebar />
           <div className="flex flex-col flex-1">
@@ -2372,26 +2398,35 @@ export default function PortfolioBuilderChatFirst() {
                                 onChange={(e) => setNewProjectClient(e.target.value)}
                               />
                             </div>
-                            <div className="flex gap-2">
-                              <Input
-                                type="color"
-                                value={brandColorPrimary}
-                                onChange={(e) => setBrandColorPrimary(e.target.value)}
-                                className="w-16"
-                              />
-                              <Input
-                                type="color"
-                                value={brandColorSecondary}
-                                onChange={(e) => setBrandColorSecondary(e.target.value)}
-                                className="w-16"
-                              />
-                              <Input
-                                type="color"
-                                value={brandColorTertiary}
-                                onChange={(e) => setBrandColorTertiary(e.target.value)}
-                                className="w-16"
-                              />
-                              <span className="text-xs text-muted-foreground self-center">Brand swatches for quick naming + analytics.</span>
+                            <div className="flex gap-2 items-center">
+                              <div className="flex flex-col gap-1">
+                                <Label className="text-[10px] uppercase text-muted-foreground">Primary</Label>
+                                <Input
+                                  type="color"
+                                  value={brandColorPrimary}
+                                  onChange={(e) => setBrandColorPrimary(e.target.value)}
+                                  className="w-16 h-8 p-1"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <Label className="text-[10px] uppercase text-muted-foreground">Secondary</Label>
+                                <Input
+                                  type="color"
+                                  value={brandColorSecondary}
+                                  onChange={(e) => setBrandColorSecondary(e.target.value)}
+                                  className="w-16 h-8 p-1"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <Label className="text-[10px] uppercase text-muted-foreground">Accent</Label>
+                                <Input
+                                  type="color"
+                                  value={brandColorTertiary}
+                                  onChange={(e) => setBrandColorTertiary(e.target.value)}
+                                  className="w-16 h-8 p-1"
+                                />
+                              </div>
+                              <span className="text-xs text-muted-foreground self-center mt-4 ml-2">Brand swatches for quick naming + analytics.</span>
                             </div>
                           </div>
                         ) : (
@@ -3177,14 +3212,21 @@ export default function PortfolioBuilderChatFirst() {
                   <div className="w-[30%] flex flex-col" data-tour-id="tour-preview-panel">
                     <div className="p-4 border-b flex items-center justify-between">
                       <h3 className="font-medium">Live Preview</h3>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleQuickAction("fullscreen")}
-                        data-testid="fullscreen-preview"
-                      >
-                        <Maximize className="w-4 h-4" />
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleQuickAction("fullscreen")}
+                              data-testid="fullscreen-preview"
+                            >
+                              <Maximize className="w-4 h-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Pop out to full screen</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                     <div className="flex-1 overflow-hidden">
                       <LivePreviewPanel

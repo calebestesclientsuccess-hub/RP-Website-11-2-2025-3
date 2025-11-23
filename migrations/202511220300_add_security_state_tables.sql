@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS ip_reputation (
+  ip TEXT PRIMARY KEY,
+  violations INTEGER NOT NULL DEFAULT 0,
+  last_violation TIMESTAMPTZ,
+  block_until TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS login_attempts (
+  identifier TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0,
+  last_attempt TIMESTAMPTZ,
+  locked_until TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+

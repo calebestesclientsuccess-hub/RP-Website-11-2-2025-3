@@ -1,0 +1,13 @@
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Revenue Party",
+  "url": "https://revenueparty.com",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://revenueparty.com/blog?search={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+
+

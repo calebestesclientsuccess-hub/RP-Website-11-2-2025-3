@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -23,8 +24,9 @@ import {
 import { Helmet } from "react-helmet-async";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { runTextGenerationJob } from "@/lib/ai-text";
 import { useLocation, useRoute } from "wouter";
-import { Loader2, Link as LinkIcon, Lightbulb, Sparkles } from "lucide-react";
+import { Loader2, Link as LinkIcon, Lightbulb, Sparkles, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { BlogPost, InsertBlogPost } from "@shared/schema";
 import { insertBlogPostSchema } from "@shared/schema";
@@ -32,7 +34,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { SERPPreview } from "@/components/admin/SERPPreview";
+import { evaluateSeoWarnings } from "@/lib/seo-gate";
 
 const preprocessEmptyString = <T,>(schema: z.ZodType<T>) =>
   z.preprocess((value) => {
@@ -145,6 +149,7 @@ export default function BlogPostForm() {
   const isEdit = !!match;
   const postId = params?.id;
   const [isGeneratingSeo, setIsGeneratingSeo] = useState(false);
+  const [seoAcknowledged, setSeoAcknowledged] = useState(false);
 
   const style = {
     "--sidebar-width": "16rem",
@@ -206,6 +211,31 @@ export default function BlogPostForm() {
   const title = form.watch("title");
   const status = form.watch("status");
   const content = form.watch("content");
+  const watchedMetaTitle = (form.watch("metaTitle") || "").trim();
+  const watchedMetaDescription = (form.watch("metaDescription") || "").trim();
+  const watchedExcerpt = (form.watch("excerpt") || "").trim();
+  const metaTitleValue = watchedMetaTitle || (title?.trim() ?? "");
+  const metaDescriptionValue = watchedMetaDescription || watchedExcerpt;
+  const canonicalValue = (form.watch("canonicalUrl") || "").trim();
+  const slugValue = form.watch("slug") || "";
+
+  const seoWarnings = useMemo(
+    () =>
+      evaluateSeoWarnings({
+        title: metaTitleValue,
+        description: metaDescriptionValue,
+        canonicalUrl: canonicalValue,
+      }),
+    [metaTitleValue, metaDescriptionValue, canonicalValue],
+  );
+
+  const warningsSignature = seoWarnings.join("|");
+  const requiresPublishGate = status === "published" || status === "scheduled";
+  const isPublishBlocked = requiresPublishGate && seoWarnings.length > 0 && !seoAcknowledged;
+
+  useEffect(() => {
+    setSeoAcknowledged(false);
+  }, [warningsSignature, requiresPublishGate]);
 
   useEffect(() => {
     if (title && !isEdit) {
@@ -272,13 +302,12 @@ export default function BlogPostForm() {
 
     setIsGeneratingSeo(true);
     try {
-      const aiResponse = await apiRequest("POST", "/api/ai/text", {
+      const metadata = await runTextGenerationJob({
         brandVoice: "Revenue Party authoritative, data-driven, confident",
         topic: form.getValues("title") || "Revenue Party GTM Playbook",
         type: "seo-metadata",
         content: body,
       });
-      const metadata = await aiResponse.json();
       if (metadata.slug) {
         form.setValue("slug", slugify(metadata.slug), { shouldDirty: true });
       }
@@ -323,6 +352,19 @@ export default function BlogPostForm() {
     } else {
       createMutation.mutate(postData as InsertBlogPost);
     }
+  };
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    if (requiresPublishGate && seoWarnings.length > 0 && !seoAcknowledged) {
+      event.preventDefault();
+      toast({
+        title: "Resolve SEO blockers",
+        description: "Shorten the highlighted fields or acknowledge the risk before publishing.",
+        variant: "destructive",
+      });
+      return;
+    }
+    form.handleSubmit(onSubmit)(event);
   };
 
   const handleCancel = () => {
@@ -375,7 +417,7 @@ export default function BlogPostForm() {
             <main className="flex-1 overflow-auto p-6">
               <div className="max-w-4xl mx-auto">
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <form onSubmit={handleFormSubmit} className="space-y-6">
                     <FormField
                       control={form.control}
                       name="title"
@@ -441,72 +483,83 @@ export default function BlogPostForm() {
                         </Button>
                       </div>
 
-                      <FormField
-                        control={form.control}
-                        name="metaTitle"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Meta Title</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                value={field.value || ""}
-                                placeholder="GTM Engine: Deploy Elite Pods in 45 Days"
-                                data-testid="input-meta-title"
-                              />
-                            </FormControl>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {(field.value?.length ?? 0)}/60 characters
-                            </p>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+                        <div className="space-y-4">
+                          <FormField
+                            control={form.control}
+                            name="metaTitle"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Meta Title</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    value={field.value || ""}
+                                    placeholder="GTM Engine: Deploy Elite Pods in 45 Days"
+                                    data-testid="input-meta-title"
+                                  />
+                                </FormControl>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {(field.value?.length ?? 0)}/60 characters
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                      <FormField
-                        control={form.control}
-                        name="metaDescription"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Meta Description</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                {...field}
-                                value={field.value || ""}
-                                rows={3}
-                                placeholder="Build a GTM engine that multiplies pipeline 3-5x in 90 days..."
-                                data-testid="textarea-meta-description"
-                              />
-                            </FormControl>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {(field.value?.length ?? 0)}/160 characters
-                            </p>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                          <FormField
+                            control={form.control}
+                            name="metaDescription"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Meta Description</FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    {...field}
+                                    value={field.value || ""}
+                                    rows={3}
+                                    placeholder="Build a GTM engine that multiplies pipeline 3-5x in 90 days..."
+                                    data-testid="textarea-meta-description"
+                                  />
+                                </FormControl>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {(field.value?.length ?? 0)}/160 characters
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
 
-                      <FormField
-                        control={form.control}
-                        name="canonicalUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Canonical URL</FormLabel>
-                            <FormControl>
-                              <Input
-                                {...field}
-                                value={field.value || ""}
-                                placeholder="https://revenueparty.com/blog/gtm-engine"
-                                data-testid="input-canonical-url"
-                              />
-                            </FormControl>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Leave blank to use the live URL automatically.
-                            </p>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                          <FormField
+                            control={form.control}
+                            name="canonicalUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Canonical URL</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    value={field.value || ""}
+                                    placeholder="https://revenueparty.com/blog/gtm-engine"
+                                    data-testid="input-canonical-url"
+                                  />
+                                </FormControl>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Leave blank to use the live URL automatically.
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <SERPPreview
+                          title={metaTitleValue || ""}
+                          description={metaDescriptionValue || ""}
+                          url={canonicalValue}
+                          slug={slugValue}
+                        />
+                      </div>
                     </div>
 
                     <FormField
@@ -697,10 +750,34 @@ export default function BlogPostForm() {
                       />
                     )}
 
+                    {requiresPublishGate && seoWarnings.length > 0 && (
+                      <div className="rounded-md border border-destructive/40 bg-destructive/5 p-4 space-y-3">
+                        <div className="flex items-center gap-2 text-destructive">
+                          <AlertTriangle className="h-4 w-4" />
+                          <p className="font-semibold text-sm">Resolve SEO warnings before publishing</p>
+                        </div>
+                        <ul className="list-disc list-inside text-sm text-destructive/80">
+                          {seoWarnings.map((warning) => (
+                            <li key={warning}>{warning}</li>
+                          ))}
+                        </ul>
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            id="seo-override"
+                            checked={seoAcknowledged}
+                            onCheckedChange={(checked) => setSeoAcknowledged(Boolean(checked))}
+                          />
+                          <Label htmlFor="seo-override" className="text-sm text-muted-foreground">
+                            I understand the risk and still want to publish.
+                          </Label>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="flex gap-4 pt-4">
                       <Button
                         type="submit"
-                        disabled={isPending}
+                        disabled={isPending || isPublishBlocked}
                         data-testid="button-save"
                       >
                         {isPending ? (

@@ -1,6 +1,8 @@
 
 import validator from 'validator';
 
+export const PASSWORD_HASH_ROUNDS = 12;
+
 // Common passwords list (subset - in production, use a comprehensive list)
 const COMMON_PASSWORDS = [
   'password', '123456', '12345678', 'qwerty', 'abc123', 'monkey',
@@ -24,10 +26,10 @@ export function validatePasswordStrength(password: string): PasswordStrength {
   const suggestions: string[] = [];
   let score = 0;
 
-  // Minimum length check (8 characters)
-  if (password.length < 8) {
-    errors.push('Password must be at least 8 characters long');
-  } else if (password.length >= 12) {
+  // Minimum length check (12 characters)
+  if (password.length < 12) {
+    errors.push('Password must be at least 12 characters long');
+  } else {
     score += 1;
   }
 
@@ -89,7 +91,7 @@ export function validatePasswordStrength(password: string): PasswordStrength {
   }
 
   return {
-    valid: errors.length === 0 && score >= 2,
+    valid: errors.length === 0 && score >= 3,
     score: Math.min(4, score),
     errors,
     suggestions,

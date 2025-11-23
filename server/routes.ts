@@ -5,8 +5,9 @@ import crypto from "crypto";
 import multer from "multer";
 import path from "path";
 import { storage } from "./storage";
-import { DEFAULT_TENANT_ID, DEFAULT_USER_ID } from "./middleware/tenant";
+import { DEFAULT_TENANT_ID, requireUserContext } from "./middleware/tenant";
 import cloudinary from "./cloudinary";
+import { env } from "./config/env";
 import {
   insertEmailCaptureSchema,
   insertBlogPostSchema,
@@ -54,10 +55,10 @@ import { calculatePointsBasedBucket, calculateDecisionTreeBucket } from "./utils
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templates";
-import { sendGmailEmail } from "./utils/gmail-client";
+import { getUncachableResendClient } from "./utils/resend-client";
 import { sendLeadNotificationEmail } from "./utils/lead-notifications";
 import { db } from "./db";
-import { leadLimiter } from "./middleware/rate-limit";
+import { leadLimiter, formLimiter, authLimiter } from "./middleware/rate-limit";
 import { sanitizeInput } from "./middleware/input-sanitization";
 import { pdfUpload, imageUpload, validateUploadedFile } from "./middleware/file-validation";
 import { validatePasswordStrength } from "./utils/password-validator";
@@ -76,6 +77,10 @@ import leadsRouter from './routes/leads';
 import aiGenerationRouter from './routes/ai-generation';
 import crmRouter from './routes/crm';
 import { requireAuth } from './middleware/auth';
+import { securityHeaders } from "./middleware/security-headers";
+import { tenantMiddleware } from "./middleware/tenant";
+import { globalSanitizer } from "./middleware/global-sanitizer";
+import { normalizeFormData } from "./utils/form-data";
 
 
 // Define default director configuration for new scenes
@@ -107,6 +112,10 @@ const PIPELINE_STAGE_DEFINITIONS: Array<{ key: string; label: string }> = [
 ];
 
 const HEX_COLOR_REGEX = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
+const GOOGLE_AI_KEY = env.GOOGLE_AI_KEY;
+const GEMINI_BASE_URL =
+  env.AI_INTEGRATIONS_GEMINI_BASE_URL ||
+  "https://generativelanguage.googleapis.com";
 
 const journeyBrandSchema = z.object({
   logoUrl: z.string().url().optional().nullable(),
@@ -593,8 +602,13 @@ function calculateBucket(data: Partial<InsertAssessmentResponse>): string {
 }
 
 export async function registerRoutes(app: Express): Promise<void> {
+  // Apply global middleware
+  app.use(securityHeaders);
+  app.use(tenantMiddleware);
+  app.use(globalSanitizer);
+
   // Authentication endpoints
-  app.post("/api/auth/register", async (req, res) => {
+  app.post("/api/auth/register", authLimiter, async (req, res) => {
     try {
       const result = insertUserSchema.safeParse(req.body);
       if (!result.success) {
@@ -652,7 +666,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  app.post("/api/auth/login", checkAccountLockout, async (req, res) => {
+  app.post("/api/auth/login", authLimiter, checkAccountLockout, async (req, res) => {
     try {
       const result = loginSchema.safeParse(req.body);
       if (!result.success) {
@@ -978,7 +992,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(400).json({ error: "Configure at least one section before running the pipeline" });
       }
 
-      if (!process.env.AI_INTEGRATIONS_GEMINI_API_KEY) {
+      if (!GOOGLE_AI_KEY) {
         return res.status(500).json({ error: "Gemini API key not configured" });
       }
 
@@ -1010,7 +1024,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         sectionPrompts: parsed.data.sectionPrompts?.length || 0,
       });
 
-      const pipeline = new RefinementPipeline(process.env.AI_INTEGRATIONS_GEMINI_API_KEY);
+      const pipeline = new RefinementPipeline(GOOGLE_AI_KEY);
       const brandPayload = buildBrandPayload(project);
       const draftPayload = buildDraftPayload(
         sections,
@@ -1104,7 +1118,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(404).json({ error: "Project not found" });
       }
 
-      if (!process.env.AI_INTEGRATIONS_GEMINI_API_KEY) {
+      if (!GOOGLE_AI_KEY) {
         return res.status(500).json({ error: "Gemini API key not configured" });
       }
 
@@ -1133,7 +1147,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(400).json({ error: "Stage 1 data missing; cannot resume" });
       }
 
-      const pipeline = new RefinementPipeline(process.env.AI_INTEGRATIONS_GEMINI_API_KEY);
+      const pipeline = new RefinementPipeline(GOOGLE_AI_KEY);
 
       await mutatePipelineRunStages(
         runId,
@@ -1163,7 +1177,12 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Get current layout draft
   app.get("/api/admin/layout-draft", requireAuth, async (req: Request, res: Response) => {
     try {
-      const draft = await storage.getLayoutDraft(req.tenantId || DEFAULT_TENANT_ID, req.session.userId || DEFAULT_USER_ID);
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const userId = requireUserContext(req, res);
+      if (!userId) {
+        return;
+      }
+      const draft = await storage.getLayoutDraft(tenantId, userId);
       if (!draft) {
         return res.status(404).json({ error: "Draft not found" });
       }
@@ -1179,7 +1198,10 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       const { draftJson } = req.body;
       const tenantId = req.tenantId || DEFAULT_TENANT_ID;
-      const userId = req.session.userId;
+      const userId = requireUserContext(req, res);
+      if (!userId) {
+        return;
+      }
       const existing = await storage.getLayoutDraft(tenantId, userId);
       if (existing) {
         await storage.updateLayoutDraft(existing.id, { draftJson });
@@ -1197,15 +1219,18 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.post("/api/admin/generate-layout", requireAuth, async (req: Request, res: Response) => {
     try {
       const tenantId = req.tenantId || DEFAULT_TENANT_ID;
-      const userId = req.session.userId;
+      const userId = requireUserContext(req, res);
+      if (!userId) {
+        return;
+      }
       const brand = await storage.getBrandSettings(tenantId);
-      const draft = await storage.getLayoutDraft(req.tenantId || DEFAULT_TENANT_ID, req.session.userId || DEFAULT_USER_ID);
+      const draft = await storage.getLayoutDraft(tenantId, userId);
       if (!brand || !draft) {
         return res.status(400).json({ error: "Brand settings or draft not found" });
       }
 
       // Initialize pipeline
-      const pipeline = new RefinementPipeline(process.env.GENAI_API_KEY || "");
+      const pipeline = new RefinementPipeline(GOOGLE_AI_KEY);
 
       // Stage 1: Generate V1 (Initial Layout)
       // We pass brand and draft to the pipeline
@@ -1301,7 +1326,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   // Password reset endpoints
-  app.post("/api/auth/forgot-password", async (req, res) => {
+  app.post("/api/auth/forgot-password", authLimiter, async (req, res) => {
     try {
       const emailSchema = z.object({
         email: z.string().email("Invalid email address"),
@@ -1345,9 +1370,12 @@ export async function registerRoutes(app: Express): Promise<void> {
       const host = req.get('host');
       const resetLink = `${protocol}://${host}/admin/reset-password/${token}`;
 
-      // Send password reset email via Gmail
+      // Send password reset email via Resend
       try {
-        await sendGmailEmail({
+        const { client, fromEmail } = await getUncachableResendClient();
+
+        await client.emails.send({
+          from: fromEmail,
           to: email,
           subject: "Reset Your Admin Password",
           html: `
@@ -1426,7 +1454,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  app.post("/api/auth/reset-password", async (req, res) => {
+  app.post("/api/auth/reset-password", authLimiter, async (req, res) => {
     try {
       const resetPasswordSchema = z.object({
         token: z.string(),
@@ -1573,7 +1601,11 @@ export async function registerRoutes(app: Express): Promise<void> {
   */ // End of commented out image upload endpoint
 
   // Email Capture endpoint for ROI Calculator
-  app.post("/api/email-capture", async (req, res) => {
+  app.post(
+    "/api/email-capture",
+    formLimiter,
+    sanitizeInput(["notes"]),
+    async (req, res) => {
     try {
       // Validate request body
       const result = insertEmailCaptureSchema.safeParse(req.body);
@@ -1619,7 +1651,11 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   // Share ROI Report endpoint
-  app.post("/api/share-roi-report", async (req, res) => {
+  app.post(
+    "/api/share-roi-report",
+    formLimiter,
+    sanitizeInput(["message"]),
+    async (req, res) => {
     try {
       const { emails, ltv, closeRate, engineName, monthlyInvestment, monthlySQOs,
         costPerMeeting, projectedDealsPerMonth, projectedLTVPerMonth, monthlyROI,
@@ -1765,13 +1801,16 @@ export async function registerRoutes(app: Express): Promise<void> {
 </html>
       `;
 
+      const { client, fromEmail } = await getUncachableResendClient();
+
       // Send email to all recipients
       for (const email of emails) {
         try {
-          await sendGmailEmail({
+          await client.emails.send({
+            from: fromEmail,
             to: email,
             subject: "Your GTM Engine ROI Report",
-            html: htmlContent
+            html: htmlContent,
           });
         } catch (emailError) {
           console.error(`Failed to send email to ${email}:`, emailError);
@@ -1791,7 +1830,11 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   // Lead capture endpoint for DynamicForm submissions
-  app.post("/api/leads/capture", async (req, res) => {
+  app.post(
+    "/api/leads/capture",
+    leadLimiter,
+    sanitizeInput([], { excludeFields: ["formData"] }),
+    async (req, res) => {
     try {
       const result = insertLeadSchema.safeParse(req.body);
 
@@ -1803,8 +1846,20 @@ export async function registerRoutes(app: Express): Promise<void> {
         });
       }
 
+      let normalizedFormData: string | undefined;
+      try {
+        const normalized = normalizeFormData(result.data.formData);
+        normalizedFormData = normalized.value;
+      } catch {
+        return res.status(400).json({
+          error: "Invalid formData payload",
+          details: "formData must be valid JSON",
+        });
+      }
+
       const lead = await storage.createLead(req.tenantId || DEFAULT_TENANT_ID, {
         ...result.data,
+        formData: normalizedFormData,
         userAgent: req.headers['user-agent'],
         ipAddress: req.ip,
       });
@@ -1829,7 +1884,11 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   // Lead submission endpoints
-  app.post("/api/leads/audit-request", leadLimiter, async (req, res) => {
+  app.post(
+    "/api/leads/audit-request",
+    leadLimiter,
+    sanitizeInput(["gtmChallenge"]),
+    async (req, res) => {
     try {
       const auditSchema = z.object({
         fullName: z.string().min(2, "Full name is required"),
@@ -3099,10 +3158,10 @@ export async function registerRoutes(app: Express): Promise<void> {
       // Lazy-load Gemini client
       const { GoogleGenAI, Type } = await import("@google/genai");
       const ai = new GoogleGenAI({
-        apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
+        apiKey: GOOGLE_AI_KEY,
         httpOptions: {
           apiVersion: "",
-          baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
+          baseUrl: GEMINI_BASE_URL,
         },
       });
 
@@ -3235,7 +3294,10 @@ Your explanation should be conversational and reference specific scene numbers.`
   app.post("/api/ai-prompt-templates", requireAuth, async (req, res) => {
     try {
       const tenantId = req.tenantId || DEFAULT_TENANT_ID;
-      const userId = req.session?.userId || DEFAULT_USER_ID;
+      const userId = requireUserContext(req, res);
+      if (!userId) {
+        return;
+      }
       const template = await storage.createPromptTemplate(tenantId, userId, req.body);
       return res.json(template);
     } catch (error) {
@@ -3247,7 +3309,10 @@ Your explanation should be conversational and reference specific scene numbers.`
   app.put("/api/ai-prompt-templates/:id", requireAuth, async (req, res) => {
     try {
       const tenantId = req.tenantId || DEFAULT_TENANT_ID;
-      const userId = req.session?.userId || DEFAULT_USER_ID;
+      const userId = requireUserContext(req, res);
+      if (!userId) {
+        return;
+      }
       const template = await storage.updatePromptTemplate(tenantId, req.params.id, userId, req.body);
       return res.json(template);
     } catch (error) {
@@ -3329,10 +3394,10 @@ Your explanation should be conversational and reference specific scene numbers.`
       // Lazy-load Gemini client
       const { GoogleGenAI } = await import("@google/genai");
       const ai = new GoogleGenAI({
-        apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
+        apiKey: GOOGLE_AI_KEY,
         httpOptions: {
           apiVersion: "",
-          baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
+          baseUrl: GEMINI_BASE_URL,
         },
       });
 
@@ -3650,9 +3715,12 @@ Your explanation should be conversational and reference specific scene numbers.`
           }
         });
 
-        app.post("/api/projects/:projectId/prompts", async (req, res) => {
+        app.post("/api/projects/:projectId/prompts", async (req: Request, res: Response) => {
           try {
-            const userId = req.userId || DEFAULT_USER_ID;
+            const userId = requireUserContext(req, res);
+            if (!userId) {
+              return;
+            }
             const prompt = await storage.upsertPortfolioPrompt({
               projectId: req.params.projectId,
               userId,
@@ -3665,9 +3733,12 @@ Your explanation should be conversational and reference specific scene numbers.`
           }
         });
 
-        app.put("/api/portfolio-prompts/:id", async (req, res) => {
+        app.put("/api/portfolio-prompts/:id", async (req: Request, res: Response) => {
           try {
-            const userId = req.userId || DEFAULT_USER_ID;
+            const userId = requireUserContext(req, res);
+            if (!userId) {
+              return;
+            }
             // Note: upsertPortfolioPrompt expects projectId and promptType, not id.
             // Assuming the body contains necessary fields or we need to fetch the prompt first.
             // For now, let's assume the body has the update data.
@@ -3700,9 +3771,12 @@ Your explanation should be conversational and reference specific scene numbers.`
           }
         });
 
-        app.post("/api/portfolio-prompts/:id/toggle", async (req, res) => {
+        app.post("/api/portfolio-prompts/:id/toggle", async (req: Request, res: Response) => {
           try {
-            const userId = req.userId || DEFAULT_USER_ID;
+            const userId = requireUserContext(req, res);
+            if (!userId) {
+              return;
+            }
             const prompt = await storage.togglePortfolioPrompt(
               req.params.id,
               userId
@@ -3763,7 +3837,7 @@ Your explanation should be conversational and reference specific scene numbers.`
           }
         });
 
-        app.post("/api/scene-templates", async (req, res) => {
+        app.post("/api/scene-templates", async (req: Request, res: Response) => {
           try {
             const result = insertSceneTemplateSchema.safeParse(req.body);
 
@@ -3775,7 +3849,10 @@ Your explanation should be conversational and reference specific scene numbers.`
               });
             }
 
-            const userId = req.userId || DEFAULT_USER_ID;
+            const userId = requireUserContext(req, res);
+            if (!userId) {
+              return;
+            }
             const template = await storage.createSceneTemplate(
               req.tenantId,
               userId,
@@ -3866,7 +3943,7 @@ Your explanation should be conversational and reference specific scene numbers.`
           }
         });
 
-        app.post("/api/project-scenes/:sceneId/save-as-template", async (req, res) => {
+        app.post("/api/project-scenes/:sceneId/save-as-template", async (req: Request, res: Response) => {
           try {
             const { name, description, category, tags, previewImageUrl } = req.body;
 
@@ -3874,7 +3951,10 @@ Your explanation should be conversational and reference specific scene numbers.`
               return res.status(400).json({ error: "Template name is required" });
             }
 
-            const userId = req.userId || DEFAULT_USER_ID;
+            const userId = requireUserContext(req, res);
+            if (!userId) {
+              return;
+            }
             const template = await storage.saveSceneAsTemplate(
               req.tenantId,
               req.params.sceneId,
@@ -3901,7 +3981,7 @@ Your explanation should be conversational and reference specific scene numbers.`
         });
 
         // Simplified Portfolio Wizard Generation Endpoint with streaming support
-        app.post("/api/portfolio/generate", async (req, res) => {
+        app.post("/api/portfolio/generate", async (req: Request, res: Response) => {
           try {
             const { content, brandArchetype, businessType, addSampleImages, mode, streaming } = req.body;
 
@@ -3918,7 +3998,10 @@ Your explanation should be conversational and reference specific scene numbers.`
 
               // Use the demo tenant ID from middleware
               const tenantId = req.tenantId || DEFAULT_TENANT_ID;
-              const userId = req.userId || DEFAULT_USER_ID;
+              const userId = requireUserContext(req, res);
+              if (!userId) {
+                return;
+              }
 
               // Generate a simple project title from the content
               const firstSentence = content.substring(0, 100).split(/[.!?]/)[0].trim();
@@ -4060,9 +4143,11 @@ Your explanation should be conversational and reference specific scene numbers.`
 
         // Enhanced AI Portfolio Generation endpoint (scene-by-scene with per-scene AI prompts)
         // This endpoint handles both "cinematic" and "hybrid" modes, AND refinement
-        app.post("/api/portfolio/generate-enhanced", async (req, res) => {
-          // Use demo user context from middleware
-          const userId = req.userId || DEFAULT_USER_ID;
+        app.post("/api/portfolio/generate-enhanced", async (req: Request, res: Response) => {
+          const userId = requireUserContext(req, res);
+          if (!userId) {
+            return;
+          }
           const tenantId = req.tenantId || DEFAULT_TENANT_ID;
 
           // Log for debugging
@@ -4165,10 +4250,10 @@ Your explanation should be conversational and reference specific scene numbers.`
           // Lazy-load Gemini client
           const { GoogleGenAI, Type } = await import("@google/genai");
           const aiClient = new GoogleGenAI({
-            apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
+            apiKey: GOOGLE_AI_KEY,
             httpOptions: {
               apiVersion: "",
-              baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || "",
+              baseUrl: GEMINI_BASE_URL,
             },
           });
 

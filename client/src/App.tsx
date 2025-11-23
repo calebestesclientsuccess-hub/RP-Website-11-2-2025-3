@@ -12,39 +12,7 @@ import { FloatingWidget } from "./components/FloatingWidget";
 import { PopupEngine } from "./components/PopupEngine";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Home from "@/pages/Home";
-import ProblemPage from "@/pages/ProblemPage";
-import GTMEnginePage from "@/pages/GTMEnginePage";
-import ResultsPage from "@/pages/ResultsPage";
-import WhyRevPartyPage from "@/pages/WhyRevPartyPage";
-import About from "@/pages/About";
-import BlogPage from "@/pages/BlogPage";
-import BlogPostPage from "@/pages/blog/BlogPostPage";
-import BrandingPage from "@/pages/BrandingPage";
-import BrandingProjectPage from "@/pages/BrandingProjectPage";
-import AuditPage from "@/pages/AuditPage";
-import ROICalculator from "@/pages/ROICalculator";
-import AssessmentPage from "@/pages/AssessmentPage";
-import ContactPage from "@/pages/ContactPage";
-import PricingPage from "@/pages/PricingPage";
-import FAQPage from "@/pages/FAQPage";
-import InternalTrapGuide from "@/pages/resources/InternalTrapGuide";
-import AgencyTrapGuide from "@/pages/resources/AgencyTrapGuide";
-import SalesAsAServiceGuide from "@/pages/resources/SalesAsAServiceGuide";
-import HireColdCallersGuide from "@/pages/HireColdCallersGuide";
-import FourPathsToHireColdCaller from "@/pages/resources/FourPathsToHireColdCaller";
-import GtmAssessmentPage from "@/pages/GtmAssessmentPage";
-import GtmResultPath1 from "@/pages/GtmResultPath1";
-import GtmResultPath2 from "@/pages/GtmResultPath2";
-import GtmResultPath3 from "@/pages/GtmResultPath3";
-import GtmResultPath4 from "@/pages/GtmResultPath4";
-import PipelineAssessmentPage from "@/pages/PipelineAssessmentPage";
-import PipelineAssessmentThankYou from "@/pages/PipelineAssessmentThankYou";
-import ManifestoPost from "@/pages/blog/ManifestoPost";
-import AssessmentRuntime from "@/pages/AssessmentRuntime";
-import AssessmentResult from "@/pages/AssessmentResult";
-import PreviewPortfolio from "@/pages/PreviewPortfolio";
 import NotFound from "@/pages/not-found";
-import { ServiceWorker } from "@/components/ServiceWorker";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useEffect, lazy, Suspense, useState, useCallback, useMemo } from "react";
 import { CampaignBootstrap } from "@/lib/campaignCache";
@@ -53,6 +21,9 @@ import { useKeyboardShortcuts, GLOBAL_SHORTCUTS } from "@/hooks/use-keyboard-sho
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 import { SkipLink } from "./components/SkipLink";
 import { ShortcutRegistryProvider, useShortcutRegistry } from "@/context/ShortcutRegistryContext";
+import { ChunkReloadBoundary } from "@/components/ChunkReloadBoundary";
+import { ConsentProvider } from "@/hooks/use-consent";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 
 // Lazy load admin pages (reduces initial bundle by ~300KB)
 const LoginPageLazy = lazy(() => import("@/pages/admin/LoginPage"));
@@ -106,9 +77,11 @@ function withLazyLoading(
   LazyComponent: React.LazyExoticComponent<React.ComponentType<any>>
 ): React.ComponentType<any> {
   const WrappedComponent: React.ComponentType<any> = (props) => (
-    <Suspense fallback={<PageLoadingFallback />}>
-      <LazyComponent {...props} />
-    </Suspense>
+    <ChunkReloadBoundary fallback={<PageLoadingFallback />}>
+      <Suspense fallback={<PageLoadingFallback />}>
+        <LazyComponent {...props} />
+      </Suspense>
+    </ChunkReloadBoundary>
   );
   return WrappedComponent;
 }
@@ -145,6 +118,41 @@ const UnifiedCreator = withLazyLoading(UnifiedCreatorLazy);
 const ProjectSceneEditor = withLazyLoading(ProjectSceneEditorLazy);
 const FieldManager = withLazyLoading(FieldManagerLazy);
 const CrmWorkspace = withLazyLoading(CrmWorkspaceLazy);
+
+const lazyPage = (
+  loader: () => Promise<{ default: React.ComponentType<any> }>,
+) => withLazyLoading(lazy(loader));
+
+const ProblemPage = lazyPage(() => import("@/pages/ProblemPage"));
+const GTMEnginePage = lazyPage(() => import("@/pages/GTMEnginePage"));
+const ResultsPage = lazyPage(() => import("@/pages/ResultsPage"));
+const About = lazyPage(() => import("@/pages/About"));
+const BlogPage = lazyPage(() => import("@/pages/BlogPage"));
+const BlogPostPage = lazyPage(() => import("@/pages/blog/BlogPostPage"));
+const BrandingPage = lazyPage(() => import("@/pages/BrandingPage"));
+const BrandingProjectPage = lazyPage(() => import("@/pages/BrandingProjectPage"));
+const AuditPage = lazyPage(() => import("@/pages/AuditPage"));
+const ROICalculator = lazyPage(() => import("@/pages/ROICalculator"));
+const AssessmentPage = lazyPage(() => import("@/pages/AssessmentPage"));
+const PipelineAssessmentPage = lazyPage(() => import("@/pages/PipelineAssessmentPage"));
+const PipelineAssessmentThankYou = lazyPage(() => import("@/pages/PipelineAssessmentThankYou"));
+const AssessmentRuntime = lazyPage(() => import("@/pages/AssessmentRuntime"));
+const AssessmentResult = lazyPage(() => import("@/pages/AssessmentResult"));
+const PreviewPortfolio = lazyPage(() => import("@/pages/PreviewPortfolio"));
+const ContactPage = lazyPage(() => import("@/pages/ContactPage"));
+const PricingPage = lazyPage(() => import("@/pages/PricingPage"));
+const FAQPage = lazyPage(() => import("@/pages/FAQPage"));
+const InternalTrapGuide = lazyPage(() => import("@/pages/resources/InternalTrapGuide"));
+const AgencyTrapGuide = lazyPage(() => import("@/pages/resources/AgencyTrapGuide"));
+const SalesAsAServiceGuide = lazyPage(() => import("@/pages/resources/SalesAsAServiceGuide"));
+const HireColdCallersGuide = lazyPage(() => import("@/pages/HireColdCallersGuide"));
+const FourPathsToHireColdCaller = lazyPage(() => import("@/pages/resources/FourPathsToHireColdCaller"));
+const GtmAssessmentPage = lazyPage(() => import("@/pages/GtmAssessmentPage"));
+const GtmResultPath1 = lazyPage(() => import("@/pages/GtmResultPath1"));
+const GtmResultPath2 = lazyPage(() => import("@/pages/GtmResultPath2"));
+const GtmResultPath3 = lazyPage(() => import("@/pages/GtmResultPath3"));
+const GtmResultPath4 = lazyPage(() => import("@/pages/GtmResultPath4"));
+const ManifestoPost = lazyPage(() => import("@/pages/blog/ManifestoPost"));
 function RedirectToBuilder() {
   const [, navigate] = useLocation();
   useEffect(() => {
@@ -300,9 +308,9 @@ function AppShell() {
                     <Footer />
                     <FloatingWidget />
                     <PopupEngine />
+                    <CookieConsentBanner />
                   </div>
                   <Toaster />
-                  <ServiceWorker />
                   {/* Keyboard Shortcuts Modal */}
                   <KeyboardShortcutsModal
                     open={showShortcuts}
@@ -322,7 +330,9 @@ function AppShell() {
 function App() {
   return (
     <ShortcutRegistryProvider>
-      <AppShell />
+      <ConsentProvider>
+        <AppShell />
+      </ConsentProvider>
     </ShortcutRegistryProvider>
   );
 }

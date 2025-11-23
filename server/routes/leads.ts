@@ -7,6 +7,7 @@ import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { DEFAULT_TENANT_ID } from "../middleware/tenant";
 import { leadLimiter } from "../middleware/rate-limit";
+import { sanitizeInput } from "../middleware/input-sanitization";
 
 const router = Router();
 
@@ -20,7 +21,7 @@ const leadSchema = z.object({
   pageUrl: z.string().optional(),
 });
 
-router.post("/leads", leadLimiter, async (req: Request, res: Response) => {
+router.post("/leads", leadLimiter, sanitizeInput(["message"]), async (req: Request, res: Response) => {
   try {
     // 1. Validate Input
     const result = leadSchema.safeParse(req.body);
@@ -40,6 +41,7 @@ router.post("/leads", leadLimiter, async (req: Request, res: Response) => {
     let companyId: string;
     let emailQueued = false;
     let contactId: string | undefined;
+    const ownerId = req.session?.userId;
 
     // 2. Transactional DB Write
     await db.transaction(async (tx) => {
@@ -103,7 +105,7 @@ router.post("/leads", leadLimiter, async (req: Request, res: Response) => {
           tenantId,
           companyId,
           contactId,
-          ownerId: req.userId,
+          ownerId,
           name: `New lead from ${companyName || domain}`,
           description: message,
           source,
@@ -114,7 +116,7 @@ router.post("/leads", leadLimiter, async (req: Request, res: Response) => {
           companyId,
           contactId,
           dealId: newDeal.id,
-          ownerId: req.userId,
+          ownerId,
           title: `Follow up with ${firstName || normalizedEmail}`,
           description: message,
           priority: "high",

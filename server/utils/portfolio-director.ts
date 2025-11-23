@@ -17,6 +17,7 @@ import { storage } from "../storage";
 import { AssetValidator } from "./asset-validator"; // Assuming AssetValidator is in the same directory
 import { getSystemTemplates, type SystemTemplate } from "../lib/SystemLibrary";
 import { BRAND_ARCHETYPES, type BrandArchetype } from "../../client/src/lib/brandArchetypes";
+import { env } from "../config/env";
 
 // Pipeline configuration
 const PIPELINE_CONFIG = {
@@ -36,13 +37,21 @@ interface PipelineMetrics {
 
 // Lazy-load Gemini client to avoid ESM initialization issues
 let ai: GoogleGenAI | null = null;
+const GOOGLE_AI_KEY = env.GOOGLE_AI_KEY;
+const GEMINI_BASE_URL =
+  env.AI_INTEGRATIONS_GEMINI_BASE_URL ||
+  "https://generativelanguage.googleapis.com";
+const PORTFOLIO_MODEL_ID = "gemini-2.0-thinking-exp";
 function getAIClient(): GoogleGenAI {
   if (!ai) {
+    if (!GOOGLE_AI_KEY) {
+      throw new Error("Gemini API key not configured");
+    }
     ai = new GoogleGenAI({
-      apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
+      apiKey: GOOGLE_AI_KEY,
       httpOptions: {
         apiVersion: "",
-        baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASEURL || "",
+        baseUrl: GEMINI_BASE_URL,
       },
     });
   }
@@ -1424,7 +1433,7 @@ export async function generatePortfolioWithAI(
       // This is the responseSchema for the Stage 1 'Artistic Director'
       // (buildPortfolioPrompt) - PERFECTED ENFORCER
       stage1Response = await aiClient.models.generateContent({
-        model: 'gemini-2.0-flash-exp', // Changed model to a more suitable one for this task
+        model: PORTFOLIO_MODEL_ID,
         contents: [{
           role: 'user',
           parts: [{ text: prompt }]
@@ -1971,7 +1980,7 @@ Valid IDs: ${getAllPlaceholderIds().join(', ')}
   }
 
   const auditResponse = await aiClient.models.generateContent({
-    model: "gemini-2.5-pro",
+    model: PORTFOLIO_MODEL_ID,
     contents: [{ role: "user", parts: [{ text: auditPrompt }] }],
     config: {
       responseMimeType: "application/json",
@@ -2092,7 +2101,7 @@ Return:
 }`;
 
   const improvementsResponse = await aiClient.models.generateContent({
-    model: "gemini-2.5-pro",
+    model: PORTFOLIO_MODEL_ID,
     contents: [{ role: "user", parts: [{ text: improvementsPrompt }] }],
     config: {
       responseMimeType: "application/json",
@@ -2156,7 +2165,7 @@ Return:
     // Apply refinement if prompt was generated
     try {
       const sceneRefinementResponse = await aiClient.models.generateContent({
-        model: "gemini-2.5-pro",
+        model: PORTFOLIO_MODEL_ID,
         contents: [{ role: "user", parts: [{ text: scenePrompt }] }],
         config: {
           responseMimeType: "application/json",
@@ -2496,7 +2505,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
 `;
 
   const finalResponse = await aiClient.models.generateContent({
-    model: "gemini-2.5-pro",
+    model: PORTFOLIO_MODEL_ID,
     contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
     config: {
       responseMimeType: "application/json",
@@ -2590,7 +2599,7 @@ REQUIRED OUTPUT FORMAT (JSON only, no markdown):
   let coherenceResult;
   try {
     const coherenceResponse = await aiClient.models.generateContent({
-      model: "gemini-2.5-pro",
+      model: PORTFOLIO_MODEL_ID,
       contents: [{ role: "user", parts: [{ text: coherencePrompt }] }],
       config: {
         responseMimeType: "application/json",

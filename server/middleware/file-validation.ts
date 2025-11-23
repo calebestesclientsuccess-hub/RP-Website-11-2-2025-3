@@ -1,6 +1,6 @@
 
 import multer from 'multer';
-import { Request } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 
 // File type validation using magic numbers (file signatures)
@@ -49,6 +49,9 @@ function scanForMalware(buffer: Buffer): boolean {
     /\.bat/i,
     /\.cmd/i,
     /\.sh/i,
+    /<\?php/i,
+    /powershell/i,
+    /data:text\/html/i,
   ];
 
   return !suspiciousPatterns.some(pattern => pattern.test(content));
@@ -137,7 +140,32 @@ export async function validateUploadedFile(
  * Generate secure random filename
  */
 export function generateSecureFilename(originalName: string): string {
-  const ext = originalName.split('.').pop()?.toLowerCase();
+  const sanitized = originalName.replace(/[^a-zA-Z0-9._-]/g, '');
+  const ext = sanitized.includes('.') ? sanitized.split('.').pop()?.toLowerCase() : undefined;
   const randomName = crypto.randomBytes(16).toString('hex');
-  return `${Date.now()}-${randomName}.${ext}`;
+  const suffix = ext ? `.${ext}` : '';
+  return `${Date.now()}-${randomName}${suffix}`;
+}
+
+/**
+ * Middleware helper to ensure uploaded file passes validation
+ */
+export function ensureSafeUpload(expectedMimeType: string) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    try {
+      const validation = await validateUploadedFile(file, expectedMimeType);
+      if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+      }
+      next();
+    } catch (error) {
+      console.error('Upload validation failed:', error);
+      res.status(500).json({ error: 'Failed to validate uploaded file' });
+    }
+  };
 }

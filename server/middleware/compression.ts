@@ -15,36 +15,50 @@ export const compressionMiddleware = compression({
 
 // Smart cache control based on content type
 export function cacheControl(req: Request, res: Response, next: NextFunction) {
-  const path = req.path;
+  const pathname = req.path;
   const isDevelopment = process.env.NODE_ENV === 'development';
-  
-  // In development: Disable all caching to prevent stale code issues
+  const staticAssetPattern = /\.(?:js|mjs|css|json|txt|map|ico|png|jpe?g|gif|svg|webp|woff2?|ttf|otf|mp4|mp3|webm)$/i;
+  const htmlRequest =
+    req.headers.accept?.includes('text/html') ||
+    pathname === '/' ||
+    pathname.endsWith('.html');
+
+  // Avoid overriding headers already set downstream (e.g., express.static)
+  if (res.getHeader('Cache-Control')) {
+    next();
+    return;
+  }
+
   if (isDevelopment) {
-    // Always force revalidation in development
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     next();
     return;
   }
-  
-  // Production caching strategy:
-  // Static assets - long cache
-  if (path.match(/\.(jpg|jpeg|png|gif|webp|svg|woff2|woff|ttf|eot)$/)) {
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-  }
-  // JS/CSS - cache but revalidate
-  else if (path.match(/\.(js|css)$/)) {
-    res.setHeader('Cache-Control', 'public, max-age=86400, must-revalidate');
-  }
-  // API responses - no cache
-  else if (path.startsWith('/api/')) {
+
+  // Never cache API responses
+  if (pathname.startsWith('/api/')) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    next();
+    return;
   }
-  // HTML - short cache with revalidation
-  else {
-    res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+
+  // Let the static asset middleware decide caching strategy
+  if (staticAssetPattern.test(pathname)) {
+    next();
+    return;
   }
-  
+
+  if (req.method === 'GET' && htmlRequest) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+    return;
+  }
+
+  // Default caching for other responses
+  res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
   next();
 }

@@ -1,107 +1,176 @@
 
-import { Request, Response, NextFunction } from 'express';
-import rateLimit from 'express-rate-limit';
-import { logSecurityEvent, logSuspiciousActivity } from '../utils/security-logger';
-
-interface SuspiciousIP {
-  blockUntil: number;
-  violations: number;
-  lastViolation: number;
-}
-
-// In-memory store (use Redis in production)
-const blockedIPs = new Map<string, SuspiciousIP>();
-const ipViolations = new Map<string, number[]>();
+import { Request, Response, NextFunction } from "express";
+import rateLimit from "express-rate-limit";
+import { logSecurityEvent, logSuspiciousActivity } from "../utils/security-logger";
+import { db } from "../db";
+import { ipReputation } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import { redis } from "../lib/redis";
+import { logger } from "../lib/logger";
 
 const VIOLATION_THRESHOLD = 10; // Block after 10 violations
 const VIOLATION_WINDOW = 60 * 60 * 1000; // 1 hour window
 const BLOCK_DURATION = 24 * 60 * 60 * 1000; // 24 hour block
 
-/**
- * Clean up old violation records
- */
-function cleanupOldViolations() {
-  const now = Date.now();
-  for (const [ip, timestamps] of ipViolations.entries()) {
-    const recent = timestamps.filter(t => now - t < VIOLATION_WINDOW);
-    if (recent.length === 0) {
-      ipViolations.delete(ip);
-    } else {
-      ipViolations.set(ip, recent);
-    }
+const violationKey = (ip: string) => `security:violations:${ip}`;
+const blockKey = (ip: string) => `security:block:${ip}`;
+
+async function getRedisBlockTTL(ip: string): Promise<number | null> {
+  try {
+    const ttl = await redis.pttl(blockKey(ip));
+    return ttl > 0 ? ttl : null;
+  } catch (error) {
+    logger.warn("Redis block TTL lookup failed", { module: 'intrusion-detection', ip }, error as Error);
+    return null;
   }
 }
 
-setInterval(cleanupOldViolations, 5 * 60 * 1000); // Every 5 minutes
+async function setRedisBlock(ip: string, durationMs: number) {
+  try {
+    await redis.set(blockKey(ip), "1", "PX", durationMs);
+  } catch (error) {
+    logger.warn("Redis block set failed", { module: 'intrusion-detection', ip, durationMs }, error as Error);
+  }
+}
+
+async function incrementRedisViolation(ip: string): Promise<number> {
+  try {
+    const count = await redis.incr(violationKey(ip));
+    if (count === 1) {
+      await redis.pexpire(violationKey(ip), VIOLATION_WINDOW);
+    }
+    return count;
+  } catch (error) {
+    logger.warn("Redis violation increment failed", { module: 'intrusion-detection', ip }, error as Error);
+    return 1;
+  }
+}
 
 /**
  * Record a violation for an IP
  */
-export function recordViolation(ip: string, reason: string): void {
-  const now = Date.now();
-  const violations = ipViolations.get(ip) || [];
-  violations.push(now);
-  ipViolations.set(ip, violations);
+async function persistViolation(ip: string, reason: string) {
+  const now = new Date();
+  const redisCount = await incrementRedisViolation(ip);
 
-  // Check if should block
-  const recentViolations = violations.filter(t => now - t < VIOLATION_WINDOW);
-  
-  if (recentViolations.length >= VIOLATION_THRESHOLD) {
-    blockedIPs.set(ip, {
-      blockUntil: now + BLOCK_DURATION,
-      violations: recentViolations.length,
+  const existing = await db.query.ipReputation.findFirst({
+    where: eq(ipReputation.ip, ip),
+  });
+
+  let violations = 1;
+  if (existing?.lastViolation) {
+    const last = new Date(existing.lastViolation);
+    if (now.getTime() - last.getTime() < VIOLATION_WINDOW) {
+      violations = (existing.violations || 0) + 1;
+    }
+  }
+
+  const blockActive =
+    existing?.blockUntil && new Date(existing.blockUntil) > now;
+  const shouldBlock = violations >= VIOLATION_THRESHOLD || redisCount >= VIOLATION_THRESHOLD;
+  const blockUntil = shouldBlock
+    ? new Date(now.getTime() + BLOCK_DURATION)
+    : blockActive
+    ? new Date(existing!.blockUntil!)
+    : null;
+
+  await db
+    .insert(ipReputation)
+    .values({
+      ip,
+      violations,
       lastViolation: now,
-    });
-
-    // Log critical security event
-    logSecurityEvent('suspicious_activity', 'critical', {
-      ipAddress: ip,
-      metadata: {
-        reason: 'Automatic IP block',
-        violations: recentViolations.length,
-        blockDuration: '24 hours',
+      blockUntil,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: ipReputation.ip,
+      set: {
+        violations,
+        lastViolation: now,
+        blockUntil,
+        updatedAt: now,
       },
     });
 
-    console.warn(`🚨 IP ${ip} blocked due to ${recentViolations.length} violations: ${reason}`);
+  if (shouldBlock) {
+    await setRedisBlock(ip, BLOCK_DURATION);
+    await logSecurityEvent("suspicious_activity", "critical", {
+      ipAddress: ip,
+      metadata: {
+        reason: "Automatic IP block",
+        violations,
+        blockDuration: "24 hours",
+        source: reason,
+      },
+    });
   }
 }
 
-/**
- * Check if IP is blocked
- */
-export function isIPBlocked(ip: string): boolean {
-  const blocked = blockedIPs.get(ip);
-  if (!blocked) return false;
-
-  const now = Date.now();
-  if (now > blocked.blockUntil) {
-    blockedIPs.delete(ip);
-    return false;
-  }
-
-  return true;
+export function recordViolation(ip: string, reason: string): void {
+  void persistViolation(ip, reason).catch((error) => {
+    logger.error("Failed to persist IP violation", { module: 'intrusion-detection', ip, reason }, error as Error);
+  });
 }
 
 /**
  * Middleware to block suspicious IPs
  */
-export function blockSuspiciousIPs(req: Request, res: Response, next: NextFunction) {
-  const ip = req.ip || 'unknown';
+export function blockSuspiciousIPs(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const ip = req.ip || "unknown";
 
-  if (isIPBlocked(ip)) {
-    const blocked = blockedIPs.get(ip)!;
-    const remainingMs = blocked.blockUntil - Date.now();
-    const remainingHours = Math.ceil(remainingMs / (60 * 60 * 1000));
+  getRedisBlockTTL(ip)
+    .then(async (redisTtl) => {
+      if (redisTtl && redisTtl > 0) {
+        const remainingHours = Math.ceil(redisTtl / (60 * 60 * 1000));
+        return res.status(403).json({
+          error: "Access denied",
+          message: `Your IP has been temporarily blocked due to suspicious activity. Please try again in ${remainingHours} hour(s).`,
+          blockedUntil: new Date(Date.now() + redisTtl).toISOString(),
+        });
+      }
 
-    return res.status(403).json({
-      error: 'Access denied',
-      message: `Your IP has been temporarily blocked due to suspicious activity. Please try again in ${remainingHours} hours.`,
-      blockedUntil: new Date(blocked.blockUntil).toISOString(),
+      const record = await db.query.ipReputation.findFirst({
+        where: eq(ipReputation.ip, ip),
+      });
+
+      if (!record?.blockUntil) {
+        return next();
+      }
+
+      const blockUntil = new Date(record.blockUntil);
+      const now = Date.now();
+      if (now >= blockUntil.getTime()) {
+        await db
+          .update(ipReputation)
+          .set({
+            blockUntil: null,
+            violations: 0,
+            updatedAt: new Date(),
+          })
+          .where(eq(ipReputation.ip, ip));
+        await redis.del(blockKey(ip));
+        return next();
+      }
+
+      await setRedisBlock(ip, blockUntil.getTime() - now);
+      const remainingMs = blockUntil.getTime() - now;
+      const remainingHours = Math.ceil(remainingMs / (60 * 60 * 1000));
+
+      return res.status(403).json({
+        error: "Access denied",
+        message: `Your IP has been temporarily blocked due to suspicious activity. Please try again in ${remainingHours} hour(s).`,
+        blockedUntil: blockUntil.toISOString(),
+      });
+    })
+    .catch((error) => {
+      logger.error("Failed to check IP reputation", { module: 'intrusion-detection', ip }, error as Error);
+      next();
     });
-  }
-
-  next();
 }
 
 /**
@@ -113,17 +182,17 @@ export const enhancedRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
-    const ip = req.ip || 'unknown';
-    recordViolation(ip, 'Rate limit exceeded');
-    
-    logSuspiciousActivity(req, 'Rate limit exceeded', {
+    const ip = req.ip || "unknown";
+    recordViolation(ip, "Rate limit exceeded");
+
+    logSuspiciousActivity(req, "Rate limit exceeded", {
       ip,
       endpoint: req.path,
     });
 
     res.status(429).json({
-      error: 'Too many requests',
-      message: 'Please slow down and try again later.',
+      error: "Too many requests",
+      message: "Please slow down and try again later.",
     });
   },
 });
@@ -131,9 +200,13 @@ export const enhancedRateLimiter = rateLimit({
 /**
  * Detect suspicious patterns
  */
-export function detectSuspiciousPatterns(req: Request, res: Response, next: NextFunction) {
-  const ip = req.ip || 'unknown';
-  const userAgent = req.headers['user-agent'] || '';
+export function detectSuspiciousPatterns(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const ip = req.ip || "unknown";
+  const userAgent = req.headers["user-agent"] || "";
   const path = req.path;
 
   // Detect SQL injection attempts
@@ -141,24 +214,24 @@ export function detectSuspiciousPatterns(req: Request, res: Response, next: Next
   const queryString = JSON.stringify(req.query) + JSON.stringify(req.body);
   
   if (sqlPattern.test(queryString)) {
-    recordViolation(ip, 'SQL injection attempt');
-    logSuspiciousActivity(req, 'Potential SQL injection attempt', {
+    recordViolation(ip, "SQL injection attempt");
+    logSuspiciousActivity(req, "Potential SQL injection attempt", {
       query: req.query,
       body: req.body,
     });
   }
 
   // Detect path traversal attempts
-  if (path.includes('../') || path.includes('..\\')) {
-    recordViolation(ip, 'Path traversal attempt');
-    logSuspiciousActivity(req, 'Path traversal attempt', { path });
+  if (path.includes("../") || path.includes("..\\")) {
+    recordViolation(ip, "Path traversal attempt");
+    logSuspiciousActivity(req, "Path traversal attempt", { path });
   }
 
   // Detect bot/scanner patterns
   const botPatterns = /bot|crawler|scanner|nikto|sqlmap|nmap|masscan/i;
   if (botPatterns.test(userAgent)) {
-    recordViolation(ip, 'Automated scanning detected');
-    logSuspiciousActivity(req, 'Automated scanning tool detected', { userAgent });
+    recordViolation(ip, "Automated scanning detected");
+    logSuspiciousActivity(req, "Automated scanning tool detected", { userAgent });
   }
 
   next();

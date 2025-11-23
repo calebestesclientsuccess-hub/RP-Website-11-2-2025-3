@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
+import { env } from "../config/env";
 
 /**
  * Gemini AI Client for Scene Generation
@@ -6,11 +7,21 @@ import { GoogleGenAI, Type } from "@google/genai";
  * UPGRADED: Now uses gemini-2.5-pro for complex scene reasoning
  */
 
+const GOOGLE_AI_KEY = env.GOOGLE_AI_KEY;
+const GEMINI_BASE_URL =
+  env.AI_INTEGRATIONS_GEMINI_BASE_URL ||
+  "https://generativelanguage.googleapis.com";
+const GEMINI_MODEL_ID = "gemini-2.0-thinking-exp";
+
+if (!GOOGLE_AI_KEY) {
+  throw new Error("Gemini API key not configured");
+}
+
 const ai = new GoogleGenAI({
-  apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY || "",
+  apiKey: GOOGLE_AI_KEY,
   httpOptions: {
     apiVersion: "",
-    baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASEURL || "",
+    baseUrl: GEMINI_BASE_URL,
   },
 });
 
@@ -68,7 +79,7 @@ export async function generateSceneWithGemini(
   const fullPrompt = buildScenePrompt(prompt, sceneType, systemInstructions, availableMediaLibrary);
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-pro", // Pro model for complex scene reasoning
+    model: GEMINI_MODEL_ID,
     contents: [{
       role: "user",
       parts: [{ text: fullPrompt }]

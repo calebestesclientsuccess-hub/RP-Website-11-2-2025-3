@@ -31,6 +31,8 @@ export class TokenManager {
    * Summarize conversation history to reduce token count
    * Preserves last 3 messages and user requirements from first message
    */
+  private readonly SUMMARIZATION_MODEL_ID = "gemini-2.0-thinking-exp";
+
   async summarizeHistory(
     conversationHistory: string[],
     aiClient: any
@@ -53,7 +55,7 @@ ${oldMessages.join('\n\n---\n\n')}
 Return a plain text summary (no JSON).`;
 
     const summaryResponse = await aiClient.models.generateContent({
-      model: "gemini-2.0-flash-exp",
+      model: this.SUMMARIZATION_MODEL_ID,
       contents: [{ role: "user", parts: [{ text: summaryPrompt }] }],
     });
 

@@ -1,9 +1,9 @@
 
 import { Router } from 'express';
 import { db } from '../db';
-import { blogPosts, seoIssues } from '../../shared/schema';
-import { and, eq } from 'drizzle-orm';
-import { DEFAULT_TENANT_ID } from '../middleware/tenant';
+import { blogPosts, seoIssues, users } from '../../shared/schema';
+import { and, eq, desc } from 'drizzle-orm';
+import { DEFAULT_TENANT_ID, requireUserContext } from '../middleware/tenant';
 import { requireAuth } from '../middleware/auth';
 
 const router = Router();
@@ -135,6 +135,35 @@ router.get('/api/seo/health-check', requireAuth, async (req, res) => {
 
     const now = new Date();
     for (const issue of issues) {
+      const issueWhere = issue.entityId
+        ? and(
+            eq(seoIssues.tenantId, tenantId),
+            eq(seoIssues.issueType, issue.issueType),
+            eq(seoIssues.entityId, issue.entityId)
+          )
+        : and(
+            eq(seoIssues.tenantId, tenantId),
+            eq(seoIssues.issueType, issue.issueType),
+            eq(seoIssues.url, issue.url)
+          );
+
+      const [existingIssue] = await db
+        .select({
+          id: seoIssues.id,
+          status: seoIssues.status,
+        })
+        .from(seoIssues)
+        .where(issueWhere)
+        .limit(1);
+
+      if (existingIssue?.status === 'ignored') {
+        await db
+          .update(seoIssues)
+          .set({ lastChecked: now, updatedAt: now })
+          .where(eq(seoIssues.id, existingIssue.id));
+        continue;
+      }
+
       await db.insert(seoIssues)
         .values({
           tenantId,
@@ -146,6 +175,8 @@ router.get('/api/seo/health-check', requireAuth, async (req, res) => {
           entityId: issue.entityId,
           entityType: issue.entityType,
           lastChecked: now,
+          resolvedBy: null,
+          resolvedAt: null,
           updatedAt: now,
         })
         .onConflictDoUpdate({
@@ -155,6 +186,8 @@ router.get('/api/seo/health-check', requireAuth, async (req, res) => {
             details: issue.details,
             severity: issue.severity,
             status: 'open',
+             resolvedBy: null,
+             resolvedAt: null,
             lastChecked: now,
             updatedAt: now,
           },
@@ -198,9 +231,26 @@ router.get('/api/seo/health-check', requireAuth, async (req, res) => {
 router.get('/api/seo/issues', requireAuth, async (req, res) => {
   try {
     const tenantId = req.tenantId || DEFAULT_TENANT_ID;
-    const rows = await db.select().from(seoIssues)
+    const rows = await db.select({
+      id: seoIssues.id,
+      tenantId: seoIssues.tenantId,
+      url: seoIssues.url,
+      entityType: seoIssues.entityType,
+      entityId: seoIssues.entityId,
+      issueType: seoIssues.issueType,
+      severity: seoIssues.severity,
+      status: seoIssues.status,
+      details: seoIssues.details,
+      lastChecked: seoIssues.lastChecked,
+      resolvedAt: seoIssues.resolvedAt,
+      resolvedBy: seoIssues.resolvedBy,
+      createdAt: seoIssues.createdAt,
+      updatedAt: seoIssues.updatedAt,
+      resolvedByName: users.username,
+    }).from(seoIssues)
+      .leftJoin(users, eq(seoIssues.resolvedBy, users.id))
       .where(eq(seoIssues.tenantId, tenantId))
-      .orderBy(seoIssues.status, seoIssues.updatedAt);
+      .orderBy(seoIssues.status, desc(seoIssues.updatedAt));
     res.json(rows);
   } catch (error) {
     console.error('Failed to fetch SEO issues:', error);
@@ -217,13 +267,42 @@ router.patch('/api/seo/issues/:id/resolve', requireAuth, async (req, res) => {
     if (!issue) {
       return res.status(404).json({ error: 'Issue not found' });
     }
+    const resolvedBy = requireUserContext(req, res);
+    if (!resolvedBy) {
+      return;
+    }
+    const timestamp = new Date();
     await db.update(seoIssues)
-      .set({ status: 'resolved', resolvedAt: new Date(), updatedAt: new Date() })
+      .set({ status: 'resolved', resolvedAt: timestamp, resolvedBy, updatedAt: timestamp })
       .where(eq(seoIssues.id, issueId));
     res.json({ success: true });
   } catch (error) {
     console.error('Failed to resolve SEO issue:', error);
     res.status(500).json({ error: 'Failed to resolve issue' });
+  }
+});
+
+router.patch('/api/seo/issues/:id/ignore', requireAuth, async (req, res) => {
+  try {
+    const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+    const issueId = req.params.id;
+    const [issue] = await db.select().from(seoIssues)
+      .where(and(eq(seoIssues.id, issueId), eq(seoIssues.tenantId, tenantId)));
+    if (!issue) {
+      return res.status(404).json({ error: 'Issue not found' });
+    }
+    const actorId = requireUserContext(req, res);
+    if (!actorId) {
+      return;
+    }
+    const timestamp = new Date();
+    await db.update(seoIssues)
+      .set({ status: 'ignored', resolvedAt: timestamp, resolvedBy: actorId, updatedAt: timestamp })
+      .where(eq(seoIssues.id, issueId));
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Failed to ignore SEO issue:', error);
+    res.status(500).json({ error: 'Failed to ignore issue' });
   }
 });
 

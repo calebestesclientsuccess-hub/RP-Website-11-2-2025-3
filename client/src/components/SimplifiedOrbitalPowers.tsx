@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Brain, Target, Settings, Users, Wrench, Trophy, Play } from "lucide-react";
@@ -6,9 +6,16 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { prefersReducedMotion } from "@/lib/animationConfig";
 import { useIsMobile } from "@/hooks/use-mobile";
+import VideoSchema from "@/components/VideoSchema";
 
-// Register GSAP plugins
-gsap.registerPlugin(ScrollTrigger);
+// Register GSAP plugins safely
+if (typeof window !== 'undefined') {
+  try {
+    gsap.registerPlugin(ScrollTrigger);
+  } catch (e) {
+    console.warn('Failed to register GSAP ScrollTrigger:', e);
+  }
+}
 
 // Simple fade-in for info box and pulse animation
 const simpleKeyframes = `
@@ -182,9 +189,6 @@ interface SimplifiedOrbitalPowersProps {
  * SimplifiedOrbitalPowers: Interactive orbital badges with engagement features
  * Optimized for performance with memoization and reduced calculations
  */
-import VideoSchema from "@/components/VideoSchema";
-import { useMemo, useCallback } from "react";
-
 export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbitalPowersProps) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [hasPlayed, setHasPlayed] = useState(false);
@@ -234,8 +238,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     const updateInterval = 1000 / 15; // 15fps throttle for Safari compatibility
 
     orbitAnimationRef.current = gsap.to(rotationObj, {
-      value: 720,
-      duration: 9,
+      value: 630, // 360 degrees rotation (270 -> 630)
+      duration: 4, // Shorter duration
       ease: "power1.inOut",
       onUpdate: () => {
         // Throttle state updates to 15fps for Safari compatibility
@@ -246,7 +250,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         }
       },
       onComplete: () => {
-        setOrbitRotation(720); // Ensure final state is set
+        setOrbitRotation(630); // Ensure final state is set
         setAnimationComplete(true);
       }
     });
@@ -494,8 +498,11 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     const totalWidth = (iconWidth + gap) * powers.length - gap;
     const startX = -totalWidth / 2;
 
-    const transitionStart = 480;
-    const transitionEnd = 720;
+    // Adjusted transition range for 360 degree rotation (ending at 630)
+    // Fanning out starts earlier to complete by 630
+    const transitionEnd = 630;
+    const transitionStart = 390; // 630 - 240 (maintaining same fan-out duration/arc proportion)
+    
     const transitionRange = transitionEnd - transitionStart;
     const rawProgress = Math.max(0, Math.min(1, (orbitRotation - transitionStart) / transitionRange));
     const progress = rawProgress * rawProgress * (3 - 2 * rawProgress);
