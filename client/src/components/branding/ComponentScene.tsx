@@ -1,5 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { ComparisonTable } from "@/components/ComparisonTable";
@@ -105,9 +106,14 @@ export function ComponentScene({ componentType, props, heading, description, dir
               <CardDescription className="text-lg">{props.ctaDescription}</CardDescription>
             </CardHeader>
             <CardContent>
-              <button className="px-8 py-4 bg-gradient-to-r from-red-500 to-purple-500 text-white rounded-lg font-semibold hover:shadow-2xl transition-all">
+              <Button
+                variant="primary"
+                size="lg"
+                className="px-8 py-4 font-semibold"
+                data-testid={props["data-testid-cta-button"] || "button-component-scene-cta"}
+              >
                 {props.ctaButtonText || "Get Started"}
-              </button>
+              </Button>
             </CardContent>
           </Card>
         );

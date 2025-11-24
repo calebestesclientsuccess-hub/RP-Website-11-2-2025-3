@@ -227,7 +227,8 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
           <div className="mt-12 flex justify-center">
             <Button
               size="lg"
-              className="bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-700 hover:to-purple-700 text-white px-8 py-6 text-lg font-semibold"
+              variant="primary"
+              className="px-8 py-6 text-lg font-semibold"
               onClick={() => {
                 if (!project.slug) {
                   console.warn("Project missing slug:", project);
