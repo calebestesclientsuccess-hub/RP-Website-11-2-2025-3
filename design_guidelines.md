@@ -1,3 +1,13 @@
+- #### Button Hierarchy System
+
+  | Level | Button Variant | Token Mapping | Typical Use |
+  | --- | --- | --- | --- |
+  | Primary | `primary` / `default` | `--cta-primary-bg`, `--cta-primary-text`, `--cta-primary-border` | Conversion-driving CTAs (`Schedule Audit`, `Calculate Savings`) in hero sections and calculator finales. |
+  | Secondary | `secondary` | `--cta-secondary-bg`, `--cta-secondary-text`, `--cta-secondary-border` | Companion actions (lead magnets, assessments) that still need prominence but are not the success metric. |
+  | Tertiary | `tertiary` | `--cta-tertiary-*` (purple) | Contextual CTAs inside cards, value-added resources, or supporting links on dark surfaces. |
+  | Utility | `outline`, `ghost`, `link` | Inherit surface colors / `--button-outline` | Administrative or inline actions (dismiss, filter, back). |
+
+  All primary/secondary buttons automatically receive a `data-priority` attribute so analytics can track funnel interactions. Only one primary button should exist per view; demote extras to secondary or tertiary variants to maintain hierarchy.
 # Revenue Party Design Guidelines
 
 ## Design Approach
@@ -64,9 +74,12 @@
 ### D. Component Library
 
 **Buttons:**
-- Primary CTA: Red (#ef233c) background, white text, rounded-lg, px-8 py-4, glow effect on hover
-- Secondary CTA: Outline variant with border-2, backdrop-blur when on images
-- Sizes: Default (py-3 px-6), Large (py-4 px-8)
+- Primary CTA (`variant="primary"` or `default`): uses the `--cta-primary-*` tokens (red fill, white text, subtle drop shadow). Large buttons default to `px-8 py-4`; default size is `px-4 py-3`. This is the only gradient-free marketing CTA and should live on the far right of button groups.
+- Secondary CTA (`variant="secondary"`): inverts the palette (white/near-white fill, red text/border via `--cta-secondary-*`). Use this for "learn more" or lead magnet actions placed next to a primary. Never stack more than one secondary in a row—convert additional options to tertiary/outline.
+- Tertiary & utility buttons: `variant="tertiary"` leans on the purple community token, `outline` exposes the parent surface, `ghost`/`link` are reserved for inline actions. These are the “lesser buttons” mentioned in the spec and should only follow a primary or secondary CTA within the same container.
+- Iconography: Leading icons are allowed on secondary/tertiary buttons; trailing icons (arrows) are reserved for primary CTAs. Keep icon size at `1rem (16px)` and maintain an `8px` gap to text.
+- States: Hover and active states are handled inside `Button` via brightness/alpha adjustments plus `hover-elevate` micro-movement. Do not add ad-hoc gradients, shimmer animations, or custom transforms to CTAs—extend the component instead.
+- QA checklist: after edits, manually spot-check the Hero CTA pair on `Home`, the ROI Calculator toast CTA, the floating calculator button, and any section using `CTASection`. Confirm focus rings are visible, hover states darken correctly in both light/dark themes, and that `data-priority` attributes exist on primary/secondary buttons for analytics hooks.
 
 **Cards:**
 - Dark cards: bg-zinc-900/50, border border-zinc-800, rounded-xl

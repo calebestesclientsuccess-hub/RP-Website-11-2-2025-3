@@ -57,6 +57,23 @@ export default {
           foreground: "hsl(var(--popover-foreground) / <alpha-value>)",
           border: "hsl(var(--popover-border) / <alpha-value>)",
         },
+        cta: {
+          primary: {
+            DEFAULT: "hsl(var(--cta-primary-bg) / <alpha-value>)",
+            foreground: "hsl(var(--cta-primary-text) / <alpha-value>)",
+            border: "var(--cta-primary-border)",
+          },
+          secondary: {
+            DEFAULT: "hsl(var(--cta-secondary-bg) / <alpha-value>)",
+            foreground: "hsl(var(--cta-secondary-text) / <alpha-value>)",
+            border: "var(--cta-secondary-border)",
+          },
+          tertiary: {
+            DEFAULT: "hsl(var(--cta-tertiary-bg) / <alpha-value>)",
+            foreground: "hsl(var(--cta-tertiary-text) / <alpha-value>)",
+            border: "var(--cta-tertiary-border)",
+          },
+        },
         primary: {
           DEFAULT: "hsl(var(--primary) / <alpha-value>)",
           foreground: "hsl(var(--primary-foreground) / <alpha-value>)",

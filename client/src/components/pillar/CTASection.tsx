@@ -54,7 +54,7 @@ export function CTASection({ heading, description, primaryCTA, secondaryCTA, chi
               <Button
                 variant="secondary"
                 size="lg"
-                className="secondary-cta gap-2"
+                className="gap-2"
                 asChild
                 data-testid="button-secondary-cta"
               >

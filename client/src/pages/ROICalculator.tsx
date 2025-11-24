@@ -196,12 +196,9 @@ export default function ROICalculator() {
           <div className="space-y-4 pt-2">
             <p className="text-sm">Your ROI report has been sent successfully.</p>
             <Button
+              variant="primary"
               asChild
-              className="w-full h-12 text-base font-semibold gradient-button-crimson-blue shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 animate-shimmer hover:animate-none"
-              style={{
-                background: 'linear-gradient(90deg, #ef4444, #dc2626, #7c3aed, #6366f1, #ef4444)',
-                backgroundSize: '300% 100%',
-              }}
+              className="w-full h-12 text-base font-semibold shadow-xl hover:shadow-2xl transition-transform duration-300 hover:scale-[1.01]"
             >
               <Link href="/assessment">
                 Take Full Assessment
@@ -811,7 +808,7 @@ export default function ROICalculator() {
               <Button
                 size="lg"
                 variant="secondary"
-                className="secondary-cta gap-2 min-w-[280px]"
+                className="gap-2 min-w-[280px]"
                 data-testid="button-schedule-audit"
                 asChild
               >

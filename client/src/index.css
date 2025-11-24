@@ -88,6 +88,19 @@
 
   --primary-foreground: 0 0% 100%;
 
+  /* CTA tokens keep marketing CTAs consistent */
+  --cta-primary-bg: var(--primary);
+  --cta-primary-text: var(--primary-foreground);
+  --cta-primary-border: var(--primary-border);
+
+  --cta-secondary-bg: 0 0% 100%;
+  --cta-secondary-text: var(--primary);
+  --cta-secondary-border: var(--primary);
+
+  --cta-tertiary-bg: var(--tertiary);
+  --cta-tertiary-text: var(--tertiary-foreground);
+  --cta-tertiary-border: var(--tertiary-border);
+
   /* Community: Purple - RGB(88, 50, 175) */
   --community: 258 56% 44%;
 
@@ -328,6 +341,19 @@
   --primary: 0 85% 45%;
 
   --primary-foreground: 0 0% 91%;
+
+  /* CTA tokens keep marketing CTAs consistent */
+  --cta-primary-bg: var(--primary);
+  --cta-primary-text: var(--primary-foreground);
+  --cta-primary-border: var(--primary-border);
+
+  --cta-secondary-bg: 0 0% 91%;
+  --cta-secondary-text: var(--primary);
+  --cta-secondary-border: var(--primary);
+
+  --cta-tertiary-bg: var(--tertiary);
+  --cta-tertiary-text: var(--tertiary-foreground);
+  --cta-tertiary-border: var(--tertiary-border);
 
   /* Community: Purple - RGB(88, 50, 175) for dark mode */
   --community: 258 56% 44%;
@@ -740,13 +766,6 @@
   [data-testid="card-hero-roi"] [data-radix-slider-range] {
     background-color: hsl(var(--calculator-accent));
   }
-
-/* Crimson to Royal Blue Gradient for Buttons */
-.gradient-button-crimson-blue {
-  background: linear-gradient(135deg, #DC143C 0%, #4169E1 100%);
-  color: white;
-  border: 1px solid rgba(220, 20, 60, 0.5);
-}
 
 /* ================================================
    ENHANCED FOCUS INDICATORS - WCAG 2.1 AA Compliant
@@ -1406,79 +1425,6 @@ html:not(.dark) .badge-texture::before {
   }
 }
 
-/* ================================================
-   SECONDARY CTA SYSTEM - Subtle Hover Enhancement
-   Secondary CTAs are the visual inverse of primary CTAs
-   Primary: Red fill + white text
-   Secondary: Off-white/black fill + red text
-   Both use subtle movement and darkening on hover
-   ================================================ */
-
-/* Base secondary CTA - uses subtle hover effects */
-.secondary-cta {
-  @apply hover-elevate active-elevate-2;
-  @apply transition-all duration-200;
-  transition-property: transform, filter, box-shadow;
-}
-
-/* Light mode - black fill with red text */
-html:not(.dark) .secondary-cta {
-  background-color: hsl(var(--foreground));
-  color: hsl(var(--primary));
-  border: 1px solid hsl(var(--foreground));
-}
-
-html:not(.dark) .secondary-cta:hover {
-  transform: translateY(-2px) scale(1.01);
-  filter: brightness(0.85);
-}
-
-/* Dark mode - off-white fill (91% lightness) with red text */
-html.dark .secondary-cta {
-  background-color: hsl(0 0% 91%);
-  color: hsl(var(--primary));
-  border: 1px solid hsl(0 0% 91%);
-}
-
-html.dark .secondary-cta:hover {
-  transform: translateY(-2px) scale(1.01);
-  filter: brightness(0.88);
-}
-
-/* Active state - slight press effect */
-.secondary-cta:active {
-  transform: translateY(0px) scale(0.99);
-  filter: brightness(0.8);
-}
-
-/* Focus state for accessibility */
-.secondary-cta:focus-visible {
-  outline: 2px solid hsl(var(--primary));
-  outline-offset: 2px;
-}
-
-/* Icon animations within secondary CTAs */
-.secondary-cta svg {
-  transition: transform 0.2s ease;
-}
-
-.secondary-cta:hover svg {
-  transform: translateX(2px);
-}
-
-/* Disabled state */
-.secondary-cta:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  filter: none;
-}
-
-.secondary-cta:disabled:hover {
-  transform: none;
-  filter: none;
-}
-
 .animated-border-glow {
   position: relative;
   overflow: visible;
@@ -1999,40 +1945,6 @@ html:not(.dark) .sun-ray:nth-child(3) {
    ================================================ */
 
 /* Button with gradient text special handling */
-.btn-gradient-text {
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-gradient-text .gradient-text {
-  transition: filter 0.2s ease;
-}
-
-/* Only apply filter effects to priority buttons */
-.btn-gradient-text[data-priority="high"] .gradient-text:hover {
-  filter: brightness(1.1) saturate(1.1);
-}
-
-.btn-gradient-text[data-priority="high"] .gradient-text:active {
-  filter: brightness(0.95);
-}
-
-/* For list items, use opacity for better performance */
-.gradient-list-item:hover .gradient-text {
-  opacity: 0.9;
-}
-
-/* Focus state with gradient-aware outline */
-.btn-gradient-text:focus-visible {
-  outline: 2px solid hsl(var(--gradient-purple-hsl));
-  outline-offset: 2px;
-}
-
-/* Disabled state */
-.btn-gradient-text:disabled .gradient-text {
-  filter: saturate(0.3) opacity(0.5);
-}
-
 /* ================================================
    THEME TRANSITION SYSTEM - Scoped selectors
    ================================================ */

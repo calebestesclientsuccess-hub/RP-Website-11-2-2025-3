@@ -178,8 +178,9 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <MagneticButton>
                   <Button
+                    variant="primary"
                     size="lg"
-                    className="text-lg px-8 py-6 shadow-lg btn-gradient-text"
+                    className="text-lg px-8 py-6 shadow-lg"
                     data-testid="button-hero-schedule"
                     asChild
                   >
@@ -190,7 +191,7 @@ export default function Home() {
                   <Button
                     size="lg"
                     variant="secondary"
-                    className="secondary-cta text-lg px-8 py-6"
+                    className="text-lg px-8 py-6"
                     data-testid="button-hero-take-assessment"
                     asChild
                   >
@@ -750,8 +751,9 @@ export default function Home() {
             {/* CTA for Full Calculator - Moved inside section */}
             <div className="text-center mt-16">
               <Button
+                variant="primary"
                 size="lg"
-                className="gradient-button-crimson-blue shadow-lg text-lg px-8 py-6"
+                className="shadow-lg text-lg px-8 py-6"
                 data-testid="button-calculate-savings"
                 asChild
               >
@@ -801,8 +803,9 @@ export default function Home() {
               Stop the hiring/firing cycle. Let's audit your GTM architecture and design a system that scales.
             </p>
             <Button
+              variant="primary"
               size="lg"
-              className="text-lg px-10 py-7 shadow-lg btn-gradient-text"
+              className="text-lg px-10 py-7 shadow-lg"
               data-testid="button-final-schedule"
               asChild
             >
