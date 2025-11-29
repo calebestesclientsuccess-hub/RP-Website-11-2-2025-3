@@ -115,6 +115,9 @@ const portfolioSchema = z.object({
 
   // Style overrides
   styleOverrides: styleOverridesSchema,
+
+  // Expansion layout mode
+  expansionLayout: z.enum(["vertical", "cinematic"]).default("vertical"),
 });
 
 type PortfolioFormData = z.infer<typeof portfolioSchema>;
@@ -205,6 +208,7 @@ export default function CreatePortfolio() {
       testimonialText: "",
       testimonialAuthor: "",
       styleOverrides: DEFAULT_STYLES,
+      expansionLayout: "vertical" as const,
       ...loadDraft(),
     },
     mode: "onChange",
@@ -516,6 +520,8 @@ export default function CreatePortfolio() {
           secondary: data.styleOverrides.secondaryColor,
           accent: data.styleOverrides.accentColor,
         } : {},
+        // Expansion layout mode
+        expansionLayout: data.expansionLayout || "vertical",
       };
 
       const projectRes = await apiRequest("POST", "/api/projects", projectPayload);
@@ -1057,6 +1063,69 @@ export default function CreatePortfolio() {
                     onChange={(styles) => form.setValue("styleOverrides", styles, { shouldValidate: true })}
                   />
                 </ErrorBoundary>
+
+                {/* Expansion Layout Selector */}
+                <div className="rounded-xl border bg-card p-5 space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-1">Expansion Style</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Choose how this project expands when clicked. Cinematic is desktop-only.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <label 
+                      className={cn(
+                        "flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all",
+                        watchedValues.expansionLayout === "vertical" 
+                          ? "border-primary bg-primary/5" 
+                          : "border-border hover:border-muted-foreground"
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="expansionLayout"
+                        value="vertical"
+                        checked={watchedValues.expansionLayout === "vertical"}
+                        onChange={() => form.setValue("expansionLayout", "vertical")}
+                        className="sr-only"
+                      />
+                      <div className="w-full aspect-video bg-muted rounded mb-2 flex items-center justify-center">
+                        <svg className="w-16 h-10" viewBox="0 0 64 40">
+                          <rect x="4" y="4" width="56" height="10" rx="2" fill="currentColor" opacity="0.3" />
+                          <rect x="4" y="18" width="56" height="18" rx="2" fill="currentColor" opacity="0.6" />
+                        </svg>
+                      </div>
+                      <span className="font-medium">Vertical</span>
+                      <span className="text-xs text-muted-foreground text-center">Expands inline</span>
+                    </label>
+                    
+                    <label 
+                      className={cn(
+                        "flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all",
+                        watchedValues.expansionLayout === "cinematic" 
+                          ? "border-primary bg-primary/5" 
+                          : "border-border hover:border-muted-foreground"
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="expansionLayout"
+                        value="cinematic"
+                        checked={watchedValues.expansionLayout === "cinematic"}
+                        onChange={() => form.setValue("expansionLayout", "cinematic")}
+                        className="sr-only"
+                      />
+                      <div className="w-full aspect-video bg-muted rounded mb-2 flex items-center justify-center">
+                        <svg className="w-16 h-10" viewBox="0 0 64 40">
+                          <rect x="4" y="4" width="20" height="32" rx="2" fill="currentColor" opacity="0.2" />
+                          <rect x="28" y="4" width="32" height="32" rx="2" fill="currentColor" opacity="0.6" />
+                        </svg>
+                      </div>
+                      <span className="font-medium">Cinematic</span>
+                      <span className="text-xs text-muted-foreground text-center">Slide-over panel</span>
+                    </label>
+                  </div>
+                </div>
 
                 {/* Bottom publish CTA */}
                 <div className="pt-4 border-t">

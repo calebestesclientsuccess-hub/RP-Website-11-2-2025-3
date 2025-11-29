@@ -1063,6 +1063,8 @@ export const projects = pgTable("projects", {
     loop?: boolean;
     muted?: boolean;
   }>().default(sql`'{}'::jsonb`),
+  // Expansion layout mode for portfolio grid
+  expansionLayout: text("expansion_layout").default("vertical"), // 'vertical' or 'cinematic'
   componentLibrary: text("component_library").default("shadcn"),
   assetPlan: jsonb("asset_plan").$type<Array<{
     assetId: string;

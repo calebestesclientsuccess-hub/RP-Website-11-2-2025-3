@@ -16,6 +16,7 @@ export interface BrandingProject {
   }> | null;
   modalMediaUrls?: string[] | null;
   modalMediaType?: string | null;
+  expansionLayout?: "vertical" | "cinematic";
   galleryImages?: string[];
   testimonial?: {
     text: string;

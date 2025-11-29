@@ -2943,6 +2943,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         })) || [],
         modalMediaUrls: project.modalMediaUrls,
         modalMediaType: project.modalMediaType,
+        expansionLayout: project.expansionLayout || "vertical",
         testimonial: project.testimonialText ? {
           text: project.testimonialText,
           author: project.testimonialAuthor || '',

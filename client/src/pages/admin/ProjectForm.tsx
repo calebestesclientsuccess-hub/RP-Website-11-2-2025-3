@@ -59,6 +59,7 @@ const formSchema = insertProjectSchema.extend({
   slug: z.string().min(1, "Slug is required").regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, and hyphens only"),
   title: z.string().min(1, "Title is required"),
   modalMediaType: z.enum(["video", "carousel"]).default("video"),
+  expansionLayout: z.enum(["vertical", "cinematic"]).default("vertical"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -105,6 +106,7 @@ export default function ProjectForm() {
       modalMediaUrls: [],
       testimonialText: "" as any,
       testimonialAuthor: "" as any,
+      expansionLayout: "vertical" as const,
     },
   });
 
@@ -124,6 +126,7 @@ export default function ProjectForm() {
         modalMediaUrls: project.modalMediaUrls || [],
         testimonialText: project.testimonialText || "",
         testimonialAuthor: project.testimonialAuthor || "",
+        expansionLayout: (project.expansionLayout as "vertical" | "cinematic") || "vertical",
       };
       form.reset(formData);
       setCategories(project.categories || []);
@@ -711,6 +714,76 @@ export default function ProjectForm() {
                                 disabled={isFormDisabled}
                                 {...field}
                               />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Expansion Layout Selector */}
+                    <div className="space-y-3 pt-4 border-t">
+                      <FormField
+                        control={form.control}
+                        name="expansionLayout"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Expansion Style</FormLabel>
+                            <FormDescription>
+                              Choose how this project expands when clicked on the portfolio grid. Cinematic mode is desktop-only.
+                            </FormDescription>
+                            <FormControl>
+                              <div className="grid grid-cols-2 gap-4 pt-2">
+                                <label 
+                                  className={`flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                                    field.value === "vertical" 
+                                      ? "border-primary bg-primary/5" 
+                                      : "border-border hover:border-muted-foreground"
+                                  }`}
+                                >
+                                  <input
+                                    type="radio"
+                                    {...field}
+                                    value="vertical"
+                                    checked={field.value === "vertical"}
+                                    className="sr-only"
+                                    disabled={isFormDisabled}
+                                  />
+                                  <div className="w-full aspect-video bg-muted rounded mb-2 flex items-center justify-center">
+                                    <svg className="w-16 h-10" viewBox="0 0 64 40">
+                                      <rect x="4" y="4" width="56" height="10" rx="2" fill="currentColor" opacity="0.3" />
+                                      <rect x="4" y="18" width="56" height="18" rx="2" fill="currentColor" opacity="0.6" />
+                                    </svg>
+                                  </div>
+                                  <span className="font-medium">Vertical</span>
+                                  <span className="text-xs text-muted-foreground text-center">Expands inline below card</span>
+                                </label>
+                                
+                                <label 
+                                  className={`flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                                    field.value === "cinematic" 
+                                      ? "border-primary bg-primary/5" 
+                                      : "border-border hover:border-muted-foreground"
+                                  }`}
+                                >
+                                  <input
+                                    type="radio"
+                                    {...field}
+                                    value="cinematic"
+                                    checked={field.value === "cinematic"}
+                                    className="sr-only"
+                                    disabled={isFormDisabled}
+                                  />
+                                  <div className="w-full aspect-video bg-muted rounded mb-2 flex items-center justify-center">
+                                    <svg className="w-16 h-10" viewBox="0 0 64 40">
+                                      <rect x="4" y="4" width="20" height="32" rx="2" fill="currentColor" opacity="0.2" />
+                                      <rect x="28" y="4" width="32" height="32" rx="2" fill="currentColor" opacity="0.6" />
+                                    </svg>
+                                  </div>
+                                  <span className="font-medium">Cinematic</span>
+                                  <span className="text-xs text-muted-foreground text-center">Slide-over panel (desktop)</span>
+                                </label>
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>

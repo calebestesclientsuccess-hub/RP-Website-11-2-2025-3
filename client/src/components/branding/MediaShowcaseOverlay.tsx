@@ -146,23 +146,23 @@ export function MediaShowcaseOverlay({
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop */}
+            {/* Backdrop - z-[60] to appear above CinematicPanel */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl"
+              className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl"
               onClick={onClose}
             />
 
-            {/* Content Container */}
+            {/* Content Container - z-[60] to appear above CinematicPanel */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
+              className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8"
             >
             {/* Main content area */}
             <div className="relative w-full h-full max-w-[90vw] max-h-[90vh] flex flex-col">
@@ -233,25 +233,23 @@ export function MediaShowcaseOverlay({
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Navigation arrows */}
+                {/* Navigation arrows - Bold 64px white buttons */}
                 {media.length > 1 && (
                   <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
+                    <button
                       onClick={goToPrevious}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                      aria-label="Previous media"
+                      className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-14 h-14 md:w-16 md:h-16 rounded-full bg-white shadow-2xl shadow-black/30 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50"
                     >
-                      <ChevronLeft className="w-8 h-8" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
+                      <ChevronLeft className="w-8 h-8 md:w-10 md:h-10 text-black" />
+                    </button>
+                    <button
                       onClick={goToNext}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white"
+                      aria-label="Next media"
+                      className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-14 h-14 md:w-16 md:h-16 rounded-full bg-white shadow-2xl shadow-black/30 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50"
                     >
-                      <ChevronRight className="w-8 h-8" />
-                    </Button>
+                      <ChevronRight className="w-8 h-8 md:w-10 md:h-10 text-black" />
+                    </button>
                   </>
                 )}
               </motion.div>
