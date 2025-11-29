@@ -1,10 +1,9 @@
 import { useEffect, useCallback, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ProjectDetailContent, type AggregatedMediaItem } from "./ProjectDetailContent";
+import { ProjectDetailContent } from "./ProjectDetailContent";
 import { MediaShowcaseOverlay } from "./MediaShowcaseOverlay";
 import { useProjectMedia } from "@/hooks/useProjectMedia";
 import type { ProjectMediaAsset } from "@shared/schema";
@@ -75,7 +74,7 @@ export function CinematicPanel({
   const [overlayIndex, setOverlayIndex] = useState(0);
 
   // Fetch layer2 sections for media aggregation
-  const { data: layer2Sections } = useQuery({
+  const { data: layer2Sections, isLoading: isLoadingSections } = useQuery({
     queryKey: [`/api/projects/${project.id}/layer2-sections`],
     enabled: !!project.id,
   });
@@ -206,12 +205,18 @@ export function CinematicPanel({
             className="flex-1 overflow-y-auto" 
             onScroll={handleScroll}
           >
-            <ProjectDetailContent 
-              project={project}
-              onOpenOverlay={handleOpenOverlay}
-              aggregatedMedia={aggregatedMedia as AggregatedMediaItem[]}
-              showHeader={false}
-            />
+            {isLoadingSections ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <ProjectDetailContent 
+                project={project}
+                onOpenOverlay={handleOpenOverlay}
+                aggregatedMedia={aggregatedMedia}
+                showHeader={false}
+              />
+            )}
           </div>
         </div>
       </motion.div>

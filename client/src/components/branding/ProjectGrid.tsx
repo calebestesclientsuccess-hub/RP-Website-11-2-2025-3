@@ -223,6 +223,22 @@ export function ProjectGrid({ onProjectClick, selectedProjectId, onCloseExpansio
         </motion.div>
       </div>
 
+      {/* Cinematic Backdrop - dims the grid */}
+      <AnimatePresence>
+        {isCinematicActive && (
+          <motion.div
+            key="cinematic-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: stage === "focus" ? 0.7 : 0.3 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={handleClose}
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Cinematic Panel */}
       <AnimatePresence>
         {isCinematicActive && cinematicProject && (

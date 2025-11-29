@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Loader2, Images, Sparkles } from "lucide-rea
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import type { ProjectMediaAsset } from "@shared/schema";
 import { buildProjectMediaAssets } from "@/utils/project-media";
+import type { AggregatedMediaItem } from "@/hooks/useProjectMedia";
 
 interface Layer2Section {
   id: string;
@@ -58,14 +59,8 @@ const spacingClasses = {
   loose: "gap-8",
 };
 
-export interface AggregatedMediaItem {
-  id: string;
-  url: string;
-  type: "image" | "video";
-  alt?: string;
-  caption?: string;
-  source: "hero" | "modal" | "gallery" | "layer2" | "legacy";
-}
+// Re-export for backwards compatibility
+export type { AggregatedMediaItem } from "@/hooks/useProjectMedia";
 
 interface ProjectDetailContentProps {
   project: {
