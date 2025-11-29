@@ -959,14 +959,60 @@ export default function CreatePortfolio() {
 
                 {/* Sections 3-7: The Story (consistent structure) */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 px-1">
-                    <BookOpen className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm font-medium text-muted-foreground">
-                      The Story
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      — 5 sections to tell your narrative
-                    </span>
+                  <div className="flex items-center justify-between gap-2 px-1">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-muted-foreground">
+                        The Story
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        — 5 sections to tell your narrative
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Expansion Style Selector */}
+                  <div className="p-4 rounded-lg border bg-card/50">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div>
+                        <h3 className="font-medium text-sm">Expansion Style</h3>
+                        <p className="text-xs text-muted-foreground">How sections appear when clicked</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => form.setValue("expansionLayout", "vertical")}
+                          className={cn(
+                            "flex items-center gap-2 px-3 py-1.5 rounded-md border-2 transition-all text-sm",
+                            watchedValues.expansionLayout === "vertical"
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-muted-foreground"
+                          )}
+                        >
+                          <svg className="w-5 h-3" viewBox="0 0 20 12">
+                            <rect x="1" y="1" width="18" height="4" rx="1" fill="currentColor" opacity="0.3" />
+                            <rect x="1" y="6" width="18" height="5" rx="1" fill="currentColor" opacity="0.6" />
+                          </svg>
+                          <span>Vertical</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => form.setValue("expansionLayout", "cinematic")}
+                          className={cn(
+                            "flex items-center gap-2 px-3 py-1.5 rounded-md border-2 transition-all text-sm",
+                            watchedValues.expansionLayout === "cinematic"
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-muted-foreground"
+                          )}
+                        >
+                          <svg className="w-5 h-3" viewBox="0 0 20 12">
+                            <rect x="1" y="1" width="6" height="10" rx="1" fill="currentColor" opacity="0.2" />
+                            <rect x="9" y="1" width="10" height="10" rx="1" fill="currentColor" opacity="0.6" />
+                          </svg>
+                          <span>Cinematic</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   {(() => {
@@ -1063,69 +1109,6 @@ export default function CreatePortfolio() {
                     onChange={(styles) => form.setValue("styleOverrides", styles, { shouldValidate: true })}
                   />
                 </ErrorBoundary>
-
-                {/* Expansion Layout Selector */}
-                <div className="rounded-xl border bg-card p-5 space-y-4">
-                  <div>
-                    <h3 className="font-semibold mb-1">Expansion Style</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Choose how this project expands when clicked. Cinematic is desktop-only.
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <label 
-                      className={cn(
-                        "flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all",
-                        watchedValues.expansionLayout === "vertical" 
-                          ? "border-primary bg-primary/5" 
-                          : "border-border hover:border-muted-foreground"
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="expansionLayout"
-                        value="vertical"
-                        checked={watchedValues.expansionLayout === "vertical"}
-                        onChange={() => form.setValue("expansionLayout", "vertical")}
-                        className="sr-only"
-                      />
-                      <div className="w-full aspect-video bg-muted rounded mb-2 flex items-center justify-center">
-                        <svg className="w-16 h-10" viewBox="0 0 64 40">
-                          <rect x="4" y="4" width="56" height="10" rx="2" fill="currentColor" opacity="0.3" />
-                          <rect x="4" y="18" width="56" height="18" rx="2" fill="currentColor" opacity="0.6" />
-                        </svg>
-                      </div>
-                      <span className="font-medium">Vertical</span>
-                      <span className="text-xs text-muted-foreground text-center">Expands inline</span>
-                    </label>
-                    
-                    <label 
-                      className={cn(
-                        "flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all",
-                        watchedValues.expansionLayout === "cinematic" 
-                          ? "border-primary bg-primary/5" 
-                          : "border-border hover:border-muted-foreground"
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="expansionLayout"
-                        value="cinematic"
-                        checked={watchedValues.expansionLayout === "cinematic"}
-                        onChange={() => form.setValue("expansionLayout", "cinematic")}
-                        className="sr-only"
-                      />
-                      <div className="w-full aspect-video bg-muted rounded mb-2 flex items-center justify-center">
-                        <svg className="w-16 h-10" viewBox="0 0 64 40">
-                          <rect x="4" y="4" width="20" height="32" rx="2" fill="currentColor" opacity="0.2" />
-                          <rect x="28" y="4" width="32" height="32" rx="2" fill="currentColor" opacity="0.6" />
-                        </svg>
-                      </div>
-                      <span className="font-medium">Cinematic</span>
-                      <span className="text-xs text-muted-foreground text-center">Slide-over panel</span>
-                    </label>
-                  </div>
-                </div>
 
                 {/* Bottom publish CTA */}
                 <div className="pt-4 border-t">

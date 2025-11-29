@@ -721,76 +721,6 @@ export default function ProjectForm() {
                       />
                     </div>
 
-                    {/* Expansion Layout Selector */}
-                    <div className="space-y-3 pt-4 border-t">
-                      <FormField
-                        control={form.control}
-                        name="expansionLayout"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Expansion Style</FormLabel>
-                            <FormDescription>
-                              Choose how this project expands when clicked on the portfolio grid. Cinematic mode is desktop-only.
-                            </FormDescription>
-                            <FormControl>
-                              <div className="grid grid-cols-2 gap-4 pt-2">
-                                <label 
-                                  className={`flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                                    field.value === "vertical" 
-                                      ? "border-primary bg-primary/5" 
-                                      : "border-border hover:border-muted-foreground"
-                                  }`}
-                                >
-                                  <input
-                                    type="radio"
-                                    {...field}
-                                    value="vertical"
-                                    checked={field.value === "vertical"}
-                                    className="sr-only"
-                                    disabled={isFormDisabled}
-                                  />
-                                  <div className="w-full aspect-video bg-muted rounded mb-2 flex items-center justify-center">
-                                    <svg className="w-16 h-10" viewBox="0 0 64 40">
-                                      <rect x="4" y="4" width="56" height="10" rx="2" fill="currentColor" opacity="0.3" />
-                                      <rect x="4" y="18" width="56" height="18" rx="2" fill="currentColor" opacity="0.6" />
-                                    </svg>
-                                  </div>
-                                  <span className="font-medium">Vertical</span>
-                                  <span className="text-xs text-muted-foreground text-center">Expands inline below card</span>
-                                </label>
-                                
-                                <label 
-                                  className={`flex flex-col items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                                    field.value === "cinematic" 
-                                      ? "border-primary bg-primary/5" 
-                                      : "border-border hover:border-muted-foreground"
-                                  }`}
-                                >
-                                  <input
-                                    type="radio"
-                                    {...field}
-                                    value="cinematic"
-                                    checked={field.value === "cinematic"}
-                                    className="sr-only"
-                                    disabled={isFormDisabled}
-                                  />
-                                  <div className="w-full aspect-video bg-muted rounded mb-2 flex items-center justify-center">
-                                    <svg className="w-16 h-10" viewBox="0 0 64 40">
-                                      <rect x="4" y="4" width="20" height="32" rx="2" fill="currentColor" opacity="0.2" />
-                                      <rect x="28" y="4" width="32" height="32" rx="2" fill="currentColor" opacity="0.6" />
-                                    </svg>
-                                  </div>
-                                  <span className="font-medium">Cinematic</span>
-                                  <span className="text-xs text-muted-foreground text-center">Slide-over panel (desktop)</span>
-                                </label>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
                     {/* Form Actions */}
                     <div className="flex gap-4 justify-end pt-4 border-t">
                       <Button
@@ -822,6 +752,51 @@ export default function ProjectForm() {
                         These sections appear when a visitor clicks the project card in the grid (Layer 1).
                         Configure 3-5 sections with flexible media options (images, videos, or carousels).
                       </p>
+
+                      {/* Expansion Style Selector */}
+                      <div className="mt-6 p-4 rounded-lg border bg-card">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                          <div>
+                            <h3 className="font-medium">Expansion Style</h3>
+                            <p className="text-sm text-muted-foreground">How this project opens when clicked</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => form.setValue("expansionLayout", "vertical")}
+                              className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                                form.watch("expansionLayout") === "vertical"
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border hover:border-muted-foreground"
+                              }`}
+                            >
+                              <svg className="w-6 h-4" viewBox="0 0 24 16">
+                                <rect x="2" y="2" width="20" height="4" rx="1" fill="currentColor" opacity="0.3" />
+                                <rect x="2" y="8" width="20" height="6" rx="1" fill="currentColor" opacity="0.6" />
+                              </svg>
+                              <span className="text-sm font-medium">Vertical</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => form.setValue("expansionLayout", "cinematic")}
+                              className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
+                                form.watch("expansionLayout") === "cinematic"
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border hover:border-muted-foreground"
+                              }`}
+                            >
+                              <svg className="w-6 h-4" viewBox="0 0 24 16">
+                                <rect x="2" y="2" width="8" height="12" rx="1" fill="currentColor" opacity="0.2" />
+                                <rect x="12" y="2" width="10" height="12" rx="1" fill="currentColor" opacity="0.6" />
+                              </svg>
+                              <span className="text-sm font-medium">Cinematic</span>
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-3">
+                          Vertical expands inline below the card. Cinematic opens a slide-over panel (desktop only).
+                        </p>
+                      </div>
                     </div>
                     {layer2SectionsLoaded ? (
                       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
