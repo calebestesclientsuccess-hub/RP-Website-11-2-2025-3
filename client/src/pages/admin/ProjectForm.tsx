@@ -378,219 +378,149 @@ export default function ProjectForm() {
               <div className="max-w-4xl mx-auto">
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                    {/* Basic Info Section */}
-                    <div className="space-y-4">
-                      <h2 className="text-lg font-semibold">Basic Information</h2>
-                      
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <FormField
-                          control={form.control}
-                          name="title"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Project Title *</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="TechFlow AI Platform" 
-                                  data-testid="input-title"
-                                  disabled={isFormDisabled}
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="slug"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>URL Slug *</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="techflow-ai-platform" 
-                                  data-testid="input-slug"
-                                  disabled={isFormDisabled}
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Lowercase letters, numbers, and hyphens only
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <FormField
-                          control={form.control}
-                          name="clientName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Client Name</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="TechFlow Inc." 
-                                  data-testid="input-clientName"
-                                  disabled={isFormDisabled}
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="thumbnailUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Hero Media</FormLabel>
-                              <FormDescription>
-                                Select an image or video from your Media Library
-                              </FormDescription>
-                              <FormControl>
-                                <MediaPicker
-                                  value={field.value ? [field.value] : []}
-                                  onChange={(urls) => field.onChange(urls[0] || "")}
-                                  mode="single"
-                                  mediaTypeFilter="all"
-                                  placeholder="Select hero image or video"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      {/* Categories Array */}
-                      <div className="space-y-2">
-                        <FormLabel>Categories</FormLabel>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Add category tag"
-                            value={categoryInput}
-                            onChange={(e) => setCategoryInput(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCategory())}
-                            disabled={isFormDisabled}
-                            data-testid="input-category"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleAddCategory}
-                            disabled={isFormDisabled}
-                            data-testid="button-add-category"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        {categories.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {categories.map((category, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center gap-1 px-3 py-1 bg-accent rounded-md"
-                                data-testid={`badge-category-${index}`}
-                              >
-                                <span className="text-sm">{category}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveCategory(index)}
-                                  disabled={isFormDisabled}
-                                  className="hover:text-destructive"
-                                  data-testid={`button-remove-category-${index}`}
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Testimonial Section */}
-                    <div className="space-y-4">
-                      <h2 className="text-lg font-semibold">Client Testimonial (Optional)</h2>
-                      
-                      <FormField
-                        control={form.control}
-                        name="testimonialText"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Testimonial Quote</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Client testimonial..."
-                                className="min-h-[80px]"
-                                data-testid="textarea-testimonialText"
-                                disabled={isFormDisabled}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="testimonialAuthor"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Testimonial Author</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="John Doe, CEO"
-                                data-testid="input-testimonialAuthor"
-                                disabled={isFormDisabled}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Form Actions */}
-                    <div className="flex gap-4 justify-end pt-4 border-t">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleCancel}
-                        disabled={isPending}
-                        data-testid="button-cancel"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        disabled={isPending}
-                        data-testid="button-submit"
-                      >
-                        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {isEdit ? "Update Project" : "Create Project"}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-
-                  {/* Layer 2: Expansion Sections - Available in Both Create and Edit Mode */}
-                  <div className="mt-12 border-t pt-8">
+                    {/* Layer 2: Expansion Sections - PRIMARY EDITOR */}
+                  <div>
                     <div className="mb-6">
-                      <h2 className="text-2xl font-bold">Layer 2: Expansion Sections</h2>
-                      <p className="text-muted-foreground mt-2">
-                        These sections appear when a visitor clicks the project card in the grid (Layer 1).
-                        Configure 3-5 sections with flexible media options (images, videos, or carousels).
-                      </p>
+                      <h2 className="text-2xl font-bold">Portfolio Editor</h2>
+
+                      {/* Project Identity - Collapsible */}
+                      <details className="mt-6 rounded-lg border bg-card" open>
+                        <summary className="p-4 cursor-pointer font-medium flex items-center justify-between hover:bg-muted/50 rounded-t-lg">
+                          <span>Project Identity</span>
+                          <span className="text-xs text-muted-foreground">Title, Hero, Categories</span>
+                        </summary>
+                        <div className="p-4 pt-0 space-y-4 border-t">
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <FormField
+                              control={form.control}
+                              name="title"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Project Title *</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      placeholder="TechFlow AI Platform" 
+                                      data-testid="input-title"
+                                      disabled={isFormDisabled}
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="slug"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>URL Slug *</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      placeholder="techflow-ai-platform" 
+                                      data-testid="input-slug"
+                                      disabled={isFormDisabled}
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormDescription>
+                                    Lowercase letters, numbers, and hyphens only
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <FormField
+                              control={form.control}
+                              name="clientName"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Client Name</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      placeholder="TechFlow Inc." 
+                                      data-testid="input-clientName"
+                                      disabled={isFormDisabled}
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="thumbnailUrl"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Hero Media</FormLabel>
+                                  <FormControl>
+                                    <MediaPicker
+                                      value={field.value ? [field.value] : []}
+                                      onChange={(urls) => field.onChange(urls[0] || "")}
+                                      mode="single"
+                                      mediaTypeFilter="all"
+                                      placeholder="Select hero image or video"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          {/* Categories */}
+                          <div className="space-y-2">
+                            <FormLabel>Categories</FormLabel>
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Add category tag"
+                                value={categoryInput}
+                                onChange={(e) => setCategoryInput(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCategory())}
+                                disabled={isFormDisabled}
+                                data-testid="input-category"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleAddCategory}
+                                disabled={isFormDisabled}
+                                data-testid="button-add-category"
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            {categories.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {categories.map((category, index) => (
+                                  <div
+                                    key={index}
+                                    className="flex items-center gap-1 px-3 py-1 bg-accent rounded-md"
+                                    data-testid={`badge-category-${index}`}
+                                  >
+                                    <span className="text-sm">{category}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveCategory(index)}
+                                      disabled={isFormDisabled}
+                                      className="hover:text-destructive"
+                                      data-testid={`button-remove-category-${index}`}
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </details>
 
                       {/* Expansion Style Selector */}
                       <div className="mt-6 p-4 rounded-lg border bg-card">
@@ -634,6 +564,14 @@ export default function ProjectForm() {
                         </div>
                         <p className="text-xs text-muted-foreground mt-3">
                           Vertical expands inline below the card. Cinematic opens a slide-over panel (desktop only).
+                        </p>
+                      </div>
+
+                      {/* Content Sections Header */}
+                      <div className="mt-8 mb-4">
+                        <h3 className="text-lg font-semibold">Content Sections</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Configure 3-5 sections with flexible media options (images, videos, or carousels).
                         </p>
                       </div>
                     </div>
