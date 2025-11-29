@@ -620,6 +620,8 @@ export default function ProjectForm() {
                       </Button>
                     </div>
                   </div>
+                  </form>
+                </Form>
 
                   {/* Scrollytelling Scene Editor (Layer 3) - Only Available in Edit Mode */}
                   {isEdit && projectId && typeof projectId === 'string' && projectId !== 'undefined' && (
