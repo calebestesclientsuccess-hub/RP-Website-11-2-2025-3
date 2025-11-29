@@ -4,6 +4,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+// Layout class mappings for preview
+const layoutClasses = {
+  above: "flex flex-col",
+  below: "flex flex-col-reverse",
+  left: "flex flex-row",
+  right: "flex flex-row-reverse",
+};
+
+const spacingClasses = {
+  tight: "gap-2",
+  normal: "gap-4",
+  loose: "gap-6",
+};
+
 interface Layer2Section {
   id: string;
   heading: string;
@@ -28,6 +42,11 @@ interface Layer2Section {
     headingSize?: "text-xl" | "text-2xl" | "text-3xl" | "text-4xl";
     bodySize?: "text-sm" | "text-base" | "text-lg";
     alignment?: "left" | "center" | "right";
+    // Layout controls
+    mediaSize?: "standard" | "immersive";
+    mediaPosition?: "above" | "below" | "left" | "right";
+    textWidth?: number;
+    spacing?: "tight" | "normal" | "loose";
   };
 }
 
@@ -151,27 +170,54 @@ export function Layer2Preview({ sections }: Layer2PreviewProps) {
               {sections.map((section) => {
                 const style = section.styleConfig || {};
                 const alignmentClass = style.alignment === "center" ? "text-center" : style.alignment === "right" ? "text-right" : "text-left";
+                
+                // Layout configuration
+                const hasMedia = section.mediaType !== "none" && 
+                  (section.mediaConfig?.url || (section.mediaConfig?.items && section.mediaConfig.items.length > 0));
+                const mediaPosition = style.mediaPosition || "above";
+                const spacing = style.spacing || "normal";
+                const isHorizontal = mediaPosition === "left" || mediaPosition === "right";
+                const textWidth = style.textWidth || 50;
+                
+                const layoutClass = hasMedia ? layoutClasses[mediaPosition] : "";
+                const spacingClass = hasMedia ? spacingClasses[spacing] : "";
 
                 return (
                   <div
                     key={section.id}
-                    className={`p-4 rounded-lg ${alignmentClass}`}
+                    className={`p-4 rounded-lg ${hasMedia ? `${layoutClass} ${spacingClass}` : ""} ${alignmentClass}`}
                     style={{
                       backgroundColor: style.backgroundColor,
                       color: style.textColor,
                       fontFamily: style.fontFamily,
                     }}
                   >
-                    {renderSectionMedia(section)}
-                    <h3
-                      className={`${style.headingSize || "text-2xl"} font-semibold mb-2`}
-                      style={{ color: style.headingColor || undefined }}
-                    >
-                      {section.heading || "Untitled Section"}
-                    </h3>
-                    <p className={`${style.bodySize || "text-base"} leading-relaxed`}>
-                      {section.body || "No content yet..."}
-                    </p>
+                    {/* Media - for above/left positions */}
+                    {hasMedia && (mediaPosition === "above" || mediaPosition === "left") && (
+                      <div style={isHorizontal ? { width: `${100 - textWidth}%`, flexShrink: 0 } : undefined}>
+                        {renderSectionMedia(section)}
+                      </div>
+                    )}
+                    
+                    {/* Text content */}
+                    <div style={isHorizontal ? { width: `${textWidth}%` } : undefined}>
+                      <h3
+                        className={`${style.headingSize || "text-2xl"} font-semibold mb-2`}
+                        style={{ color: style.headingColor || undefined }}
+                      >
+                        {section.heading || "Untitled Section"}
+                      </h3>
+                      <p className={`${style.bodySize || "text-base"} leading-relaxed`}>
+                        {section.body || "No content yet..."}
+                      </p>
+                    </div>
+                    
+                    {/* Media - for below/right positions */}
+                    {hasMedia && (mediaPosition === "below" || mediaPosition === "right") && (
+                      <div style={isHorizontal ? { width: `${100 - textWidth}%`, flexShrink: 0 } : undefined}>
+                        {renderSectionMedia(section)}
+                      </div>
+                    )}
                   </div>
                 );
               })}

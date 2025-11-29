@@ -19,6 +19,14 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { AlertTriangle } from "lucide-react";
+
+// Character count warning thresholds (as percentage of limit)
+const CHAR_THRESHOLDS = {
+  warning: 0.7,   // 70% - yellow
+  danger: 0.85,   // 85% - orange  
+  critical: 0.95, // 95% - red
+};
 
 export type MediaType = "none" | "image" | "video" | "carousel";
 
@@ -71,6 +79,8 @@ interface ContentSectionCardProps {
   bodyCharLimit?: number;
   /** Error message for body text */
   bodyError?: string;
+  /** Warning about content balance relative to other sections */
+  balanceWarning?: string;
 }
 
 const statusConfig: Record<SectionStatus, { color: string; icon: typeof Check | typeof Circle; label: string }> = {
@@ -114,6 +124,7 @@ export function ContentSectionCard({
   bodyCharCount = 0,
   bodyCharLimit,
   bodyError,
+  balanceWarning,
 }: ContentSectionCardProps) {
   const status = getSectionStatus(value);
   const { color, icon: StatusIcon, label } = statusConfig[status];
@@ -270,18 +281,34 @@ export function ContentSectionCard({
                     <p className="text-xs text-destructive">{bodyError}</p>
                   )}
                   {bodyCharLimit !== undefined && (
-                    <span
-                      className={cn(
-                        "text-xs",
-                        bodyCharCount > bodyCharLimit
-                          ? "text-destructive"
-                          : "text-muted-foreground"
+                    <div className="flex items-center gap-2 ml-auto">
+                      <span
+                        className={cn(
+                          "text-xs font-medium",
+                          bodyCharCount <= bodyCharLimit * CHAR_THRESHOLDS.warning && "text-muted-foreground",
+                          bodyCharCount > bodyCharLimit * CHAR_THRESHOLDS.warning && bodyCharCount <= bodyCharLimit * CHAR_THRESHOLDS.danger && "text-amber-500",
+                          bodyCharCount > bodyCharLimit * CHAR_THRESHOLDS.danger && bodyCharCount <= bodyCharLimit * CHAR_THRESHOLDS.critical && "text-orange-500",
+                          bodyCharCount > bodyCharLimit * CHAR_THRESHOLDS.critical && "text-red-500"
+                        )}
+                      >
+                        {bodyCharCount}/{bodyCharLimit}
+                      </span>
+                      {bodyCharCount > bodyCharLimit * CHAR_THRESHOLDS.danger && bodyCharCount <= bodyCharLimit && (
+                        <span className="text-xs text-orange-500">
+                          ⚠️ Consider shortening
+                        </span>
                       )}
-                    >
-                      {bodyCharCount} / {bodyCharLimit}
-                    </span>
+                    </div>
                   )}
                 </div>
+                
+                {/* Balance warning */}
+                {balanceWarning && (
+                  <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-2 py-1.5 rounded mt-2">
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                    <span>{balanceWarning}</span>
+                  </div>
+                )}
               </div>
 
               {/* Media type selector */}

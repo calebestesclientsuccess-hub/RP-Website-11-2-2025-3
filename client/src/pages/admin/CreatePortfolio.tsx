@@ -45,6 +45,24 @@ import { cn } from "@/lib/utils";
 
 const BODY_CHAR_LIMIT = 2000;
 
+// Calculate balance warnings for sections
+const getSectionBalanceWarnings = (sections: SectionData[]): (string | null)[] => {
+  const lengths = sections.map(s => s.body?.length || 0).filter(l => l > 0);
+  if (lengths.length < 2) return sections.map(() => null);
+  
+  const avg = lengths.reduce((a, b) => a + b, 0) / lengths.length;
+  
+  return sections.map(section => {
+    const len = section.body?.length || 0;
+    if (len === 0) return null;
+    
+    const ratio = len / avg;
+    if (ratio > 2.5) return "This section is much longer than others";
+    if (ratio < 0.4 && len > 50) return "This section is much shorter than others";
+    return null;
+  });
+};
+
 // Layout config schema
 const layoutConfigSchema = z.object({
   mediaSize: z.enum(["standard", "immersive"]).optional(),
@@ -945,34 +963,40 @@ export default function CreatePortfolio() {
                     </span>
                   </div>
 
-                  {watchedValues.sections?.map((section, index) => {
-                    const sectionError =
-                      form.formState.errors.sections?.[index];
-                    const bodyError =
-                      typeof sectionError?.body?.message === "string"
-                        ? sectionError.body.message
-                        : undefined;
+                  {(() => {
+                    // Calculate balance warnings for all sections
+                    const balanceWarnings = getSectionBalanceWarnings(watchedValues.sections || []);
+                    
+                    return watchedValues.sections?.map((section, index) => {
+                      const sectionError =
+                        form.formState.errors.sections?.[index];
+                      const bodyError =
+                        typeof sectionError?.body?.message === "string"
+                          ? sectionError.body.message
+                          : undefined;
 
-                    return (
-                      <ContentSectionCard
-                        key={index}
-                        sectionNumber={index + 1}
-                        value={section}
-                        onChange={(data) => handleSectionChange(index, data)}
-                        isOpen={openSection === `section-${index}`}
-                        onToggle={() => toggleSection(`section-${index}`)}
-                        icon={<FileText className="w-5 h-5" />}
-                        suggestedTitle={SECTION_SUGGESTIONS[index]?.title}
-                        suggestedPrompt={SECTION_SUGGESTIONS[index]?.prompt}
-                        headingPlaceholder={
-                          SECTION_SUGGESTIONS[index]?.placeholder
-                        }
-                        bodyCharCount={section.body?.length || 0}
-                        bodyCharLimit={BODY_CHAR_LIMIT}
-                        bodyError={bodyError}
-                      />
-                    );
-                  })}
+                      return (
+                        <ContentSectionCard
+                          key={index}
+                          sectionNumber={index + 1}
+                          value={section}
+                          onChange={(data) => handleSectionChange(index, data)}
+                          isOpen={openSection === `section-${index}`}
+                          onToggle={() => toggleSection(`section-${index}`)}
+                          icon={<FileText className="w-5 h-5" />}
+                          suggestedTitle={SECTION_SUGGESTIONS[index]?.title}
+                          suggestedPrompt={SECTION_SUGGESTIONS[index]?.prompt}
+                          headingPlaceholder={
+                            SECTION_SUGGESTIONS[index]?.placeholder
+                          }
+                          bodyCharCount={section.body?.length || 0}
+                          bodyCharLimit={BODY_CHAR_LIMIT}
+                          bodyError={bodyError}
+                          balanceWarning={balanceWarnings[index] || undefined}
+                        />
+                      );
+                    });
+                  })()}
                 </div>
 
                 {/* Section 8: The Voice (Testimonial) */}
