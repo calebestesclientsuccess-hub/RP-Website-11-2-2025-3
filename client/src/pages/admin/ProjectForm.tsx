@@ -516,167 +516,6 @@ export default function ProjectForm() {
                       </div>
                     </div>
 
-                    {/* Legacy Content Section - Hidden (Deprecated in favor of Layer 2) */}
-                    <details className="space-y-4">
-                      <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
-                        ⚠️ Legacy Fields (Deprecated - Use Layer 2 Sections Below)
-                      </summary>
-                      <div className="space-y-4 pt-4 opacity-60">
-                        <p className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/20 p-3 rounded border border-amber-200 dark:border-amber-900">
-                          These fields are deprecated and maintained only for backward compatibility. 
-                          New projects should use the "Layer 2: Expansion Sections" editor below for more flexible content.
-                        </p>
-                        
-                        <FormField
-                          control={form.control}
-                          name="challengeText"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Challenge (Legacy)</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Describe the client's challenge..."
-                                  className="min-h-[100px]"
-                                  data-testid="textarea-challengeText"
-                                  disabled={isFormDisabled}
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="solutionText"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Solution (Legacy)</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Describe your solution..."
-                                  className="min-h-[100px]"
-                                  data-testid="textarea-solutionText"
-                                  disabled={isFormDisabled}
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="outcomeText"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Outcome (Legacy)</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Describe the results achieved..."
-                                  className="min-h-[100px]"
-                                  data-testid="textarea-outcomeText"
-                                  disabled={isFormDisabled}
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </details>
-
-                    {/* Legacy Media Section - Deprecated */}
-                    <details className="space-y-4">
-                      <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
-                        ⚠️ Legacy Media Assets (Deprecated - Use Layer 2 Section Media)
-                      </summary>
-                      <div className="space-y-4 pt-4 opacity-60">
-                        <p className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/20 p-3 rounded border border-amber-200 dark:border-amber-900">
-                          These fields are deprecated. Add media directly to Layer 2 sections below.
-                          The hero banner uses the Thumbnail URL field above.
-                        </p>
-                      
-                        <FormField
-                          control={form.control}
-                          name="modalMediaType"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Media Type</FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                                disabled={isFormDisabled}
-                              >
-                                <FormControl>
-                                  <SelectTrigger data-testid="select-modalMediaType">
-                                    <SelectValue placeholder="Select media type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="video">Video</SelectItem>
-                                  <SelectItem value="carousel">Image Carousel</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {/* Media URLs Array */}
-                        <div className="space-y-2">
-                          <FormLabel>Media URLs</FormLabel>
-                          <FormDescription>
-                            Add Cloudinary URLs for videos or images
-                          </FormDescription>
-                          <div className="flex gap-2">
-                            <Input
-                              placeholder="https://res.cloudinary.com/..."
-                              value={mediaUrlInput}
-                              onChange={(e) => setMediaUrlInput(e.target.value)}
-                              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddMediaUrl())}
-                              disabled={isFormDisabled}
-                              data-testid="input-mediaUrl"
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={handleAddMediaUrl}
-                              disabled={isFormDisabled}
-                              data-testid="button-add-mediaUrl"
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          {mediaUrls.length > 0 && (
-                            <div className="space-y-2 mt-2">
-                              {mediaUrls.map((url, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-2 p-2 bg-accent rounded-md"
-                                  data-testid={`item-mediaUrl-${index}`}
-                                >
-                                  <span className="text-sm flex-1 truncate">{url}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemoveMediaUrl(index)}
-                                    disabled={isFormDisabled}
-                                    className="hover:text-destructive"
-                                    data-testid={`button-remove-mediaUrl-${index}`}
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </details>
-
                     {/* Testimonial Section */}
                     <div className="space-y-4">
                       <h2 className="text-lg font-semibold">Client Testimonial (Optional)</h2>
@@ -811,7 +650,10 @@ export default function ProjectForm() {
 
                         {/* Preview */}
                         <div>
-                          <Layer2Preview sections={layer2Sections} />
+                          <Layer2Preview 
+                            sections={layer2Sections} 
+                            expansionLayout={form.watch("expansionLayout")}
+                          />
                         </div>
                       </div>
                     ) : (
@@ -819,6 +661,26 @@ export default function ProjectForm() {
                         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
                       </div>
                     )}
+
+                    {/* Save button for Layer 2 changes */}
+                    <div className="flex justify-end gap-4 mt-8 pt-6 border-t">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleCancel}
+                        disabled={isPending}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => form.handleSubmit(onSubmit)()}
+                        disabled={isPending}
+                      >
+                        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isEdit ? "Save All Changes" : "Create Project"}
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Scrollytelling Scene Editor (Layer 3) - Only Available in Edit Mode */}

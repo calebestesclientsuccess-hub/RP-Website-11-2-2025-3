@@ -52,9 +52,10 @@ interface Layer2Section {
 
 interface Layer2PreviewProps {
   sections: Layer2Section[];
+  expansionLayout?: "vertical" | "cinematic";
 }
 
-export function Layer2Preview({ sections }: Layer2PreviewProps) {
+export function Layer2Preview({ sections, expansionLayout = "vertical" }: Layer2PreviewProps) {
   const [sectionMediaIndices, setSectionMediaIndices] = useState<Record<string, number>>({});
 
   const getGridClass = (count: number) => {
@@ -152,7 +153,12 @@ export function Layer2Preview({ sections }: Layer2PreviewProps) {
   return (
     <Card className="sticky top-4">
       <CardHeader>
-        <CardTitle>Visitor Preview</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Visitor Preview</CardTitle>
+          <Badge variant={expansionLayout === "cinematic" ? "default" : "secondary"}>
+            {expansionLayout === "cinematic" ? "Cinematic" : "Vertical"}
+          </Badge>
+        </div>
         <CardDescription>How this will appear in the expansion view</CardDescription>
       </CardHeader>
       <CardContent>
