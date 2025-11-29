@@ -7,7 +7,7 @@ import { createServer } from "http";
 import { randomUUID } from "crypto";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import "./config/env";
+import { env } from "./config/env";
 import { securityHeaders } from "./middleware/security-headers";
 import { assignCspNonce } from "./middleware/csp-nonce";
 import { tenantMiddleware } from "./middleware/tenant";
@@ -120,9 +120,21 @@ const register = async () => {
   app.use(errorHandler);
 };
 
-register().catch((err) => {
+// Export the promise for serverless environments to wait on
+export const appReady = register().catch((err) => {
   console.error("Failed to register routes:", err);
-  process.exit(1);
+  if (!isServerless) {
+    process.exit(1);
+  }
+  throw err;
 });
 
+if (!isServerless) {
+  const port = Number(env.PORT ?? 50005);
+  httpServer.listen(port, () => {
+    log(`Server listening at http://localhost:${port}`, "server");
+  });
+}
+
 export default app;
+export { app };

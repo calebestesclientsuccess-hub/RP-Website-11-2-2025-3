@@ -113,6 +113,13 @@ export function recordViolation(ip: string, reason: string): void {
   });
 }
 
+// IPs that should never be blocked (localhost variants)
+const TRUSTED_IPS = new Set(["::1", "127.0.0.1", "::ffff:127.0.0.1", "localhost"]);
+
+function isTrustedIP(ip: string): boolean {
+  return TRUSTED_IPS.has(ip) || ip.startsWith("::ffff:127.") || ip.startsWith("192.168.") || ip.startsWith("10.");
+}
+
 /**
  * Middleware to block suspicious IPs
  */
@@ -122,6 +129,11 @@ export function blockSuspiciousIPs(
   next: NextFunction,
 ) {
   const ip = req.ip || "unknown";
+
+  // Never block localhost or private IPs in development
+  if (isTrustedIP(ip)) {
+    return next();
+  }
 
   getRedisBlockTTL(ip)
     .then(async (redisTtl) => {
@@ -199,6 +211,9 @@ export const enhancedRateLimiter = rateLimit({
 
 /**
  * Detect suspicious patterns
+ * 
+ * NOTE: This middleware only flags actual attack patterns, not common English words.
+ * Localhost/private IPs are excluded from violation tracking.
  */
 export function detectSuspiciousPatterns(
   req: Request,
@@ -206,18 +221,37 @@ export function detectSuspiciousPatterns(
   next: NextFunction,
 ) {
   const ip = req.ip || "unknown";
+
+  // Skip detection for trusted IPs (localhost, private networks)
+  if (isTrustedIP(ip)) {
+    return next();
+  }
+
   const userAgent = req.headers["user-agent"] || "";
   const path = req.path;
 
-  // Detect SQL injection attempts
-  const sqlPattern = /(\bor\b|\band\b|union|select|insert|update|delete|drop|exec|script)/i;
-  const queryString = JSON.stringify(req.query) + JSON.stringify(req.body);
+  // Detect SQL injection attempts - only flag actual SQL syntax patterns, not common words
+  // These patterns look for SQL-specific syntax like quotes followed by SQL keywords,
+  // comment sequences, or UNION SELECT patterns
+  const sqlInjectionPatterns = [
+    /['"];\s*(drop|delete|truncate|alter)\s+/i,           // '; DROP TABLE
+    /['"];\s*--/i,                                         // '; -- comment
+    /union\s+(all\s+)?select\s+/i,                        // UNION SELECT
+    /select\s+.+\s+from\s+.+\s+where\s+.+[=<>]/i,         // SELECT ... FROM ... WHERE
+    /\bor\b\s+['"]?\d+['"]?\s*=\s*['"]?\d+/i,             // OR '1'='1
+    /\band\b\s+['"]?\d+['"]?\s*=\s*['"]?\d+/i,            // AND '1'='1
+    /;\s*exec\s*\(/i,                                      // ; exec(
+    /\binto\s+outfile\b/i,                                // INTO OUTFILE
+    /\bload_file\s*\(/i,                                  // LOAD_FILE(
+  ];
+
+  const queryString = JSON.stringify(req.query);
+  const isSqlInjection = sqlInjectionPatterns.some(pattern => pattern.test(queryString));
   
-  if (sqlPattern.test(queryString)) {
+  if (isSqlInjection) {
     recordViolation(ip, "SQL injection attempt");
     logSuspiciousActivity(req, "Potential SQL injection attempt", {
       query: req.query,
-      body: req.body,
     });
   }
 
@@ -227,9 +261,9 @@ export function detectSuspiciousPatterns(
     logSuspiciousActivity(req, "Path traversal attempt", { path });
   }
 
-  // Detect bot/scanner patterns
-  const botPatterns = /bot|crawler|scanner|nikto|sqlmap|nmap|masscan/i;
-  if (botPatterns.test(userAgent)) {
+  // Detect known malicious scanner user agents (not generic "bot" or "crawler")
+  const maliciousScannerPatterns = /nikto|sqlmap|nmap|masscan|havij|acunetix|nessus|openvas/i;
+  if (maliciousScannerPatterns.test(userAgent)) {
     recordViolation(ip, "Automated scanning detected");
     logSuspiciousActivity(req, "Automated scanning tool detected", { userAgent });
   }

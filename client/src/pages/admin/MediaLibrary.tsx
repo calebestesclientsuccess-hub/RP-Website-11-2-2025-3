@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Loader2, Upload, Image, Video, Trash2, Tag, X } from "lucide-react";
@@ -61,6 +62,17 @@ export default function MediaLibrary() {
     },
   });
 
+  const { data: mediaStatus } = useQuery<{ cloudinaryEnabled: boolean }>({
+    queryKey: ["/api/media-library/status"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/media-library/status");
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const uploadsEnabled = mediaStatus?.cloudinaryEnabled !== false;
+
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
       // Add project_id if selected
@@ -71,10 +83,19 @@ export default function MediaLibrary() {
       const response = await fetch("/api/media-library/upload", {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
+      
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Upload failed");
+        // Handle non-JSON responses gracefully (e.g., rate limit errors)
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const error = await response.json();
+          throw new Error(error.error || "Upload failed");
+        } else {
+          const text = await response.text();
+          throw new Error(text || `Upload failed with status ${response.status}`);
+        }
       }
       return response.json();
     },
@@ -86,7 +107,14 @@ export default function MediaLibrary() {
       queryClient.invalidateQueries({ queryKey: ["/api/media-library"] });
     },
     onError: (error: Error) => {
-      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+      const cloudDisabled = /Cloudinary is not configured/i.test(error.message);
+      toast({ 
+        title: cloudDisabled ? "Cloudinary is not configured" : "Upload failed", 
+        description: cloudDisabled 
+          ? "Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to your environment to enable uploads."
+          : error.message, 
+        variant: "destructive" 
+      });
     },
   });
 
@@ -98,7 +126,15 @@ export default function MediaLibrary() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete media");
+        // Handle non-JSON responses gracefully (e.g., rate limit errors)
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const error = await response.json();
+          throw new Error(error.error || "Failed to delete media");
+        } else {
+          const text = await response.text();
+          throw new Error(text || `Delete failed with status ${response.status}`);
+        }
       }
 
       return response.json();
@@ -127,6 +163,16 @@ export default function MediaLibrary() {
     const files = e.target.files;
     if (!files || files.length === 0) {
       console.log('[MediaLibrary] No files selected');
+      return;
+    }
+
+    if (!uploadsEnabled) {
+      toast({
+        title: "Cloudinary is not configured",
+        description: "Uploads are disabled until CLOUDINARY credentials are added to the environment.",
+        variant: "destructive",
+      });
+      e.target.value = "";
       return;
     }
 
@@ -228,6 +274,16 @@ export default function MediaLibrary() {
                     <CardTitle>Upload Media</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {!uploadsEnabled && (
+                      <Alert variant="destructive">
+                        <AlertTitle>Cloudinary is not configured</AlertTitle>
+                        <AlertDescription>
+                          Uploads require <code>CLOUDINARY_CLOUD_NAME</code>, <code>CLOUDINARY_API_KEY</code>, and <code>CLOUDINARY_API_SECRET</code>.
+                          Add these to your environment and restart the server to enable uploads.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
                     <div className="space-y-2">
                       <Label htmlFor="project">Link to Project (optional)</Label>
                       <Select value={selectedProjectId || "none"} onValueChange={(val) => setSelectedProjectId(val === "none" ? "" : val)}>
@@ -275,7 +331,7 @@ export default function MediaLibrary() {
                         accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm"
                         multiple
                         onChange={handleFileUpload}
-                        disabled={uploading}
+                        disabled={uploading || !uploadsEnabled}
                       />
                       <p className="text-sm text-muted-foreground">
                         Supported: JPG, PNG, GIF, WebP, MP4, WebM

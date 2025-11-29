@@ -8,7 +8,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
 import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { BlogPost } from "@shared/schema";
+import type { BlogPostSummary } from "@shared/schema";
 import { format } from "date-fns";
 import {
   AlertDialog,
@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-function getStatus(post: BlogPost): { label: string; variant: "default" | "secondary" | "outline" } {
+function getStatus(post: BlogPostSummary): { label: string; variant: "default" | "secondary" | "outline" } {
   if (post.published) {
     return { label: "Published", variant: "default" };
   } else if (post.scheduledFor) {
@@ -44,14 +44,14 @@ function getStatus(post: BlogPost): { label: string; variant: "default" | "secon
 export default function BlogPostsList() {
   const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [postToDelete, setPostToDelete] = useState<BlogPost | null>(null);
+  const [postToDelete, setPostToDelete] = useState<BlogPostSummary | null>(null);
 
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
   };
 
-  const { data: posts, isLoading } = useQuery<BlogPost[]>({
+  const { data: posts, isLoading } = useQuery<BlogPostSummary[]>({
     queryKey: ["/api/blog-posts?publishedOnly=false"],
   });
 
@@ -77,7 +77,7 @@ export default function BlogPostsList() {
     },
   });
 
-  const handleDeleteClick = (post: BlogPost) => {
+  const handleDeleteClick = (post: BlogPostSummary) => {
     setPostToDelete(post);
     setDeleteDialogOpen(true);
   };

@@ -55,6 +55,7 @@ import {
 } from "lucide-react";
 import type {
   BlogPost,
+  BlogPostSummary,
   Campaign,
   InsertBlogPost,
   InsertProject,
@@ -202,7 +203,7 @@ function UnifiedCreator() {
     enabled: shouldLoadContextData,
   });
 
-  const { data: blogPosts = [], isLoading: blogLoading } = useQuery<BlogPost[]>({
+  const { data: blogPosts = [], isLoading: blogLoading } = useQuery<BlogPostSummary[]>({
     queryKey: ["/api/blog-posts", { publishedOnly: "false" }],
     enabled: shouldLoadContextData,
   });

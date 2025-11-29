@@ -2,27 +2,21 @@
 import { db } from "../server/db";
 import { featureFlags } from "@shared/schema";
 import { DEFAULT_TENANT_ID } from "../server/middleware/tenant";
+import { featureFlagList } from "@shared/feature-flags";
 
 async function seedFeatureFlags() {
   console.log("Seeding feature flags...");
 
   try {
-    await db.insert(featureFlags).values([
-      {
-        tenantId: DEFAULT_TENANT_ID,
-        flagKey: "revenue-architecture-playbook",
-        flagName: "Revenue Architecture Playbook",
-        description: "Show/hide the playbook lead magnet on the home page",
-        enabled: true,
-      },
-      {
-        tenantId: DEFAULT_TENANT_ID,
-        flagKey: "theme-toggle",
-        flagName: "Theme Toggle Button",
-        description: "Show/hide the light/dark mode theme toggle button",
-        enabled: true,
-      },
-    ]).onConflictDoNothing();
+    const values = featureFlagList.map((definition) => ({
+      tenantId: DEFAULT_TENANT_ID,
+      flagKey: definition.key,
+      flagName: definition.name,
+      description: definition.description,
+      enabled: definition.defaultEnabled,
+    }));
+
+    await db.insert(featureFlags).values(values).onConflictDoNothing();
 
     console.log("Feature flags seeded successfully!");
   } catch (error) {

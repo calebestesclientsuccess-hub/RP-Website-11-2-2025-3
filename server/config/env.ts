@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { z } from "zod";
 import { logger } from "../lib/logger";
 
@@ -25,18 +26,27 @@ const envSchema = z
     REPLICATE_API_TOKEN: z.string().optional(),
     RESEND_API_KEY: z.string().default(""),
     RESEND_FROM_EMAIL: z.union([z.string().email(), z.literal("")]).default(""),
+    SMTP_HOST: z.string().default(""),
+    SMTP_PORT: z
+      .string()
+      .regex(/^\d+$/, "SMTP_PORT must be a number")
+      .default("587"),
+    SMTP_USER: z.string().default(""),
+    SMTP_PASS: z.string().default(""),
+    SMTP_FROM: z.union([z.string().email(), z.literal("")]).default(""),
+    SMTP_NAME: z.string().default(""),
     HELPSCOUT_EMAIL: z.string().email().optional(),
     SECURITY_ALERT_WEBHOOK_URL: z.string().url().optional(),
     SECURITY_ALERT_EMAIL: z.string().email().optional(),
     SUPABASE_URL: z.string().url().optional(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
     REDIS_URL: z.string(),
-    APP_BASE_URL: z.string().url().default("http://localhost:5000"),
+    APP_BASE_URL: z.string().url().default("http://localhost:50005"),
     REPLICATE_WEBHOOK_SECRET: z.string().default(""),
     PUBLIC_TENANT_ID: z.string().min(1, "PUBLIC_TENANT_ID is required in production").optional(),
     ALLOWED_ORIGINS: z
       .string()
-      .default("http://localhost:5173"),
+      .default("http://localhost:5173,http://localhost:50005"),
     MAX_REQUEST_SIZE: z.string().default("10mb"),
     RATE_LIMIT_WINDOW_MS: z.string().default("900000"),
     RATE_LIMIT_MAX_REQUESTS: z.string().default("100"),
@@ -137,9 +147,15 @@ if (!cloudinaryEnabled) {
 const resendEnabled =
   Boolean(env.RESEND_API_KEY) && Boolean(env.RESEND_FROM_EMAIL);
 
-if (!resendEnabled) {
+const smtpEnabled =
+  Boolean(env.SMTP_HOST) &&
+  Boolean(env.SMTP_USER) &&
+  Boolean(env.SMTP_PASS) &&
+  Boolean(env.SMTP_FROM);
+
+if (!smtpEnabled && !resendEnabled) {
   logEnvWarning(
-    "Resend credentials missing; transactional email features are disabled.",
+    "SMTP/Resend credentials missing; transactional email features are disabled.",
   );
 }
 
@@ -151,6 +167,7 @@ if (!googleAiEnabled) {
 export const featureFlags = {
   cloudinaryEnabled,
   resendEnabled,
+  smtpEnabled,
   googleAiEnabled,
 };
 

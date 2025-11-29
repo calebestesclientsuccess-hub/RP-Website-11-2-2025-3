@@ -26,6 +26,7 @@ import { getRelatedLinks } from "@/lib/content-graph";
 import { RecentProjects } from "@/components/RecentProjects";
 import { MobileOverlay } from "@/components/MobileOverlay";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { FeatureGate } from "@/components/FeatureGate";
 
 // Lazy load GSAP-heavy animation component
 const SimplifiedOrbitalPowers = lazy(() => import("@/components/SimplifiedOrbitalPowers").then(module => ({ default: module.SimplifiedOrbitalPowers })));
@@ -242,11 +243,13 @@ export default function Home() {
       </section>
 
       {/* Recent Projects Section */}
-      <section className="py-16 px-4 md:px-6 lg:px-8 bg-muted/30">
-        <div className="max-w-7xl mx-auto">
-          <RecentProjects maxProjects={9} />
-        </div>
-      </section>
+      <FeatureGate flagKey="section-recent-projects">
+        <section className="py-16 px-4 md:px-6 lg:px-8 bg-muted/30">
+          <div className="max-w-7xl mx-auto">
+            <RecentProjects maxProjects={9} />
+          </div>
+        </section>
+      </FeatureGate>
 
       {/* Bridge Statement */}
       <SimpleBridgeSection />

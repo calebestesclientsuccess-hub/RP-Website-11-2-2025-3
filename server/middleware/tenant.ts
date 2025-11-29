@@ -22,6 +22,14 @@ export function tenantMiddleware(
   _res: Response,
   next: NextFunction,
 ) {
+  // Skip tenant validation for Vite development assets
+  if (req.path.startsWith("/@vite") || 
+      req.path.startsWith("/src/") || 
+      req.path.startsWith("/node_modules/") ||
+      req.path.match(/\.(js|ts|tsx|jsx|css|json|woff2?)$/)) {
+    return next();
+  }
+
   // 1. Prefer session context
   if (req.session?.tenantId) {
     req.tenantId = req.session.tenantId;

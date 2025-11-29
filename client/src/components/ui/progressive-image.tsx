@@ -60,7 +60,7 @@ export function ProgressiveImage({
   }
 
   return (
-    <div className={cn("relative overflow-hidden", aspectRatio && `aspect-[${aspectRatio}]`)}>
+    <div className={cn("relative overflow-hidden bg-background", aspectRatio && `aspect-[${aspectRatio}]`)}>
       <img
         src={imgSrc}
         alt={alt}

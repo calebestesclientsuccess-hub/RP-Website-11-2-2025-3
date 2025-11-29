@@ -1,8 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-
-interface FeatureFlagResponse {
-  enabled: boolean;
-}
+import { useFeatureFlagContext } from "@/context/FeatureFlagContext";
+import { getFeatureFlagDefinition } from "@shared/feature-flags";
 
 interface UseFeatureFlagResult {
   isEnabled: boolean;
@@ -13,7 +10,7 @@ interface UseFeatureFlagResult {
 
 /**
  * Hook to check if a feature flag is enabled
- * Prevents flash-of-content by ensuring we know the definitive state before rendering
+ * Pulls from the FeatureFlagProvider to prevent flash-of-content
  * 
  * @param flagKey - The feature flag key to check
  * @returns Object with isEnabled (true only if explicitly enabled), isLoading, isError, and error
@@ -27,15 +24,12 @@ interface UseFeatureFlagResult {
  * return <YourComponent />;
  */
 export function useFeatureFlag(flagKey: string): UseFeatureFlagResult {
-  const { data, isLoading, isError, error } = useQuery<FeatureFlagResponse>({
-    queryKey: [`/api/public/feature-flags/${flagKey}`],
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    staleTime: 5 * 60 * 1000, // Consider flag data fresh for 5 minutes
-  });
+  const { flags, isLoading, isError, error } = useFeatureFlagContext();
+  const definition = getFeatureFlagDefinition(flagKey);
+  const isEnabled = flags?.[flagKey] ?? definition?.defaultEnabled ?? false;
 
   return {
-    isEnabled: data?.enabled === true, // Explicitly true, not just truthy
+    isEnabled,
     isLoading,
     isError,
     error: error as Error | null,

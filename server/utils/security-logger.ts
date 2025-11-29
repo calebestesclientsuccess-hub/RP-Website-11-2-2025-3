@@ -3,7 +3,7 @@ import { db } from "../db";
 import { securityEvents } from "@shared/schema";
 import { Request } from "express";
 import { env } from "../config/env";
-import { getUncachableResendClient } from "./resend-client";
+import { sendEmail } from "./mailer";
 
 export type SecurityEventType =
   | 'failed_login'
@@ -48,7 +48,6 @@ async function notifySecurityChannels(
 
   if (env.SECURITY_ALERT_EMAIL) {
     try {
-      const { client, fromEmail } = await getUncachableResendClient();
       const payload = `
         <h1>[${severity.toUpperCase()}] Security event</h1>
         <p><strong>Type:</strong> ${eventType}</p>
@@ -56,8 +55,7 @@ async function notifySecurityChannels(
         <p><strong>IP:</strong> ${details.ipAddress || "N/A"}</p>
         <pre>${JSON.stringify(details.metadata || {}, null, 2)}</pre>
       `;
-      await client.emails.send({
-        from: fromEmail,
+      await sendEmail({
         to: env.SECURITY_ALERT_EMAIL,
         subject: `[${severity.toUpperCase()}] Security event: ${eventType}`,
         html: payload,

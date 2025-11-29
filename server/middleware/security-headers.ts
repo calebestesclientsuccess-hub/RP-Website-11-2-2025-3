@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import { env, isProduction } from "../config/env";
 
 const EXTERNAL_SCRIPT_SRCS = Object.freeze([
   "https://www.googletagmanager.com",
@@ -21,8 +22,8 @@ export function securityHeaders(
   res: Response,
   next: NextFunction,
 ) {
-  const isProduction = process.env.NODE_ENV === "production";
   const nonce = res.locals.cspNonce as string | undefined;
+  const isProd = isProduction;
 
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -35,6 +36,11 @@ export function securityHeaders(
   res.setHeader("Cross-Origin-Embedder-Policy", "credentialless"); 
   res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
   res.setHeader("Origin-Agent-Cluster", "?1");
+
+  // In development, skip CSP entirely to allow Vite HMR and dev tools
+  if (!isProd) {
+    return next();
+  }
 
   const scriptSrc = new Set<string>(["'self'", ...EXTERNAL_SCRIPT_SRCS]);
   if (nonce) {
@@ -83,7 +89,7 @@ export function securityHeaders(
 
   res.setHeader("Content-Security-Policy", directives);
 
-  if (isProduction) {
+  if (isProd) {
     res.setHeader(
       "Strict-Transport-Security",
       "max-age=31536000; includeSubDomains; preload",

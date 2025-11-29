@@ -7,9 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { DirectorConfig, DEFAULT_DIRECTOR_CONFIG } from "@shared/schema";
+import { CaseStudyContent, DirectorConfig, DEFAULT_DIRECTOR_CONFIG } from "@shared/schema";
 import { validateDirectorConfig } from '@/lib/director-validator';
 import { ComponentScene } from "@/components/branding/ComponentScene";
+import { CaseStudyRenderer } from "@/components/branding/CaseStudyRenderer";
+import { FeatureGate } from "@/components/FeatureGate";
+import NotFound from "@/pages/not-found";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -105,6 +108,7 @@ interface Project {
   solutionText: string;
   outcomeText: string;
   modalMediaUrls: string[];
+  caseStudyContent?: CaseStudyContent | null;
 }
 
 interface ProjectScene {
@@ -141,34 +145,30 @@ interface ProjectScene {
   };
 }
 
-export default function BrandingProjectPage() {
+function BrandingProjectPageContent() {
   const { slug } = useParams<{ slug: string }>();
   const [, setLocation] = useLocation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [activeSceneIndex, setActiveSceneIndex] = useState<number>(0);
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const [animationsReady, setAnimationsReady] = useState(false);
+  const [showCaseStudy, setShowCaseStudy] = useState(false); // Toggle for Layer 3
 
   // Fetch project data
   const { data: project, isLoading: isLoadingProject } = useQuery<Project>({
     queryKey: [`/api/branding/projects/slug/${slug}`],
   });
 
-  // Fetch project scenes
-  const { data: scenes, isLoading: isLoadingScenes } = useQuery<ProjectScene[]>({
+  const caseStudyContent = project?.caseStudyContent ?? null;
+  const hasCaseStudy = Boolean(caseStudyContent?.sections?.length);
+
+  // Fetch project scenes (legacy path)
+  const scenesQuery = useQuery<ProjectScene[]>({
     queryKey: [`/api/branding/projects/${project?.id}/scenes`],
-    enabled: !!project?.id,
-    onSuccess: (data) => {
-      // Validate director configs in development
-      if (import.meta.env.DEV && data) {
-        // This is where the original code called the validator.
-        // We'll add our validation logic directly in the useEffect below for clarity and to ensure all scenes are processed.
-        // import('@/lib/director-validator').then(({ logDirectorConfigDiagnostics }) => {
-        //   logDirectorConfigDiagnostics(data);
-        // });
-      }
-    },
+    enabled: !!project?.id, // Always fetch scenes if project exists (Layer 2)
   });
+  const scenes: ProjectScene[] = scenesQuery.data ?? [];
+  const isLoadingScenes = scenesQuery.isLoading;
 
   // Initialize GSAP ScrollTrigger animations
   useEffect(() => {
@@ -177,7 +177,8 @@ export default function BrandingProjectPage() {
     // Validate all director configs and display warnings/errors
     scenes.forEach((scene, index) => {
       // Assuming scene.sceneConfig.director contains the configuration that needs validation
-      const directorConfigToValidate = scene.sceneConfig.director || {};
+      const directorConfigToValidate =
+        (scene.sceneConfig.director || {}) as Partial<DirectorConfig>;
       const errors = validateDirectorConfig(directorConfigToValidate, index);
 
       if (errors.length > 0) {
@@ -568,7 +569,7 @@ export default function BrandingProjectPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeSceneIndex, scenes, animationsReady, isNavigating]);
 
-  const isLoading = isLoadingProject || isLoadingScenes;
+  const isLoading = isLoadingProject || (!hasCaseStudy && isLoadingScenes);
 
   if (isLoading) {
     return (
@@ -721,68 +722,111 @@ export default function BrandingProjectPage() {
           </div>
         </section>
 
-        {/* Dynamic Scenes from Database */}
-        {scenes && scenes.length > 0 ? (
-          scenes.map((scene, index) => {
-            // Merge director config with defaults
-            const director = { ...DEFAULT_DIRECTOR_CONFIG, ...(scene.sceneConfig.director || {}) };
+        {/* Dynamic rendering */}
+        {showCaseStudy && hasCaseStudy && caseStudyContent ? (
+          <div className="relative">
+            <Button
+              variant="outline"
+              className="fixed bottom-8 right-8 z-50 shadow-lg"
+              onClick={() => setShowCaseStudy(false)}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Project Overview
+            </Button>
+            <CaseStudyRenderer content={caseStudyContent} />
+          </div>
+        ) : (
+          <>
+            {scenes && scenes.length > 0 ? (
+              scenes.map((scene, index) => {
+                // Merge director config with defaults
+                const director = { ...DEFAULT_DIRECTOR_CONFIG, ...(scene.sceneConfig.director || {}) };
 
-            return (
-              <section
-                key={scene.id}
-                data-scene={index}
-                className="min-h-screen flex items-center justify-center px-4 py-24"
-                data-testid={`scene-${index}`}
-                style={{
-                  backgroundColor: director.backgroundColor
-                }}
-              >
-                <div className="container mx-auto max-w-4xl" data-scene-content style={{ opacity: 0 }}>
-                  {/* Render scene based on sceneConfig type */}
-                  <SceneRenderer scene={scene} />
+                return (
+                  <section
+                    key={scene.id}
+                    data-scene={index}
+                    className="min-h-screen flex items-center justify-center px-4 py-24"
+                    data-testid={`scene-${index}`}
+                    style={{
+                      backgroundColor: director.backgroundColor
+                    }}
+                  >
+                    <div className="container mx-auto max-w-4xl" data-scene-content style={{ opacity: 0 }}>
+                      {/* Render scene based on sceneConfig type */}
+                      <SceneRenderer scene={scene} />
+                    </div>
+                  </section>
+                );
+              })
+            ) : (
+              /* Fallback: Challenge/Solution/Outcome */
+              <>
+                <section className="min-h-screen flex items-center justify-center px-4 py-24" data-scene={0}>
+                  <div className="container mx-auto max-w-4xl">
+                    <h2 className="text-5xl font-bold mb-8 bg-gradient-to-r from-red-500 to-red-400 bg-clip-text text-transparent">
+                      Challenge
+                    </h2>
+                    <p className="text-xl text-muted-foreground leading-relaxed">
+                      {project.challengeText}
+                    </p>
+                  </div>
+                </section>
+
+                <section className="min-h-screen flex items-center justify-center px-4 py-24" data-scene={1}>
+                  <div className="container mx-auto max-w-4xl">
+                    <h2 className="text-5xl font-bold mb-8 bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
+                      Solution
+                    </h2>
+                    <p className="text-xl text-muted-foreground leading-relaxed">
+                      {project.solutionText}
+                    </p>
+                  </div>
+                </section>
+
+                <section className="min-h-screen flex items-center justify-center px-4 py-24" data-scene={2}>
+                  <div className="container mx-auto max-w-4xl">
+                    <h2 className="text-5xl font-bold mb-8 bg-gradient-to-r from-purple-500 to-purple-400 bg-clip-text text-transparent">
+                      Outcome
+                    </h2>
+                    <p className="text-xl text-muted-foreground leading-relaxed">
+                      {project.outcomeText}
+                    </p>
+                  </div>
+                </section>
+              </>
+            )}
+
+            {/* Layer 3 Entry Point: Case Study Button */}
+            {hasCaseStudy && (
+              <section className="min-h-[50vh] flex items-center justify-center px-4 py-24 bg-muted/10">
+                <div className="text-center space-y-6">
+                  <h2 className="text-4xl font-bold">Want to see how we did it?</h2>
+                  <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                    Dive deep into our process, strategy, and detailed results in the full case study.
+                  </p>
+                  <Button 
+                    size="lg" 
+                    onClick={() => setShowCaseStudy(true)}
+                    className="text-lg px-8 py-6 h-auto"
+                  >
+                    Read Full Case Study
+                  </Button>
                 </div>
               </section>
-            );
-          })
-        ) : (
-          /* Fallback: Challenge/Solution/Outcome */
-          <>
-            <section className="min-h-screen flex items-center justify-center px-4 py-24" data-scene={0}>
-              <div className="container mx-auto max-w-4xl">
-                <h2 className="text-5xl font-bold mb-8 bg-gradient-to-r from-red-500 to-red-400 bg-clip-text text-transparent">
-                  Challenge
-                </h2>
-                <p className="text-xl text-muted-foreground leading-relaxed">
-                  {project.challengeText}
-                </p>
-              </div>
-            </section>
-
-            <section className="min-h-screen flex items-center justify-center px-4 py-24" data-scene={1}>
-              <div className="container mx-auto max-w-4xl">
-                <h2 className="text-5xl font-bold mb-8 bg-gradient-to-r from-red-500 to-purple-500 bg-clip-text text-transparent">
-                  Solution
-                </h2>
-                <p className="text-xl text-muted-foreground leading-relaxed">
-                  {project.solutionText}
-                </p>
-              </div>
-            </section>
-
-            <section className="min-h-screen flex items-center justify-center px-4 py-24" data-scene={2}>
-              <div className="container mx-auto max-w-4xl">
-                <h2 className="text-5xl font-bold mb-8 bg-gradient-to-r from-purple-500 to-purple-400 bg-clip-text text-transparent">
-                  Outcome
-                </h2>
-                <p className="text-xl text-muted-foreground leading-relaxed">
-                  {project.outcomeText}
-                </p>
-              </div>
-            </section>
+            )}
           </>
         )}
       </div>
     </>
+  );
+}
+
+export default function BrandingProjectPage() {
+  return (
+    <FeatureGate flagKey="page-branding" fallback={<NotFound />}>
+      <BrandingProjectPageContent />
+    </FeatureGate>
   );
 }
 

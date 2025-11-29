@@ -14,16 +14,19 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import Home from "@/pages/Home";
 import NotFound from "@/pages/not-found";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { useEffect, lazy, Suspense, useState, useCallback, useMemo } from "react";
+import { useEffect, lazy, Suspense, useState, useCallback, useMemo, type ReactNode } from "react";
 import { CampaignBootstrap } from "@/lib/campaignCache";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useKeyboardShortcuts, GLOBAL_SHORTCUTS } from "@/hooks/use-keyboard-shortcuts";
 import { KeyboardShortcutsModal } from "@/components/KeyboardShortcutsModal";
 import { SkipLink } from "./components/SkipLink";
 import { ShortcutRegistryProvider, useShortcutRegistry } from "@/context/ShortcutRegistryContext";
+import { FeatureFlagProvider } from "@/context/FeatureFlagContext";
+import { FeatureFlaggedRoute } from "@/components/FeatureFlaggedRoute";
 import { ChunkReloadBoundary } from "@/components/ChunkReloadBoundary";
 import { ConsentProvider } from "@/hooks/use-consent";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
 // Lazy load admin pages (reduces initial bundle by ~300KB)
 const LoginPageLazy = lazy(() => import("@/pages/admin/LoginPage"));
@@ -60,6 +63,8 @@ const UnifiedCreatorLazy = lazy(() => import("@/pages/admin/UnifiedCreator"));
 const ProjectSceneEditorLazy = lazy(() => import("@/pages/admin/ProjectSceneEditor"));
 const FieldManagerLazy = lazy(() => import("@/pages/admin/FieldManager"));
 const CrmWorkspaceLazy = lazy(() => import("@/pages/admin/CrmWorkspace"));
+const CaseStudyEditorLazy = lazy(() => import("@/pages/admin/CaseStudyEditor"));
+const CreatePortfolioLazy = lazy(() => import("@/pages/admin/CreatePortfolio"));
 
 // Loading fallback component
 function PageLoadingFallback() {
@@ -70,6 +75,38 @@ function PageLoadingFallback() {
       <Skeleton className="h-32 w-full" />
     </div>
   );
+}
+
+function MaintenanceScreen() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-center gap-6 p-8">
+      <h1 className="text-3xl font-semibold">We’ll Be Right Back</h1>
+      <p className="text-muted-foreground max-w-2xl">
+        We’re performing scheduled maintenance to polish the experience. Please check back soon or
+        reach out to your Revenue Party contact if you need immediate assistance.
+      </p>
+    </div>
+  );
+}
+
+function MaintenanceBoundary({ children }: { children: ReactNode }) {
+  const { isEnabled: maintenanceEnabled, isLoading } = useFeatureFlag("maintenance-mode");
+  const [location] = useLocation();
+  const isAdminRoute = location.startsWith("/admin");
+
+  if (isAdminRoute) {
+    return <>{children}</>;
+  }
+
+  if (isLoading) {
+    return <PageLoadingFallback />;
+  }
+
+  if (maintenanceEnabled) {
+    return <MaintenanceScreen />;
+  }
+
+  return <>{children}</>;
 }
 
 // HOC to wrap lazy-loaded components with Suspense while preserving route props
@@ -118,6 +155,8 @@ const UnifiedCreator = withLazyLoading(UnifiedCreatorLazy);
 const ProjectSceneEditor = withLazyLoading(ProjectSceneEditorLazy);
 const FieldManager = withLazyLoading(FieldManagerLazy);
 const CrmWorkspace = withLazyLoading(CrmWorkspaceLazy);
+const CaseStudyEditor = withLazyLoading(CaseStudyEditorLazy);
+const CreatePortfolio = withLazyLoading(CreatePortfolioLazy);
 
 const lazyPage = (
   loader: () => Promise<{ default: React.ComponentType<any> }>,
@@ -181,98 +220,251 @@ function Router() {
     <>
       <ScrollToTop />
       <Switch>
-        {/* Core Pages */}
-        <Route path="/" component={Home} />
-        <Route path="/problem" component={ProblemPage} />
-        <Route path="/gtm-engine" component={GTMEnginePage} />
-        <Route path="/results" component={ResultsPage} />
-        <Route path="/why-us" component={About} />
-        <Route path="/blog" component={BlogPage} />
-        <Route path="/blog/:slug" component={BlogPostPage} />
-        <Route path="/branding" component={BrandingPage} />
-        <Route path="/branding/:slug" component={BrandingProjectPage} />
-        <Route path="/audit" component={AuditPage} />
+          {/* Core Pages */}
+          <FeatureFlaggedRoute
+            path="/"
+            flagKey="page-home"
+            component={Home}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/problem"
+            flagKey="page-problem"
+            component={ProblemPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/gtm-engine"
+            flagKey="page-gtm-engine"
+            component={GTMEnginePage}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/results"
+            flagKey="page-results"
+            component={ResultsPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/why-us"
+            flagKey="page-about"
+            component={About}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/blog"
+            flagKey="page-blog"
+            component={BlogPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/blog/:slug"
+            flagKey="page-blog"
+            component={BlogPostPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/blog/manifesto-the-lone-wolf-trap"
+            flagKey="page-blog"
+            component={ManifestoPost}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/branding"
+            flagKey="page-branding"
+            component={BrandingPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/branding/:slug"
+            flagKey="page-branding"
+            component={BrandingProjectPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/audit"
+            flagKey="page-audit"
+            component={AuditPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
 
-        {/* Public Portfolio Preview Route */}
-        <Route path="/preview/:projectId" component={PreviewPortfolio} />
+          {/* Public Portfolio Preview Route */}
+          <FeatureFlaggedRoute
+            path="/preview/:projectId"
+            flagKey="page-preview-portfolio"
+            component={PreviewPortfolio}
+            loadingFallback={<PageLoadingFallback />}
+          />
 
-        {/* Tools & Resources */}
-        <Route path="/roi-calculator" component={ROICalculator} />
-        <Route path="/assessment" component={AssessmentPage} />
-        <Route path="/pipeline-assessment" component={PipelineAssessmentPage} />
-        <Route path="/pipeline-assessment/thank-you" component={PipelineAssessmentThankYou} />
+          {/* Tools & Resources */}
+          <FeatureFlaggedRoute
+            path="/roi-calculator"
+            flagKey="page-roi-calculator"
+            component={ROICalculator}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/assessment"
+            flagKey="page-assessment"
+            component={AssessmentPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/pipeline-assessment"
+            flagKey="page-pipeline-assessment"
+            component={PipelineAssessmentPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/pipeline-assessment/thank-you"
+            flagKey="page-pipeline-assessment"
+            component={PipelineAssessmentThankYou}
+            loadingFallback={<PageLoadingFallback />}
+          />
 
-        {/* Configurable Assessments (Public Runtime) */}
-        <Route path="/assessments/:slug" component={AssessmentRuntime} />
-        <Route path="/assessments/results/:sessionId" component={AssessmentResult} />
+          {/* Configurable Assessments (Public Runtime) */}
+          <FeatureFlaggedRoute
+            path="/assessments/:slug"
+            flagKey="page-assessment"
+            component={AssessmentRuntime}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/assessments/results/:sessionId"
+            flagKey="page-assessment"
+            component={AssessmentResult}
+            loadingFallback={<PageLoadingFallback />}
+          />
 
-        {/* Admin Routes - Lazy loaded with Suspense for code splitting */}
-        <Route path="/admin/login" component={LoginPage} />
-        <Route path="/admin/register" component={RegisterPage} />
-        <Route path="/admin/forgot-password" component={ForgotPasswordPage} />
-        <Route path="/admin/reset-password/:token" component={ResetPasswordPage} />
-        <Route path="/admin/welcome" component={WelcomePage} />
-        <Route path="/admin/content" component={ContentLibrary} />
-        <Route path="/admin/feature-flags" component={FeatureFlagsPage} />
-        <Route path="/admin" component={AdminDashboard} />
-        <Route path="/admin/assessment-submissions" component={AssessmentAdminDashboard} />
-        <Route path="/admin/assessments/new" component={AssessmentConfigForm} />
-        <Route path="/admin/assessments/:id/edit" component={AssessmentConfigForm} />
-        <Route path="/admin/assessments" component={AssessmentConfigsList} />
-        <Route path="/admin/campaigns/new" component={CampaignForm} />
-        <Route path="/admin/campaigns/:id/edit" component={CampaignForm} />
-        <Route path="/admin/campaigns" component={CampaignsList} />
-        <Route path="/admin/blog-posts/new" component={BlogPostForm} />
-        <Route path="/admin/blog-posts/:id/edit" component={BlogPostForm} />
-        <Route path="/admin/blog-posts" component={BlogPostsList} />
-        <Route path="/admin/video-posts/new" component={VideoPostForm} />
-        <Route path="/admin/video-posts/:id/edit" component={VideoPostForm} />
-        <Route path="/admin/video-posts" component={VideoPostsList} />
-        <Route path="/admin/testimonials/new" component={TestimonialForm} />
-        <Route path="/admin/testimonials/:id/edit" component={TestimonialForm} />
-        <Route path="/admin/projects/new" component={ProjectForm} />
-        <Route path="/admin/projects/:id/edit" component={ProjectForm} />
-        <Route path="/admin/portfolio/:slug" component={ProjectSceneEditor} />
-        <Route path="/admin/portfolio/:slug" component={ProjectSceneEditor} />
-        <Route path="/admin/portfolio-wizard" component={PortfolioWizard} />
-        <Route path="/admin/wizard" component={RedirectToBuilder} />
-        <Route path="/admin/portfolio-builder" component={PortfolioBuilder} />
-        <Route path="/admin/portfolio-prompts" component={PortfolioPromptManager} />
-        <Route path="/admin/ai-prompt-settings" component={AIPromptSettings} />
-        <Route path="/admin/media-library" component={MediaLibrary} />
-        <Route path="/admin/template-library" component={TemplateLibrary} />
-        <Route path="/admin/crm/fields" component={FieldManager} />
-        <Route path="/admin/crm/workspace" component={CrmWorkspace} />
-        <Route path="/admin/create" component={UnifiedCreator} />
-        <Route path="/admin/job-postings/new" component={JobPostingForm} />
-        <Route path="/admin/job-postings/:id/edit" component={JobPostingForm} />
-        <Route path="/admin/widget-config" component={WidgetConfigPage} />
+          {/* Resource Pillar Pages */}
+          <FeatureFlaggedRoute
+            path="/resources/how-to-build-sdr-team-guide"
+            flagKey="page-resources"
+            component={InternalTrapGuide}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/resources/sdr-outsourcing-companies-guide"
+            flagKey="page-resources"
+            component={AgencyTrapGuide}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/resources/guide-to-sales-as-a-service"
+            flagKey="page-resources"
+            component={SalesAsAServiceGuide}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/resources/how-to-hire-cold-callers-guide"
+            flagKey="page-resources"
+            component={HireColdCallersGuide}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/resources/4-paths-hire-cold-caller"
+            flagKey="page-resources"
+            component={FourPathsToHireColdCaller}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/resources/gtm-assessment"
+            flagKey="page-resources"
+            component={GtmAssessmentPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/resources/gtm-assessment/path-1"
+            flagKey="page-resources"
+            component={GtmResultPath1}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/resources/gtm-assessment/path-2"
+            flagKey="page-resources"
+            component={GtmResultPath2}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/resources/gtm-assessment/path-3"
+            flagKey="page-resources"
+            component={GtmResultPath3}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/resources/gtm-assessment/path-4"
+            flagKey="page-resources"
+            component={GtmResultPath4}
+            loadingFallback={<PageLoadingFallback />}
+          />
 
-        {/* Resource Pillar Pages */}
-        <Route path="/resources/how-to-build-sdr-team-guide" component={InternalTrapGuide} />
-        <Route path="/resources/sdr-outsourcing-companies-guide" component={AgencyTrapGuide} />
-        <Route path="/resources/guide-to-sales-as-a-service" component={SalesAsAServiceGuide} />
-        <Route path="/resources/how-to-hire-cold-callers-guide" component={HireColdCallersGuide} />
-        <Route path="/resources/4-paths-hire-cold-caller" component={FourPathsToHireColdCaller} />
+          {/* Company */}
+          <FeatureFlaggedRoute
+            path="/pricing"
+            flagKey="page-pricing"
+            component={PricingPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/faq"
+            flagKey="page-faq"
+            component={FAQPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
+          <FeatureFlaggedRoute
+            path="/contact"
+            flagKey="page-contact"
+            component={ContactPage}
+            loadingFallback={<PageLoadingFallback />}
+          />
 
-        {/* GTM Assessment Tool */}
-        <Route path="/resources/gtm-assessment" component={GtmAssessmentPage} />
-        <Route path="/resources/gtm-assessment/path-1" component={GtmResultPath1} />
-        <Route path="/resources/gtm-assessment/path-2" component={GtmResultPath2} />
-        <Route path="/resources/gtm-assessment/path-3" component={GtmResultPath3} />
-        <Route path="/resources/gtm-assessment/path-4" component={GtmResultPath4} />
+          {/* Admin Routes - Lazy loaded with Suspense for code splitting */}
+          <Route path="/admin/login" component={LoginPage} />
+          <Route path="/admin/register" component={RegisterPage} />
+          <Route path="/admin/forgot-password" component={ForgotPasswordPage} />
+          <Route path="/admin/reset-password/:token" component={ResetPasswordPage} />
+          <Route path="/admin/welcome" component={WelcomePage} />
+          <Route path="/admin/content" component={ContentLibrary} />
+          <Route path="/admin/feature-flags" component={FeatureFlagsPage} />
+          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin/assessment-submissions" component={AssessmentAdminDashboard} />
+          <Route path="/admin/assessments/new" component={AssessmentConfigForm} />
+          <Route path="/admin/assessments/:id/edit" component={AssessmentConfigForm} />
+          <Route path="/admin/assessments" component={AssessmentConfigsList} />
+          <Route path="/admin/campaigns/new" component={CampaignForm} />
+          <Route path="/admin/campaigns/:id/edit" component={CampaignForm} />
+          <Route path="/admin/campaigns" component={CampaignsList} />
+          <Route path="/admin/blog-posts/new" component={BlogPostForm} />
+          <Route path="/admin/blog-posts/:id/edit" component={BlogPostForm} />
+          <Route path="/admin/blog-posts" component={BlogPostsList} />
+          <Route path="/admin/video-posts/new" component={VideoPostForm} />
+          <Route path="/admin/video-posts/:id/edit" component={VideoPostForm} />
+          <Route path="/admin/video-posts" component={VideoPostsList} />
+          <Route path="/admin/testimonials/new" component={TestimonialForm} />
+          <Route path="/admin/testimonials/:id/edit" component={TestimonialForm} />
+          <Route path="/admin/projects/new" component={ProjectForm} />
+          <Route path="/admin/projects/:id/edit" component={ProjectForm} />
+          <Route path="/admin/portfolio/:slug" component={ProjectSceneEditor} />
+          <Route path="/admin/portfolio/:slug" component={ProjectSceneEditor} />
+          <Route path="/admin/case-studies/:projectId" component={CaseStudyEditor} />
+          <Route path="/admin/portfolio-wizard" component={PortfolioWizard} />
+          <Route path="/admin/wizard" component={RedirectToBuilder} />
+          <Route path="/admin/portfolio-builder" component={PortfolioBuilder} />
+          <Route path="/admin/portfolio-prompts" component={PortfolioPromptManager} />
+          <Route path="/admin/ai-prompt-settings" component={AIPromptSettings} />
+          <Route path="/admin/media-library" component={MediaLibrary} />
+          <Route path="/admin/template-library" component={TemplateLibrary} />
+          <Route path="/admin/crm/fields" component={FieldManager} />
+          <Route path="/admin/crm/workspace" component={CrmWorkspace} />
+          <Route path="/admin/create" component={UnifiedCreator} />
+          <Route path="/admin/create-portfolio" component={CreatePortfolio} />
+          <Route path="/admin/job-postings/new" component={JobPostingForm} />
+          <Route path="/admin/job-postings/:id/edit" component={JobPostingForm} />
+          <Route path="/admin/widget-config" component={WidgetConfigPage} />
 
-        {/* Blog Posts */}
-        <Route path="/blog/manifesto-the-lone-wolf-trap" component={ManifestoPost} />
-
-        {/* Company */}
-        <Route path="/pricing" component={PricingPage} />
-        <Route path="/faq" component={FAQPage} />
-        <Route path="/contact" component={ContactPage} />
-
-        {/* Fallback */}
-        <Route component={NotFound} />
-      </Switch>
+          {/* Fallback */}
+          <Route component={NotFound} />
+        </Switch>
     </>
   );
 }
@@ -296,30 +488,34 @@ function AppShell() {
       <HelmetProvider>
         <ThemeProvider defaultTheme="dark">
           <AuthProvider>
-            <TooltipProvider>
-              <CampaignBootstrap>
-                <ErrorBoundary>
-                  <SkipLink />
-                  <div className="min-h-screen bg-background text-foreground">
-                    <Navbar />
-                    <main id="main-content" role="main" aria-label="Main content region">
-                      <Router />
-                    </main>
-                    <Footer />
-                    <FloatingWidget />
-                    <PopupEngine />
-                    <CookieConsentBanner />
-                  </div>
-                  <Toaster />
-                  {/* Keyboard Shortcuts Modal */}
-                  <KeyboardShortcutsModal
-                    open={showShortcuts}
-                    onOpenChange={setShowShortcuts}
-                    additionalShortcuts={shortcuts}
-                  />
-                </ErrorBoundary>
-              </CampaignBootstrap>
-            </TooltipProvider>
+            <FeatureFlagProvider>
+              <TooltipProvider>
+                <CampaignBootstrap>
+                  <ErrorBoundary>
+                    <SkipLink />
+                    <MaintenanceBoundary>
+                      <div className="min-h-screen bg-background text-foreground">
+                        <Navbar />
+                        <main id="main-content" role="main" aria-label="Main content region">
+                          <Router />
+                        </main>
+                        <Footer />
+                        <FloatingWidget />
+                        <PopupEngine />
+                        <CookieConsentBanner />
+                      </div>
+                    </MaintenanceBoundary>
+                    <Toaster />
+                    {/* Keyboard Shortcuts Modal */}
+                    <KeyboardShortcutsModal
+                      open={showShortcuts}
+                      onOpenChange={setShowShortcuts}
+                      additionalShortcuts={shortcuts}
+                    />
+                  </ErrorBoundary>
+                </CampaignBootstrap>
+              </TooltipProvider>
+            </FeatureFlagProvider>
           </AuthProvider>
         </ThemeProvider>
       </HelmetProvider>

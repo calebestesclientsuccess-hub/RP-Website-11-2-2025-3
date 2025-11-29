@@ -64,6 +64,7 @@ export const blogPosts = pgTable("blog_posts", {
   metaTitle: text("meta_title"),
   metaDescription: text("meta_description"),
   canonicalUrl: text("canonical_url"),
+  recommendedArticleIds: text("recommended_article_ids").array(),
 });
 
 export const videoPosts = pgTable("video_posts", {
@@ -976,6 +977,9 @@ export type InsertPasswordResetToken = z.infer<typeof insertPasswordResetTokenSc
 export type EmailCapture = typeof emailCaptures.$inferSelect;
 export type InsertEmailCapture = z.infer<typeof insertEmailCaptureSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
+export type BlogPostSummary = Omit<BlogPost, "content"> & {
+  contentPreview?: string | null;
+};
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type VideoPost = typeof videoPosts.$inferSelect;
 export type InsertVideoPost = z.infer<typeof insertVideoPostSchema>;
@@ -1016,6 +1020,17 @@ export type InsertFeatureFlag = z.infer<typeof insertFeatureFlagSchema>;
 export type SeoIssue = typeof seoIssues.$inferSelect;
 export type InsertSeoIssue = z.infer<typeof insertSeoIssueSchema>;
 
+// Project Media Asset type used for branding portfolio media
+export interface ProjectMediaAsset {
+  id: string;
+  url: string;
+  type: "image" | "video";
+  order: number;
+  alt?: string;
+  caption?: string;
+  mediaId?: string;
+}
+
 // Branding Portfolio Tables
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -1039,12 +1054,22 @@ export const projects = pgTable("projects", {
     accent?: string;
     neutral?: string;
   }>().default(sql`'{}'::jsonb`),
+  // Hero media support (image or video)
+  heroMediaType: text("hero_media_type").default("image"), // 'image' or 'video'
+  heroMediaConfig: jsonb("hero_media_config").$type<{
+    videoUrl?: string;
+    posterUrl?: string;
+    autoplay?: boolean;
+    loop?: boolean;
+    muted?: boolean;
+  }>().default(sql`'{}'::jsonb`),
   componentLibrary: text("component_library").default("shadcn"),
   assetPlan: jsonb("asset_plan").$type<Array<{
     assetId: string;
     label?: string;
     sectionKey?: string;
   }>>().default(sql`'[]'::jsonb`),
+  caseStudyContent: jsonb("case_study_content"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -1579,6 +1604,13 @@ export type CalculatorConfig = z.infer<typeof calculatorConfigSchema>;
 export type SeoMetadata = z.infer<typeof seoMetadataSchema>;
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type HeroMediaConfig = {
+  videoUrl?: string;
+  posterUrl?: string;
+  autoplay?: boolean;
+  loop?: boolean;
+  muted?: boolean;
+};
 export type SceneConfig = z.infer<typeof sceneConfigSchema>;
 export type SceneConfigWithDirector = z.infer<typeof sceneConfigWithDirectorSchema>;
 // ProjectScene with properly typed sceneConfig
@@ -1923,3 +1955,174 @@ export const insertMediaLibraryAssetSchema = createInsertSchema(mediaLibrary).om
 
 export type MediaLibraryAsset = typeof mediaLibrary.$inferSelect;
 export type InsertMediaLibraryAsset = z.infer<typeof insertMediaLibraryAssetSchema>;
+
+// Case Study Schemas
+export const caseStudyTextBlockSchema = z.object({
+  type: z.literal("text"),
+  id: z.string(),
+  content: z.string(),
+  format: z.enum(["markdown", "html"]).default("markdown"),
+  layout: z.enum(["center", "left", "full"]).default("center"),
+});
+
+export const caseStudyCarouselBlockSchema = z.object({
+  type: z.literal("carousel"),
+  id: z.string(),
+  items: z.array(z.object({
+    mediaId: z.string().optional(),
+    url: z.string().optional(),
+    type: z.enum(["image", "video"]),
+    caption: z.string().optional(),
+    alt: z.string().optional(),
+  })),
+  aspectRatio: z.enum(["video", "square", "wide"]).default("video"),
+});
+
+export const caseStudyStatGridSchema = z.object({
+  type: z.literal("stat-grid"),
+  id: z.string(),
+  stats: z.array(z.object({
+    label: z.string(),
+    value: z.string(),
+  })),
+});
+
+export const caseStudyBlockSchema = z.discriminatedUnion("type", [
+  caseStudyTextBlockSchema,
+  caseStudyCarouselBlockSchema,
+  caseStudyStatGridSchema,
+]);
+
+export const caseStudySectionSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  slug: z.string().optional(),
+  theme: z.object({
+    backgroundColor: z.string().optional(),
+    textColor: z.string().optional(),
+    primaryColor: z.string().optional(),
+  }).optional(),
+  blocks: z.array(caseStudyBlockSchema),
+});
+
+export const caseStudyContentSchema = z.object({
+  sections: z.array(caseStudySectionSchema).min(1, "At least one section is required"),
+});
+
+export type CaseStudyTextBlock = z.infer<typeof caseStudyTextBlockSchema>;
+export type CaseStudyCarouselBlock = z.infer<typeof caseStudyCarouselBlockSchema>;
+export type CaseStudyStatGrid = z.infer<typeof caseStudyStatGridSchema>;
+export type CaseStudyBlock = z.infer<typeof caseStudyBlockSchema>;
+export type CaseStudySection = z.infer<typeof caseStudySectionSchema>;
+export type CaseStudyContent = z.infer<typeof caseStudyContentSchema>;
+
+// Project Layer 2 Sections table for flexible expansion content
+export const projectLayer2Sections = pgTable("project_layer2_sections", {
+  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id", { length: 255 }).notNull().references(() => projects.id, { onDelete: "cascade" }),
+  heading: text("heading").notNull(),
+  body: text("body").notNull(),
+  orderIndex: integer("order_index").notNull(),
+  mediaType: text("media_type").notNull().default("none").$type<"none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel">(),
+  mediaConfig: jsonb("media_config").$type<{
+    mediaId?: string;
+    url?: string;
+    items?: Array<{
+      mediaId?: string;
+      url: string;
+      type: "image" | "video";
+      caption?: string;
+    }>;
+  }>().default(sql`'{}'::jsonb`),
+  styleConfig: jsonb("style_config").$type<{
+    backgroundColor?: string;
+    textColor?: string;
+    headingColor?: string;
+    fontFamily?: string;
+    headingSize?: "text-xl" | "text-2xl" | "text-3xl" | "text-4xl";
+    bodySize?: "text-sm" | "text-base" | "text-lg";
+    alignment?: "left" | "center" | "right";
+    // Layout controls
+    mediaSize?: "standard" | "immersive";
+    mediaPosition?: "above" | "below" | "left" | "right";
+    textWidth?: number; // 30-70 percentage
+    spacing?: "tight" | "normal" | "loose";
+  }>().default(sql`'{}'::jsonb`),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  projectOrderIdx: uniqueIndex("project_layer2_sections_project_order_idx").on(table.projectId, table.orderIndex),
+  projectIdIdx: index("project_layer2_sections_project_id_idx").on(table.projectId),
+}));
+
+export const projectLayer2SectionSchema = z.object({
+  heading: z.string().min(1, "Heading is required").max(200, "Heading must be under 200 characters"),
+  body: z.string().min(1, "Body text is required").max(2000, "Body must be under 2000 characters"),
+  orderIndex: z.number().int().min(0).max(4),
+  mediaType: z.enum(["none", "image", "video", "image-carousel", "video-carousel", "mixed-carousel"]),
+  mediaConfig: z.object({
+    mediaId: z.string().optional(),
+    url: z.string().url().optional(),
+    items: z.array(z.object({
+      mediaId: z.string().optional(),
+      url: z.string().url(),
+      type: z.enum(["image", "video"]),
+      caption: z.string().optional(),
+    })).optional(),
+  }).optional(),
+  styleConfig: z.object({
+    backgroundColor: z.string().optional(),
+    textColor: z.string().optional(),
+    headingColor: z.string().optional(),
+    fontFamily: z.string().optional(),
+    headingSize: z.enum(["text-xl", "text-2xl", "text-3xl", "text-4xl"]).optional(),
+    bodySize: z.enum(["text-sm", "text-base", "text-lg"]).optional(),
+    alignment: z.enum(["left", "center", "right"]).optional(),
+    // Layout controls
+    mediaSize: z.enum(["standard", "immersive"]).optional(),
+    mediaPosition: z.enum(["above", "below", "left", "right"]).optional(),
+    textWidth: z.number().min(30).max(70).optional(),
+    spacing: z.enum(["tight", "normal", "loose"]).optional(),
+  }).optional(),
+});
+
+export const insertProjectLayer2SectionSchema = createInsertSchema(projectLayer2Sections)
+  .omit({ 
+    id: true, 
+    projectId: true, 
+    createdAt: true, 
+    updatedAt: true 
+  })
+  .extend({
+    heading: z.string().min(1, "Heading is required").max(200, "Heading must be under 200 characters"),
+    body: z.string().min(1, "Body text is required").max(2000, "Body must be under 2000 characters"),
+    orderIndex: z.number().int().min(0).max(4),
+    mediaType: z.enum(["none", "image", "video", "image-carousel", "video-carousel", "mixed-carousel"]).default("none"),
+    mediaConfig: z.object({
+      mediaId: z.string().optional(),
+      url: z.string().url().optional(),
+      items: z.array(z.object({
+        mediaId: z.string().optional(),
+        url: z.string().url(),
+        type: z.enum(["image", "video"]),
+        caption: z.string().optional(),
+      })).optional(),
+    }).optional(),
+    styleConfig: z.object({
+      backgroundColor: z.string().optional(),
+      textColor: z.string().optional(),
+      headingColor: z.string().optional(),
+      fontFamily: z.string().optional(),
+      headingSize: z.enum(["text-xl", "text-2xl", "text-3xl", "text-4xl"]).optional(),
+      bodySize: z.enum(["text-sm", "text-base", "text-lg"]).optional(),
+      alignment: z.enum(["left", "center", "right"]).optional(),
+      // Layout controls
+      mediaSize: z.enum(["standard", "immersive"]).optional(),
+      mediaPosition: z.enum(["above", "below", "left", "right"]).optional(),
+      textWidth: z.number().min(30).max(70).optional(),
+      spacing: z.enum(["tight", "normal", "loose"]).optional(),
+    }).optional(),
+  });
+
+export type ProjectLayer2Section = typeof projectLayer2Sections.$inferSelect;
+export type InsertProjectLayer2Section = z.infer<typeof insertProjectLayer2SectionSchema>;

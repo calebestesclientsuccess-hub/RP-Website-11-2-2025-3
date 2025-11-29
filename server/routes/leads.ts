@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { db } from "../db";
 import { companies, contacts, deals, leads, tasks } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
-import { getUncachableResendClient } from "../utils/resend-client";
+import { sendEmail } from "../utils/mailer";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { DEFAULT_TENANT_ID } from "../middleware/tenant";
@@ -129,11 +129,9 @@ router.post("/leads", leadLimiter, sanitizeInput(["message"]), async (req: Reque
     // 3. Send Email (Help Scout)
     // Only happens if transaction succeeded
     try {
-      const { client, fromEmail } = await getUncachableResendClient();
       const helpScoutEmail = process.env.HELPSCOUT_EMAIL || "support@revenueparty.com"; // Replace with actual
 
-      await client.emails.send({
-        from: fromEmail,
+      await sendEmail({
         to: helpScoutEmail,
         replyTo: normalizedEmail,
         subject: `New Lead: ${firstName || ''} ${lastName || ''} from ${companyName || domain}`,

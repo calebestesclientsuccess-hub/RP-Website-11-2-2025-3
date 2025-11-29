@@ -9,9 +9,17 @@ import { mockResend } from './mocks/resend.mock';
 import { mockCloudinary } from './mocks/cloudinary.mock';
 
 // Mock Redis (ioredis)
-vi.mock('../server/lib/redis', () => ({
-  redis: mockRedis,
-}));
+vi.mock('ioredis', () => {
+  class RedisCtor {
+    constructor() {
+      return mockRedis;
+    }
+  }
+  return {
+    __esModule: true,
+    default: RedisCtor,
+  };
+});
 
 // Mock Resend email service
 vi.mock('resend', () => ({
@@ -27,7 +35,7 @@ vi.mock('cloudinary', () => ({
 beforeEach(() => {
   mockRedis.clear();
   mockResend.clear();
-  mockCloudinary.clear();
+  mockCloudinary.v2.clear();
 });
 
 // Export mocks for test assertions

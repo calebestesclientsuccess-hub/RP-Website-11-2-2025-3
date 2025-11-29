@@ -1,5 +1,5 @@
 import cors, { type CorsOptions } from "cors";
-import { securityConfig } from "../config/production";
+import { securityConfig, isProduction } from "../config/production";
 
 const wildcardToRegExp = (pattern: string) => {
   const escaped = pattern.replace(/[-/\\^$+?.()|[\]{}]/g, "\\$&");
@@ -26,6 +26,11 @@ const corsOptions: CorsOptions = {
   credentials: securityConfig.cors.credentials,
   maxAge: securityConfig.cors.maxAge,
   origin: (origin, callback) => {
+    // In development, allow all origins (same-origin setup)
+    if (!isProduction) {
+      return callback(null, true);
+    }
+
     if (!origin) {
       // Allow same-origin or non-browser clients
       return callback(null, true);

@@ -1,10 +1,4 @@
-import { createContext, useContext } from "react";
-
-// Mock user for demo mode - always logged in
-const DEMO_USER = {
-  id: 'demo_user_01',
-  username: 'demo_user'
-};
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 interface User {
   id: string;
@@ -21,29 +15,76 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Demo mode auth provider - always returns demo user, no real authentication
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Mock functions that do nothing in demo mode
-  const login = async (username: string, password: string) => {
-    console.log('Demo mode - login not required');
-  };
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const register = async (username: string, email: string, password: string) => {
-    console.log('Demo mode - registration not required');
-  };
+  // Check session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await fetch("/api/auth/session", {
+          credentials: "include",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Failed to check session:", error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const logout = async () => {
-    console.log('Demo mode - logout not required');
-  };
+    checkSession();
+  }, []);
+
+  const login = useCallback(async (username: string, password: string) => {
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ username, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Login failed");
+    }
+
+    setUser({
+      id: data.id,
+      username: data.username,
+    });
+  }, []);
+
+  const register = useCallback(async (_username: string, _email: string, _password: string) => {
+    // Registration is disabled - always throw an error
+    throw new Error("Registration is disabled. Contact hello@revenueparty.com for access.");
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Logout request failed:", error);
+    } finally {
+      setUser(null);
+      // Redirect to login page
+      window.location.href = "/admin/login";
+    }
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ 
-      user: DEMO_USER, // Always logged in as demo user
-      isLoading: false, // Never loading in demo mode
-      login, 
-      register, 
-      logout 
-    }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

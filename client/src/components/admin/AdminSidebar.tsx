@@ -12,7 +12,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { FileText, Video, Settings, LogOut, LayoutDashboard, ClipboardList, Megaphone, Flag, Library, Sparkles, Upload, Bookmark, Wand2, Palette, PlusCircle, ListChecks, Database } from "lucide-react";
+import { FileText, Video, Settings, LogOut, LayoutDashboard, ClipboardList, Megaphone, Flag, Library, Sparkles, Upload, Bookmark, Wand2, Palette, PlusCircle, ListChecks, Database, Layers } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 
@@ -39,6 +39,11 @@ const menuGroups = [
         title: "Create New...",
         url: "/admin/create",
         icon: PlusCircle,
+      },
+      {
+        title: "Create Portfolio",
+        url: "/admin/create-portfolio",
+        icon: Layers,
       },
       {
         title: "Portfolio Wizard",

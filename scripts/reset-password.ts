@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 
 async function resetPassword() {
   const username = "caleb@revenueparty.com";
-  const newPassword = "TempPassword123!";
+  const newPassword = "test1234";
   
   console.log(`Resetting password for: ${username}`);
   

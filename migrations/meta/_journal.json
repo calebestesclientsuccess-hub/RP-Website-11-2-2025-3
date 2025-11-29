@@ -64,6 +64,20 @@
       "when": 1763820600000,
       "tag": "202511220500_add_replicate_jobs",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1763969000000,
+      "tag": "20251123235334_add_case_study_content",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1732675200000,
+      "tag": "202511270001_add_project_layer2_sections",
+      "breakpoints": true
     }
   ]
 }

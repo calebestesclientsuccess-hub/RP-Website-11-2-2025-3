@@ -16,19 +16,34 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Helmet } from "react-helmet-async";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { runTextGenerationJob } from "@/lib/ai-text";
 import { useLocation, useRoute } from "wouter";
-import { Loader2, Link as LinkIcon, Lightbulb, Sparkles, AlertTriangle } from "lucide-react";
+import { Loader2, Link as LinkIcon, Lightbulb, Sparkles, AlertTriangle, X, Search, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { BlogPost, InsertBlogPost } from "@shared/schema";
+import type { BlogPost, InsertBlogPost, BlogPostSummary } from "@shared/schema";
 import { insertBlogPostSchema } from "@shared/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -64,6 +79,7 @@ const formSchema = insertBlogPostSchema.extend({
   ),
   canonicalUrl: preprocessEmptyString(z.string().url("Enter a valid URL").optional()),
   status: z.enum(["draft", "scheduled", "published"]),
+  recommendedArticleIds: z.array(z.string()).max(3, "Maximum 3 articles").optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -161,6 +177,17 @@ export default function BlogPostForm() {
     enabled: isEdit && !!postId,
   });
 
+  // Fetch all published blog posts for the article picker
+  const { data: allBlogPosts } = useQuery<BlogPostSummary[]>({
+    queryKey: ["/api/blog-posts"],
+  });
+
+  // Filter out current post from available articles
+  const availableArticles = useMemo(() => {
+    if (!allBlogPosts) return [];
+    return allBlogPosts.filter(p => p.published && p.id !== postId);
+  }, [allBlogPosts, postId]);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -172,12 +199,13 @@ export default function BlogPostForm() {
       featuredImage: "",
       videoUrl: "",
       category: "",
-    metaTitle: "",
-    metaDescription: "",
-    canonicalUrl: "",
+      metaTitle: "",
+      metaDescription: "",
+      canonicalUrl: "",
       scheduledFor: undefined,
       published: false,
       status: "draft",
+      recommendedArticleIds: [],
     },
   });
 
@@ -204,6 +232,7 @@ export default function BlogPostForm() {
         scheduledFor: post.scheduledFor || undefined,
         published: post.published,
         status,
+        recommendedArticleIds: post.recommendedArticleIds || [],
       });
     }
   }, [post, isEdit, form]);
@@ -686,6 +715,104 @@ export default function BlogPostForm() {
                           <FormMessage />
                         </FormItem>
                       )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="recommendedArticleIds"
+                      render={({ field }) => {
+                        const selectedIds = field.value || [];
+                        const selectedArticles = availableArticles.filter(a => selectedIds.includes(a.id));
+                        
+                        return (
+                          <FormItem>
+                            <FormLabel>Recommended Articles</FormLabel>
+                            <FormDescription>
+                              Select up to 3 articles to recommend. If none selected, the 3 most recent articles will be shown automatically.
+                            </FormDescription>
+                            <div className="space-y-3">
+                              {/* Selected articles display */}
+                              {selectedArticles.length > 0 && (
+                                <div className="flex flex-wrap gap-2">
+                                  {selectedArticles.map((article) => (
+                                    <Badge
+                                      key={article.id}
+                                      variant="secondary"
+                                      className="flex items-center gap-1 pr-1"
+                                    >
+                                      <span className="truncate max-w-[200px]">{article.title}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          field.onChange(selectedIds.filter(id => id !== article.id));
+                                        }}
+                                        className="ml-1 rounded-full hover:bg-muted p-0.5"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {/* Article picker */}
+                              {selectedIds.length < 3 && (
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      className="w-full justify-start text-muted-foreground"
+                                      data-testid="button-add-recommended"
+                                    >
+                                      <Search className="mr-2 h-4 w-4" />
+                                      {selectedIds.length === 0 
+                                        ? "Search and select articles..." 
+                                        : `Add ${3 - selectedIds.length} more article${3 - selectedIds.length > 1 ? 's' : ''}...`}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[400px] p-0" align="start">
+                                    <Command>
+                                      <CommandInput placeholder="Search articles..." />
+                                      <CommandList>
+                                        <CommandEmpty>No articles found.</CommandEmpty>
+                                        <CommandGroup>
+                                          {availableArticles
+                                            .filter(article => !selectedIds.includes(article.id))
+                                            .map((article) => (
+                                              <CommandItem
+                                                key={article.id}
+                                                value={article.title}
+                                                onSelect={() => {
+                                                  if (selectedIds.length < 3) {
+                                                    field.onChange([...selectedIds, article.id]);
+                                                  }
+                                                }}
+                                                className="cursor-pointer"
+                                              >
+                                                <div className="flex flex-col gap-1">
+                                                  <span className="font-medium">{article.title}</span>
+                                                  <span className="text-xs text-muted-foreground line-clamp-1">
+                                                    {article.excerpt}
+                                                  </span>
+                                                </div>
+                                              </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                              )}
+                              
+                              <p className="text-xs text-muted-foreground">
+                                {selectedIds.length}/3 articles selected
+                              </p>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
 
                     <FormField

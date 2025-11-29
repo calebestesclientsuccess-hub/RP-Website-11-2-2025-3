@@ -2,6 +2,7 @@ import { db } from "./db";
 import { users } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { PASSWORD_HASH_ROUNDS } from "./utils/password-validator";
+import { DEFAULT_TENANT_ID } from "./middleware/tenant";
 
 const userAccounts = [
   {
@@ -45,7 +46,7 @@ async function seedUsers() {
   for (const account of userAccounts) {
     try {
       const [user] = await db.insert(users).values({
-        tenantId: "tnt_revenueparty_default",
+        tenantId: DEFAULT_TENANT_ID,
         username: account.username,
         email: account.email,
         password: hashedPassword,

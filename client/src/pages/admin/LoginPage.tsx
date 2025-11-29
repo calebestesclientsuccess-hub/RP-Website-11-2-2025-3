@@ -12,7 +12,6 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [hasUsers, setHasUsers] = useState<boolean | null>(null);
   const { login, user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -26,19 +25,6 @@ export default function LoginPage() {
     return () => {
       document.head.removeChild(meta);
     };
-  }, []);
-
-  useEffect(() => {
-    const checkUsers = async () => {
-      try {
-        const response = await fetch("/api/auth/has-users");
-        const data = await response.json();
-        setHasUsers(data.hasUsers);
-      } catch (error) {
-        console.error("Error checking for users:", error);
-      }
-    };
-    checkUsers();
   }, []);
 
   useEffect(() => {
@@ -84,7 +70,7 @@ export default function LoginPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">Username or Email</Label>
                 <Input
                   id="username"
                   type="text"
@@ -92,7 +78,7 @@ export default function LoginPage() {
                   onChange={(e) => setUsername(e.target.value)}
                   required
                   autoComplete="username"
-                  placeholder="Enter your username"
+                  placeholder="Enter your username or email"
                   data-testid="input-username"
                 />
               </div>
@@ -121,21 +107,17 @@ export default function LoginPage() {
               </Link>
             </div>
           </CardContent>
-          {hasUsers === false && (
-            <CardFooter className="flex-col gap-2 border-t pt-4">
-              <p className="text-sm text-center text-muted-foreground" data-testid="text-first-time-message">
-                Don't have an account?
-              </p>
-              <Link href="/admin/register">
-                <Button variant="outline" className="w-full" data-testid="link-create-account">
-                  Create Your Admin Account
-                </Button>
-              </Link>
-              <p className="text-xs text-center text-muted-foreground" data-testid="text-admin-only">
-                This is for CMS administrators only
-              </p>
-            </CardFooter>
-          )}
+          <CardFooter className="flex-col gap-2 border-t pt-4">
+            <p className="text-sm text-center text-muted-foreground" data-testid="text-need-access">
+              Need access?{" "}
+              <a 
+                href="mailto:hello@revenueparty.com" 
+                className="text-primary hover:underline font-medium"
+              >
+                Contact hello@revenueparty.com
+              </a>
+            </p>
+          </CardFooter>
         </Card>
       </div>
     </>

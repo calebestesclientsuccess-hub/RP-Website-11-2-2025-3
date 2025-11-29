@@ -32,6 +32,27 @@ import { z } from "zod";
 import { useEffect, useState } from "react";
 import { Loader2, X, Plus } from "lucide-react";
 import ProjectSceneEditor from "./ProjectSceneEditor";
+import { Layer2SectionEditor } from "@/components/admin/Layer2SectionEditor";
+import { Layer2Preview } from "@/components/admin/Layer2Preview";
+import { MediaPicker } from "@/components/admin/MediaPicker";
+
+interface Layer2Section {
+  id: string;
+  heading: string;
+  body: string;
+  orderIndex: number;
+  mediaType: "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel";
+  mediaConfig?: {
+    mediaId?: string;
+    url?: string;
+    items?: Array<{
+      mediaId?: string;
+      url: string;
+      type: "image" | "video";
+      caption?: string;
+    }>;
+  };
+}
 
 const formSchema = insertProjectSchema.extend({
   // Only override required fields - let optional fields use backend preprocessors
@@ -54,6 +75,10 @@ export default function ProjectForm() {
   const [categoryInput, setCategoryInput] = useState("");
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [mediaUrlInput, setMediaUrlInput] = useState("");
+  
+  // State for Layer 2 sections
+  const [layer2Sections, setLayer2Sections] = useState<Layer2Section[]>([]);
+  const [layer2SectionsLoaded, setLayer2SectionsLoaded] = useState(false);
 
   const style = {
     "--sidebar-width": "16rem",
@@ -106,18 +131,82 @@ export default function ProjectForm() {
     }
   }, [project, isEdit, form]);
 
+  // Initialize Layer 2 sections with default preset
+  useEffect(() => {
+    if (!isEdit && layer2Sections.length === 0) {
+      // Default to 3-section classic preset for new projects
+      setLayer2Sections([
+        {
+          id: `temp-${Date.now()}-0`,
+          heading: "The Challenge",
+          body: "",
+          orderIndex: 0,
+          mediaType: "none",
+          mediaConfig: undefined,
+        },
+        {
+          id: `temp-${Date.now()}-1`,
+          heading: "Our Solution",
+          body: "",
+          orderIndex: 1,
+          mediaType: "none",
+          mediaConfig: undefined,
+        },
+        {
+          id: `temp-${Date.now()}-2`,
+          heading: "The Outcome",
+          body: "",
+          orderIndex: 2,
+          mediaType: "none",
+          mediaConfig: undefined,
+        },
+      ]);
+      setLayer2SectionsLoaded(true);
+    }
+  }, [isEdit, layer2Sections.length]);
+
+  // Fetch Layer 2 sections when editing
+  useEffect(() => {
+    if (isEdit && projectId && !layer2SectionsLoaded) {
+      fetch(`/api/projects/${projectId}/layer2-sections`)
+        .then((res) => res.json())
+        .then((data) => {
+          setLayer2Sections(data);
+          setLayer2SectionsLoaded(true);
+        })
+        .catch((err) => {
+          console.error("Failed to load Layer 2 sections:", err);
+          setLayer2SectionsLoaded(true); // Mark as loaded even on error
+        });
+    }
+  }, [isEdit, projectId, layer2SectionsLoaded]);
+
   const createMutation = useMutation({
     mutationFn: async (data: InsertProject) => {
       const response = await apiRequest("POST", "/api/projects", data);
       return await response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      // Save Layer 2 sections for new project
+      if (layer2Sections.length > 0) {
+        try {
+          await saveLayer2Sections(data.id);
+        } catch (error) {
+          console.error("Failed to save Layer 2 sections:", error);
+          toast({
+            title: "Warning",
+            description: "Project created but Layer 2 sections failed to save",
+            variant: "destructive",
+          });
+        }
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/content"] });
       queryClient.invalidateQueries({ queryKey: ["/api/branding/projects"] });
       toast({
         title: "Success",
-        description: "Project created successfully. You can now add scrollytelling scenes by editing this project.",
+        description: "Project created successfully with Layer 2 sections.",
       });
       // Navigate to edit mode so user can add scenes
       setLocation(`/admin/projects/${data.id}/edit`);
@@ -136,7 +225,12 @@ export default function ProjectForm() {
       const response = await apiRequest("PATCH", `/api/projects/${projectId}`, data);
       return await response.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Also save Layer 2 sections if they've been modified
+      if (layer2Sections.length > 0) {
+        await saveLayer2Sections();
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/content"] });
@@ -198,6 +292,39 @@ export default function ProjectForm() {
     const newMediaUrls = mediaUrls.filter((_, i) => i !== index);
     setMediaUrls(newMediaUrls);
     form.setValue('modalMediaUrls', newMediaUrls as any);
+  };
+
+  const saveLayer2Sections = async (targetProjectId?: string) => {
+    const pid = targetProjectId || projectId;
+    if (!pid) return;
+
+    try {
+      // Delete all existing sections and recreate (simplest approach)
+      const existingSections = await fetch(`/api/projects/${pid}/layer2-sections`).then(r => r.json());
+      
+      for (const section of existingSections) {
+        // Only delete if min 3 sections will remain or we're recreating all
+        if (existingSections.length > 3 || layer2Sections.length >= 3) {
+          await apiRequest("DELETE", `/api/projects/${pid}/layer2-sections/${section.id}`).catch(() => {});
+        }
+      }
+
+      // Create new sections
+      for (const section of layer2Sections) {
+        const payload = {
+          heading: section.heading,
+          body: section.body,
+          orderIndex: section.orderIndex,
+          mediaType: section.mediaType,
+          mediaConfig: section.mediaConfig,
+        };
+
+        await apiRequest("POST", `/api/projects/${pid}/layer2-sections`, payload);
+      }
+    } catch (error) {
+      console.error("Failed to save Layer 2 sections:", error);
+      throw error;
+    }
   };
 
   if (isEdit && isLoading) {
@@ -320,13 +447,17 @@ export default function ProjectForm() {
                           name="thumbnailUrl"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Thumbnail URL</FormLabel>
+                              <FormLabel>Hero Media</FormLabel>
+                              <FormDescription>
+                                Select an image or video from your Media Library
+                              </FormDescription>
                               <FormControl>
-                                <Input 
-                                  placeholder="https://example.com/thumbnail.jpg" 
-                                  data-testid="input-thumbnailUrl"
-                                  disabled={isFormDisabled}
-                                  {...field} 
+                                <MediaPicker
+                                  value={field.value ? [field.value] : []}
+                                  onChange={(urls) => field.onChange(urls[0] || "")}
+                                  mode="single"
+                                  mediaTypeFilter="all"
+                                  placeholder="Select hero image or video"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -382,150 +513,166 @@ export default function ProjectForm() {
                       </div>
                     </div>
 
-                    {/* Content Section */}
-                    <div className="space-y-4">
-                      <h2 className="text-lg font-semibold">Project Content</h2>
-                      
-                      <FormField
-                        control={form.control}
-                        name="challengeText"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Challenge</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Describe the client's challenge..."
-                                className="min-h-[100px]"
-                                data-testid="textarea-challengeText"
-                                disabled={isFormDisabled}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="solutionText"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Solution</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Describe your solution..."
-                                className="min-h-[100px]"
-                                data-testid="textarea-solutionText"
-                                disabled={isFormDisabled}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="outcomeText"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Outcome</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Describe the results achieved..."
-                                className="min-h-[100px]"
-                                data-testid="textarea-outcomeText"
-                                disabled={isFormDisabled}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    {/* Media Section */}
-                    <div className="space-y-4">
-                      <h2 className="text-lg font-semibold">Media Assets</h2>
-                      
-                      <FormField
-                        control={form.control}
-                        name="modalMediaType"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Media Type</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              disabled={isFormDisabled}
-                            >
+                    {/* Legacy Content Section - Hidden (Deprecated in favor of Layer 2) */}
+                    <details className="space-y-4">
+                      <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                        ⚠️ Legacy Fields (Deprecated - Use Layer 2 Sections Below)
+                      </summary>
+                      <div className="space-y-4 pt-4 opacity-60">
+                        <p className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/20 p-3 rounded border border-amber-200 dark:border-amber-900">
+                          These fields are deprecated and maintained only for backward compatibility. 
+                          New projects should use the "Layer 2: Expansion Sections" editor below for more flexible content.
+                        </p>
+                        
+                        <FormField
+                          control={form.control}
+                          name="challengeText"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Challenge (Legacy)</FormLabel>
                               <FormControl>
-                                <SelectTrigger data-testid="select-modalMediaType">
-                                  <SelectValue placeholder="Select media type" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="video">Video</SelectItem>
-                                <SelectItem value="carousel">Image Carousel</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Media URLs Array */}
-                      <div className="space-y-2">
-                        <FormLabel>Media URLs</FormLabel>
-                        <FormDescription>
-                          Add Cloudinary URLs for videos or images
-                        </FormDescription>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="https://res.cloudinary.com/..."
-                            value={mediaUrlInput}
-                            onChange={(e) => setMediaUrlInput(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddMediaUrl())}
-                            disabled={isFormDisabled}
-                            data-testid="input-mediaUrl"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleAddMediaUrl}
-                            disabled={isFormDisabled}
-                            data-testid="button-add-mediaUrl"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        {mediaUrls.length > 0 && (
-                          <div className="space-y-2 mt-2">
-                            {mediaUrls.map((url, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center gap-2 p-2 bg-accent rounded-md"
-                                data-testid={`item-mediaUrl-${index}`}
-                              >
-                                <span className="text-sm flex-1 truncate">{url}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveMediaUrl(index)}
+                                <Textarea
+                                  placeholder="Describe the client's challenge..."
+                                  className="min-h-[100px]"
+                                  data-testid="textarea-challengeText"
                                   disabled={isFormDisabled}
-                                  className="hover:text-destructive"
-                                  data-testid={`button-remove-mediaUrl-${index}`}
-                                >
-                                  <X className="h-4 w-4" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="solutionText"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Solution (Legacy)</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Describe your solution..."
+                                  className="min-h-[100px]"
+                                  data-testid="textarea-solutionText"
+                                  disabled={isFormDisabled}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="outcomeText"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Outcome (Legacy)</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Describe the results achieved..."
+                                  className="min-h-[100px]"
+                                  data-testid="textarea-outcomeText"
+                                  disabled={isFormDisabled}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                    </div>
+                    </details>
+
+                    {/* Legacy Media Section - Deprecated */}
+                    <details className="space-y-4">
+                      <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                        ⚠️ Legacy Media Assets (Deprecated - Use Layer 2 Section Media)
+                      </summary>
+                      <div className="space-y-4 pt-4 opacity-60">
+                        <p className="text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/20 p-3 rounded border border-amber-200 dark:border-amber-900">
+                          These fields are deprecated. Add media directly to Layer 2 sections below.
+                          The hero banner uses the Thumbnail URL field above.
+                        </p>
+                      
+                        <FormField
+                          control={form.control}
+                          name="modalMediaType"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Media Type</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                disabled={isFormDisabled}
+                              >
+                                <FormControl>
+                                  <SelectTrigger data-testid="select-modalMediaType">
+                                    <SelectValue placeholder="Select media type" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="video">Video</SelectItem>
+                                  <SelectItem value="carousel">Image Carousel</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Media URLs Array */}
+                        <div className="space-y-2">
+                          <FormLabel>Media URLs</FormLabel>
+                          <FormDescription>
+                            Add Cloudinary URLs for videos or images
+                          </FormDescription>
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="https://res.cloudinary.com/..."
+                              value={mediaUrlInput}
+                              onChange={(e) => setMediaUrlInput(e.target.value)}
+                              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddMediaUrl())}
+                              disabled={isFormDisabled}
+                              data-testid="input-mediaUrl"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={handleAddMediaUrl}
+                              disabled={isFormDisabled}
+                              data-testid="button-add-mediaUrl"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {mediaUrls.length > 0 && (
+                            <div className="space-y-2 mt-2">
+                              {mediaUrls.map((url, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-2 p-2 bg-accent rounded-md"
+                                  data-testid={`item-mediaUrl-${index}`}
+                                >
+                                  <span className="text-sm flex-1 truncate">{url}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveMediaUrl(index)}
+                                    disabled={isFormDisabled}
+                                    className="hover:text-destructive"
+                                    data-testid={`button-remove-mediaUrl-${index}`}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </details>
 
                     {/* Testimonial Section */}
                     <div className="space-y-4">
@@ -594,12 +741,51 @@ export default function ProjectForm() {
                   </form>
                 </Form>
 
-                {/* Scrollytelling Scene Editor - Only Available in Edit Mode */}
-                {isEdit && projectId && typeof projectId === 'string' && projectId !== 'undefined' && (
-                  <div className="mt-8 border-t pt-8">
-                    <ProjectSceneEditor projectId={projectId} />
+                  {/* Layer 2: Expansion Sections - Available in Both Create and Edit Mode */}
+                  <div className="mt-12 border-t pt-8">
+                    <div className="mb-6">
+                      <h2 className="text-2xl font-bold">Layer 2: Expansion Sections</h2>
+                      <p className="text-muted-foreground mt-2">
+                        These sections appear when a visitor clicks the project card in the grid (Layer 1).
+                        Configure 3-5 sections with flexible media options (images, videos, or carousels).
+                      </p>
+                    </div>
+                    {layer2SectionsLoaded ? (
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                        {/* Editor */}
+                        <div>
+                          <Layer2SectionEditor
+                            sections={layer2Sections}
+                            onChange={setLayer2Sections}
+                            projectId={projectId || 'temp'}
+                          />
+                        </div>
+
+                        {/* Preview */}
+                        <div>
+                          <Layer2Preview sections={layer2Sections} />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex justify-center py-8">
+                        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  {/* Scrollytelling Scene Editor (Layer 3) - Only Available in Edit Mode */}
+                  {isEdit && projectId && typeof projectId === 'string' && projectId !== 'undefined' && (
+                    <div className="mt-12 border-t pt-8">
+                      <div className="mb-6">
+                        <h2 className="text-2xl font-bold">Layer 3: Scrollytelling Experience</h2>
+                        <p className="text-muted-foreground mt-2">
+                          This content appears when a visitor clicks "Experience the Full Story" from the expansion view (Layer 2). 
+                          Create immersive scroll-driven scenes with animations and cinematic effects.
+                        </p>
+                      </div>
+                      <ProjectSceneEditor projectId={projectId} />
+                    </div>
+                  )}
               </div>
             </main>
           </div>

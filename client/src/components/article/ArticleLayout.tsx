@@ -12,7 +12,7 @@ interface ArticleLayoutProps {
 
 export function ArticleLayout({ children, relatedArticles, featuredPromo, heroImageUrl, heroImageAlt }: ArticleLayoutProps) {
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20 pt-20 md:pt-24 lg:pt-28">
       {/* Hero Image - Full Width Above Grid */}
       {heroImageUrl && (
         <div className="w-full aspect-[21/9] md:aspect-[21/7] overflow-hidden bg-muted relative">

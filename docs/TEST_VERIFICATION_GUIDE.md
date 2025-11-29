@@ -84,6 +84,9 @@ ALLOWED_ORIGINS=http://localhost:5173,http://0.0.0.0:5000
 NODE_ENV=test
 ```
 
+> **Important:** Even if you are only running `npm run test:unit`, `DATABASE_URL`, `SESSION_SECRET`, and `REDIS_URL` must be set.  
+> The shared environment loader (`server/config/env.ts`) validates these at import time and will abort the test run if they are missing.
+
 ## Running the Test Suite
 
 ### Step 1: Install Dependencies
@@ -149,8 +152,19 @@ npm run test:integration
 # Run only E2E tests
 npm run test:e2e
 
-# Run specific test file
+# Run specific unit test file
 npx vitest run tests/unit/specific-file.test.ts
+
+# Run specific Case Study Engine tests
+npx vitest run tests/unit/case-study-schema.test.ts
+npx vitest run tests/unit/case-study-migration.test.ts
+npx vitest run tests/unit/tailwind-theme.test.ts
+npx vitest run tests/unit/validate-request.test.ts
+npx vitest run client/src/lib/__tests__/color-utils.test.ts
+npx vitest run client/src/components/branding/__tests__/CaseStudyWrapper.test.tsx
+
+# Case Study API integration tests
+npx vitest run tests/integration/case-study-content.test.ts
 
 # Run specific E2E test
 npx playwright test tests/e2e/specific-file.spec.ts

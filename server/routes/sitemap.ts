@@ -3,10 +3,11 @@ import { Router } from 'express';
 import { db } from '../db';
 import { blogPosts } from '../../shared/schema';
 import { desc, eq } from 'drizzle-orm';
+import { gateRoute } from '../services/feature-flags';
 
 const router = Router();
 
-router.get('/sitemap-dynamic.xml', async (req, res) => {
+router.get('/sitemap-dynamic.xml', gateRoute("page-blog"), async (req, res) => {
   try {
     const posts = await db
       .select({

@@ -130,6 +130,10 @@ export default {
           busy: "rgb(239 68 68)",
           offline: "rgb(156 163 175)",
         },
+        "brand-bg": "var(--theme-bg)",
+        "brand-text": "var(--theme-text)",
+        "brand-primary": "var(--theme-primary)",
+        "brand-border": "var(--theme-border)",
       },
       fontFamily: {
         sans: ["var(--font-sans)"],

@@ -790,9 +790,9 @@ export default function ProjectSceneEditor({ projectId: propProjectId }: Project
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Project Settings</h3>
+          <h3 className="text-lg font-semibold">Scene Editor</h3>
           <p className="text-sm text-muted-foreground">
-            Configure your project details, scenes, and AI prompts.
+            Configure your project scenes and multimedia content.
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

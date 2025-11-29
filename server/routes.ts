@@ -1,4 +1,5 @@
 import type { Express, Request, Response, NextFunction } from "express";
+import type { UploadApiResponse } from "cloudinary";
 import { createServer, type Server } from "http";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -6,7 +7,7 @@ import multer from "multer";
 import path from "path";
 import { storage } from "./storage";
 import { DEFAULT_TENANT_ID, requireUserContext } from "./middleware/tenant";
-import cloudinary from "./cloudinary";
+import cloudinary, { cloudinaryEnabled } from "./cloudinary";
 import { env } from "./config/env";
 import {
   insertEmailCaptureSchema,
@@ -30,6 +31,7 @@ import {
   insertCampaignSchema,
   insertEventSchema,
   insertLeadSchema,
+  insertFeatureFlagSchema,
   insertProjectSchema,
   updateProjectSchema,
   insertProjectSceneSchema,
@@ -41,13 +43,22 @@ import {
   portfolioGenerateRequestSchema,
   assessmentResultBuckets,
   type InsertAssessmentResponse,
+  type AssessmentResponse,
   projects,
   projectScenes,
   mediaLibrary, // Assuming mediaLibrary is imported and available
   aiPromptTemplates,
   sceneTemplates,
+  caseStudyContentSchema,
+  caseStudyCarouselBlockSchema,
+  type CaseStudyContent,
+  type CaseStudySection,
+  type CaseStudyBlock,
+  type CaseStudyCarouselBlock,
+  type BlogPost,
+  type BlogPostSummary,
 } from "@shared/schema";
-import { eq, and, asc, desc, inArray, or, isNull } from "drizzle-orm";
+import { eq, and, asc, desc, inArray, or, isNull, sql } from "drizzle-orm";
 import { buildLayoutPrompt, buildRefineSectionPrompt } from "./services/promptBuilder";
 import { generateLayoutFromPrompt } from "./services/layoutGenerator";
 import { RefinementPipeline } from "./utils/refinement-pipeline";
@@ -55,13 +66,13 @@ import { calculatePointsBasedBucket, calculateDecisionTreeBucket } from "./utils
 import { fromZodError } from "zod-validation-error";
 import { z } from "zod";
 import { getBlueprintEmailHtml, getBlueprintEmailSubject } from "./email-templates";
-import { getUncachableResendClient } from "./utils/resend-client";
+import { sendEmail } from "./utils/mailer";
 import { sendLeadNotificationEmail } from "./utils/lead-notifications";
 import { db } from "./db";
 import { leadLimiter, formLimiter, authLimiter } from "./middleware/rate-limit";
 import { sanitizeInput } from "./middleware/input-sanitization";
 import { pdfUpload, imageUpload, validateUploadedFile } from "./middleware/file-validation";
-import { validatePasswordStrength } from "./utils/password-validator";
+import { validatePasswordStrength, PASSWORD_HASH_ROUNDS } from "./utils/password-validator";
 import {
   checkAccountLockout,
   recordFailedAttempt,
@@ -81,6 +92,15 @@ import { securityHeaders } from "./middleware/security-headers";
 import { tenantMiddleware } from "./middleware/tenant";
 import { globalSanitizer } from "./middleware/global-sanitizer";
 import { normalizeFormData } from "./utils/form-data";
+import { validateRequest } from "./middleware/validation";
+import { registerProjectLayer2SectionRoutes } from "./routes/project-layer2-sections";
+import {
+  gateRoute,
+  getFeatureFlagsWithMetadata,
+  loadFeatureFlagsForRequest,
+  resolveFeatureFlag,
+} from "./services/feature-flags";
+import { getFeatureFlagDefinition } from "@shared/feature-flags";
 
 
 // Define default director configuration for new scenes
@@ -601,6 +621,80 @@ function calculateBucket(data: Partial<InsertAssessmentResponse>): string {
   return 'architecture-gap';
 }
 
+const ASSESSMENT_FIELD_KEYS = [
+  "q1",
+  "q2",
+  "q3",
+  "q4",
+  "q5",
+  "q6",
+  "q7",
+  "q8",
+  "q9",
+  "q10a1",
+  "q10a2",
+  "q10b1",
+  "q10b2",
+  "q10c1",
+  "q10c2",
+  "q11",
+  "q13",
+  "q14",
+  "q15",
+  "q16",
+  "q17",
+  "q18",
+  "q19",
+  "q20",
+  "usedCalculator",
+] as const;
+
+type AssessmentFieldKey = (typeof ASSESSMENT_FIELD_KEYS)[number];
+
+const assessmentBaseSchema = insertAssessmentResponseSchema.omit({
+  bucket: true,
+  completed: true,
+});
+
+const assessmentProgressSchema = assessmentBaseSchema
+  .omit({ sessionId: true })
+  .partial();
+
+const assessmentSubmitSchema = assessmentBaseSchema;
+
+function sanitizeAssessmentResponse(record?: AssessmentResponse | null) {
+  if (!record) {
+    return null;
+  }
+
+  const payload: Record<string, unknown> = {
+    sessionId: record.sessionId,
+  };
+
+  for (const key of ASSESSMENT_FIELD_KEYS) {
+    const value = record[key as AssessmentFieldKey];
+    if (value !== undefined && value !== null) {
+      payload[key] = value;
+    }
+  }
+
+  return payload;
+}
+
+function pickAssessmentUpdates(
+  updates: Partial<InsertAssessmentResponse>,
+): Partial<InsertAssessmentResponse> {
+  const sanitized: Partial<InsertAssessmentResponse> = {};
+
+  for (const key of ASSESSMENT_FIELD_KEYS) {
+    if (updates[key as AssessmentFieldKey] !== undefined) {
+      sanitized[key as AssessmentFieldKey] = updates[key as AssessmentFieldKey];
+    }
+  }
+
+  return sanitized;
+}
+
 export async function registerRoutes(app: Express): Promise<void> {
   // Apply global middleware
   app.use(securityHeaders);
@@ -608,62 +702,12 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.use(globalSanitizer);
 
   // Authentication endpoints
-  app.post("/api/auth/register", authLimiter, async (req, res) => {
-    try {
-      const result = insertUserSchema.safeParse(req.body);
-      if (!result.success) {
-        const validationError = fromZodError(result.error);
-        return res.status(400).json({
-          error: "Validation failed",
-          details: validationError.message,
-        });
-      }
-
-      const { username, email, password } = result.data;
-
-      // Validate password strength
-      const passwordValidation = validatePasswordStrength(password);
-      if (!passwordValidation.valid) {
-        return res.status(400).json({
-          error: "Password does not meet security requirements",
-          details: passwordValidation.errors,
-          suggestions: passwordValidation.suggestions,
-        });
-      }
-
-      // Check if user already exists
-      const existingUser = await storage.getUserByUsername(username);
-      if (existingUser) {
-        return res.status(400).json({ error: "Username already exists" });
-      }
-
-      // Check if email already exists
-      const existingEmail = await storage.getUserByEmail(email);
-      if (existingEmail) {
-        return res.status(400).json({ error: "Email already exists" });
-      }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Create user
-      const user = await storage.createUser({
-        username,
-        email,
-        password: hashedPassword,
-      });
-
-      // Set session
-      req.session.userId = user.id;
-
-      return res.status(201).json({
-        id: user.id,
-        username: user.username,
-      });
-    } catch (error) {
-      console.error("Error creating user:", error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
+  // Registration is disabled - admin accounts are invitation-only
+  app.post("/api/auth/register", authLimiter, (_req, res) => {
+    return res.status(403).json({
+      error: "Registration disabled",
+      message: "Admin accounts are invitation-only. Contact hello@revenueparty.com",
+    });
   });
 
   app.post("/api/auth/login", authLimiter, checkAccountLockout, async (req, res) => {
@@ -715,8 +759,15 @@ export async function registerRoutes(app: Express): Promise<void> {
       // Clear failed attempts on successful login
       clearLoginAttempts(req);
 
-      // Set session
+      // Set session with both userId and tenantId for proper multi-tenant isolation
       req.session.userId = user.id;
+      req.session.tenantId = user.tenantId;
+
+      console.log("[Auth] Login successful:", {
+        userId: user.id,
+        tenantId: user.tenantId,
+        username: user.username,
+      });
 
       return res.json({
         id: user.id,
@@ -1370,12 +1421,9 @@ export async function registerRoutes(app: Express): Promise<void> {
       const host = req.get('host');
       const resetLink = `${protocol}://${host}/admin/reset-password/${token}`;
 
-      // Send password reset email via Resend
+      // Send password reset email via SMTP
       try {
-        const { client, fromEmail } = await getUncachableResendClient();
-
-        await client.emails.send({
-          from: fromEmail,
+        await sendEmail({
           to: email,
           subject: "Reset Your Admin Password",
           html: `
@@ -1458,7 +1506,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       const resetPasswordSchema = z.object({
         token: z.string(),
-        password: z.string().min(8, "Password must be at least 8 characters"),
+        password: z.string().min(1, "Password is required"),
       });
 
       const result = resetPasswordSchema.safeParse(req.body);
@@ -1487,8 +1535,18 @@ export async function registerRoutes(app: Express): Promise<void> {
         return res.status(400).json({ error: "This reset link has expired" });
       }
 
-      // Hash new password
-      const hashedPassword = await bcrypt.hash(password, 10);
+      // Enforce full password strength validation (12+ chars, complexity)
+      const passwordValidation = validatePasswordStrength(password);
+      if (!passwordValidation.valid) {
+        return res.status(400).json({
+          error: "Password does not meet requirements",
+          details: passwordValidation.errors,
+          suggestions: passwordValidation.suggestions,
+        });
+      }
+
+      // Hash new password with proper rounds
+      const hashedPassword = await bcrypt.hash(password, PASSWORD_HASH_ROUNDS);
 
       // Update user password
       await storage.updateUserPassword(resetToken.userId, hashedPassword);
@@ -1801,13 +1859,9 @@ export async function registerRoutes(app: Express): Promise<void> {
 </html>
       `;
 
-      const { client, fromEmail } = await getUncachableResendClient();
-
-      // Send email to all recipients
       for (const email of emails) {
         try {
-          await client.emails.send({
-            from: fromEmail,
+          await sendEmail({
             to: email,
             subject: "Your GTM Engine ROI Report",
             html: htmlContent,
@@ -1937,6 +1991,118 @@ export async function registerRoutes(app: Express): Promise<void> {
         error: "Internal server error",
         message: "Failed to submit audit request. Please try again.",
       });
+    }
+  });
+
+  // Pipeline assessment runtime endpoints
+  const assessmentSessionSchema = z.object({
+    sessionId: z.string().min(10, "sessionId is required"),
+  });
+
+  app.post("/api/assessments/init", async (req, res) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const { sessionId } = assessmentSessionSchema.parse(req.body ?? {});
+
+      if (!tenantId) {
+        return res.status(400).json({ error: "Tenant context not configured" });
+      }
+
+      let assessment =
+        (await storage.getAssessmentBySessionId(tenantId, sessionId)) ||
+        (await storage.createAssessment(tenantId, { sessionId }));
+
+      return res.json(sanitizeAssessmentResponse(assessment) ?? { sessionId });
+    } catch (error) {
+      console.error("Error initializing assessment session:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: fromZodError(error).message });
+      }
+      return res.status(500).json({ error: "Failed to initialize assessment session" });
+    }
+  });
+
+  app.put("/api/assessments/:sessionId", async (req, res) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const { sessionId } = assessmentSessionSchema.parse({
+        sessionId: req.params.sessionId,
+      });
+      const updates = assessmentProgressSchema.parse(req.body ?? {});
+
+      if (!tenantId) {
+        return res.status(400).json({ error: "Tenant context not configured" });
+      }
+
+      const sanitizedUpdates = pickAssessmentUpdates(updates);
+      if (Object.keys(sanitizedUpdates).length === 0) {
+        return res.status(400).json({ error: "No valid fields provided" });
+      }
+
+      // Ensure the record exists before updating
+      const existing =
+        (await storage.getAssessmentBySessionId(tenantId, sessionId)) ||
+        (await storage.createAssessment(tenantId, { sessionId }));
+
+      const updated = await storage.updateAssessment(tenantId, sessionId, {
+        ...sanitizedUpdates,
+        usedCalculator:
+          sanitizedUpdates.usedCalculator ?? existing.usedCalculator ?? false,
+      });
+
+      return res.json(sanitizeAssessmentResponse(updated) ?? { sessionId });
+    } catch (error) {
+      console.error("Error updating assessment progress:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: fromZodError(error).message });
+      }
+      return res.status(500).json({ error: "Failed to update assessment progress" });
+    }
+  });
+
+  app.post("/api/assessments/:sessionId/submit", async (req, res) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const { sessionId } = assessmentSessionSchema.parse({
+        sessionId: req.params.sessionId,
+      });
+
+      if (!tenantId) {
+        return res.status(400).json({ error: "Tenant context not configured" });
+      }
+
+      const payload = assessmentSubmitSchema.parse({
+        ...req.body,
+        sessionId: req.body?.sessionId ?? sessionId,
+      });
+
+      if (payload.sessionId !== sessionId) {
+        return res.status(400).json({ error: "Session ID mismatch" });
+      }
+
+      const sanitizedUpdates = pickAssessmentUpdates(payload);
+      const bucket = calculateBucket(sanitizedUpdates);
+
+      await storage.getAssessmentBySessionId(tenantId, sessionId) ||
+        (await storage.createAssessment(tenantId, { sessionId }));
+
+      const updated = await storage.updateAssessment(tenantId, sessionId, {
+        ...sanitizedUpdates,
+        bucket,
+        completed: true,
+        usedCalculator: sanitizedUpdates.usedCalculator ?? false,
+      });
+
+      return res.json({
+        bucket,
+        sessionId: updated.sessionId,
+      });
+    } catch (error) {
+      console.error("Error submitting assessment:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: fromZodError(error).message });
+      }
+      return res.status(500).json({ error: "Failed to submit assessment" });
     }
   });
 
@@ -2113,13 +2279,29 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  const BLOG_POST_CONTENT_PREVIEW_LENGTH = 320;
+  const buildBlogPostSummaries = (posts: BlogPost[]): BlogPostSummary[] =>
+    posts.map(({ content, ...rest }) => ({
+      ...rest,
+      contentPreview: content ? content.slice(0, BLOG_POST_CONTENT_PREVIEW_LENGTH) : null,
+    }));
+
+  const isTruthyQueryParam = (value: unknown): boolean => {
+    if (Array.isArray(value)) {
+      return value.some((entry) => isTruthyQueryParam(entry));
+    }
+    return typeof value === "string" && value.toLowerCase() === "true";
+  };
+
   // Blog posts endpoints
   app.get("/api/blog-posts", async (req, res) => {
     try {
       // Support ?publishedOnly=false query param for admin to see all posts (including drafts)
-      const publishedOnly = req.query.publishedOnly !== 'false';
+      const publishedOnly = req.query.publishedOnly !== "false";
+      const includeContent = isTruthyQueryParam(req.query.includeContent);
       const posts = await storage.getAllBlogPosts(req.tenantId || DEFAULT_TENANT_ID, publishedOnly);
-      return res.json(posts);
+      const payload = includeContent ? posts : buildBlogPostSummaries(posts);
+      return res.json(payload);
     } catch (error) {
       console.error("Error fetching blog posts:", error);
       return res.status(500).json({ error: "Internal server error" });
@@ -2631,6 +2813,185 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // Public feature flag endpoint (no auth required)
+  app.get("/api/public/feature-flags/:flagKey", async (req, res) => {
+    try {
+      const { flagKey } = req.params;
+      const snapshot = await loadFeatureFlagsForRequest(req);
+      const enabled = resolveFeatureFlag(snapshot, flagKey);
+      return res.json({ enabled });
+    } catch (error) {
+      console.error("Error fetching feature flag:", error);
+      return res.json({ enabled: false });
+    }
+  });
+
+  app.get("/api/public/feature-flags", async (req, res) => {
+    try {
+      const snapshot = await loadFeatureFlagsForRequest(req);
+      return res.json(snapshot);
+    } catch (error) {
+      console.error("Error fetching feature flags:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/feature-flags", requireAuth, async (req, res) => {
+    try {
+      const tenantId = req.session?.tenantId || req.tenantId || DEFAULT_TENANT_ID;
+      const flags = await storage.getAllFeatureFlags(tenantId);
+      return res.json(flags);
+    } catch (error) {
+      console.error("Error fetching feature flags:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/feature-flags/definitions", requireAuth, async (req, res) => {
+    try {
+      const tenantId = req.session?.tenantId || req.tenantId || DEFAULT_TENANT_ID;
+      const definitions = await getFeatureFlagsWithMetadata(tenantId);
+      return res.json(definitions);
+    } catch (error) {
+      console.error("Error fetching feature flag definitions:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/feature-flags", requireAuth, async (req, res) => {
+    try {
+      const tenantId = req.session?.tenantId || req.tenantId || DEFAULT_TENANT_ID;
+      const createSchema = insertFeatureFlagSchema.pick({
+        flagKey: true,
+        flagName: true,
+        description: true,
+        enabled: true,
+      }).partial({ flagName: true, description: true, enabled: true });
+
+      const parsed = createSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid payload", details: parsed.error.flatten() });
+      }
+
+      const definition = getFeatureFlagDefinition(parsed.data.flagKey);
+      const flag = await storage.createFeatureFlag(tenantId, {
+        flagKey: parsed.data.flagKey,
+        flagName: parsed.data.flagName || definition?.name || parsed.data.flagKey,
+        description: parsed.data.description ?? definition?.description ?? "",
+        enabled: parsed.data.enabled ?? definition?.defaultEnabled ?? false,
+      });
+      return res.status(201).json(flag);
+    } catch (error) {
+      console.error("Error creating feature flag:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/feature-flags/:flagKey", requireAuth, async (req, res) => {
+    try {
+      const { flagKey } = req.params;
+      const tenantId = req.session?.tenantId || req.tenantId || DEFAULT_TENANT_ID;
+      const bodySchema = z.object({ enabled: z.boolean() });
+      const parsed = bodySchema.safeParse(req.body);
+
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid payload", details: parsed.error.flatten() });
+      }
+
+      const existingFlag = await storage.getFeatureFlag(tenantId, flagKey);
+      const targetPayload = {
+        flagKey,
+        flagName: existingFlag?.flagName || getFeatureFlagDefinition(flagKey)?.name || flagKey,
+        description: existingFlag?.description ?? getFeatureFlagDefinition(flagKey)?.description ?? "",
+        enabled: parsed.data.enabled,
+      };
+
+      const updated = existingFlag
+        ? await storage.updateFeatureFlag(tenantId, flagKey, targetPayload)
+        : await storage.createFeatureFlag(tenantId, targetPayload);
+
+      return res.json(updated);
+    } catch (error) {
+      console.error("Error updating feature flag:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Branding Projects list endpoint (public - for portfolio showcase)
+  app.get("/api/branding/projects", gateRoute("page-branding"), async (req, res) => {
+    try {
+      // Use session tenantId if available, otherwise fallback to default
+      const tenantId = req.session?.tenantId || req.tenantId || DEFAULT_TENANT_ID;
+      const projectsList = await storage.getAllProjects(tenantId);
+      
+      // Map database fields to frontend-expected field names
+      const mappedProjects = projectsList.map(project => ({
+        id: project.id,
+        slug: project.slug,
+        clientName: project.clientName,
+        projectTitle: project.title,
+        thumbnailImage: project.thumbnailUrl,
+        categories: project.categories || [],
+        challenge: project.challengeText,
+        solution: project.solutionText,
+        outcome: project.outcomeText,
+        modalMediaAssets: project.modalMediaUrls?.map((url: string, index: number) => ({
+          id: `${project.id}-media-${index}`,
+          url,
+          type: project.modalMediaType || 'image',
+          order: index,
+        })) || [],
+        modalMediaUrls: project.modalMediaUrls,
+        modalMediaType: project.modalMediaType,
+        testimonial: project.testimonialText ? {
+          text: project.testimonialText,
+          author: project.testimonialAuthor || '',
+        } : undefined,
+      }));
+      
+      return res.json(mappedProjects);
+    } catch (error) {
+      console.error("Error fetching branding projects:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/branding/projects/:id", requireAuth, async (req, res) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const project = await db.query.projects.findFirst({
+        where: and(eq(projects.id, req.params.id), eq(projects.tenantId, tenantId)),
+      });
+
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      return res.json(project);
+    } catch (error) {
+      console.error("Error fetching branding project by id:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/branding/projects/slug/:slug", requireAuth, async (req, res) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const project = await db.query.projects.findFirst({
+        where: and(eq(projects.slug, req.params.slug), eq(projects.tenantId, tenantId)),
+      });
+
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+
+      return res.json(project);
+    } catch (error) {
+      console.error("Error fetching branding project by slug:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Create new project
   app.post("/api/projects", requireAuth, async (req, res) => {
     try {
@@ -2688,8 +3049,76 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // Update case study content with strict validation and media ownership checks
+  app.patch(
+    "/api/projects/:id/content",
+    requireAuth,
+    validateRequest(z.object({ content: caseStudyContentSchema })),
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+        const { content } = req.validated as { content: CaseStudyContent };
+        const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+
+        // Verify project ownership
+        const project = await db.query.projects.findFirst({
+          where: and(eq(projects.id, id), eq(projects.tenantId, tenantId)),
+        });
+
+        if (!project) {
+          return res.status(404).json({ error: "Project not found" });
+        }
+
+        // Collect referenced media IDs from carousel blocks
+        const mediaIds = new Set<string>();
+        content.sections.forEach((section: CaseStudySection) => {
+          section.blocks.forEach((block: CaseStudyBlock) => {
+            if (block.type === "carousel") {
+              const carouselBlock = block as CaseStudyCarouselBlock;
+              carouselBlock.items.forEach((item) => {
+                if (item.mediaId) {
+                  mediaIds.add(item.mediaId);
+                }
+              });
+            }
+          });
+        });
+
+        if (mediaIds.size > 0) {
+          const foundMedia = await db.query.mediaLibrary.findMany({
+            where: and(
+              inArray(mediaLibrary.id, Array.from(mediaIds)),
+              eq(mediaLibrary.tenantId, tenantId)
+            ),
+            columns: { id: true },
+          });
+
+          if (foundMedia.length !== mediaIds.size) {
+            const foundIds = new Set(foundMedia.map((m) => m.id));
+            const invalidIds = Array.from(mediaIds).filter((mediaId) => !foundIds.has(mediaId));
+            return res.status(400).json({
+              error: "Invalid or unauthorized media references",
+              invalidIds,
+            });
+          }
+        }
+
+        const [updatedProject] = await db
+          .update(projects)
+          .set({ caseStudyContent: content })
+          .where(and(eq(projects.id, id), eq(projects.tenantId, tenantId)))
+          .returning();
+
+        return res.json({ success: true, project: updatedProject });
+      } catch (error) {
+        console.error("Error updating case study content:", error);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+    }
+  );
+
   // Get project scenes (with optional media hydration)
-  app.get('/api/projects/:id/scenes', requireAuth, async (req, res) => {
+  const handleProjectScenesRequest = async (req: Request, res: Response) => {
     try {
       const projectId = req.params.id;
       const shouldHydrate = req.query.hydrate === 'true';
@@ -2838,7 +3267,10 @@ export async function registerRoutes(app: Express): Promise<void> {
       console.error('Error fetching project scenes:', error);
       res.status(500).json({ error: 'Failed to fetch scenes' });
     }
-  });
+  };
+
+  app.get('/api/projects/:id/scenes', requireAuth, handleProjectScenesRequest);
+  app.get('/api/branding/projects/:id/scenes', requireAuth, handleProjectScenesRequest);
 
   app.post("/api/projects/:projectId/scenes", requireAuth, async (req, res) => {
     try {
@@ -3430,10 +3862,82 @@ Your explanation should be conversational and reference specific scene numbers.`
   });
 
   // Media Library Routes
+  app.get("/api/media-library/status", requireAuth, (req: Request, res: Response) => {
+    return res.json({
+      cloudinaryEnabled,
+    });
+  });
+
+  // Database health check endpoint for debugging persistence issues
+  app.get("/api/media-library/health", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      
+      // Get total count of assets in the database for this tenant
+      const totalAssets = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(mediaLibrary)
+        .where(eq(mediaLibrary.tenantId, tenantId));
+
+      // Get all unique tenant_ids in the table to diagnose isolation issues  
+      const allTenants = await db
+        .select({ tenantId: mediaLibrary.tenantId })
+        .from(mediaLibrary)
+        .groupBy(mediaLibrary.tenantId);
+
+      // Get the most recent 5 assets for debugging
+      const recentAssets = await db
+        .select({
+          id: mediaLibrary.id,
+          tenantId: mediaLibrary.tenantId,
+          createdAt: mediaLibrary.createdAt,
+          label: mediaLibrary.label,
+        })
+        .from(mediaLibrary)
+        .orderBy(desc(mediaLibrary.createdAt))
+        .limit(5);
+
+      return res.json({
+        status: "ok",
+        currentTenantId: tenantId,
+        sessionInfo: {
+          sessionId: req.session?.id?.slice(0, 8) + "...",
+          userId: req.session?.userId,
+        },
+        database: {
+          totalAssetsForTenant: Number(totalAssets[0]?.count || 0),
+          allTenantIds: allTenants.map(t => t.tenantId),
+          recentAssets: recentAssets.map(a => ({
+            id: a.id?.slice(0, 8) + "...",
+            tenantId: a.tenantId,
+            createdAt: a.createdAt,
+            label: a.label,
+          })),
+        },
+        cloudinaryEnabled,
+      });
+    } catch (error) {
+      console.error("[Media Library Health] Error:", error);
+      return res.status(500).json({
+        status: "error",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
   app.get("/api/media-library", requireAuth, async (req: Request, res: Response) => {
           try {
             const tenantId = req.tenantId || DEFAULT_TENANT_ID;
             const projectId = req.query.projectId as string | undefined;
+
+            // Diagnostic logging for persistence debugging
+            console.log("[Media Library GET] Request info:", {
+              tenantId,
+              projectId: projectId || "none",
+              sessionId: req.session?.id?.slice(0, 8) + "...",
+              userId: req.session?.userId,
+              requestId: req.requestId,
+            });
 
             const conditions = [eq(mediaLibrary.tenantId, tenantId)];
             if (projectId) {
@@ -3446,15 +3950,28 @@ Your explanation should be conversational and reference specific scene numbers.`
               .where(and(...conditions))
               .orderBy(asc(mediaLibrary.createdAt));
 
+            console.log("[Media Library GET] Query result:", {
+              tenantId,
+              assetsCount: assets.length,
+              assetIds: assets.slice(0, 5).map(a => a.id), // First 5 for debugging
+            });
+
             return res.json(assets);
           } catch (error) {
-            console.error("Error fetching media library:", error);
+            console.error("[Media Library GET] Error fetching media library:", error);
             return res.status(500).json({ error: "Internal server error" });
           }
         });
 
         app.post("/api/media-library/upload", requireAuth, mediaUpload.single("file"), async (req: Request, res: Response) => {
           try {
+            if (!cloudinaryEnabled) {
+              return res.status(503).json({
+                error: "Cloudinary is not configured",
+                details: "Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET env vars to enable uploads.",
+              });
+            }
+
             if (!req.file) {
               return res.status(400).json({ error: "No file uploaded" });
             }
@@ -3462,17 +3979,49 @@ Your explanation should be conversational and reference specific scene numbers.`
             const tenantId = req.tenantId || DEFAULT_TENANT_ID;
             const { label, tags, projectId } = req.body;
 
-            // Upload to Cloudinary
-            const b64 = Buffer.from(req.file.buffer).toString("base64");
-            let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+            // Diagnostic logging for persistence debugging
+            console.log("[Media Library UPLOAD] Request info:", {
+              tenantId,
+              projectId: projectId || "none",
+              sessionId: req.session?.id?.slice(0, 8) + "...",
+              userId: req.session?.userId,
+              fileName: req.file.originalname,
+              fileSize: req.file.size,
+              mimeType: req.file.mimetype,
+              requestId: req.requestId,
+            });
 
-            const result = await cloudinary.uploader.upload(dataURI, {
-              folder: "revenue_party",
-              resource_type: "auto",
+            const resourceType = req.file.mimetype.startsWith("video/") ? "video" : "image";
+            const result = await new Promise<UploadApiResponse>((resolve, reject) => {
+              const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                  folder: "revenue_party",
+                  resource_type: resourceType,
+                },
+                (error, uploadResult) => {
+                  if (error) {
+                    console.error("[Media Library UPLOAD] Cloudinary upload_stream error:", error);
+                    reject(error);
+                    return;
+                  }
+                  if (!uploadResult) {
+                    reject(new Error("Cloudinary did not return a result"));
+                    return;
+                  }
+                  resolve(uploadResult);
+                },
+              );
+
+              uploadStream.end(req.file!.buffer);
+            });
+
+            console.log("[Media Library UPLOAD] Cloudinary success:", {
+              publicId: result.public_id,
+              secureUrl: result.secure_url?.slice(0, 50) + "...",
             });
 
             // Determine media type
-            const mediaType = req.file.mimetype.startsWith("video/") ? "video" : "image";
+            const mediaType = resourceType;
 
             // Parse tags
             let tagList: string[] = [];
@@ -3494,17 +4043,43 @@ Your explanation should be conversational and reference specific scene numbers.`
               })
               .returning();
 
+            console.log("[Media Library UPLOAD] Database insert success:", {
+              assetId: asset.id,
+              tenantId: asset.tenantId,
+              cloudinaryPublicId: asset.cloudinaryPublicId,
+            });
+
             return res.json(asset);
           } catch (error) {
-            console.error("Error uploading media:", error);
-            return res.status(500).json({ error: "Upload failed" });
+            console.error("[Media Library UPLOAD] Error:", error);
+            const message = error instanceof Error ? error.message : undefined;
+            return res.status(cloudinaryEnabled ? 500 : 503).json({
+              error: cloudinaryEnabled ? "Upload failed" : "Cloudinary is not configured",
+              details: message,
+            });
           }
         });
 
         app.delete("/api/media-library/:id", requireAuth, async (req: Request, res: Response) => {
           try {
+            if (!cloudinaryEnabled) {
+              return res.status(503).json({
+                error: "Cloudinary is not configured",
+                details: "Set CLOUDINARY env vars to enable media deletion.",
+              });
+            }
+
             const { id } = req.params;
             const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+
+            // Diagnostic logging for persistence debugging
+            console.log("[Media Library DELETE] Request info:", {
+              assetId: id,
+              tenantId,
+              sessionId: req.session?.id?.slice(0, 8) + "...",
+              userId: req.session?.userId,
+              requestId: req.requestId,
+            });
 
             const [asset] = await db
               .select()
@@ -3513,6 +4088,7 @@ Your explanation should be conversational and reference specific scene numbers.`
               .limit(1);
 
             if (!asset) {
+              console.log("[Media Library DELETE] Asset not found:", { assetId: id, tenantId });
               return res.status(404).json({ error: "Asset not found" });
             }
 
@@ -3526,10 +4102,19 @@ Your explanation should be conversational and reference specific scene numbers.`
               .delete(mediaLibrary)
               .where(eq(mediaLibrary.id, id));
 
+            console.log("[Media Library DELETE] Success:", {
+              assetId: id,
+              cloudinaryPublicId: asset.cloudinaryPublicId,
+            });
+
             return res.json({ success: true });
           } catch (error) {
-            console.error("Error deleting media:", error);
-            return res.status(500).json({ error: "Delete failed" });
+            console.error("[Media Library DELETE] Error:", error);
+            const message = error instanceof Error ? error.message : undefined;
+            return res.status(cloudinaryEnabled ? 500 : 503).json({
+              error: cloudinaryEnabled ? "Delete failed" : "Cloudinary is not configured",
+              details: message,
+            });
           }
         });
 
@@ -4888,6 +5473,9 @@ RESPONSE FORMAT:
         app.use('/api', leadsRouter);
         app.use('/api', aiGenerationRouter);
         app.use('/api', crmRouter);
+        
+        // Layer 2 sections routes
+        registerProjectLayer2SectionRoutes(app);
 
         return;
       }

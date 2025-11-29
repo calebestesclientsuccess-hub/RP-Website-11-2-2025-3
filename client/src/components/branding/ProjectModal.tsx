@@ -3,6 +3,8 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import type { ProjectMediaAsset } from "@shared/schema";
+import { buildProjectMediaAssets } from "@/utils/project-media";
 
 interface ProjectModalProps {
   project: {
@@ -14,7 +16,11 @@ interface ProjectModalProps {
     challenge: string;
     solution: string;
     outcome: string;
-    galleryImages: string[];
+    mediaAssets?: ProjectMediaAsset[];
+    modalMediaAssets?: ProjectMediaAsset[] | null;
+    modalMediaUrls?: string[] | null;
+    modalMediaType?: string | null;
+    galleryImages?: string[];
     testimonial?: {
       text: string;
       author: string;
@@ -26,6 +32,11 @@ interface ProjectModalProps {
 export function ProjectModal({ project, onClose }: ProjectModalProps) {
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const previousOverflow = useRef<string>("");
+
+  const mediaAssets =
+    project && project.mediaAssets && project.mediaAssets.length > 0
+      ? project.mediaAssets
+      : buildProjectMediaAssets(project || undefined);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -50,11 +61,12 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
     if (project) {
       setCurrentMediaIndex(0);
     }
-  }, [project?.id]);
+  }, [project?.id, mediaAssets.length]);
 
-  const isVideo = (url: string) => {
-    return url.includes('.mp4') || url.includes('.webm') || url.includes('video') || (url.includes('cloudinary') && url.includes('/video/'));
-  };
+  const currentAsset =
+    mediaAssets.length > 0
+      ? mediaAssets[currentMediaIndex % mediaAssets.length]
+      : null;
 
   return (
     <AnimatePresence mode="wait">
@@ -85,34 +97,39 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
               <X className="h-5 w-5" />
             </Button>
 
-            <div className="relative aspect-video overflow-hidden rounded-t-2xl bg-muted">
-              {project.galleryImages && project.galleryImages.length > 0 && (
+            <div className="relative aspect-video overflow-hidden rounded-t-2xl bg-muted flex items-center justify-center">
+              {currentAsset ? (
                 <>
-                  {isVideo(project.galleryImages[currentMediaIndex]) ? (
+                  {currentAsset.type === "video" ? (
                     <video
-                      key={project.galleryImages[currentMediaIndex]}
-                      src={project.galleryImages[currentMediaIndex]}
+                      key={currentAsset.id}
+                      src={currentAsset.url}
                       className="w-full h-full object-cover"
                       controls
                       data-testid={`video-media-${currentMediaIndex}`}
                     />
                   ) : (
                     <img
-                      src={project.galleryImages[currentMediaIndex]}
-                      alt={`${project.clientName} - Media ${currentMediaIndex + 1}`}
+                      src={currentAsset.url}
+                      alt={currentAsset.altText || `${project.clientName} - Media ${currentMediaIndex + 1}`}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                       data-testid={`img-media-${currentMediaIndex}`}
                     />
                   )}
 
-                  {project.galleryImages.length > 1 && (
+                  {mediaAssets.length > 1 && (
                     <>
                       <Button
                         size="icon"
                         variant="ghost"
                         className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
-                        onClick={() => setCurrentMediaIndex((prev) => (prev - 1 + project.galleryImages.length) % project.galleryImages.length)}
-                        disabled={project.galleryImages.length <= 1}
+                        onClick={() =>
+                          setCurrentMediaIndex(
+                            (prev) => (prev - 1 + mediaAssets.length) % mediaAssets.length,
+                          )
+                        }
+                        disabled={mediaAssets.length <= 1}
                         aria-label="Previous media"
                         data-testid="button-prev-media"
                       >
@@ -122,8 +139,10 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
                         size="icon"
                         variant="ghost"
                         className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
-                        onClick={() => setCurrentMediaIndex((prev) => (prev + 1) % project.galleryImages.length)}
-                        disabled={project.galleryImages.length <= 1}
+                        onClick={() =>
+                          setCurrentMediaIndex((prev) => (prev + 1) % mediaAssets.length)
+                        }
+                        disabled={mediaAssets.length <= 1}
                         aria-label="Next media"
                         data-testid="button-next-media"
                       >
@@ -131,11 +150,11 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
                       </Button>
 
                       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                        {project.galleryImages.map((_, index) => (
+                        {mediaAssets.map((asset, index) => (
                           <button
-                            key={index}
+                            key={asset.id}
                             onClick={() => setCurrentMediaIndex(index)}
-                            aria-label={`View media ${index + 1} of ${project.galleryImages.length}`}
+                            aria-label={`View media ${index + 1} of ${mediaAssets.length}`}
                             className={`w-2 h-2 rounded-full transition-all ${
                               index === currentMediaIndex
                                 ? "bg-white w-8"
@@ -148,6 +167,10 @@ export function ProjectModal({ project, onClose }: ProjectModalProps) {
                     </>
                   )}
                 </>
+              ) : (
+                <div className="text-center text-muted-foreground p-8">
+                  Visual assets coming soon.
+                </div>
               )}
             </div>
 

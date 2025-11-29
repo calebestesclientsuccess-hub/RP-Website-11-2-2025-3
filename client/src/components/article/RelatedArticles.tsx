@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
 
@@ -17,7 +16,7 @@ export function RelatedArticles({ articles }: RelatedArticlesProps) {
   return (
     <aside className="space-y-6">
       <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        Related Reading
+        Recommended Articles
       </h3>
       
       <div className="space-y-5">
@@ -25,7 +24,7 @@ export function RelatedArticles({ articles }: RelatedArticlesProps) {
           <Link key={index} href={article.path}>
             <div className="overflow-hidden hover-elevate active-elevate-2 cursor-pointer group border-b border-border pb-5 last:border-0" data-testid={`card-related-article-${index}`}>
               {article.imageUrl && (
-                <div className="aspect-[21/9] overflow-hidden bg-muted rounded-md mb-3">
+                <div className="aspect-video overflow-hidden bg-muted rounded-md mb-3">
                   <img
                     src={article.imageUrl}
                     alt={article.title}

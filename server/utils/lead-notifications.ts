@@ -1,4 +1,4 @@
-import { getUncachableResendClient } from "./resend-client";
+import { sendEmail } from "./mailer";
 import { storage } from "../storage";
 import type { Lead } from "@shared/schema";
 
@@ -149,20 +149,14 @@ export async function sendLeadNotificationEmail(lead: Lead): Promise<void> {
       </html>
     `;
 
-    const { client, fromEmail } = await getUncachableResendClient();
-
-    // Send email to all users via Resend
     const emailPromises = usersWithEmails.map(user =>
-      client.emails
-        .send({
-          from: fromEmail,
-          to: user.email!,
-          subject: `New Lead: ${lead.name || lead.email} from ${lead.source}`,
-          html: emailHtml,
-        })
-        .catch((error) => {
-          console.error(`Failed to send lead notification to ${user.email}:`, error);
-        }),
+      sendEmail({
+        to: user.email!,
+        subject: `New Lead: ${lead.name || lead.email} from ${lead.source}`,
+        html: emailHtml,
+      }).catch((error) => {
+        console.error(`Failed to send lead notification to ${user.email}:`, error);
+      })
     );
 
     await Promise.all(emailPromises);

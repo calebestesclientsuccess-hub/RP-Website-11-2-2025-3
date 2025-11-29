@@ -8,7 +8,11 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMutation } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
+import { ChevronLeft, Home } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
+import logoWhite from "@assets/rev-white_1760952720792.png";
+import logoBlack from "@assets/Revenueparty-logo-black_1762982410867.png";
 
 interface AssessmentData {
   sessionId: string;
@@ -42,6 +46,7 @@ interface AssessmentData {
 export default function PipelineAssessmentPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { theme } = useTheme();
   const [currentScreen, setCurrentScreen] = useState(0);
   const [sessionId] = useState(() => {
     const stored = localStorage.getItem('pipeline_assessment_session');
@@ -402,9 +407,44 @@ export default function PipelineAssessmentPage() {
 
       <div className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border">
         <div className="max-w-5xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <Link href="/" className="flex items-center hover-elevate rounded-md px-2 py-1 transition-all" data-testid="link-home">
+              <img
+                src={theme === "dark" ? logoWhite : logoBlack}
+                alt="Revenue Party Logo"
+                className="h-10 sm:h-12 md:h-14 lg:h-16 w-auto transition-all duration-300"
+                loading="eager"
+                style={{ objectFit: 'contain' }}
+              />
+            </Link>
+          </div>
           <Progress value={progress} className="h-2" data-testid="progress-bar" />
           <div className="flex justify-between items-center mt-2 text-sm text-muted-foreground">
-            <span>Screen {currentScreen + 1} of {totalScreens}</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLocation("/")}
+                className="text-muted-foreground hover:text-foreground"
+                data-testid="button-home-nav"
+              >
+                <Home className="h-4 w-4 mr-1" />
+                Home
+              </Button>
+              {currentScreen > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={goBack}
+                  className="text-muted-foreground hover:text-foreground"
+                  data-testid="button-back"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Back
+                </Button>
+              )}
+              <span>Screen {currentScreen + 1} of {totalScreens}</span>
+            </div>
             <span>{Math.round(progress)}% Complete</span>
           </div>
         </div>
