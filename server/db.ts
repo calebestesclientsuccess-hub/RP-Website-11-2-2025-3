@@ -33,7 +33,7 @@ let pool: Pool;
 try {
   pool = new Pool({
     connectionString,
-    ssl: true, // Required for Neon
+    ssl: { rejectUnauthorized: false }, // Required for Neon - allow self-signed certs
     max: env.NODE_ENV === "test" ? 10 : 20, // Smaller pool for tests
     min: env.NODE_ENV === "test" ? 2 : 5, // Fewer idle connections in tests
     idleTimeoutMillis: 30000, // Close idle connections after 30s
