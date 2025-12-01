@@ -6,7 +6,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { createServer } from "http";
 import { randomUUID } from "crypto";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { serveStatic, log } from "./static";
 import { env } from "./config/env";
 import { securityHeaders } from "./middleware/security-headers";
 import { assignCspNonce } from "./middleware/csp-nonce";
@@ -115,6 +115,8 @@ const register = async () => {
 
   // Vite or Static serving
   if (app.get("env") === "development") {
+    // Dynamically import Vite only in development to avoid bundling it
+    const { setupVite } = await import("./vite");
     await setupVite(app, httpServer);
   } else {
     serveStatic(app);
