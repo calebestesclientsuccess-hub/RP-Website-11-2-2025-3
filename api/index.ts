@@ -9,10 +9,13 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     console.error("Serverless Function Crash:", err);
     res.statusCode = 500;
     res.setHeader("Content-Type", "application/json");
+    // Force JSON response even if app is not ready
+    const errorMessage = err instanceof Error ? err.message : String(err);
     res.end(JSON.stringify({
-      error: "Internal Server Error",
-      details: err.message || "Unknown error",
-      stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+      error: "Critical Startup Error",
+      details: errorMessage,
+      // Always show stack in this debug phase
+      stack: err.stack
     }));
   }
 }
