@@ -27,6 +27,14 @@ if (env.NODE_ENV === "test" && !env.TEST_DATABASE_URL) {
   );
 }
 
+// Mock pool for fallback
+const mockPool = {
+  connect: () => Promise.reject(new Error("Mock pool: Database connection failed during initialization")),
+  query: () => Promise.reject(new Error("Mock pool: Database connection failed during initialization")),
+  end: () => Promise.resolve(),
+  on: () => {},
+} as unknown as Pool;
+
 // Production-grade connection pool configuration
 let pool: Pool;
 try {
@@ -42,27 +50,33 @@ try {
   // Handle pool errors
   pool.on('error', (err) => {
     logger.fatal('Unexpected database pool error', { module: 'db' }, err);
-    // process.exit(1); // Don't exit in serverless!
   });
 } catch (err) {
-  console.error("[db] Failed to initialize database pool:", err);
-  // Create a mock pool or throw? If we throw, the app crashes.
-  // Let's rethrow for now, but at least we logged it.
-  throw err;
+  console.error("[db] CRITICAL: Failed to initialize database pool:", err);
+  pool = mockPool;
 }
 
 // Graceful shutdown
 if (process.on) {
   process.on('SIGTERM', async () => {
     logger.info('SIGTERM received, closing database pool', { module: 'db' });
-    if (pool) await pool.end();
+    if (pool && pool !== mockPool) await pool.end();
     process.exit(0);
   });
 }
 
 import * as schema from "@shared/schema";
 
-export const db = drizzle(pool, { schema });
+let dbInstance;
+try {
+  dbInstance = drizzle(pool, { schema });
+} catch (err) {
+  console.error("[db] CRITICAL: Failed to initialize drizzle:", err);
+  // This will likely crash later if used, but at least the module loads
+  dbInstance = {} as any; 
+}
+
+export const db = dbInstance;
 
 // Export pool for session management
 export const sessionPool = pool;

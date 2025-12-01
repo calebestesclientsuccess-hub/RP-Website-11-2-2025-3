@@ -7,6 +7,21 @@ import { env, isProduction } from "../config/env";
 const PgSessionStore = connectPgSimple(session);
 const EIGHT_HOURS_MS = 1000 * 60 * 60 * 8;
 
+let store;
+try {
+  store = new PgSessionStore({
+    pool: sessionPool,
+    tableName: "user_sessions",
+    createTableIfMissing: true,
+    pruneSessionInterval: 60 * 60,
+    ttl: Math.floor(EIGHT_HOURS_MS / 1000),
+  });
+} catch (err) {
+  console.error("[session] Failed to initialize PgSessionStore, falling back to MemoryStore:", err);
+  // Fallback to MemoryStore (default when store is undefined)
+  store = undefined;
+}
+
 export const sessionMiddleware: RequestHandler = session({
   secret: env.SESSION_SECRET,
   resave: false,
@@ -19,13 +34,7 @@ export const sessionMiddleware: RequestHandler = session({
     secure: isProduction,
     maxAge: EIGHT_HOURS_MS,
   },
-  store: new PgSessionStore({
-    pool: sessionPool,
-    tableName: "user_sessions",
-    createTableIfMissing: true,
-    pruneSessionInterval: 60 * 60,
-    ttl: Math.floor(EIGHT_HOURS_MS / 1000),
-  }),
+  store: store,
 });
 
 
