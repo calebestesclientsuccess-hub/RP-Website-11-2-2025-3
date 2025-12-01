@@ -15,6 +15,11 @@ try {
     format: "esm",
     outdir: path.resolve(__dirname, "../dist/server"),
     packages: "external", // Do not bundle dependencies
+    external: [
+      "vite",           // Exclude Vite and its dependencies
+      "../vite.config", // Exclude Vite config
+      "./vite",         // Exclude local vite wrapper
+    ],
     sourcemap: true,
     logLevel: "info",
   });
