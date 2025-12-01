@@ -1,21 +1,12 @@
-import { drizzle } from "drizzle-orm/neon-serverless";
-import { Pool, neonConfig } from "@neondatabase/serverless";
-// import ws from "ws"; // REVERT: Commented out to stop Vercel crash
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+// import { drizzle } from "drizzle-orm/neon-serverless";
+// import { Pool, neonConfig } from "@neondatabase/serverless";
 import { env } from "./config/env";
 import { logger } from "./lib/logger";
 
-// Defensive WebSocket configuration
-/*
-try {
-  if (ws) {
-    neonConfig.webSocketConstructor = ws;
-  } else {
-    console.warn("[db] ws module not found, skipping neonConfig.webSocketConstructor");
-  }
-} catch (err) {
-  console.error("[db] Failed to configure WebSocket for Neon:", err);
-}
-*/
+// Standard pg driver does not need WebSocket configuration
+
 
 const connectionString =
   env.NODE_ENV === "test" && env.TEST_DATABASE_URL
@@ -42,6 +33,7 @@ let pool: Pool;
 try {
   pool = new Pool({
     connectionString,
+    ssl: true, // Required for Neon
     max: env.NODE_ENV === "test" ? 10 : 20, // Smaller pool for tests
     min: env.NODE_ENV === "test" ? 2 : 5, // Fewer idle connections in tests
     idleTimeoutMillis: 30000, // Close idle connections after 30s
