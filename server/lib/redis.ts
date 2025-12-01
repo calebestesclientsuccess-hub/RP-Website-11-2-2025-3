@@ -53,18 +53,18 @@ const createInMemoryRedis = () => {
 };
 
 // Check MOCK_REDIS before importing anything
-const useMockRedis = process.env.MOCK_REDIS === "true";
+const useMockRedis = process.env.MOCK_REDIS === "true" || !env.REDIS_URL;
 
 export const redis = useMockRedis
   ? createInMemoryRedis()
-  : new Redis(env.REDIS_URL, {
+  : new Redis(env.REDIS_URL!, {
         maxRetriesPerRequest: 3,
         // Enable lazy connect to check eviction policy after connection
         lazyConnect: false,
       });
 
 if (useMockRedis) {
-  console.log("[Redis] Using in-memory mock Redis for local development");
+  console.log("[Redis] Using in-memory mock Redis (MOCK_REDIS=true or REDIS_URL missing)");
 }
 
 // Track if we've already warned about eviction policy

@@ -40,7 +40,7 @@ const envSchema = z
     SECURITY_ALERT_EMAIL: z.string().email().optional(),
     SUPABASE_URL: z.string().url().optional(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
-    REDIS_URL: z.string(),
+    REDIS_URL: z.string().optional(),
     APP_BASE_URL: z.string().url().default("http://localhost:50005"),
     REPLICATE_WEBHOOK_SECRET: z.string().default(""),
     PUBLIC_TENANT_ID: z.string().min(1, "PUBLIC_TENANT_ID is required in production").optional(),
