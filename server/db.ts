@@ -1,12 +1,11 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
-// import { drizzle } from "drizzle-orm/neon-serverless";
-// import { Pool, neonConfig } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-serverless";
+import { Pool, neonConfig } from "@neondatabase/serverless";
 import { env } from "./config/env";
 import { logger } from "./lib/logger";
 
-// Standard pg driver does not need WebSocket configuration
-
+// Configure Neon for HTTP mode (no WebSocket needed)
+// This works on Vercel serverless without the ws package
+neonConfig.fetchConnectionCache = true;
 
 const connectionString =
   env.NODE_ENV === "test" && env.TEST_DATABASE_URL
@@ -33,12 +32,9 @@ let pool: Pool;
 try {
   pool = new Pool({
     connectionString,
-    ssl: { rejectUnauthorized: false }, // Required for Neon - allow self-signed certs
     max: env.NODE_ENV === "test" ? 10 : 20, // Smaller pool for tests
-    min: env.NODE_ENV === "test" ? 2 : 5, // Fewer idle connections in tests
     idleTimeoutMillis: 30000, // Close idle connections after 30s
     connectionTimeoutMillis: 5000, // Connection timeout
-    maxUses: 7500, // Recycle connections after 7500 uses
   });
 
   // Handle pool errors
