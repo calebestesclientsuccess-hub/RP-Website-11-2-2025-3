@@ -1,12 +1,13 @@
 import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
+// import connectPgSimple from "connect-pg-simple"; // DEBUG: Commented out
 import type { RequestHandler } from "express";
 import { sessionPool } from "../db";
 import { env, isProduction } from "../config/env";
 
-const PgSessionStore = connectPgSimple(session);
+// const PgSessionStore = connectPgSimple(session); // DEBUG: Commented out
 const EIGHT_HOURS_MS = 1000 * 60 * 60 * 8;
 
+/*
 let store;
 try {
   store = new PgSessionStore({
@@ -21,6 +22,7 @@ try {
   // Fallback to MemoryStore (default when store is undefined)
   store = undefined;
 }
+*/
 
 export const sessionMiddleware: RequestHandler = session({
   secret: env.SESSION_SECRET,
@@ -34,7 +36,7 @@ export const sessionMiddleware: RequestHandler = session({
     secure: isProduction,
     maxAge: EIGHT_HOURS_MS,
   },
-  store: store,
+  // store: store, // DEBUG: Use default MemoryStore
 });
 
 
