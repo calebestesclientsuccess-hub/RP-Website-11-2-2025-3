@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "http";
 
-// Pre-check environment variables BEFORE importing app
+// Pre-check environment variables
 const envCheck = {
   NODE_ENV: process.env.NODE_ENV,
   HAS_DB_URL: !!process.env.DATABASE_URL,
@@ -9,36 +9,29 @@ const envCheck = {
   PUBLIC_TENANT_ID: process.env.PUBLIC_TENANT_ID,
 };
 
-console.log("[api/index] Environment check:", JSON.stringify(envCheck));
-
-let app: any;
-let appReady: Promise<void>;
+let appModule: any = null;
 let initError: Error | null = null;
 
-try {
-  const appModule = await import("../server/app");
-  app = appModule.app;
-  appReady = appModule.appReady;
-} catch (err: any) {
-  console.error("[api/index] CRITICAL: Failed to import server/app:", err);
-  initError = err;
+// Lazy load the app module
+async function getApp() {
+  if (initError) throw initError;
+  if (appModule) return appModule;
+  
+  try {
+    console.log("[api/index] Importing server/app...");
+    appModule = await import("../server/app");
+    console.log("[api/index] Import successful");
+    return appModule;
+  } catch (err: any) {
+    console.error("[api/index] CRITICAL: Failed to import server/app:", err);
+    initError = err;
+    throw err;
+  }
 }
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  // If there was an import error, report it immediately
-  if (initError) {
-    res.statusCode = 500;
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({
-      error: "Module Import Error",
-      details: initError.message,
-      stack: initError.stack,
-      env_debug: envCheck,
-    }));
-    return;
-  }
-
   try {
+    const { app, appReady } = await getApp();
     await appReady;
     app(req as any, res as any);
   } catch (err: any) {
