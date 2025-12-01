@@ -142,6 +142,13 @@ export const featureFlagRegistry: Record<string, FeatureFlagDefinition> = {
     scope: "section",
     defaultEnabled: true,
   },
+  "ebook-lead-magnet": {
+    key: "ebook-lead-magnet",
+    name: "E-Book Lead Magnet System",
+    description: "Enable/disable the e-book lead magnet feature (downloadable PDFs with lead capture).",
+    scope: "section",
+    defaultEnabled: false,
+  },
   "theme-toggle": {
     key: "theme-toggle",
     name: "Theme Toggle Button",

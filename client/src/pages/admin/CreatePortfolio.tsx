@@ -27,6 +27,8 @@ import {
   LayoutList,
   BookOpen,
   HelpCircle,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import {
   Tooltip,
@@ -118,6 +120,9 @@ const portfolioSchema = z.object({
 
   // Expansion layout mode
   expansionLayout: z.enum(["vertical", "cinematic"]).default("vertical"),
+
+  // Slug lock state (for draft persistence)
+  slugLocked: z.boolean().default(false),
 });
 
 type PortfolioFormData = z.infer<typeof portfolioSchema>;
@@ -164,6 +169,7 @@ export default function CreatePortfolio() {
     "idle" | "checking" | "available" | "taken" | "error"
   >("idle");
   const [slugStatusMessage, setSlugStatusMessage] = useState("");
+  const [slugHasFocus, setSlugHasFocus] = useState(false);
 
   const style = {
     "--sidebar-width": "16rem",
@@ -209,6 +215,7 @@ export default function CreatePortfolio() {
       testimonialAuthor: "",
       styleOverrides: DEFAULT_STYLES,
       expansionLayout: "vertical" as const,
+      slugLocked: false,
       ...loadDraft(),
     },
     mode: "onChange",
@@ -238,19 +245,23 @@ export default function CreatePortfolio() {
     return () => clearTimeout(timer);
   }, [watchedValues]);
 
-  // Auto-generate slug from title
+  // Auto-generate slug from title (with lock support)
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
-      if (name === "title" && value.title) {
-        const currentSlug = form.getValues("slug");
-        // Only auto-generate if slug is empty or matches previous auto-generated value
-        if (!currentSlug || currentSlug === slugify(form.getValues("title") || "")) {
-          form.setValue("slug", slugify(value.title), { shouldValidate: true });
-        }
+      const slugLocked = form.getValues("slugLocked");
+      
+      // Auto-generate slug from title (if unlocked and title exists)
+      if (name === "title" && value.title && !slugLocked) {
+        form.setValue("slug", slugify(value.title), { shouldValidate: true });
+      }
+      
+      // Auto-lock only when user manually edits (input has focus)
+      if (name === "slug" && slugHasFocus) {
+        form.setValue("slugLocked", true);
       }
     });
     return () => subscription.unsubscribe();
-  }, [form]);
+  }, [form, slugHasFocus]);
 
   // Debounced slug availability check
   useEffect(() => {
@@ -679,6 +690,8 @@ export default function CreatePortfolio() {
       testimonialText: "",
       testimonialAuthor: "",
       styleOverrides: DEFAULT_STYLES,
+      expansionLayout: "vertical",
+      slugLocked: false,
     });
     setOpenSection("headline");
     toast({
@@ -795,7 +808,23 @@ export default function CreatePortfolio() {
                           placeholder="techflow-pipeline"
                           {...form.register("slug")}
                           className="flex-1"
+                          onFocus={() => setSlugHasFocus(true)}
+                          onBlur={() => setSlugHasFocus(false)}
                         />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => form.setValue("slugLocked", !watchedValues.slugLocked)}
+                          title={watchedValues.slugLocked ? "Unlock slug (auto-sync with title)" : "Lock slug"}
+                          className="shrink-0"
+                        >
+                          {watchedValues.slugLocked ? (
+                            <Lock className="h-4 w-4" />
+                          ) : (
+                            <Unlock className="h-4 w-4" />
+                          )}
+                        </Button>
                       </div>
                       {form.formState.errors.slug && (
                         <p className="text-xs text-destructive mt-1">

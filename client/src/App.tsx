@@ -36,6 +36,7 @@ const ResetPasswordPageLazy = lazy(() => import("@/pages/admin/ResetPasswordPage
 const WelcomePageLazy = lazy(() => import("@/pages/admin/WelcomePage"));
 const AdminDashboardLazy = lazy(() => import("@/pages/admin/AdminDashboard"));
 const FeatureFlagsPageLazy = lazy(() => import("@/pages/admin/FeatureFlagsPage"));
+const EbookLeadMagnetsLazy = lazy(() => import("@/pages/admin/EbookLeadMagnets"));
 const BlogPostsListLazy = lazy(() => import("@/pages/admin/BlogPostsList"));
 const BlogPostFormLazy = lazy(() => import("@/pages/admin/BlogPostForm"));
 const VideoPostsListLazy = lazy(() => import("@/pages/admin/VideoPostsList"));
@@ -65,6 +66,7 @@ const FieldManagerLazy = lazy(() => import("@/pages/admin/FieldManager"));
 const CrmWorkspaceLazy = lazy(() => import("@/pages/admin/CrmWorkspace"));
 const CaseStudyEditorLazy = lazy(() => import("@/pages/admin/CaseStudyEditor"));
 const CreatePortfolioLazy = lazy(() => import("@/pages/admin/CreatePortfolio"));
+const DataManagementLazy = lazy(() => import("@/pages/admin/DataManagement"));
 
 // Loading fallback component
 function PageLoadingFallback() {
@@ -132,6 +134,7 @@ const WelcomePage = withLazyLoading(WelcomePageLazy);
 const AdminDashboard = withLazyLoading(AdminDashboardLazy);
 const ContentLibrary = withLazyLoading(ContentLibraryLazy);
 const FeatureFlagsPage = withLazyLoading(FeatureFlagsPageLazy);
+const EbookLeadMagnets = withLazyLoading(EbookLeadMagnetsLazy);
 const BlogPostsList = withLazyLoading(BlogPostsListLazy);
 const BlogPostForm = withLazyLoading(BlogPostFormLazy);
 const VideoPostsList = withLazyLoading(VideoPostsListLazy);
@@ -157,6 +160,7 @@ const FieldManager = withLazyLoading(FieldManagerLazy);
 const CrmWorkspace = withLazyLoading(CrmWorkspaceLazy);
 const CaseStudyEditor = withLazyLoading(CaseStudyEditorLazy);
 const CreatePortfolio = withLazyLoading(CreatePortfolioLazy);
+const DataManagement = withLazyLoading(DataManagementLazy);
 
 const lazyPage = (
   loader: () => Promise<{ default: React.ComponentType<any> }>,
@@ -426,6 +430,7 @@ function Router() {
           <Route path="/admin/welcome" component={WelcomePage} />
           <Route path="/admin/content" component={ContentLibrary} />
           <Route path="/admin/feature-flags" component={FeatureFlagsPage} />
+          <Route path="/admin/ebook-lead-magnets" component={EbookLeadMagnets} />
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/admin/assessment-submissions" component={AssessmentAdminDashboard} />
           <Route path="/admin/assessments/new" component={AssessmentConfigForm} />
@@ -461,6 +466,7 @@ function Router() {
           <Route path="/admin/job-postings/new" component={JobPostingForm} />
           <Route path="/admin/job-postings/:id/edit" component={JobPostingForm} />
           <Route path="/admin/widget-config" component={WidgetConfigPage} />
+          <Route path="/admin/data-management" component={DataManagement} />
 
           {/* Fallback */}
           <Route component={NotFound} />

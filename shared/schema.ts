@@ -127,6 +127,32 @@ export const leadCaptures = pgTable("lead_captures", {
   userAgent: text("user_agent"),
 });
 
+// E-book Lead Magnet Configuration
+export const ebookLeadMagnets = pgTable("ebook_lead_magnets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  slug: text("slug").notNull(), // e.g., "198k-mistake-ebook"
+  h1Text: text("h1_text").notNull(),
+  h2Text: text("h2_text"),
+  bodyText: text("body_text"),
+  pdfUrl: text("pdf_url").notNull(), // Cloudinary URL
+  pdfPublicId: text("pdf_public_id"), // Cloudinary public ID for deletion
+  previewImageUrl: text("preview_image_url"), // Cloudinary URL
+  previewImagePublicId: text("preview_image_public_id"), // Cloudinary public ID
+  imageSize: text("image_size").default("medium").$type<"small" | "medium" | "large" | "xlarge" | "full">(),
+  imageOrientation: text("image_orientation").default("portrait").$type<"portrait" | "landscape">(),
+  imageStyle: text("image_style").default("shadow").$type<"shadow" | "minimal" | "elevated" | "glow" | "tilted">(),
+  ctaButtonText: text("cta_button_text").default("Get Free Access"),
+  successMessage: text("success_message").default("Check your email for your free e-book!"),
+  calendlyLink: text("calendly_link"), // Optional Calendly scheduling link
+  isEnabled: boolean("is_enabled").default(false).notNull(),
+  sortOrder: integer("sort_order").default(0), // For future multi-placement support
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  uniqueSlugPerTenant: unique().on(table.tenantId, table.slug),
+}));
+
 export const jobPostings = pgTable("job_postings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
@@ -774,6 +800,28 @@ export const insertLeadCaptureSchema = createInsertSchema(leadCaptures)
     company: z.string().optional(),
   });
 
+export const insertEbookLeadMagnetSchema = createInsertSchema(ebookLeadMagnets)
+  .omit({
+    id: true,
+    tenantId: true,
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    slug: z.string().min(1, "Slug is required").regex(/^[a-z0-9-]+$/, "Slug must be lowercase letters, numbers, and hyphens only"),
+    h1Text: z.string().min(1, "H1 text is required").max(200, "H1 must be under 200 characters"),
+    h2Text: z.string().max(300, "H2 must be under 300 characters").optional(),
+    bodyText: z.string().max(2000, "Body text must be under 2000 characters").optional(),
+    pdfUrl: z.string().url("Invalid PDF URL"),
+    previewImageUrl: z.string().url("Invalid image URL").optional(),
+    imageSize: z.enum(["small", "medium", "large", "xlarge", "full"]).optional(),
+    imageOrientation: z.enum(["portrait", "landscape"]).optional(),
+    imageStyle: z.enum(["shadow", "minimal", "elevated", "glow", "tilted"]).optional(),
+    ctaButtonText: z.string().max(50, "CTA text must be under 50 characters").optional(),
+    successMessage: z.string().max(500, "Success message must be under 500 characters").optional(),
+    calendlyLink: z.string().url("Invalid Calendly URL").optional(),
+  });
+
 export const insertBlueprintCaptureSchema = createInsertSchema(blueprintCaptures)
   .omit({
     id: true,
@@ -993,6 +1041,8 @@ export type JobApplication = typeof jobApplications.$inferSelect;
 export type InsertJobApplication = z.infer<typeof insertJobApplicationSchema>;
 export type LeadCapture = typeof leadCaptures.$inferSelect;
 export type InsertLeadCapture = z.infer<typeof insertLeadCaptureSchema>;
+export type EbookLeadMagnet = typeof ebookLeadMagnets.$inferSelect;
+export type InsertEbookLeadMagnet = z.infer<typeof insertEbookLeadMagnetSchema>;
 export type BlueprintCapture = typeof blueprintCaptures.$inferSelect;
 export type InsertBlueprintCapture = z.infer<typeof insertBlueprintCaptureSchema>;
 export type AssessmentResponse = typeof assessmentResponses.$inferSelect;
@@ -1939,7 +1989,7 @@ export const mediaLibrary = pgTable("media_library", {
   projectId: text("project_id").references(() => projects.id, { onDelete: "set null" }),
   cloudinaryPublicId: text("cloudinary_public_id").notNull(),
   cloudinaryUrl: text("cloudinary_url").notNull(),
-  mediaType: text("media_type").notNull().$type<"image" | "video">(),
+  mediaType: text("media_type").notNull().$type<"image" | "video" | "raw">(),
   label: text("label"),
   tags: text("tags").array().default(sql`'{}'::text[]`),
   createdAt: timestamp("created_at").defaultNow().notNull(),

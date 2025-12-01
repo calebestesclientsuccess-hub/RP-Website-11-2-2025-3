@@ -301,33 +301,18 @@ export default function ProjectForm() {
     const pid = targetProjectId || projectId;
     if (!pid) return;
 
-    try {
-      // Delete all existing sections and recreate (simplest approach)
-      const existingSections = await fetch(`/api/projects/${pid}/layer2-sections`).then(r => r.json());
-      
-      for (const section of existingSections) {
-        // Only delete if min 3 sections will remain or we're recreating all
-        if (existingSections.length > 3 || layer2Sections.length >= 3) {
-          await apiRequest("DELETE", `/api/projects/${pid}/layer2-sections/${section.id}`).catch(() => {});
-        }
-      }
+    // Use atomic bulk replace endpoint
+    const payload = {
+      sections: layer2Sections.map((s, idx) => ({
+        heading: s.heading,
+        body: s.body,
+        orderIndex: idx, // ensure sequential
+        mediaType: s.mediaType,
+        mediaConfig: s.mediaConfig,
+      })),
+    };
 
-      // Create new sections
-      for (const section of layer2Sections) {
-        const payload = {
-          heading: section.heading,
-          body: section.body,
-          orderIndex: section.orderIndex,
-          mediaType: section.mediaType,
-          mediaConfig: section.mediaConfig,
-        };
-
-        await apiRequest("POST", `/api/projects/${pid}/layer2-sections`, payload);
-      }
-    } catch (error) {
-      console.error("Failed to save Layer 2 sections:", error);
-      throw error;
-    }
+    await apiRequest("PUT", `/api/projects/${pid}/layer2-sections`, payload);
   };
 
   if (isEdit && isLoading) {

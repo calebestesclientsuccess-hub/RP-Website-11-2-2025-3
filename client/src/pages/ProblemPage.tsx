@@ -62,7 +62,7 @@ export default function ProblemPage() {
               data-testid="heading-hero"
             >
               Stop Solving Systems Problems<br />
-              <span className="gradient-text gradient-hero">with Headcount Solutions.</span>
+              <span className="gradient-text gradient-hero">with Headcount Solutions</span>
             </motion.h1>
             <motion.p
               className="text-xl leading-relaxed max-w-3xl mx-auto"

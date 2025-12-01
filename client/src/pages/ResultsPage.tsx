@@ -74,8 +74,8 @@ export default function ResultsPage() {
                 transition={{ duration: 0.8, delay: 0.1 }}
                 data-testid="heading-hero"
               >
-                The Numbers Don't Lie.{" "}
-                <span className="gradient-text gradient-hero">The Results Speak.</span>
+                The Numbers Don't Lie{" "}
+                <span className="gradient-text gradient-hero">The Results Speak</span>
               </motion.h1>
               <motion.p
                 className="text-xl md:text-2xl text-muted-foreground leading-relaxed"
@@ -96,8 +96,8 @@ export default function ResultsPage() {
           <div className="max-w-7xl mx-auto">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-proven-results">
-                Proven Results.<br />
-                <span className="gradient-text gradient-hero">No Black Box.</span>
+                Proven Results<br />
+                <span className="gradient-text gradient-hero">No Black Box</span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-proven-results-description">
                 The GTM Engine model is built on transparency and provable performance.

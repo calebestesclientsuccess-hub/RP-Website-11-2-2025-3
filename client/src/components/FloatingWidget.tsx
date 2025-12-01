@@ -4,7 +4,7 @@ import { FloatingAssessmentCTA } from "./FloatingAssessmentCTA";
 import type { WidgetConfig } from "@shared/schema";
 
 export function FloatingWidget() {
-  const { data: widgetConfig, isLoading } = useQuery<WidgetConfig>({
+  const { data: widgetConfig, isLoading, error } = useQuery<WidgetConfig>({
     queryKey: ["/api/widget-config"],
   });
 
@@ -13,11 +13,16 @@ export function FloatingWidget() {
     return null;
   }
 
-  // Default to calculator if no config exists or widget is disabled
-  const widgetType = widgetConfig?.widgetType || "calculator";
-  const isEnabled = widgetConfig?.enabled !== false;
+  // If there's an error or no config, default to showing assessment widget
+  if (error || !widgetConfig) {
+    return <FloatingAssessmentCTA />;
+  }
 
-  // Don't render if widget is disabled
+  // Check if widget is explicitly disabled
+  const isEnabled = widgetConfig.enabled !== false;
+  const widgetType = widgetConfig.widgetType || "assessment";
+
+  // Don't render if widget is explicitly disabled
   if (!isEnabled) {
     return null;
   }

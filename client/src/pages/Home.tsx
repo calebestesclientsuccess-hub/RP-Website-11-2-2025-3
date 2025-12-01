@@ -12,6 +12,7 @@ import { LocalBusinessSchema } from "@/components/schemas/LocalBusinessSchema";
 import VideoSchema from "@/components/VideoSchema";
 import SoftwareApplicationSchema from "@/components/SoftwareApplicationSchema";
 import LeadMagnetHero from "@/components/LeadMagnetHero";
+import EbookLeadMagnetSection from "@/components/EbookLeadMagnetSection";
 import TestimonialCarousel from "@/components/widgets/TestimonialCarousel";
 import { WidgetZone } from "@/components/WidgetZone";
 import { ArrowRight, Users, Target, Zap, ChevronDown } from "lucide-react";
@@ -162,8 +163,8 @@ export default function Home() {
                   transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
                   data-testid="heading-hero"
                 >
-                  <div className="mb-0">Your Next Sales Hire Shouldn't Be a Person.</div>
-                  <div className="gradient-text gradient-hero mt-0">It Should Be a Revenue Generation System.</div>
+                  <div className="mb-0">Your Next Sales Hire Shouldn't Be a Person</div>
+                  <div className="gradient-text gradient-hero mt-0">It Should Be a Revenue Generation System</div>
                 </motion.h1>
                 <motion.p
                   className="text-lg md:text-xl leading-relaxed"
@@ -212,36 +213,6 @@ export default function Home() {
       {/* Top Widget Zone */}
       <WidgetZone zone="zone-1" className="my-8" />
 
-      {/* Problem Module - "The Trap" - Distinct background for visual separation */}
-      <section className="py-32 px-4 md:px-6 lg:px-8 bg-background">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-trap">
-              The $198,000 Mistake<br />
-              <span className="gradient-text gradient-hero">You Don't Have to Make</span>
-            </h2>
-            <div className="space-y-4">
-              <p className="text-xl leading-relaxed" data-testid="text-trap-description">
-                Most founders think they have two options: hire internally or outsource. Both are traps. The internal hire costs $198,000+ and fails 67% of the time. The agency takes your money and owns your IP. There's a third way.
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <Link href="/problem">
-              <Button variant="outline" size="lg" data-testid="button-expose-traps">
-                Expose The Traps <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-
-          {/* Lead Magnet Section */}
-          <div className="max-w-3xl mx-auto mt-16">
-            <LeadMagnetHero />
-          </div>
-        </div>
-      </section>
-
       {/* Recent Projects Section */}
       <FeatureGate flagKey="section-recent-projects">
         <section className="py-16 px-4 md:px-6 lg:px-8 bg-muted/30">
@@ -251,22 +222,23 @@ export default function Home() {
         </section>
       </FeatureGate>
 
-      {/* Bridge Statement */}
-      <SimpleBridgeSection />
+      {/* Unified dark canvas for bridge + solution section - the sun paints this */}
+      <div className="relative bg-zinc-950">
+        {/* Bridge Statement */}
+        <SimpleBridgeSection />
 
-      {/* Middle Widget Zone 1 */}
-      <WidgetZone zone="zone-2" className="my-8" />
+        {/* Middle Widget Zone 1 */}
+        <WidgetZone zone="zone-2" className="my-8" />
 
-      {/* Unified Product Showcase - The Fullstack Sales Unit */}
-      <section className="relative z-10 py-32 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-background via-background/95 to-background" data-testid="section-solution">
-        {/* Dramatic background treatment */}
-        <div className="absolute inset-0 bg-gradient-radial from-primary/5 via-transparent to-transparent opacity-50" />
+        {/* Unified Product Showcase - The Fullstack Sales Unit */}
+        {/* Transparent background - illuminated by the System sun above */}
+        <section className="relative py-32 px-4 md:px-6 lg:px-8" data-testid="section-solution">
 
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto relative">
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-solution">
-              Don't Hire a Rep.<br />
-              <span className="gradient-text gradient-hero">Deploy an Engine.</span>
+              Don't Hire a Rep<br />
+              <span className="gradient-text gradient-hero">Deploy an Engine</span>
             </h2>
           </div>
 
@@ -555,14 +527,16 @@ export default function Home() {
           </div>
         </div>
       </section>
+      </div>
+      {/* End of unified dark canvas */}
 
       {/* Proof Module - "Social Proof" */}
-      <section className="py-20 px-4 md:px-6 lg:px-8 bg-background">
+      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-background" style={{ zIndex: 10 }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-proof">
-              Proven Results.<br />
-              <span className="gradient-text gradient-hero">No Black Box.</span>
+              Proven Results<br />
+              <span className="gradient-text gradient-hero">No Black Box</span>
             </h2>
             <p className="text-xl leading-relaxed" data-testid="text-proof-description">
               The GTM Engine model is built on transparency and provable performance.
@@ -729,6 +703,20 @@ export default function Home() {
         </div>
       </section>
 
+      {/* E-Book Lead Magnet Section - Integrated $198K Mistake section */}
+      <div style={{ backgroundColor: '#000000', width: '100%' }}>
+        <section className="relative py-32 px-4 md:px-6 lg:px-8" style={{ backgroundColor: '#000000', position: 'relative' }}>
+          <div className="max-w-7xl mx-auto">
+            <EbookLeadMagnetSection slug="198k-mistake-ebook" />
+
+            {/* Alternative Lead Magnet Section */}
+            <div className="max-w-3xl mx-auto mt-20">
+              <LeadMagnetHero />
+            </div>
+          </div>
+        </section>
+      </div>
+
       {/* Middle Widget Zone 2 */}
       <WidgetZone zone="zone-3" className="my-8" />
 
@@ -799,8 +787,8 @@ export default function Home() {
           {/* Final CTA Module */}
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold" data-testid="heading-final-cta">
-              The Blueprint is Clear.<br />
-              <span className="gradient-text gradient-hero">Schedule Your GTM Audit.</span>
+              The Blueprint is Clear<br />
+              <span className="gradient-text gradient-hero">Schedule Your GTM Audit</span>
             </h2>
             <p className="text-xl leading-relaxed" data-testid="text-final-cta-description">
               Stop the hiring/firing cycle. Let's audit your GTM architecture and design a system that scales.

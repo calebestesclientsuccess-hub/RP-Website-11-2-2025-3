@@ -12,7 +12,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { FileText, Video, Settings, LogOut, LayoutDashboard, ClipboardList, Megaphone, Flag, Library, Sparkles, Upload, Bookmark, Wand2, Palette, PlusCircle, ListChecks, Database, Layers } from "lucide-react";
+import { FileText, Video, Settings, LogOut, LayoutDashboard, ClipboardList, Megaphone, Flag, Library, Sparkles, Upload, Bookmark, Wand2, Palette, PlusCircle, ListChecks, Database, Layers, BookOpen, HardDrive } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 
@@ -100,6 +100,11 @@ const menuGroups = [
         url: "/admin/assessments",
         icon: ClipboardList,
       },
+      {
+        title: "E-Book Lead Magnets",
+        url: "/admin/ebook-lead-magnets",
+        icon: BookOpen,
+      },
     ]
   },
   {
@@ -124,6 +129,16 @@ const menuGroups = [
         title: "CRM Fields",
         url: "/admin/crm/fields",
         icon: ListChecks,
+      },
+    ]
+  },
+  {
+    label: "System",
+    items: [
+      {
+        title: "Data Management",
+        url: "/admin/data-management",
+        icon: HardDrive,
       },
     ]
   }

@@ -1,9 +1,7 @@
 
 import { Request, Response, NextFunction } from "express";
-import createDOMPurify from "isomorphic-dompurify";
+import DOMPurify from "isomorphic-dompurify";
 import validator from "validator";
-
-const DOMPurify = createDOMPurify();
 
 // Configure DOMPurify for strict sanitization
 const sanitizeConfig = {

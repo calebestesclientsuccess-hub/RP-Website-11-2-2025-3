@@ -6,28 +6,73 @@ import { useState, useEffect, useRef } from "react";
 export function FloatingAssessmentCTA() {
   const [location] = useLocation();
   const [isDismissed, setIsDismissed] = useState(false);
-  const [isHeroVisible, setIsHeroVisible] = useState(true);
   const [shouldShow, setShouldShow] = useState(false);
   const [shouldBounce, setShouldBounce] = useState(false);
   const hasShownOnce = useRef(false);
   const delayTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Find the hero section (first section on home page)
-    const heroSection = document.querySelector('section');
+    // Try to find the "Proven Results No Black Box" section
+    const targetSection = document.querySelector('[data-testid="section-proven-results"]');
     
-    if (!heroSection) return;
+    if (targetSection) {
+      // ========================================
+      // STRATEGY A: Section exists - Use IntersectionObserver
+      // ========================================
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          const isVisible = entry.isIntersecting;
+          
+          if (isVisible && !hasShownOnce.current) {
+            // First time section becomes visible - show with delay and bounce
+            if (delayTimerRef.current) {
+              clearTimeout(delayTimerRef.current);
+            }
+            
+            delayTimerRef.current = setTimeout(() => {
+              setShouldShow(true);
+              setShouldBounce(true);
+              hasShownOnce.current = true;
+              
+              setTimeout(() => setShouldBounce(false), 1200);
+            }, 1500);
+          } else if (isVisible && hasShownOnce.current) {
+            // Section visible and already shown before - display immediately
+            setShouldShow(true);
+          } else if (!isVisible) {
+            // Section not visible - hide widget
+            if (delayTimerRef.current) {
+              clearTimeout(delayTimerRef.current);
+              delayTimerRef.current = null;
+            }
+            setShouldShow(false);
+            setShouldBounce(false);
+          }
+        },
+        {
+          threshold: 0.1,
+          rootMargin: "0px 0px -100px 0px"
+        }
+      );
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const heroEntry = entries[0];
-        const heroVisible = heroEntry.isIntersecting;
+      observer.observe(targetSection);
+
+      return () => {
+        observer.disconnect();
+        if (delayTimerRef.current) {
+          clearTimeout(delayTimerRef.current);
+        }
+      };
+    } else {
+      // ========================================
+      // STRATEGY B: No section found - Use scroll-based trigger
+      // ========================================
+      const handleScroll = () => {
+        const scrollY = window.scrollY;
         
-        setIsHeroVisible(heroVisible);
-
-        // When user scrolls past hero (hero becomes not visible)
-        if (!heroVisible && !hasShownOnce.current) {
-          // First time scrolling past hero - wait 3 seconds, then show with bounce
+        if (scrollY > 300 && !hasShownOnce.current) {
+          // First time scrolling past 300px - show with delay and bounce
           if (delayTimerRef.current) {
             clearTimeout(delayTimerRef.current);
           }
@@ -37,16 +82,13 @@ export function FloatingAssessmentCTA() {
             setShouldBounce(true);
             hasShownOnce.current = true;
             
-            // Remove bounce class after animation completes
-            setTimeout(() => {
-              setShouldBounce(false);
-            }, 1200); // 3 bounces * 0.4s = 1.2s
-          }, 3000);
-        } else if (!heroVisible && hasShownOnce.current) {
-          // Subsequent times - show immediately without bounce
+            setTimeout(() => setShouldBounce(false), 1200);
+          }, 1500);
+        } else if (scrollY > 300 && hasShownOnce.current) {
+          // Already shown before - display immediately
           setShouldShow(true);
-        } else if (heroVisible) {
-          // Hero is visible - hide the widget and clear any pending timers
+        } else if (scrollY <= 300) {
+          // Scrolled back to top - hide widget
           if (delayTimerRef.current) {
             clearTimeout(delayTimerRef.current);
             delayTimerRef.current = null;
@@ -54,21 +96,19 @@ export function FloatingAssessmentCTA() {
           setShouldShow(false);
           setShouldBounce(false);
         }
-      },
-      {
-        threshold: 0.1, // Trigger when 10% of hero is visible
-      }
-    );
+      };
 
-    observer.observe(heroSection);
+      window.addEventListener('scroll', handleScroll);
+      handleScroll(); // Check initial scroll position on mount
 
-    return () => {
-      observer.disconnect();
-      if (delayTimerRef.current) {
-        clearTimeout(delayTimerRef.current);
-      }
-    };
-  }, []);
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+        if (delayTimerRef.current) {
+          clearTimeout(delayTimerRef.current);
+        }
+      };
+    }
+  }, [location]); // Re-run when location changes
 
   // Hide on assessment page to avoid redundancy
   if (location === "/assessment" || isDismissed) {

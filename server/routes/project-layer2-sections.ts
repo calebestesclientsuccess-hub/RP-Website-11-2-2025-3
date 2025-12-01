@@ -260,11 +260,12 @@ export function registerProjectLayer2SectionRoutes(app: Express) {
   /**
    * DELETE /api/projects/:id/layer2-sections/:sectionId
    * Delete a Layer 2 section
-   * Enforces min 3 sections per project
+   * Enforces min 3 sections per project (unless ?force=true for bulk operations)
    */
   app.delete("/api/projects/:id/layer2-sections/:sectionId", async (req, res) => {
     try {
       const { id: projectId, sectionId } = req.params;
+      const force = req.query.force === "true";
 
       // Check if table exists
       const tableExists = await checkTableExists();
@@ -273,16 +274,18 @@ export function registerProjectLayer2SectionRoutes(app: Express) {
         return res.status(503).json({ error: "Service unavailable", details: "Database migration pending" });
       }
 
-      // Check section count limit (min 3)
-      const existingSections = await db.query.projectLayer2Sections.findMany({
-        where: eq(projectLayer2Sections.projectId, projectId),
-      });
-
-      if (existingSections.length <= 3) {
-        return res.status(400).json({ 
-          error: "Minimum section limit", 
-          details: "Projects must have at least 3 Layer 2 sections" 
+      // Check section count limit (min 3) - skip if force flag is set
+      if (!force) {
+        const existingSections = await db.query.projectLayer2Sections.findMany({
+          where: eq(projectLayer2Sections.projectId, projectId),
         });
+
+        if (existingSections.length <= 3) {
+          return res.status(400).json({ 
+            error: "Minimum section limit", 
+            details: "Projects must have at least 3 Layer 2 sections" 
+          });
+        }
       }
 
       // Delete section
@@ -304,6 +307,61 @@ export function registerProjectLayer2SectionRoutes(app: Express) {
     } catch (error: any) {
       console.error("[Layer 2 Sections] Failed to delete section:", error);
       res.status(500).json({ error: "Failed to delete section", details: error.message });
+    }
+  });
+
+  /**
+   * PUT /api/projects/:id/layer2-sections
+   * Atomically replace all Layer 2 sections for a project
+   * Request body: { sections: [{ heading, body, orderIndex, mediaType, mediaConfig }] }
+   */
+  app.put("/api/projects/:id/layer2-sections", async (req, res) => {
+    try {
+      const { id: projectId } = req.params;
+      const { sections } = req.body;
+
+      // Check if table exists
+      const tableExists = await checkTableExists();
+      if (!tableExists) {
+        console.warn('[Layer 2] Table does not exist yet. Run migration with: npx drizzle-kit push');
+        return res.status(503).json({ error: "Service unavailable", details: "Database migration pending" });
+      }
+
+      // Validate section count (3-5)
+      if (!sections || !Array.isArray(sections) || sections.length < 3 || sections.length > 5) {
+        return res.status(400).json({ error: "Must provide 3-5 sections" });
+      }
+
+      // Transaction: delete all existing, insert all new
+      await db.transaction(async (tx) => {
+        // Delete all existing sections for this project
+        await tx.delete(projectLayer2Sections)
+          .where(eq(projectLayer2Sections.projectId, projectId));
+
+        // Insert all new sections
+        for (const section of sections) {
+          await tx.insert(projectLayer2Sections).values({
+            id: crypto.randomUUID(),
+            projectId,
+            heading: section.heading,
+            body: section.body,
+            orderIndex: section.orderIndex,
+            mediaType: section.mediaType || "none",
+            mediaConfig: section.mediaConfig || {},
+          });
+        }
+      });
+
+      // Return fresh list
+      const newSections = await db.query.projectLayer2Sections.findMany({
+        where: eq(projectLayer2Sections.projectId, projectId),
+        orderBy: [asc(projectLayer2Sections.orderIndex)],
+      });
+
+      res.json(newSections);
+    } catch (error: any) {
+      console.error("[Layer 2 Sections] Failed to bulk replace sections:", error);
+      res.status(500).json({ error: "Failed to replace sections", details: error.message });
     }
   });
 

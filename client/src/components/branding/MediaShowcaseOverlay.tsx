@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence, LayoutGroup, PanInfo } from "framer-motion";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, ImageIcon, Film } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { AggregatedMediaItem } from "@/hooks/useProjectMedia";
@@ -142,28 +142,27 @@ export function MediaShowcaseOverlay({
   if (media.length === 0) return null;
 
   return (
-    <LayoutGroup>
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop - z-[60] to appear above CinematicPanel */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl"
-              onClick={onClose}
-            />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop - z-[60] to appear above CinematicPanel */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl"
+            onClick={onClose}
+          />
 
-            {/* Content Container - z-[60] to appear above CinematicPanel */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8"
-            >
+          {/* Content Container - z-[60] to appear above CinematicPanel */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8"
+          >
             {/* Main content area */}
             <div className="relative w-full h-full max-w-[90vw] max-h-[90vh] flex flex-col">
               {/* Header */}
@@ -227,7 +226,6 @@ export function MediaShowcaseOverlay({
                         src={currentMedia?.url}
                         alt={currentMedia?.alt || currentMedia?.caption || "Media"}
                         className="max-w-full max-h-full object-contain rounded-lg"
-                        layout
                       />
                     )}
                   </motion.div>
@@ -302,10 +300,9 @@ export function MediaShowcaseOverlay({
               </div>
             </div>
           </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </LayoutGroup>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
 

@@ -85,8 +85,10 @@ import internalLinkingRouter from './routes/internal-linking';
 import relatedContentRouter from './routes/related-content';
 import analyticsRouter from './routes/analytics';
 import leadsRouter from './routes/leads';
+import ebookLeadMagnetsRouter from './routes/ebook-lead-magnets';
 import aiGenerationRouter from './routes/ai-generation';
 import crmRouter from './routes/crm';
+import adminSeedsRouter from './routes/admin-seeds';
 import { requireAuth } from './middleware/auth';
 import { securityHeaders } from "./middleware/security-headers";
 import { tenantMiddleware } from "./middleware/tenant";
@@ -502,12 +504,13 @@ const mediaUpload = multer({
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
       'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-      'video/mp4', 'video/webm'
+      'video/mp4', 'video/webm',
+      'application/pdf'
     ];
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only images (JPEG, PNG, GIF, WebP) and videos (MP4, WebM) are allowed'));
+      cb(new Error('Only images (JPEG, PNG, GIF, WebP), videos (MP4, WebM), and PDFs are allowed'));
     }
   },
   limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
@@ -3992,7 +3995,14 @@ Your explanation should be conversational and reference specific scene numbers.`
               requestId: req.requestId,
             });
 
-            const resourceType = req.file.mimetype.startsWith("video/") ? "video" : "image";
+            // Determine resource type based on MIME type
+            let resourceType: "image" | "video" | "raw" = "image";
+            if (req.file.mimetype.startsWith("video/")) {
+              resourceType = "video";
+            } else if (req.file.mimetype === "application/pdf") {
+              resourceType = "raw";
+            }
+            
             const result = await new Promise<UploadApiResponse>((resolve, reject) => {
               const uploadStream = cloudinary.uploader.upload_stream(
                 {
@@ -4170,10 +4180,19 @@ Your explanation should be conversational and reference specific scene numbers.`
         
             // Upload to Cloudinary using buffer
             console.log('[Media Upload] Starting Cloudinary upload...');
+            
+            // Determine resource type based on MIME type
+            let resourceType: "image" | "video" | "raw" = "image";
+            if (req.file!.mimetype.startsWith("video/")) {
+              resourceType = "video";
+            } else if (req.file!.mimetype === "application/pdf") {
+              resourceType = "raw";
+            }
+            
             const uploadResult = await new Promise<any>((resolve, reject) => {
               const uploadStream = cloudinary.uploader.upload_stream(
                 {
-                  resource_type: req.file!.mimetype.startsWith("video/") ? "video" : "image",
+                  resource_type: resourceType,
                   folder: `tenants/${tenantId}/media-library`,
                 },
                 (error, result) => {
@@ -4191,12 +4210,20 @@ Your explanation should be conversational and reference specific scene numbers.`
             const result = uploadResult as any;
             console.log('[Media Upload] Cloudinary upload successful:', result.public_id);
         
+            // Determine media type for database
+            let dbMediaType: "image" | "video" | "raw" = "image";
+            if (req.file.mimetype.startsWith("video/")) {
+              dbMediaType = "video";
+            } else if (req.file.mimetype === "application/pdf") {
+              dbMediaType = "raw";
+            }
+        
             // Save to database
             const asset = await storage.createMediaAsset({
               tenantId,
               cloudinaryPublicId: result.public_id,
               cloudinaryUrl: result.secure_url,
-              mediaType: req.file.mimetype.startsWith("video/") ? "video" : "image",
+              mediaType: dbMediaType,
               label: label || undefined,
               tags,
               projectId,
@@ -5472,8 +5499,12 @@ RESPONSE FORMAT:
         app.use(relatedContentRouter);
         app.use(analyticsRouter);
         app.use('/api', leadsRouter);
+        app.use('/api', ebookLeadMagnetsRouter);
         app.use('/api', aiGenerationRouter);
         app.use('/api', crmRouter);
+        
+        // Admin seed scripts (requires authentication)
+        app.use('/api/admin/seed', requireAuth, adminSeedsRouter);
         
         // Layer 2 sections routes
         registerProjectLayer2SectionRoutes(app);

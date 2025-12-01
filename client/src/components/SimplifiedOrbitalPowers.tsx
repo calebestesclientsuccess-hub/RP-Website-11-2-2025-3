@@ -73,9 +73,9 @@ const powers: Power[] = [
       "Multi-channel campaign design"
     ],
     content: {
-      whatItIs: "Senior GTM experts with 10+ years experience designing and executing revenue strategies for B2B SaaS companies from Series A to IPO.",
-      value: "Reduces time to product-market fit by 6-12 months. Increases pipeline velocity by 40% through proven frameworks.",
-      inHouseCost: "$250,000/yr (VP of Marketing) + $150,000/yr (Strategy Consultant)"
+      whatItIs: "6-12 Months Faster to Product-Market Fit",
+      value: "What You Get:\n\n→ ICP & persona development\n→ Messaging & positioning strategy\n→ Multi-channel campaign design\n→ 40% increased pipeline velocity\n→ 10+ years B2B SaaS expertise",
+      inHouseCost: "What You Don't Pay:\n\n✗ No $250K/yr VP of Marketing\n✗ No $150K/yr Strategy Consultant\n\nSenior GTM expertise included"
     }
   },
   {
@@ -93,9 +93,9 @@ const powers: Power[] = [
       "Message optimization & A/B testing"
     ],
     content: {
-      whatItIs: "An advanced AI-powered system that automates prospect research, message personalization, and campaign optimization using machine learning algorithms.",
-      value: "Increases response rates by 3x through hyper-personalization at scale, saving 15+ hours per week on manual research and writing.",
-      inHouseCost: "$180,000/yr (AI engineer) + $50,000/yr (tools & infrastructure)"
+      whatItIs: "3x Higher Response Rates + 15 Hours Saved Weekly",
+      value: "What You Get:\n\n→ AI-powered prospect research\n→ Automated message personalization\n→ Campaign optimization & A/B testing\n→ Hyper-personalization at scale\n→ Machine learning algorithms",
+      inHouseCost: "What You Don't Pay:\n\n✗ No $180K/yr AI Engineer\n✗ No $50K/yr tools & infrastructure\n\nFully managed AI systems included"
     }
   },
   {
@@ -113,9 +113,9 @@ const powers: Power[] = [
       "Performance analytics & feedback"
     ],
     content: {
-      whatItIs: "Elite sales coaches who've trained top 1% BDRs at companies like Salesforce, MongoDB, and Snowflake, providing daily 1:1 and group coaching.",
-      value: "Accelerates ramp time from 3 months to 3 weeks. Increases meeting conversion rates by 2.5x through proven methodologies.",
-      inHouseCost: "$175,000/yr (Sales Enablement Manager) + $60,000/yr (training programs)"
+      whatItIs: "3 Weeks Ramp Time (Not 3 Months)",
+      value: "What You Get:\n\n→ Daily 1:1 and group coaching\n→ Real-time call feedback\n→ Top 1% BDR training methods\n→ 2.5x meeting conversion rates\n→ Salesforce, MongoDB, Snowflake alumni",
+      inHouseCost: "What You Don't Pay:\n\n✗ No $175K/yr Sales Enablement Manager\n✗ No $60K/yr training programs\n\nElite coaching included"
     }
   },
   {
@@ -133,9 +133,9 @@ const powers: Power[] = [
       "Process automation & workflows"
     ],
     content: {
-      whatItIs: "Complete revenue operations management including CRM optimization, data orchestration, and process automation across all GTM systems.",
-      value: "Eliminates 20+ hours/week of manual tasks, improves data accuracy to 99%, and provides real-time performance visibility.",
-      inHouseCost: "$140,000/yr (RevOps Manager) + $30,000/yr (tools & integrations)"
+      whatItIs: "20+ Hours Saved Weekly + 99% Data Accuracy",
+      value: "What You Get:\n\n→ CRM optimization & hygiene\n→ Process automation & workflows\n→ Real-time performance dashboards\n→ Data orchestration across systems\n→ Complete GTM system management",
+      inHouseCost: "What You Don't Pay:\n\n✗ No $140K/yr RevOps Manager\n✗ No $30K/yr tools & integrations\n\nComplete RevOps included"
     }
   },
   {
@@ -153,9 +153,9 @@ const powers: Power[] = [
       "Advanced analytics dashboard"
     ],
     content: {
-      whatItIs: "Pre-integrated stack of 15+ enterprise tools including Outreach, ZoomInfo, 6sense, Gong, and custom automation platforms.",
-      value: "Saves $200,000+ in annual tool costs through volume licensing. Eliminates 3-month implementation timeline.",
-      inHouseCost: "$120,000/yr (tools) + $50,000 (implementation) + $30,000/yr (maintenance)"
+      whatItIs: "$200,000+ Annual Savings",
+      value: "15+ Enterprise Tools Pre-Integrated:\n\n→ Outreach • ZoomInfo • 6sense\n→ Gong • Custom Automation\n→ Intent Data & Enrichment\n→ Advanced Analytics Dashboard\n\n✓ All optimized and ready on Day 1",
+      inHouseCost: "What You Don't Pay:\n\n✗ No $120K/yr tool licenses\n✗ No $50K implementation cost\n✗ No $30K/yr maintenance\n✗ No 3-month setup timeline\n\nEverything included in your pod"
     }
   },
   {
@@ -173,9 +173,9 @@ const powers: Power[] = [
       "Team challenges & rewards"
     ],
     content: {
-      whatItIs: "Private community of 500+ elite BDRs sharing tactics, templates, and strategies with gamified challenges and monthly competitions.",
-      value: "Increases team performance by 35% through peer learning. Reduces turnover by 50% through engagement and culture.",
-      inHouseCost: "$100,000/yr (Community Manager) + $50,000/yr (platform & rewards)"
+      whatItIs: "35% Higher Performance + 50% Less Turnover",
+      value: "What You Get:\n\n→ 500+ elite BDRs sharing tactics\n→ Proven templates & strategies\n→ Gamified monthly competitions\n→ Peer learning network\n→ Team challenges & rewards",
+      inHouseCost: "What You Don't Pay:\n\n✗ No $100K/yr Community Manager\n✗ No $50K/yr platform & rewards\n\nCulture & community included"
     }
   }
 ];
@@ -690,45 +690,56 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
             {/* Info Box - ISSUE #6: Removed unused showInfoBox state */}
             <Card
-              className="mt-6 p-5 md:p-6 bg-background/95 backdrop-blur-sm border-2"
+              className="mt-6 p-5 md:p-6 bg-background/95 backdrop-blur-sm border-2 relative overflow-hidden transition-shadow duration-500"
               data-testid="power-info-box"
               style={{
-                boxShadow: `0 0 0 1px ${powers[activePowerIndex].glowColor}40, 0 4px 20px rgba(0,0,0,0.1)`
+                boxShadow: `
+                  0 0 0 1px rgba(${powers[activePowerIndex].bgColor}, 0.3),
+                  0 0 30px rgba(${powers[activePowerIndex].bgColor}, 0.25),
+                  0 0 60px rgba(${powers[activePowerIndex].bgColor}, 0.15),
+                  0 0 100px rgba(${powers[activePowerIndex].bgColor}, 0.1),
+                  0 0 140px rgba(${powers[activePowerIndex].bgColor}, 0.05)
+                `
               }}
             >
+              {/* Giant Background Icon Watermark - Dominant */}
+              <div 
+                className="absolute -right-20 -bottom-20 opacity-[0.12] pointer-events-none [&_svg]:w-[420px] [&_svg]:h-[420px] md:[&_svg]:w-[520px] md:[&_svg]:h-[520px]"
+                style={{ color: `rgb(${powers[activePowerIndex].bgColor})` }}
+              >
+                {powers[activePowerIndex].icon}
+              </div>
+
               <div
                 key={powers[activePowerIndex].id}
-                className="space-y-3"
+                className="relative z-10"
                 style={{
                   animation: 'fadeIn 0.3s ease-out'
                 }}
               >
-                <div className="flex items-center gap-3 mb-1">
-                  <div
-                    className={`p-2 rounded-full ${powers[activePowerIndex].color}`}
-                    style={{ backgroundColor: `${powers[activePowerIndex].glowColor}20` }}
-                  >
-                    {powers[activePowerIndex].icon}
-                  </div>
-                  <h3 className={`text-xl md:text-2xl font-bold ${powers[activePowerIndex].color}`}>
+                {/* Centered Header */}
+                <div className="text-center mb-6">
+                  <h3 className={`text-3xl md:text-4xl lg:text-5xl font-black ${powers[activePowerIndex].color} mb-2`}>
                     {powers[activePowerIndex].title}
                   </h3>
+                  <p className="text-muted-foreground text-lg">{powers[activePowerIndex].description}</p>
                 </div>
 
-                <p className="text-muted-foreground leading-relaxed">{powers[activePowerIndex].description}</p>
+                {/* Headline Stat - Centered & Prominent */}
+                <div className={`text-center text-2xl md:text-3xl font-black ${powers[activePowerIndex].color} py-4 mb-4 border-y border-muted-foreground/20`}>
+                  {powers[activePowerIndex].content.whatItIs}
+                </div>
 
-                <div className="space-y-2.5 pt-1">
+                {/* Two Column Layout for Value Props */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* What You Get */}
                   <div>
-                    <h4 className="font-semibold mb-1.5 text-sm">What It Is:</h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{powers[activePowerIndex].content.whatItIs}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{powers[activePowerIndex].content.value}</p>
                   </div>
+                  
+                  {/* What You Don't Pay */}
                   <div>
-                    <h4 className="font-semibold mb-1.5 text-sm">The Value:</h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{powers[activePowerIndex].content.value}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1.5 text-sm">In-House Cost:</h4>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{powers[activePowerIndex].content.inHouseCost}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{powers[activePowerIndex].content.inHouseCost}</p>
                   </div>
                 </div>
               </div>

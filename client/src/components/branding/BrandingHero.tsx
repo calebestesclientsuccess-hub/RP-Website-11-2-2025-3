@@ -11,12 +11,9 @@ export function BrandingHero() {
           className="max-w-4xl mx-auto text-center"
         >
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-branding-hero">
-            Your Brand Is Driving Sales, Or Killing Them.
+            <div>Your Brand Drives Sales</div>
+            <div className="gradient-text gradient-hero">Or Kills Them</div>
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Meet Mariya Tamkeen, our Brand Strategist and Creative Director. 
-            See how she transforms GTM positioning into revenue.
-          </p>
         </motion.div>
       </div>
     </section>

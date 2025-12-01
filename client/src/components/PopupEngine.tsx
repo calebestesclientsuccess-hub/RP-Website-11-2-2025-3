@@ -29,6 +29,21 @@ const pathToPageName: Record<string, string> = {
 };
 
 export function PopupEngine() {
+  // TEMPORARY: Completely disable popup engine if needed for debugging
+  // Set to true to disable all popup functionality
+  const DISABLE_POPUP_ENGINE = true;
+  
+  if (DISABLE_POPUP_ENGINE) {
+    // Ensure scroll is unlocked when disabled
+    useEffect(() => {
+      document.body.style.overflow = "";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }, []);
+    return null;
+  }
+  
   const [location] = useLocation();
   const { toast } = useToast();
   
@@ -87,8 +102,15 @@ export function PopupEngine() {
   }, []);
   
   // Trigger logic: scroll 50% OR time delay (10s desktop, 13s mobile)
+  // Note: Widget validity is checked inside the effect after renderWidget is defined
   useEffect(() => {
     if (!campaign || isDismissed || hasTriggered) {
+      return;
+    }
+    
+    // Render widget to check validity before triggering popup
+    const widget = renderWidget();
+    if (!widget) {
       return;
     }
     
@@ -129,12 +151,29 @@ export function PopupEngine() {
       });
     }
   }, [showPopup, campaign?.id, triggeredBy, currentPage]);
+
+  // Handle escape key to dismiss - safety measure
+  useEffect(() => {
+    if (!showPopup) return;
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleDismiss();
+      }
+    };
+    
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [showPopup]);
   
-  // Handle dismissal
+  // Handle dismissal - always works, even without campaign (safety measure)
   const handleDismiss = () => {
+    setShowPopup(false);
+    // Restore body scroll when popup is dismissed
+    document.body.style.overflow = "";
+    
     if (campaign) {
       sessionStorage.setItem(`popup_dismissed_${campaign.id}`, "true");
-      setShowPopup(false);
       
       // Track campaign_dismissed event
       trackEvent('campaign_dismissed', campaign.id, {
@@ -146,12 +185,11 @@ export function PopupEngine() {
     }
   };
   
-  // Handle backdrop click (only if overlay opacity > 0)
+  // Handle backdrop click - ALWAYS allow dismissal for safety
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (campaign?.dismissible && campaign.overlayOpacity && campaign.overlayOpacity > 0) {
-      if (e.target === e.currentTarget) {
-        handleDismiss();
-      }
+    // Always allow backdrop click to dismiss (safety measure to prevent stuck popups)
+    if (e.target === e.currentTarget) {
+      handleDismiss();
     }
   };
   
@@ -260,9 +298,26 @@ export function PopupEngine() {
     }
   };
   
+  // Reset popup state and unlock scroll when component shouldn't render
+  useEffect(() => {
+    if (isLoading || error || !campaign || isDismissed) {
+      setShowPopup(false);
+      document.body.style.overflow = "";
+    }
+  }, [isLoading, error, campaign, isDismissed]);
+  
   // Don't render if loading, error, no campaign, or already dismissed
   if (isLoading || error || !campaign || isDismissed) {
     return null;
+  }
+  
+  // Render widget to check validity - must be after renderWidget function is defined
+  const widget = renderWidget();
+  
+  // CRITICAL: Reset showPopup immediately if widget is invalid (synchronous check)
+  // This prevents any possibility of rendering with invalid widget
+  if (!widget && showPopup) {
+    setShowPopup(false);
   }
   
   // Get max width based on size
@@ -323,16 +378,66 @@ export function PopupEngine() {
   
   const backdropOpacity = (campaign.overlayOpacity || 50) / 100;
   const animationVariants = getAnimationVariants();
-  const widget = renderWidget();
   
-  // If widget rendering failed, don't show popup
+  // Safety: If popup is showing but widget is invalid, force dismiss immediately and restore scroll
+  // This handles the case where widget becomes null after showPopup was set to true
+  useEffect(() => {
+    if (showPopup && !widget) {
+      setShowPopup(false);
+      document.body.style.overflow = "";
+    }
+  }, [showPopup, widget]);
+
+  // Lock/unlock body scroll based on popup state
+  // Also ensure scroll is unlocked if widget is null or component unmounts
+  useEffect(() => {
+    // Always ensure scroll is unlocked on unmount
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+  
+  useEffect(() => {
+    if (!widget) {
+      // Ensure scroll is unlocked if widget is null
+      document.body.style.overflow = "";
+      return;
+    }
+    
+    if (showPopup) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [showPopup, widget]);
+  
+  // Reset showPopup and unlock scroll when widget becomes invalid
+  useEffect(() => {
+    if (!widget && showPopup) {
+      setShowPopup(false);
+      document.body.style.overflow = "";
+    }
+  }, [widget, showPopup]);
+  
+  // CRITICAL GUARD: Never render anything if widget is null or showPopup is false
+  // This is the final safety check to prevent stuck overlays
+  // Triple-check all conditions before rendering
   if (!widget) {
     return null;
   }
   
+  if (!showPopup) {
+    return null;
+  }
+  
+  // Final validation - if we somehow got here with invalid state, don't render
+  if (!campaign || !widget) {
+    return null;
+  }
+  
   return (
-    <AnimatePresence>
-      {showPopup && (
+    <AnimatePresence mode="wait">
+      {showPopup && widget && campaign && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -342,14 +447,12 @@ export function PopupEngine() {
           onClick={handleBackdropClick}
           data-testid="popup-engine"
         >
-          {/* Backdrop */}
-          {campaign.overlayOpacity && campaign.overlayOpacity > 0 && (
-            <div
-              className="absolute inset-0 bg-black"
-              style={{ opacity: backdropOpacity }}
-              data-testid="popup-backdrop"
-            />
-          )}
+          {/* Backdrop - always present for clickability, opacity controlled by campaign */}
+          <div
+            className="absolute inset-0 bg-black"
+            style={{ opacity: backdropOpacity }}
+            data-testid="popup-backdrop"
+          />
           
           {/* Popup content */}
           <motion.div
@@ -363,19 +466,17 @@ export function PopupEngine() {
             data-testid="popup-content"
           >
             <Card className="relative overflow-hidden">
-              {/* Close button (if dismissible) */}
-              {campaign.dismissible && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 z-20"
-                  onClick={handleDismiss}
-                  data-testid="button-close-popup"
-                  aria-label="Close popup"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
+              {/* Close button - ALWAYS show for safety (prevent stuck popups) */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 z-20"
+                onClick={handleDismiss}
+                data-testid="button-close-popup"
+                aria-label="Close popup"
+              >
+                <X className="h-4 w-4" />
+              </Button>
               
               {/* Widget content */}
               <ErrorBoundary silent>

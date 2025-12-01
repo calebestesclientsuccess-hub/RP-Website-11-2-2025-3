@@ -121,8 +121,8 @@ export default function GTMEnginePage() {
               transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
               data-testid="heading-hero"
             >
-              It's More than a Sales Team.<br />
-              <span className="gradient-text gradient-hero">It's a Complete Revenue Generation System.</span>
+              It's More than a Sales Team<br />
+              <span className="gradient-text gradient-hero">It's a Complete Revenue Generation System</span>
             </motion.h1>
             <motion.p
               className="text-xl md:text-2xl leading-relaxed"
