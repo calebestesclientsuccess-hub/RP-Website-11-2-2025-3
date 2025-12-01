@@ -11,7 +11,13 @@ export function log(message: string, source = "express") {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "..", "dist");
+  // In production, the bundled file is in dist/server/app.js
+  // So import.meta.dirname is dist/server, and we need to go up one level to dist
+  // In development, import.meta.dirname is server, and we need to go up one level then into dist
+  const isProduction = process.env.NODE_ENV === "production";
+  const distPath = isProduction 
+    ? path.resolve(import.meta.dirname, "..")  // dist/server -> dist
+    : path.resolve(import.meta.dirname, "..", "dist");  // server -> project/dist
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
