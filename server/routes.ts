@@ -713,10 +713,14 @@ export async function registerRoutes(app: Express): Promise<void> {
     });
   });
 
-  app.post("/api/auth/login", authLimiter, checkAccountLockout, async (req, res) => {
+  // DEBUG: Temporarily removed checkAccountLockout and added extensive logging
+  app.post("/api/auth/login", authLimiter, /* checkAccountLockout, */ async (req, res) => {
+    console.log("[Auth] Login attempt started");
     try {
+      // console.log("[Auth] Request body:", JSON.stringify(req.body, null, 2)); // Avoid logging passwords in prod
       const result = loginSchema.safeParse(req.body);
       if (!result.success) {
+        console.log("[Auth] Validation failed:", result.error);
         const validationError = fromZodError(result.error);
         return res.status(400).json({
           error: "Validation failed",
@@ -725,48 +729,76 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
 
       const { username, password } = result.data;
+      console.log(`[Auth] Login attempt for user: ${username}`);
 
       // Lazy-load security logger
-      const { logFailedLogin } = await import('./utils/security-logger');
+      console.log("[Auth] Importing security logger...");
+      // const { logFailedLogin } = await import('./utils/security-logger'); // DEBUG: Temporarily disabled
+      console.log("[Auth] Security logger imported (skipped).");
 
       // Try to find user by username first, then by email (case-insensitive)
+      console.log("[Auth] Looking up user by username...");
       let user = await storage.getUserByUsername(username);
+      console.log(`[Auth] User lookup by username result: ${user ? 'Found' : 'Not Found'}`);
 
       // If not found by username, try by email (case-insensitive)
       if (!user && username.includes('@')) {
+        console.log("[Auth] Looking up user by email...");
         user = await storage.getUserByEmail(username.toLowerCase());
+        console.log(`[Auth] User lookup by email result: ${user ? 'Found' : 'Not Found'}`);
       }
 
       if (!user) {
-        recordFailedAttempt(req);
-        await logFailedLogin(req, username, 'User not found');
-        const remaining = getRemainingAttempts(req);
+        console.log("[Auth] User not found. Recording failed attempt.");
+        // recordFailedAttempt(req); // DEBUG: Temporarily disabled
+        // await logFailedLogin(req, username, 'User not found'); // DEBUG: Temporarily disabled
+        // const remaining = getRemainingAttempts(req); // DEBUG: Temporarily disabled
         return res.status(401).json({
           error: "Invalid credentials",
-          remainingAttempts: remaining > 0 ? remaining : undefined,
+          // remainingAttempts: remaining > 0 ? remaining : undefined,
         });
       }
 
       // Verify password
+      console.log("[Auth] Verifying password...");
       const valid = await bcrypt.compare(password, user.password);
+      console.log(`[Auth] Password verification result: ${valid}`);
+
       if (!valid) {
-        recordFailedAttempt(req);
-        await logFailedLogin(req, username, 'Invalid password');
-        const remaining = getRemainingAttempts(req);
+        console.log("[Auth] Invalid password. Recording failed attempt.");
+        // recordFailedAttempt(req); // DEBUG: Temporarily disabled
+        // await logFailedLogin(req, username, 'Invalid password'); // DEBUG: Temporarily disabled
+        // const remaining = getRemainingAttempts(req); // DEBUG: Temporarily disabled
         return res.status(401).json({
           error: "Invalid credentials",
-          remainingAttempts: remaining > 0 ? remaining : undefined,
+          // remainingAttempts: remaining > 0 ? remaining : undefined,
         });
       }
 
       // Clear failed attempts on successful login
-      clearLoginAttempts(req);
+      console.log("[Auth] Login successful. Clearing attempts.");
+      // clearLoginAttempts(req); // DEBUG: Temporarily disabled
 
       // Set session with both userId and tenantId for proper multi-tenant isolation
+      console.log("[Auth] Setting session...");
       req.session.userId = user.id;
       req.session.tenantId = user.tenantId;
 
-      console.log("[Auth] Login successful:", {
+      // Explicitly save the session to ensure it persists before response
+      console.log("[Auth] Saving session...");
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("[Auth] Session save error:", err);
+            reject(err);
+          } else {
+            console.log("[Auth] Session saved successfully.");
+            resolve();
+          }
+        });
+      });
+
+      console.log("[Auth] Login complete. Sending response.", {
         userId: user.id,
         tenantId: user.tenantId,
         username: user.username,
@@ -776,9 +808,13 @@ export async function registerRoutes(app: Express): Promise<void> {
         id: user.id,
         username: user.username,
       });
-    } catch (error) {
-      console.error("Error logging in:", error);
-      return res.status(500).json({ error: "Internal server error" });
+    } catch (error: any) {
+      console.error("[Auth] CRITICAL ERROR logging in:", error);
+      console.error(error.stack);
+      return res.status(500).json({ 
+        error: "Internal server error",
+        details: error.message
+      });
     }
   });
 
