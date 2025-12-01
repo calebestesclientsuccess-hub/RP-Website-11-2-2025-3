@@ -15,6 +15,7 @@ import { compressionMiddleware, cacheControl } from "./middleware/compression";
 import { queryMonitoring } from "./middleware/query-monitoring";
 import { errorHandler } from "./middleware/error-handler";
 import healthRouter from "./routes/health";
+import debugEnvRouter from "./routes/debug-env";
 import { sessionMiddleware } from "./middleware/session";
 import { sessionTimeoutMiddleware } from "./middleware/session-timeout";
 import {
@@ -81,6 +82,9 @@ app.use(queryMonitoring);
 
 // Health checks (before logging)
 app.use("/health", healthRouter);
+
+// Debug endpoint (TEMPORARY - remove after debugging)
+app.use(debugEnvRouter);
 
 // Session & inactivity tracking
 app.use(sessionMiddleware);
