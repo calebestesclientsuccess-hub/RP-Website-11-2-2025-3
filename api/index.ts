@@ -12,14 +12,18 @@ const envCheck = {
 let appModule: any = null;
 let initError: Error | null = null;
 
-// Lazy load the app module
+// Lazy load the app module - use dist path for production
 async function getApp() {
   if (initError) throw initError;
   if (appModule) return appModule;
   
   try {
-    console.log("[api/index] Importing server/app...");
-    appModule = await import("../server/app");
+    // In Vercel, try the built dist path first, then fall back to source
+    const importPath = process.env.VERCEL 
+      ? "../dist/server/app.js"
+      : "../server/app";
+    console.log("[api/index] Importing from:", importPath);
+    appModule = await import(importPath);
     console.log("[api/index] Import successful");
     return appModule;
   } catch (err: any) {
