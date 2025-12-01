@@ -4,7 +4,16 @@ import ws from "ws";
 import { env } from "./config/env";
 import { logger } from "./lib/logger";
 
-neonConfig.webSocketConstructor = ws;
+// Defensive WebSocket configuration
+try {
+  if (ws) {
+    neonConfig.webSocketConstructor = ws;
+  } else {
+    console.warn("[db] ws module not found, skipping neonConfig.webSocketConstructor");
+  }
+} catch (err) {
+  console.error("[db] Failed to configure WebSocket for Neon:", err);
+}
 
 const connectionString =
   env.NODE_ENV === "test" && env.TEST_DATABASE_URL
@@ -19,27 +28,37 @@ if (env.NODE_ENV === "test" && !env.TEST_DATABASE_URL) {
 }
 
 // Production-grade connection pool configuration
-const pool = new Pool({
-  connectionString,
-  max: env.NODE_ENV === "test" ? 10 : 20, // Smaller pool for tests
-  min: env.NODE_ENV === "test" ? 2 : 5, // Fewer idle connections in tests
-  idleTimeoutMillis: 30000, // Close idle connections after 30s
-  connectionTimeoutMillis: 5000, // Connection timeout
-  maxUses: 7500, // Recycle connections after 7500 uses
-});
+let pool: Pool;
+try {
+  pool = new Pool({
+    connectionString,
+    max: env.NODE_ENV === "test" ? 10 : 20, // Smaller pool for tests
+    min: env.NODE_ENV === "test" ? 2 : 5, // Fewer idle connections in tests
+    idleTimeoutMillis: 30000, // Close idle connections after 30s
+    connectionTimeoutMillis: 5000, // Connection timeout
+    maxUses: 7500, // Recycle connections after 7500 uses
+  });
 
-// Handle pool errors
-pool.on('error', (err) => {
-  logger.fatal('Unexpected database pool error', { module: 'db' }, err);
-  process.exit(1);
-});
+  // Handle pool errors
+  pool.on('error', (err) => {
+    logger.fatal('Unexpected database pool error', { module: 'db' }, err);
+    // process.exit(1); // Don't exit in serverless!
+  });
+} catch (err) {
+  console.error("[db] Failed to initialize database pool:", err);
+  // Create a mock pool or throw? If we throw, the app crashes.
+  // Let's rethrow for now, but at least we logged it.
+  throw err;
+}
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, closing database pool', { module: 'db' });
-  await pool.end();
-  process.exit(0);
-});
+if (process.on) {
+  process.on('SIGTERM', async () => {
+    logger.info('SIGTERM received, closing database pool', { module: 'db' });
+    if (pool) await pool.end();
+    process.exit(0);
+  });
+}
 
 import * as schema from "@shared/schema";
 

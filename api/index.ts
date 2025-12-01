@@ -1,22 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "http";
-
-// Dynamic import pattern to catch initialization errors
-// import { app, appReady } from "../server/app";
+import { app, appReady } from "../server/app";
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
   try {
-    // Check critical env vars before even trying to load the app
-    if (!process.env.DATABASE_URL) {
-      throw new Error("DATABASE_URL is missing from environment variables");
-    }
-    if (!process.env.SESSION_SECRET) {
-      throw new Error("SESSION_SECRET is missing from environment variables");
-    }
-
-    // Dynamically import the app so we can catch top-level errors (like DB connection failures or schema validation)
-    // @ts-ignore
-    const { app, appReady } = await import("../server/app");
-    
     await appReady;
     app(req as any, res as any);
   } catch (err: any) {
