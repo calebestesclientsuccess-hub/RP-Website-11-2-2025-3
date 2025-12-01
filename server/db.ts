@@ -1,11 +1,10 @@
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { Pool, neonConfig } from "@neondatabase/serverless";
-// import ws from "ws"; // DEBUG: Commented out to isolate crash
+import ws from "ws";
 import { env } from "./config/env";
 import { logger } from "./lib/logger";
 
 // Defensive WebSocket configuration
-/*
 try {
   if (ws) {
     neonConfig.webSocketConstructor = ws;
@@ -15,7 +14,6 @@ try {
 } catch (err) {
   console.error("[db] Failed to configure WebSocket for Neon:", err);
 }
-*/
 
 const connectionString =
   env.NODE_ENV === "test" && env.TEST_DATABASE_URL
