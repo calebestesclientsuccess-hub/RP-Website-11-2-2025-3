@@ -1,21 +1,58 @@
 
 import { Request, Response, NextFunction } from "express";
-import DOMPurify from "isomorphic-dompurify";
 import validator from "validator";
 
-// Configure DOMPurify for strict sanitization
+// Configure DOMPurify for strict sanitization (used if available)
 const sanitizeConfig = {
   ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre', 'table', 'thead', 'tbody', 'tr', 'th', 'td'],
   ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id'],
   ALLOW_DATA_ATTR: false,
 };
 
+// Lazy-load DOMPurify to avoid jsdom ESM issues on Vercel
+let DOMPurify: any = null;
+let domPurifyLoadAttempted = false;
+
+async function loadDOMPurify() {
+  if (domPurifyLoadAttempted) return DOMPurify;
+  domPurifyLoadAttempted = true;
+  try {
+    const module = await import("isomorphic-dompurify");
+    DOMPurify = module.default;
+  } catch (err) {
+    console.warn("[input-sanitization] DOMPurify not available, using fallback HTML sanitization");
+  }
+  return DOMPurify;
+}
+
+/**
+ * Simple HTML tag stripper as fallback when DOMPurify isn't available
+ */
+function stripHtmlTags(html: string): string {
+  // Remove script tags and their content
+  let clean = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  // Remove style tags and their content
+  clean = clean.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+  // Remove event handlers
+  clean = clean.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
+  // Remove javascript: URLs
+  clean = clean.replace(/href\s*=\s*["']javascript:[^"']*["']/gi, '');
+  return clean;
+}
+
 /**
  * Sanitize HTML content to prevent XSS attacks
  */
 export function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, sanitizeConfig);
+  if (DOMPurify) {
+    return DOMPurify.sanitize(html, sanitizeConfig);
+  }
+  // Fallback: strip dangerous content
+  return stripHtmlTags(html);
 }
+
+// Try to load DOMPurify at startup (non-blocking)
+loadDOMPurify().catch(() => {});
 
 /**
  * Sanitize plain text input
