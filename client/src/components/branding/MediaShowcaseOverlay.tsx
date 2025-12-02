@@ -163,22 +163,22 @@ export function MediaShowcaseOverlay({
             className="fixed inset-0 z-[60] flex items-center justify-center"
           >
             {/* Floating minimal header */}
-            <div className="absolute top-6 right-6 z-10 flex items-center gap-4">
-              <span className="text-sm text-white/70 font-medium">
+            <div className="fixed top-6 right-6 z-[70] flex items-center gap-4">
+              <span className="text-sm text-white/70 font-medium bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full">
                 {currentIndex + 1} / {media.length}
               </span>
               <button
                 onClick={onClose}
-                className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-colors flex items-center justify-center group"
+                className="w-12 h-12 rounded-full bg-white/90 hover:bg-white hover:scale-110 transition-all flex items-center justify-center shadow-2xl"
                 aria-label="Close gallery"
               >
-                <X className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+                <X className="w-6 h-6 text-black" />
               </button>
             </div>
 
             {/* Full-screen media display with swipe support - Apple TV style */}
             <motion.div 
-              className="absolute inset-0 flex items-center justify-center touch-pan-y"
+              className="absolute inset-0 z-[1] flex items-center justify-center touch-pan-y px-24 py-20"
               onPanEnd={handlePanEnd}
             >
               <AnimatePresence mode="wait">
@@ -188,7 +188,7 @@ export function MediaShowcaseOverlay({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="relative w-[90vw] h-[80vh] max-w-7xl overflow-hidden rounded-3xl"
+                  className="relative w-full h-full max-w-7xl bg-black/50 overflow-hidden rounded-3xl shadow-2xl"
                 >
                   {currentMedia?.type === "video" ? (
                     currentMedia.url ? (
@@ -196,48 +196,48 @@ export function MediaShowcaseOverlay({
                         ref={videoRef}
                         src={currentMedia.url}
                         poster={getPosterUrl(currentMedia.url)}
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         controls
                         autoPlay
                         playsInline
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-white/60 text-center p-8">Video URL not available</div>
+                      <div className="w-full h-full flex items-center justify-center text-white/60 text-center p-8">Video URL not available</div>
                     )
                   ) : (
                     currentMedia?.url ? (
                       <img
                         src={currentMedia?.url}
                         alt={currentMedia?.alt || currentMedia?.caption || "Media"}
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-white/60 text-center p-8">Image URL not available</div>
+                      <div className="w-full h-full flex items-center justify-center text-white/60 text-center p-8">Image URL not available</div>
                     )
                   )}
                 </motion.div>
               </AnimatePresence>
-
-              {/* Premium navigation arrows */}
-              {media.length > 1 && (
-                <>
-                  <button
-                    onClick={goToPrevious}
-                    aria-label="Previous media"
-                    className="absolute left-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white shadow-2xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center group"
-                  >
-                    <ChevronLeft className="w-10 h-10 text-black group-hover:translate-x-[-2px] transition-transform" />
-                  </button>
-                  <button
-                    onClick={goToNext}
-                    aria-label="Next media"
-                    className="absolute right-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white shadow-2xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center group"
-                  >
-                    <ChevronRight className="w-10 h-10 text-black group-hover:translate-x-[2px] transition-transform" />
-                  </button>
-                </>
-              )}
             </motion.div>
+
+            {/* Premium navigation arrows - separate layer for reliable positioning */}
+            {media.length > 1 && (
+              <>
+                <button
+                  onClick={goToPrevious}
+                  aria-label="Previous media"
+                  className="fixed left-8 top-1/2 -translate-y-1/2 z-[70] w-14 h-14 rounded-full bg-white/90 shadow-2xl hover:scale-110 hover:bg-white active:scale-95 transition-all flex items-center justify-center"
+                >
+                  <ChevronLeft className="w-8 h-8 text-black" />
+                </button>
+                <button
+                  onClick={goToNext}
+                  aria-label="Next media"
+                  className="fixed right-8 top-1/2 -translate-y-1/2 z-[70] w-14 h-14 rounded-full bg-white/90 shadow-2xl hover:scale-110 hover:bg-white active:scale-95 transition-all flex items-center justify-center"
+                >
+                  <ChevronRight className="w-8 h-8 text-black" />
+                </button>
+              </>
+            )}
 
             {/* Floating caption at bottom */}
             {currentMedia?.caption && (
