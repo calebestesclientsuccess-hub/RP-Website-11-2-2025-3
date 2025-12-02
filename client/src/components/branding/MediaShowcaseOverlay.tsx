@@ -138,7 +138,16 @@ export function MediaShowcaseOverlay({
     onIndexChange((currentIndex + 1) % media.length);
   };
 
-  if (media.length === 0) return null;
+  // Debug logging for media issues
+  console.log('[MediaShowcaseOverlay] isOpen:', isOpen, 'media length:', media.length, 'currentIndex:', currentIndex);
+  if (media.length > 0) {
+    console.log('[MediaShowcaseOverlay] currentMedia:', currentMedia);
+  }
+
+  if (media.length === 0) {
+    console.warn('[MediaShowcaseOverlay] No media items provided!');
+    return null;
+  }
 
   return (
     <AnimatePresence>
@@ -191,23 +200,31 @@ export function MediaShowcaseOverlay({
                   className="w-full h-full flex items-center justify-center"
                 >
                   {currentMedia?.type === "video" ? (
-                    <motion.video
-                      ref={videoRef}
-                      layoutId={`media-showcase-${currentMedia.url}`}
-                      src={currentMedia.url}
-                      poster={getPosterUrl(currentMedia.url)}
-                      className="max-w-full max-h-full object-contain"
-                      controls
-                      autoPlay
-                      playsInline
-                    />
+                    currentMedia.url ? (
+                      <motion.video
+                        ref={videoRef}
+                        layoutId={`media-showcase-${currentMedia.url}`}
+                        src={currentMedia.url}
+                        poster={getPosterUrl(currentMedia.url)}
+                        className="max-w-full max-h-full object-contain rounded-2xl"
+                        controls
+                        autoPlay
+                        playsInline
+                      />
+                    ) : (
+                      <div className="text-white/60 text-center p-8">Video URL not available</div>
+                    )
                   ) : (
-                    <motion.img
-                      layoutId={`media-showcase-${currentMedia?.url}`}
-                      src={currentMedia?.url}
-                      alt={currentMedia?.alt || currentMedia?.caption || "Media"}
-                      className="max-w-full max-h-full object-contain"
-                    />
+                    currentMedia?.url ? (
+                      <motion.img
+                        layoutId={`media-showcase-${currentMedia?.url}`}
+                        src={currentMedia?.url}
+                        alt={currentMedia?.alt || currentMedia?.caption || "Media"}
+                        className="max-w-full max-h-full object-contain rounded-2xl"
+                      />
+                    ) : (
+                      <div className="text-white/60 text-center p-8">Image URL not available</div>
+                    )
                   )}
                 </motion.div>
               </AnimatePresence>

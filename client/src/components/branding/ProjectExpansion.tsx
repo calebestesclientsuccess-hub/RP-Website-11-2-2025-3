@@ -1,5 +1,5 @@
-import { X, ChevronLeft, ChevronRight, Sparkles, Loader2, Images } from "lucide-react";
-import { useState, useEffect } from "react";
+import { X, ChevronLeft, ChevronRight, Sparkles, Loader2, Images, Volume2, VolumeX } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, LayoutGroup } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -99,6 +99,33 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
   const [overlayIndex, setOverlayIndex] = useState(0);
   const [customOverlayMedia, setCustomOverlayMedia] = useState<Array<{ id: string; url: string; type: string; alt?: string; caption?: string }> | null>(null);
   
+  // Hero video state - play with sound first, then loop muted
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(false); // Start unmuted for first play
+  const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
+  const [showVolumeButton, setShowVolumeButton] = useState(true);
+  
+  // Handle video ended - switch to muted loop mode
+  const handleVideoEnded = useCallback(() => {
+    if (!hasPlayedOnce) {
+      setHasPlayedOnce(true);
+      setIsMuted(true);
+      // Restart video in muted loop mode
+      if (heroVideoRef.current) {
+        heroVideoRef.current.currentTime = 0;
+        heroVideoRef.current.play();
+      }
+    }
+  }, [hasPlayedOnce]);
+  
+  // Toggle mute state
+  const toggleMute = useCallback(() => {
+    setIsMuted(prev => !prev);
+    if (heroVideoRef.current) {
+      heroVideoRef.current.muted = !isMuted;
+    }
+  }, [isMuted]);
+  
   // Feature flag for "Experience the Full Story" CTA button
   const { isEnabled: showFullStoryCTA, isLoading: ctaLoading } = useFeatureFlag('branding-full-story-cta');
   
@@ -139,6 +166,7 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
   
   // Open overlay at specific index
   const openOverlay = (index: number = 0) => {
+    console.log('[ProjectExpansion] Opening overlay at index:', index, 'aggregatedMedia:', aggregatedMedia);
     setCustomOverlayMedia(null); // Clear custom media to use aggregatedMedia
     setOverlayIndex(index);
     setIsOverlayOpen(true);
@@ -376,7 +404,7 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
   return (
     <LayoutGroup>
       <div
-        className="bg-card rounded-2xl shadow-2xl overflow-hidden"
+        className="bg-card rounded-[2rem] shadow-2xl overflow-hidden"
         data-testid={`expansion-project-${project.id}`}
       >
       <div className="relative">
@@ -390,30 +418,54 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
           <X className="h-5 w-5" />
         </Button>
 
-        {/* Hero Carousel Section */}
-        <div className="relative aspect-[21/9] overflow-hidden bg-muted flex items-center justify-center">
+        {/* Hero Carousel Section - Apple TV Style with immersive curves */}
+        <div className="relative aspect-[21/9] overflow-hidden bg-black rounded-t-[2rem] flex items-center justify-center">
           {currentAsset ? (
             <>
               {currentAsset.type === "video" ? (
-                <motion.video
-                  key={currentAsset.id}
-                  layoutId={`media-showcase-${currentAsset.url}`}
-                  src={currentAsset.url}
-                  className="w-full h-full object-cover cursor-pointer"
-                  controls
-                  onClick={(e) => {
-                    // Don't open overlay if clicking on video controls
-                    if ((e.target as HTMLElement).tagName !== "VIDEO") return;
-                    openOverlay(findMediaIndex(currentAsset.url));
-                  }}
-                  data-testid={`video-media-${currentMediaIndex}`}
-                />
+                <>
+                  <motion.video
+                    ref={heroVideoRef}
+                    key={currentAsset.id}
+                    layoutId={`media-showcase-${currentAsset.url}`}
+                    src={currentAsset.url}
+                    className="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                    autoPlay
+                    playsInline
+                    loop={hasPlayedOnce}
+                    muted={isMuted}
+                    onEnded={handleVideoEnded}
+                    onClick={(e) => {
+                      // Don't open overlay if clicking on video controls area
+                      const rect = (e.target as HTMLElement).getBoundingClientRect();
+                      const clickY = e.clientY - rect.top;
+                      // Ignore clicks in bottom 60px (control area)
+                      if (clickY > rect.height - 60) return;
+                      openOverlay(findMediaIndex(currentAsset.url));
+                    }}
+                    data-testid={`video-media-${currentMediaIndex}`}
+                  />
+                  {/* Volume control button - Apple TV style */}
+                  {showVolumeButton && (
+                    <button
+                      onClick={toggleMute}
+                      className="absolute bottom-6 right-6 z-20 w-12 h-12 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md transition-all flex items-center justify-center group"
+                      aria-label={isMuted ? "Unmute video" : "Mute video"}
+                    >
+                      {isMuted ? (
+                        <VolumeX className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+                      ) : (
+                        <Volume2 className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+                      )}
+                    </button>
+                  )}
+                </>
               ) : (
                 <motion.img
                   layoutId={`media-showcase-${currentAsset.url}`}
                   src={currentAsset.url}
                   alt={currentAsset.alt || `${project.clientName} media`}
-                  className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                  className="absolute inset-0 w-full h-full object-cover cursor-pointer hover:scale-[1.02] transition-transform duration-500"
                   loading="lazy"
                   onClick={() => openOverlay(findMediaIndex(currentAsset.url))}
                   data-testid={`img-media-${currentMediaIndex}`}
@@ -425,7 +477,7 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 backdrop-blur-md border-0"
                     onClick={() =>
                       setCurrentMediaIndex(
                         (prev) => (prev - 1 + mediaAssets.length) % mediaAssets.length,
@@ -435,12 +487,12 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
                     aria-label="Previous media"
                     data-testid="button-prev-media"
                   >
-                    <ChevronLeft className="h-6 w-6" />
+                    <ChevronLeft className="h-6 w-6 text-white" />
                   </Button>
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 backdrop-blur-md border-0"
                     onClick={() =>
                       setCurrentMediaIndex((prev) => (prev + 1) % mediaAssets.length)
                     }
@@ -448,19 +500,19 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
                     aria-label="Next media"
                     data-testid="button-next-media"
                   >
-                    <ChevronRight className="h-6 w-6" />
+                    <ChevronRight className="h-6 w-6 text-white" />
                   </Button>
 
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                     {mediaAssets.map((asset, index) => (
                       <button
                         key={asset.id}
                         onClick={() => setCurrentMediaIndex(index)}
                         aria-label={`View media ${index + 1} of ${mediaAssets.length}`}
-                        className={`w-2 h-2 rounded-full transition-all ${
+                        className={`h-1.5 rounded-full transition-all ${
                           index === currentMediaIndex
                             ? "bg-white w-8"
-                            : "bg-white/50 hover:bg-white/75"
+                            : "bg-white/40 hover:bg-white/60 w-1.5"
                         }`}
                         data-testid={`button-media-indicator-${index}`}
                       />
@@ -478,20 +530,36 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
                              project.thumbnailImage.includes('resource_type=video');
               
               return isVideo ? (
-                <video
-                  src={project.thumbnailImage}
-                  className="w-full h-full object-cover"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  data-testid="video-fallback-thumbnail"
-                />
+                <>
+                  <video
+                    ref={heroVideoRef}
+                    src={project.thumbnailImage}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    autoPlay
+                    playsInline
+                    loop={hasPlayedOnce}
+                    muted={isMuted}
+                    onEnded={handleVideoEnded}
+                    data-testid="video-fallback-thumbnail"
+                  />
+                  {/* Volume control button */}
+                  <button
+                    onClick={toggleMute}
+                    className="absolute bottom-6 right-6 z-20 w-12 h-12 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md transition-all flex items-center justify-center group"
+                    aria-label={isMuted ? "Unmute video" : "Mute video"}
+                  >
+                    {isMuted ? (
+                      <VolumeX className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+                    ) : (
+                      <Volume2 className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+                    )}
+                  </button>
+                </>
               ) : (
                 <img
                   src={project.thumbnailImage}
                   alt={`${project.clientName} - ${project.projectTitle}`}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
                   loading="lazy"
                   data-testid="img-fallback-thumbnail"
                 />
@@ -502,6 +570,9 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
               Visual assets coming soon.
             </div>
           )}
+          
+          {/* Gradient overlay for depth - Apple TV style */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 pointer-events-none" />
         </div>
 
         {/* Content Section */}
