@@ -97,7 +97,6 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
   // Media showcase overlay state
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [overlayIndex, setOverlayIndex] = useState(0);
-  const [customOverlayMedia, setCustomOverlayMedia] = useState<Array<{ id: string; url: string; type: string; alt?: string; caption?: string }> | null>(null);
   
   // Hero video state - play with sound first, then loop muted
   const heroVideoRef = useRef<HTMLVideoElement>(null);
@@ -164,17 +163,8 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
     layer2Sections
   );
   
-  // Open overlay at specific index
+  // Open overlay at specific index - always uses full aggregatedMedia
   const openOverlay = (index: number = 0) => {
-    console.log('[ProjectExpansion] Opening overlay at index:', index, 'aggregatedMedia:', aggregatedMedia);
-    setCustomOverlayMedia(null); // Clear custom media to use aggregatedMedia
-    setOverlayIndex(index);
-    setIsOverlayOpen(true);
-  };
-  
-  // Open overlay with custom scoped media (for grid sections)
-  const openScopedOverlay = (media: Array<{ id: string; url: string; type: string; caption?: string }>, index: number = 0) => {
-    setCustomOverlayMedia(media);
     setOverlayIndex(index);
     setIsOverlayOpen(true);
   };
@@ -212,17 +202,10 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
 
     // Single image
     if (section.mediaType === "image" && config.url) {
-      const singleMedia = [{
-        id: `${section.id}-image`,
-        url: config.url,
-        type: "image" as const,
-        caption: section.heading,
-      }];
-      
       return (
         <div 
           className="aspect-[4/3] rounded-xl overflow-hidden bg-muted/50 border border-border cursor-pointer hover:opacity-95 transition-opacity"
-          onClick={() => openScopedOverlay(singleMedia, 0)}
+          onClick={() => openOverlay(findMediaIndex(config.url!))}
         >
           <motion.img
             layoutId={`media-showcase-${config.url}`}
@@ -237,17 +220,10 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
 
     // Single video
     if (section.mediaType === "video" && config.url) {
-      const singleMedia = [{
-        id: `${section.id}-video`,
-        url: config.url,
-        type: "video" as const,
-        caption: section.heading,
-      }];
-      
       return (
         <div 
           className="aspect-[4/3] rounded-xl overflow-hidden bg-muted/50 border border-border cursor-pointer"
-          onClick={() => openScopedOverlay(singleMedia, 0)}
+          onClick={() => openOverlay(findMediaIndex(config.url!))}
         >
           <motion.video
             layoutId={`media-showcase-${config.url}`}
@@ -264,14 +240,6 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
       const currentIndex = sectionMediaIndices[section.id] || 0;
       const currentItem = config.items[currentIndex % config.items.length];
 
-      // Create scoped media array for this carousel
-      const carouselMedia = config.items.map((item, idx) => ({
-        id: `${section.id}-carousel-${idx}`,
-        url: item.url,
-        type: item.type,
-        caption: item.caption || section.heading,
-      }));
-
       return (
         <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-muted/50 border border-border">
           {currentItem.type === "video" ? (
@@ -281,7 +249,7 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
               src={currentItem.url}
               className="w-full h-full object-cover cursor-pointer"
               controls
-              onClick={() => openScopedOverlay(carouselMedia, currentIndex)}
+              onClick={() => openOverlay(findMediaIndex(currentItem.url))}
             />
           ) : (
             <motion.img
@@ -290,7 +258,7 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
               alt={currentItem.caption || `${section.heading} media ${currentIndex + 1}`}
               className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
               loading="lazy"
-              onClick={() => openScopedOverlay(carouselMedia, currentIndex)}
+              onClick={() => openOverlay(findMediaIndex(currentItem.url))}
             />
           )}
 
@@ -359,21 +327,13 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
       // Taller aspect ratios: 4/3 for 2-col (substantial), square for 3-col (impactful)
       const aspectClass = section.mediaType === "grid-2" ? "aspect-[4/3]" : "aspect-square";
       
-      // Create scoped media array for this grid
-      const gridMedia = config.items.map((item, idx) => ({
-        id: `${section.id}-grid-${idx}`,
-        url: item.url,
-        type: item.type,
-        caption: item.caption,
-      }));
-      
       return (
         <div className={`grid ${gridCols} gap-4`}>
           {config.items.map((item, idx) => (
             <div
               key={idx}
               className={`${aspectClass} rounded-xl overflow-hidden bg-muted/50 border border-border cursor-pointer hover:opacity-95 transition-opacity`}
-              onClick={() => openScopedOverlay(gridMedia, idx)}
+              onClick={() => openOverlay(findMediaIndex(item.url))}
             >
               {item.type === "video" ? (
                 <motion.video
@@ -809,17 +769,14 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
         onComplete={() => setIsTransitioning(false)}
       />
       
-      {/* Media Showcase Overlay */}
+      {/* Media Showcase Overlay - Portfolio-wide gallery */}
       <MediaShowcaseOverlay
         isOpen={isOverlayOpen}
-        onClose={() => {
-          setIsOverlayOpen(false);
-          setCustomOverlayMedia(null); // Clear custom media when closing
-        }}
-        media={customOverlayMedia || aggregatedMedia}
+        onClose={() => setIsOverlayOpen(false)}
+        media={aggregatedMedia}
         currentIndex={overlayIndex}
         onIndexChange={setOverlayIndex}
-        title={`${project.clientName} - ${customOverlayMedia ? 'Grid' : 'Gallery'}`}
+        title={`${project.clientName} - Gallery`}
       />
       </div>
     </LayoutGroup>

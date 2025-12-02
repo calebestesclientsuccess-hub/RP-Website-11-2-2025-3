@@ -138,16 +138,7 @@ export function MediaShowcaseOverlay({
     onIndexChange((currentIndex + 1) % media.length);
   };
 
-  // Debug logging for media issues
-  console.log('[MediaShowcaseOverlay] isOpen:', isOpen, 'media length:', media.length, 'currentIndex:', currentIndex);
-  if (media.length > 0) {
-    console.log('[MediaShowcaseOverlay] currentMedia:', currentMedia);
-  }
-
-  if (media.length === 0) {
-    console.warn('[MediaShowcaseOverlay] No media items provided!');
-    return null;
-  }
+  if (media.length === 0) return null;
 
   return (
     <AnimatePresence>
@@ -185,9 +176,9 @@ export function MediaShowcaseOverlay({
               </button>
             </div>
 
-            {/* Full-screen media display with swipe support */}
+            {/* Full-screen media display with swipe support - Apple TV style */}
             <motion.div 
-              className="absolute inset-0 flex items-center justify-center touch-pan-y px-20"
+              className="absolute inset-0 flex items-center justify-center touch-pan-y"
               onPanEnd={handlePanEnd}
             >
               <AnimatePresence mode="wait">
@@ -197,7 +188,7 @@ export function MediaShowcaseOverlay({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="w-full h-full flex items-center justify-center"
+                  className="relative w-[90vw] h-[80vh] max-w-7xl overflow-hidden rounded-3xl"
                 >
                   {currentMedia?.type === "video" ? (
                     currentMedia.url ? (
@@ -206,13 +197,13 @@ export function MediaShowcaseOverlay({
                         layoutId={`media-showcase-${currentMedia.url}`}
                         src={currentMedia.url}
                         poster={getPosterUrl(currentMedia.url)}
-                        className="max-w-full max-h-full object-contain rounded-2xl"
+                        className="absolute inset-0 w-full h-full object-cover"
                         controls
                         autoPlay
                         playsInline
                       />
                     ) : (
-                      <div className="text-white/60 text-center p-8">Video URL not available</div>
+                      <div className="absolute inset-0 flex items-center justify-center text-white/60 text-center p-8">Video URL not available</div>
                     )
                   ) : (
                     currentMedia?.url ? (
@@ -220,10 +211,10 @@ export function MediaShowcaseOverlay({
                         layoutId={`media-showcase-${currentMedia?.url}`}
                         src={currentMedia?.url}
                         alt={currentMedia?.alt || currentMedia?.caption || "Media"}
-                        className="max-w-full max-h-full object-contain rounded-2xl"
+                        className="absolute inset-0 w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="text-white/60 text-center p-8">Image URL not available</div>
+                      <div className="absolute inset-0 flex items-center justify-center text-white/60 text-center p-8">Image URL not available</div>
                     )
                   )}
                 </motion.div>

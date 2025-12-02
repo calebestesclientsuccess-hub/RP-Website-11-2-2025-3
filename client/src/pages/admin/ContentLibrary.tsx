@@ -87,22 +87,17 @@ export default function ContentLibrary() {
         job: `/api/job-postings/${id}`,
       };
 
-      console.log(`[ContentLibrary] Deleting ${type} with id ${id} at ${endpoints[type]}`);
       const res = await fetch(endpoints[type], {
         method: 'DELETE',
         credentials: 'include',
       });
 
-      console.log(`[ContentLibrary] Delete response status: ${res.status}`);
       if (!res.ok) {
-        const error = await res.text();
-        console.error(`[ContentLibrary] Delete failed:`, error);
         throw new Error('Failed to delete content');
       }
       return { type, id };
     },
     onSuccess: (data) => {
-      console.log(`[ContentLibrary] Delete successful, invalidating queries for ${data.type}`);
       queryClient.invalidateQueries({ queryKey: ['/api/admin/content'] });
       if (data.type === 'testimonial') {
         queryClient.invalidateQueries({ queryKey: ['/api/testimonials'] });
@@ -121,8 +116,7 @@ export default function ContentLibrary() {
       }
       toast({ title: "Content deleted successfully" });
     },
-    onError: (error) => {
-      console.error('[ContentLibrary] Delete mutation error:', error);
+    onError: () => {
       toast({ title: "Failed to delete content", variant: "destructive" });
     },
   });
