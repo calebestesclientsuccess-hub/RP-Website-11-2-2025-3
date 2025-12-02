@@ -2412,7 +2412,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  app.delete("/api/blog-posts/:id", async (req, res) => {
+  app.delete("/api/blog-posts/:id", requireAuth, async (req, res) => {
     try {
       await storage.deleteBlogPost(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       return res.status(204).send();
@@ -2516,7 +2516,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  app.delete("/api/video-posts/:id", async (req, res) => {
+  app.delete("/api/video-posts/:id", requireAuth, async (req, res) => {
     try {
       await storage.deleteVideoPost(req.tenantId || DEFAULT_TENANT_ID, req.params.id);
       return res.status(204).send();
@@ -3094,6 +3094,23 @@ export async function registerRoutes(app: Express): Promise<void> {
       return res.json(updated);
     } catch (error) {
       console.error("Error updating project:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Delete project
+  app.delete("/api/projects/:id", requireAuth, async (req, res) => {
+    try {
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      const deleted = await storage.deleteProject(tenantId, req.params.id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting project:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });
