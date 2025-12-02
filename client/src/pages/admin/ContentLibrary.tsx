@@ -87,15 +87,22 @@ export default function ContentLibrary() {
         job: `/api/job-postings/${id}`,
       };
 
+      console.log(`[ContentLibrary] Deleting ${type} with id ${id} at ${endpoints[type]}`);
       const res = await fetch(endpoints[type], {
         method: 'DELETE',
         credentials: 'include',
       });
 
-      if (!res.ok) throw new Error('Failed to delete content');
+      console.log(`[ContentLibrary] Delete response status: ${res.status}`);
+      if (!res.ok) {
+        const error = await res.text();
+        console.error(`[ContentLibrary] Delete failed:`, error);
+        throw new Error('Failed to delete content');
+      }
       return { type, id };
     },
     onSuccess: (data) => {
+      console.log(`[ContentLibrary] Delete successful, invalidating queries for ${data.type}`);
       queryClient.invalidateQueries({ queryKey: ['/api/admin/content'] });
       if (data.type === 'testimonial') {
         queryClient.invalidateQueries({ queryKey: ['/api/testimonials'] });
@@ -106,9 +113,16 @@ export default function ContentLibrary() {
         queryClient.invalidateQueries({ queryKey: ['/api/projects', data.id] });
         queryClient.invalidateQueries({ queryKey: ['/api/branding/projects'] });
       }
+      if (data.type === 'blog') {
+        queryClient.invalidateQueries({ queryKey: ['/api/blog-posts'] });
+      }
+      if (data.type === 'video') {
+        queryClient.invalidateQueries({ queryKey: ['/api/video-posts'] });
+      }
       toast({ title: "Content deleted successfully" });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('[ContentLibrary] Delete mutation error:', error);
       toast({ title: "Failed to delete content", variant: "destructive" });
     },
   });
