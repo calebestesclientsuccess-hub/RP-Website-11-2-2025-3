@@ -737,14 +737,16 @@ export async function registerRoutes(app: Express): Promise<void> {
       console.log("[Auth] Security logger imported (skipped).");
 
       // Try to find user by username first, then by email (case-insensitive)
-      console.log("[Auth] Looking up user by username...");
-      let user = await storage.getUserByUsername(username);
+      // Scope by tenantId to avoid ambiguity in multi-tenant setup
+      const tenantId = req.tenantId || DEFAULT_TENANT_ID;
+      console.log(`[Auth] Looking up user by username for tenant: ${tenantId}...`);
+      let user = await storage.getUserByUsernameAndTenant(username, tenantId);
       console.log(`[Auth] User lookup by username result: ${user ? 'Found' : 'Not Found'}`);
 
       // If not found by username, try by email (case-insensitive)
       if (!user && username.includes('@')) {
-        console.log("[Auth] Looking up user by email...");
-        user = await storage.getUserByEmail(username.toLowerCase());
+        console.log(`[Auth] Looking up user by email for tenant: ${tenantId}...`);
+        user = await storage.getUserByEmailAndTenant(username.toLowerCase(), tenantId);
         console.log(`[Auth] User lookup by email result: ${user ? 'Found' : 'Not Found'}`);
       }
 
@@ -2970,6 +2972,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         clientName: project.clientName,
         projectTitle: project.title,
         thumbnailImage: project.thumbnailUrl,
+        heroMediaType: project.heroMediaType || "image",
         categories: project.categories || [],
         challenge: project.challengeText,
         solution: project.solutionText,

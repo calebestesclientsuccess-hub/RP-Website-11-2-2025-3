@@ -140,14 +140,14 @@ export const featureFlagRegistry: Record<string, FeatureFlagDefinition> = {
     name: "Revenue Architecture Playbook Lead Magnet",
     description: "Show/hide the lead magnet form on the home page.",
     scope: "section",
-    defaultEnabled: true,
+    defaultEnabled: false,
   },
   "ebook-lead-magnet": {
     key: "ebook-lead-magnet",
     name: "E-Book Lead Magnet System",
     description: "Enable/disable the e-book lead magnet feature (downloadable PDFs with lead capture).",
     scope: "section",
-    defaultEnabled: false,
+    defaultEnabled: true,
   },
   "theme-toggle": {
     key: "theme-toggle",

@@ -16,7 +16,7 @@ interface Layer2Section {
   heading: string;
   body: string;
   orderIndex: number;
-  mediaType: "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel";
+  mediaType: "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel" | "grid-2" | "grid-3";
   mediaConfig?: {
     mediaId?: string;
     url?: string;
@@ -69,6 +69,7 @@ interface ProjectExpansionProps {
     clientName: string;
     projectTitle: string;
     thumbnailImage: string;
+    heroMediaType?: "image" | "video";
     categories: string[];
     challenge: string;
     solution: string;
@@ -94,6 +95,7 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
   // Media showcase overlay state
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [overlayIndex, setOverlayIndex] = useState(0);
+  const [customOverlayMedia, setCustomOverlayMedia] = useState<Array<{ id: string; url: string; type: string; alt?: string; caption?: string }> | null>(null);
   
   // Feature flag for "Experience the Full Story" CTA button
   const { isEnabled: showFullStoryCTA, isLoading: ctaLoading } = useFeatureFlag('branding-full-story-cta');
@@ -124,6 +126,14 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
   
   // Open overlay at specific index
   const openOverlay = (index: number = 0) => {
+    setCustomOverlayMedia(null); // Clear custom media to use aggregatedMedia
+    setOverlayIndex(index);
+    setIsOverlayOpen(true);
+  };
+  
+  // Open overlay with custom scoped media (for grid sections)
+  const openScopedOverlay = (media: Array<{ id: string; url: string; type: string; caption?: string }>, index: number = 0) => {
+    setCustomOverlayMedia(media);
     setOverlayIndex(index);
     setIsOverlayOpen(true);
   };
@@ -195,7 +205,7 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
     }
 
     // Carousels
-    if (config.items && config.items.length > 0) {
+    if (section.mediaType.includes("carousel") && config.items && config.items.length > 0) {
       const currentIndex = sectionMediaIndices[section.id] || 0;
       const currentItem = config.items[currentIndex % config.items.length];
 
@@ -276,6 +286,49 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
               <p className="text-sm text-white">{currentItem.caption}</p>
             </div>
           )}
+        </div>
+      );
+    }
+
+    // 2-column or 3-column grids
+    if ((section.mediaType === "grid-2" || section.mediaType === "grid-3") && config.items && config.items.length > 0) {
+      const gridCols = section.mediaType === "grid-2" ? "grid-cols-2" : "grid-cols-3";
+      
+      // Create scoped media array for this grid
+      const gridMedia = config.items.map((item, idx) => ({
+        id: `${section.id}-grid-${idx}`,
+        url: item.url,
+        type: item.type,
+        caption: item.caption,
+      }));
+      
+      return (
+        <div className={`grid ${gridCols} gap-3 mb-4`}>
+          {config.items.map((item, idx) => (
+            <div
+              key={idx}
+              className="aspect-video rounded-xl overflow-hidden bg-muted/50 border border-border cursor-pointer hover:opacity-95 transition-opacity"
+              onClick={() => openScopedOverlay(gridMedia, idx)}
+            >
+              {item.type === "video" ? (
+                <motion.video
+                  layoutId={`media-showcase-${item.url}`}
+                  src={item.url}
+                  className="w-full h-full object-cover"
+                  muted
+                  loop
+                />
+              ) : (
+                <motion.img
+                  layoutId={`media-showcase-${item.url}`}
+                  src={item.url}
+                  alt={item.caption || `${section.heading} grid item ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              )}
+            </div>
+          ))}
         </div>
       );
     }
@@ -380,13 +433,33 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
               )}
             </>
           ) : project.thumbnailImage ? (
-            <img
-              src={project.thumbnailImage}
-              alt={`${project.clientName} - ${project.projectTitle}`}
-              className="w-full h-full object-cover"
-              loading="lazy"
-              data-testid="img-fallback-thumbnail"
-            />
+            (() => {
+              // Check if thumbnail is a video
+              const isVideo = project.heroMediaType === "video" || 
+                             project.thumbnailImage.match(/\.(mp4|webm|mov|avi)(\?|$)/i) ||
+                             project.thumbnailImage.includes('/video/') ||
+                             project.thumbnailImage.includes('resource_type=video');
+              
+              return isVideo ? (
+                <video
+                  src={project.thumbnailImage}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  data-testid="video-fallback-thumbnail"
+                />
+              ) : (
+                <img
+                  src={project.thumbnailImage}
+                  alt={`${project.clientName} - ${project.projectTitle}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  data-testid="img-fallback-thumbnail"
+                />
+              );
+            })()
           ) : (
             <div className="text-center text-muted-foreground p-8">
               Visual assets coming soon.
@@ -622,11 +695,14 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
       {/* Media Showcase Overlay */}
       <MediaShowcaseOverlay
         isOpen={isOverlayOpen}
-        onClose={() => setIsOverlayOpen(false)}
-        media={aggregatedMedia}
+        onClose={() => {
+          setIsOverlayOpen(false);
+          setCustomOverlayMedia(null); // Clear custom media when closing
+        }}
+        media={customOverlayMedia || aggregatedMedia}
         currentIndex={overlayIndex}
         onIndexChange={setOverlayIndex}
-        title={`${project.clientName} - Gallery`}
+        title={`${project.clientName} - ${customOverlayMedia ? 'Grid' : 'Gallery'}`}
       />
       </div>
     </LayoutGroup>

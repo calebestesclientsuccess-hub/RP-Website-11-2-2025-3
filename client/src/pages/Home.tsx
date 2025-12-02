@@ -11,7 +11,6 @@ import { ServiceSchema } from "@/components/ServiceSchema";
 import { LocalBusinessSchema } from "@/components/schemas/LocalBusinessSchema";
 import VideoSchema from "@/components/VideoSchema";
 import SoftwareApplicationSchema from "@/components/SoftwareApplicationSchema";
-import LeadMagnetHero from "@/components/LeadMagnetHero";
 import EbookLeadMagnetSection from "@/components/EbookLeadMagnetSection";
 import TestimonialCarousel from "@/components/widgets/TestimonialCarousel";
 import { WidgetZone } from "@/components/WidgetZone";
@@ -223,7 +222,7 @@ export default function Home() {
       </FeatureGate>
 
       {/* Unified dark canvas for bridge + solution section - the sun paints this */}
-      <div className="relative bg-zinc-950">
+      <div className="relative bg-zinc-950 overflow-hidden">
         {/* Bridge Statement */}
         <SimpleBridgeSection />
 
@@ -531,7 +530,7 @@ export default function Home() {
       {/* End of unified dark canvas */}
 
       {/* Proof Module - "Social Proof" */}
-      <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-background" style={{ zIndex: 10 }}>
+      <section className="relative isolate py-20 px-4 md:px-6 lg:px-8 bg-zinc-950" style={{ zIndex: 10 }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="heading-proof">
@@ -704,15 +703,10 @@ export default function Home() {
       </section>
 
       {/* E-Book Lead Magnet Section - Integrated $198K Mistake section */}
-      <div style={{ backgroundColor: '#000000', width: '100%' }}>
+      <div className="relative isolate" style={{ backgroundColor: '#000000', width: '100%' }}>
         <section className="relative py-32 px-4 md:px-6 lg:px-8" style={{ backgroundColor: '#000000', position: 'relative' }}>
           <div className="max-w-7xl mx-auto">
             <EbookLeadMagnetSection slug="198k-mistake-ebook" />
-
-            {/* Alternative Lead Magnet Section */}
-            <div className="max-w-3xl mx-auto mt-20">
-              <LeadMagnetHero />
-            </div>
           </div>
         </section>
       </div>
@@ -724,7 +718,7 @@ export default function Home() {
       <WidgetZone zone="zone-5" className="my-8" />
 
       {/* Tool Module - "Interactive ROI Calculator" */}
-      <section className="py-32 px-4 md:px-6 lg:px-8 bg-card/30">
+      <section className="relative isolate py-32 px-4 md:px-6 lg:px-8 bg-zinc-950">
         <div className="max-w-7xl mx-auto">
           {/* Internal Hire Cost Calculator Section */}
           <div className="max-w-4xl mx-auto">
@@ -762,7 +756,7 @@ export default function Home() {
       <WidgetZone zone="zone-6" className="my-8" />
 
       {/* Internal Links Section */}
-      <section className="py-16 px-4 md:px-6 lg:px-8 bg-card/30">
+      <section className="relative isolate py-16 px-4 md:px-6 lg:px-8 bg-zinc-950">
         <div className="max-w-7xl mx-auto">
           <InternalLinks 
             links={getRelatedLinks('home')}
@@ -772,16 +766,7 @@ export default function Home() {
       </section>
 
       {/* The GTM Engine Solution - New Section with Own Background */}
-      <section className="relative py-32 px-4 md:px-6 lg:px-8 bg-background">
-        {/* Distinct gradient background for this section */}
-        <div className="absolute inset-0 pointer-events-none opacity-40">
-          <div
-            className="absolute inset-0"
-            style={{
-              background: 'radial-gradient(ellipse 80% 50% at 50% 20%, rgba(220, 38, 38, 0.08) 0%, transparent 100%)',
-            }}
-          />
-        </div>
+      <section className="relative isolate py-32 px-4 md:px-6 lg:px-8 bg-zinc-950">
 
         <div className="max-w-6xl mx-auto relative z-10">
           {/* Final CTA Module */}

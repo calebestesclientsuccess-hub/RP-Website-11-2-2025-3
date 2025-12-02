@@ -38,32 +38,43 @@ export default function SimpleBridgeSection() {
   // EMBER LAWS:
   // 1. All embers must fall - none can be static
   // 2. The word "system" is the heat source - embers emanate ONLY from it
+  // 3. Use animation delay to distribute embers along fall path (not static positioning)
   const embers = useMemo(() => 
-    Array.from({ length: 110 }, (_, i) => {
+    Array.from({ length: 350 }, (_, i) => {
       // "system." is centered on the bottom line at 50%
-      // Embers should spawn tightly around just this word
-      const systemLeft = 50; // True center of "system"
-      const systemSpread = 6; // Tighter radius around the word
+      const systemLeft = 50;
+      const systemSpread = 7;
       
-      // Horizontal: spawn only around "system" (44-56% width)
-      const left = systemLeft + (Math.sin(i * 1.7) * 0.5 + 0.5) * systemSpread * 2 - systemSpread;
+      // Use prime-based chaos to break up visible patterns
+      const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
+      const p1 = primes[i % primes.length];
+      const p2 = primes[(i + 5) % primes.length];
+      const p3 = primes[(i + 11) % primes.length];
       
-      // Vertical: spawn slightly lower (3.8vh to 8.8vh - shifted down ~10px)
-      const spawnHeight = 3.8 + (Math.sin(i * 2.3) * 0.5 + 0.5) * 5; // +3.8vh to +8.8vh
+      // Horizontal: chaotic spread around "system"
+      const left = systemLeft + (((i * p1 * 1.7) % 100) / 100 * systemSpread * 2) - systemSpread;
       
-      const duration = (3 + (i % 4)) * 3.5; // Slower: 10.5-21s (was 7.875-15.75s)
+      // Vertical: ALL embers spawn near the text - animation handles distribution
+      const spawnHeight = 4 + ((i * p2 * 0.43) % 5);
+      
+      // Varied durations (25-55s range for slow, graceful fall)
+      const duration = 25 + ((i * p3) % 30);
+      
+      // KEY: Delay spans FULL duration - this distributes embers along entire fall path
+      // Each ember starts at a different point in its animation cycle
+      const delay = -((i * p1 * p2 * 0.017) % duration);
       
       return {
         id: i,
-        left: left, // Constrained to "system" area only
-        startY: spawnHeight, // Lower spawn position
-        delay: -((i * 0.17) % duration),
+        left: left,
+        startY: spawnHeight,
+        delay: delay,
         duration: duration,
-        size: 4 + (i % 7),
-        drift: (i % 2 === 0 ? 1 : -1) * (10 + (i % 3) * 5),
-        spread: (i % 2 === 0 ? 1 : -1) * (30 + (i % 5) * 15),
-        hasSparks: i % 2 === 0,
-        crackleOffset: (i % 7) * 0.2,
+        size: 3 + ((i * p1) % 6),
+        drift: (i % 2 === 0 ? 1 : -1) * (12 + ((i * p2) % 4) * 6),
+        spread: (i % 2 === 0 ? 1 : -1) * (35 + ((i * p3) % 7) * 15),
+        hasSparks: i % 3 === 0,
+        crackleOffset: ((i * p1) % 10) * 0.15,
       };
     }), []
   );
@@ -80,7 +91,7 @@ export default function SimpleBridgeSection() {
     }
 
     const isMobile = window.innerWidth < 768;
-    const scrollDistance = isMobile ? 650 : 850;
+    const scrollDistance = isMobile ? 910 : 1190; // 40% slower scroll animation
 
     // === SETUP: White text character spans ===
     const lines = [

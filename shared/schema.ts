@@ -2075,7 +2075,7 @@ export const projectLayer2Sections = pgTable("project_layer2_sections", {
   heading: text("heading").notNull(),
   body: text("body").notNull(),
   orderIndex: integer("order_index").notNull(),
-  mediaType: text("media_type").notNull().default("none").$type<"none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel">(),
+  mediaType: text("media_type").notNull().default("none").$type<"none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel" | "grid-2" | "grid-3">(),
   mediaConfig: jsonb("media_config").$type<{
     mediaId?: string;
     url?: string;
@@ -2111,7 +2111,7 @@ export const projectLayer2SectionSchema = z.object({
   heading: z.string().min(1, "Heading is required").max(200, "Heading must be under 200 characters"),
   body: z.string().min(1, "Body text is required").max(2000, "Body must be under 2000 characters"),
   orderIndex: z.number().int().min(0).max(4),
-  mediaType: z.enum(["none", "image", "video", "image-carousel", "video-carousel", "mixed-carousel"]),
+  mediaType: z.enum(["none", "image", "video", "image-carousel", "video-carousel", "mixed-carousel", "grid-2", "grid-3"]),
   mediaConfig: z.object({
     mediaId: z.string().optional(),
     url: z.string().url().optional(),
@@ -2149,7 +2149,7 @@ export const insertProjectLayer2SectionSchema = createInsertSchema(projectLayer2
     heading: z.string().min(1, "Heading is required").max(200, "Heading must be under 200 characters"),
     body: z.string().min(1, "Body text is required").max(2000, "Body must be under 2000 characters"),
     orderIndex: z.number().int().min(0).max(4),
-    mediaType: z.enum(["none", "image", "video", "image-carousel", "video-carousel", "mixed-carousel"]).default("none"),
+    mediaType: z.enum(["none", "image", "video", "image-carousel", "video-carousel", "mixed-carousel", "grid-2", "grid-3"]).default("none"),
     mediaConfig: z.object({
       mediaId: z.string().optional(),
       url: z.string().url().optional(),

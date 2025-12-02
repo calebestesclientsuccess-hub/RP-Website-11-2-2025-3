@@ -28,7 +28,7 @@ const CHAR_THRESHOLDS = {
   critical: 0.95, // 95% - red
 };
 
-export type MediaType = "none" | "image" | "video" | "carousel";
+export type MediaType = "none" | "image" | "video" | "carousel" | "grid-2" | "grid-3";
 
 export interface SectionLayoutConfig {
   mediaSize?: MediaSize;
@@ -215,7 +215,7 @@ export function ContentSectionCard({
         {/* Media indicator */}
         {value.mediaType !== "none" && value.mediaUrls.length > 0 && (
           <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-            {value.mediaType === "carousel"
+            {value.mediaType === "carousel" || value.mediaType === "grid-2" || value.mediaType === "grid-3"
               ? `${value.mediaUrls.length} items`
               : value.mediaType}
           </span>
@@ -334,6 +334,8 @@ export function ContentSectionCard({
                     <SelectItem value="image">Single Image</SelectItem>
                     <SelectItem value="video">Single Video</SelectItem>
                     <SelectItem value="carousel">Media Carousel</SelectItem>
+                    <SelectItem value="grid-2">2-Column Grid</SelectItem>
+                    <SelectItem value="grid-3">3-Column Grid</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -344,9 +346,10 @@ export function ContentSectionCard({
                   <MediaPicker
                     value={value.mediaUrls}
                     onChange={(urls) => handleFieldChange("mediaUrls", urls)}
-                    mode={value.mediaType === "carousel" ? "carousel" : "single"}
+                    mode={value.mediaType === "carousel" || value.mediaType === "grid-2" || value.mediaType === "grid-3" ? "carousel" : "single"}
+                    maxItems={value.mediaType === "grid-2" ? 2 : value.mediaType === "grid-3" ? 3 : 10}
                     mediaTypeFilter={
-                      value.mediaType === "carousel"
+                      value.mediaType === "carousel" || value.mediaType === "grid-2" || value.mediaType === "grid-3"
                         ? "all"
                         : value.mediaType === "video"
                         ? "video"
@@ -355,6 +358,10 @@ export function ContentSectionCard({
                     placeholder={
                       value.mediaType === "carousel"
                         ? "Select media for carousel"
+                        : value.mediaType === "grid-2"
+                        ? "Select 2 items for grid"
+                        : value.mediaType === "grid-3"
+                        ? "Select 3 items for grid"
                         : value.mediaType === "video"
                         ? "Select video from library"
                         : "Select image from library"

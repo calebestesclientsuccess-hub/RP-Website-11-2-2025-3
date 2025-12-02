@@ -53,11 +53,12 @@ const createInMemoryRedis = () => {
 };
 
 // Check MOCK_REDIS before importing anything
-const useMockRedis = process.env.MOCK_REDIS === "true" || !env.REDIS_URL;
+const redisUrl = env.REDIS_URL || env.redis_REDIS_URL;
+const useMockRedis = process.env.MOCK_REDIS === "true" || !redisUrl;
 
 export const redis = useMockRedis
   ? createInMemoryRedis()
-  : new Redis(env.REDIS_URL!, {
+  : new Redis(redisUrl!, {
         maxRetriesPerRequest: 3,
         // Enable lazy connect to check eviction policy after connection
         lazyConnect: false,

@@ -4,7 +4,7 @@ import type { ProjectMediaAsset } from "@shared/schema";
 interface Layer2Section {
   id: string;
   heading: string;
-  mediaType: "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel";
+  mediaType: "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel" | "grid-2" | "grid-3";
   mediaConfig?: {
     mediaId?: string;
     url?: string;

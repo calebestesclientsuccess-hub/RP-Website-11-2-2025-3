@@ -23,7 +23,7 @@ interface Layer2Section {
   heading: string;
   body: string;
   orderIndex: number;
-  mediaType: "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel";
+  mediaType: "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel" | "grid-2" | "grid-3";
   mediaConfig?: {
     mediaId?: string;
     url?: string;
@@ -97,7 +97,7 @@ export function Layer2Preview({ sections, expansionLayout = "vertical" }: Layer2
     }
 
     // Carousels
-    if (config.items && config.items.length > 0) {
+    if (section.mediaType.includes("carousel") && config.items && config.items.length > 0) {
       const currentIndex = sectionMediaIndices[section.id] || 0;
       const currentItem = config.items[currentIndex % config.items.length];
 
@@ -127,6 +127,30 @@ export function Layer2Preview({ sections, expansionLayout = "vertical" }: Layer2
               ))}
             </div>
           )}
+        </div>
+      );
+    }
+
+    // 2-column or 3-column grids
+    if ((section.mediaType === "grid-2" || section.mediaType === "grid-3") && config.items && config.items.length > 0) {
+      const gridCols = section.mediaType === "grid-2" ? "grid-cols-2" : "grid-cols-3";
+      return (
+        <div className={`grid ${gridCols} gap-2 mb-3`}>
+          {config.items.map((item, idx) => (
+            <div key={idx} className="aspect-video rounded-lg overflow-hidden bg-muted/50 border border-border">
+              {item.type === "video" ? (
+                <div className="w-full h-full bg-muted flex items-center justify-center text-xs text-muted-foreground">
+                  Video {idx + 1}
+                </div>
+              ) : (
+                <img
+                  src={item.url}
+                  alt={item.caption || `Grid item ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+          ))}
         </div>
       );
     }

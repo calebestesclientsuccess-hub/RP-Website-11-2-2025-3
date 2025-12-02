@@ -32,7 +32,7 @@ interface Layer2Section {
   heading: string;
   body: string;
   orderIndex: number;
-  mediaType: "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel";
+  mediaType: "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel" | "grid-2" | "grid-3";
   mediaConfig?: {
     mediaId?: string;
     url?: string;
@@ -66,10 +66,6 @@ interface Layer2SectionEditorProps {
 }
 
 export function Layer2SectionEditor({ sections, onChange, projectId }: Layer2SectionEditorProps) {
-  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
-  const [editingSection, setEditingSection] = useState<string | null>(null);
-  const [editingCarouselIndex, setEditingCarouselIndex] = useState<number | null>(null);
-
   const handleSectionChange = (id: string, field: keyof Layer2Section, value: any) => {
     onChange(
       sections.map((section) =>
@@ -140,46 +136,6 @@ export function Layer2SectionEditor({ sections, onChange, projectId }: Layer2Sec
 
     // Update order indices
     onChange(newSections.map((s, idx) => ({ ...s, orderIndex: idx })));
-  };
-
-  const handleMediaSelect = (media: { id: string; url: string; type: string }) => {
-    if (!editingSection) return;
-
-    const section = sections.find((s) => s.id === editingSection);
-    if (!section) return;
-
-    if (editingCarouselIndex !== null) {
-      // Add to carousel
-      const items = section.mediaConfig?.items || [];
-      items[editingCarouselIndex] = {
-        mediaId: media.id,
-        url: media.url,
-        type: media.type === "video" ? "video" : "image",
-        caption: "",
-      };
-
-      handleSectionChange(editingSection, "mediaConfig", { items });
-    } else {
-      // Set single media
-      handleSectionChange(editingSection, "mediaConfig", {
-        mediaId: media.id,
-        url: media.url,
-      });
-    }
-
-    setMediaPickerOpen(false);
-    setEditingSection(null);
-    setEditingCarouselIndex(null);
-  };
-
-  const handleAddCarouselItem = (sectionId: string) => {
-    const section = sections.find((s) => s.id === sectionId);
-    if (!section) return;
-
-    const items = section.mediaConfig?.items || [];
-    setEditingSection(sectionId);
-    setEditingCarouselIndex(items.length);
-    setMediaPickerOpen(true);
   };
 
   const handleRemoveCarouselItem = (sectionId: string, itemIndex: number) => {
@@ -356,6 +312,8 @@ export function Layer2SectionEditor({ sections, onChange, projectId }: Layer2Sec
                     <SelectItem value="image-carousel">Image Carousel</SelectItem>
                     <SelectItem value="video-carousel">Video Carousel</SelectItem>
                     <SelectItem value="mixed-carousel">Mixed Carousel</SelectItem>
+                    <SelectItem value="grid-2">2-Column Grid</SelectItem>
+                    <SelectItem value="grid-3">3-Column Grid</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -364,40 +322,19 @@ export function Layer2SectionEditor({ sections, onChange, projectId }: Layer2Sec
               {(section.mediaType === "image" || section.mediaType === "video") && (
                 <div>
                   <label className="text-sm font-medium mb-2 block">Media</label>
-                  {section.mediaConfig?.url ? (
-                    <div className="relative aspect-video rounded-lg overflow-hidden border">
-                      {section.mediaType === "video" ? (
-                        <video src={section.mediaConfig.url} className="w-full h-full object-cover" controls />
-                      ) : (
-                        <img src={section.mediaConfig.url} alt="Selected media" className="w-full h-full object-cover" />
-                      )}
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="absolute top-2 right-2"
-                        onClick={() => handleSectionChange(section.id, "mediaConfig", undefined)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setEditingSection(section.id);
-                        setEditingCarouselIndex(null);
-                        setMediaPickerOpen(true);
-                      }}
-                      data-testid={`button-select-media-${index}`}
-                    >
-                      {section.mediaType === "video" ? (
-                        <VideoIcon className="w-4 h-4 mr-2" />
-                      ) : (
-                        <ImageIcon className="w-4 h-4 mr-2" />
-                      )}
-                      Select from Media Library
-                    </Button>
-                  )}
+                  <MediaPicker
+                    value={section.mediaConfig?.url ? [section.mediaConfig.url] : []}
+                    onChange={(urls) => {
+                      if (urls.length > 0) {
+                        handleSectionChange(section.id, "mediaConfig", { url: urls[0] });
+                      } else {
+                        handleSectionChange(section.id, "mediaConfig", undefined);
+                      }
+                    }}
+                    mode="single"
+                    mediaTypeFilter={section.mediaType === "video" ? "video" : "image"}
+                    placeholder="Select from Media Library"
+                  />
                 </div>
               )}
 
@@ -435,14 +372,87 @@ export function Layer2SectionEditor({ sections, onChange, projectId }: Layer2Sec
                         </Button>
                       </div>
                     ))}
-                    <Button
-                      variant="outline"
-                      onClick={() => handleAddCarouselItem(section.id)}
-                      data-testid={`button-add-carousel-item-${index}`}
-                    >
-                      <Images className="w-4 h-4 mr-2" />
-                      Add Carousel Item
-                    </Button>
+                    <MediaPicker
+                      value={[]}
+                      onChange={(urls) => {
+                        if (urls.length > 0) {
+                          const items = section.mediaConfig?.items || [];
+                          const newItem = {
+                            url: urls[0],
+                            type: (section.mediaType.includes("video") && urls[0].match(/\.(mp4|webm|mov)(\?|$)/i)) ? "video" as const : "image" as const,
+                            caption: "",
+                          };
+                          handleSectionChange(section.id, "mediaConfig", { items: [...items, newItem] });
+                        }
+                      }}
+                      mode="single"
+                      mediaTypeFilter="all"
+                      placeholder="Add Carousel Item"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Grid Layouts (2-up or 3-up) */}
+              {(section.mediaType === "grid-2" || section.mediaType === "grid-3") && (
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    {section.mediaType === "grid-2" ? "2-Column" : "3-Column"} Grid Items
+                  </label>
+                  <div className="space-y-2">
+                    {section.mediaConfig?.items?.map((item, itemIdx) => (
+                      <div key={itemIdx} className="flex items-center gap-2 p-2 border rounded">
+                        <Badge variant="secondary">{itemIdx + 1}</Badge>
+                        <div className="w-16 h-16 rounded overflow-hidden bg-muted">
+                          {item.type === "video" ? (
+                            <VideoIcon className="w-full h-full p-4" />
+                          ) : (
+                            <img src={item.url} alt="" className="w-full h-full object-cover" />
+                          )}
+                        </div>
+                        <Input
+                          placeholder="Caption (optional)"
+                          value={item.caption || ""}
+                          onChange={(e) => {
+                            const items = [...(section.mediaConfig?.items || [])];
+                            items[itemIdx] = { ...items[itemIdx], caption: e.target.value };
+                            handleSectionChange(section.id, "mediaConfig", { items });
+                          }}
+                          className="flex-1"
+                        />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleRemoveCarouselItem(section.id, itemIdx)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    {(section.mediaConfig?.items?.length || 0) < (section.mediaType === "grid-2" ? 2 : 3) && (
+                      <MediaPicker
+                        value={[]}
+                        onChange={(urls) => {
+                          if (urls.length > 0) {
+                            const items = section.mediaConfig?.items || [];
+                            const newItem = {
+                              url: urls[0],
+                              type: urls[0].match(/\.(mp4|webm|mov)(\?|$)/i) ? "video" as const : "image" as const,
+                              caption: "",
+                            };
+                            handleSectionChange(section.id, "mediaConfig", { items: [...items, newItem] });
+                          }
+                        }}
+                        mode="single"
+                        mediaTypeFilter="all"
+                        placeholder={`Add Item ${(section.mediaConfig?.items?.length || 0) + 1}`}
+                      />
+                    )}
+                    {(section.mediaConfig?.items?.length || 0) >= (section.mediaType === "grid-2" ? 2 : 3) && (
+                      <p className="text-sm text-muted-foreground">
+                        Maximum {section.mediaType === "grid-2" ? "2" : "3"} items for this grid layout
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -562,17 +572,6 @@ export function Layer2SectionEditor({ sections, onChange, projectId }: Layer2Sec
           </Card>
         ))}
       </div>
-
-      {/* Media Picker Dialog */}
-      {mediaPickerOpen && (
-        <MediaPicker
-          onSelect={handleMediaSelect}
-          open={mediaPickerOpen}
-          onOpenChange={setMediaPickerOpen}
-          projectId={projectId}
-          mediaType="all"
-        />
-      )}
     </div>
   );
 }

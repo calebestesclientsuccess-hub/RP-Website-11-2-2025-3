@@ -126,6 +126,7 @@
     "react-resizable-panels": "^2.1.7",
     "react-router-dom": "^7.9.4",
     "recharts": "^2.15.2",
+    "redis": "^5.10.0",
     "remark-gfm": "^4.0.1",
     "resend": "^6.4.1",
     "tailwind-merge": "^2.6.0",

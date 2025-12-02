@@ -42,7 +42,9 @@ import { layoutDrafts, type LayoutDraft, type NewLayoutDraft } from "./models/la
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByUsernameAndTenant(username: string, tenantId: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByEmailAndTenant(email: string, tenantId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserPassword(userId: string, password: string): Promise<User>;
   hasAnyUsers(): Promise<boolean>;
@@ -249,8 +251,18 @@ export class DbStorage implements IStorage {
     return user;
   }
 
+  async getUserByUsernameAndTenant(username: string, tenantId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(and(eq(users.username, username), eq(users.tenantId, tenantId)));
+    return user;
+  }
+
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(sql`LOWER(${users.email}) = LOWER(${email})`);
+    return user;
+  }
+
+  async getUserByEmailAndTenant(email: string, tenantId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(and(sql`LOWER(${users.email}) = LOWER(${email})`, eq(users.tenantId, tenantId)));
     return user;
   }
 

@@ -79,7 +79,7 @@ const sectionSchema = z.object({
   body: z
     .string()
     .max(BODY_CHAR_LIMIT, `Body must be under ${BODY_CHAR_LIMIT} characters`),
-  mediaType: z.enum(["none", "image", "video", "carousel"]),
+  mediaType: z.enum(["none", "image", "video", "carousel", "grid-2", "grid-3"]),
   mediaUrls: z.array(z.string()),
   layoutConfig: layoutConfigSchema,
 });
@@ -463,8 +463,8 @@ export default function CreatePortfolio() {
       return {};
     }
 
-    if (section.mediaType === "carousel") {
-      // Carousel: use items array
+    if (section.mediaType === "carousel" || section.mediaType === "grid-2" || section.mediaType === "grid-3") {
+      // Carousel and grids: use items array
       return {
         items: section.mediaUrls.map((url) => ({
           url,
@@ -480,10 +480,12 @@ export default function CreatePortfolio() {
   };
 
   // Helper to map mediaType to schema format
-  const mapMediaType = (section: SectionData): "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel" => {
+  const mapMediaType = (section: SectionData): "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel" | "grid-2" | "grid-3" => {
     if (section.mediaType === "none" || section.mediaUrls.length === 0) return "none";
     if (section.mediaType === "image") return "image";
     if (section.mediaType === "video") return "video";
+    if (section.mediaType === "grid-2") return "grid-2";
+    if (section.mediaType === "grid-3") return "grid-3";
     if (section.mediaType === "carousel") {
       // Determine carousel type based on content
       const hasImages = section.mediaUrls.some((url) => !url.match(/\.(mp4|webm|mov|avi)(\?|$)/i));

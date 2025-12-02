@@ -3,6 +3,7 @@ import { tenants, users, companies } from "@shared/schema";
 import { DEFAULT_TENANT_ID } from "../server/middleware/tenant";
 import bcrypt from "bcryptjs";
 import { PASSWORD_HASH_ROUNDS } from "../server/utils/password-validator";
+import { eq } from "drizzle-orm";
 
 async function seedInitialOrg() {
   console.log("Seeding initial organization...");
@@ -41,7 +42,13 @@ async function seedInitialOrg() {
       });
       console.log(`✅ Created user: ${email} (password: test1234)`);
     } else {
-      console.log(`ℹ️ User ${email} already exists`);
+      // Force update password to ensure it matches
+      const hashedPassword = await bcrypt.hash("test1234", PASSWORD_HASH_ROUNDS);
+      await db
+        .update(users)
+        .set({ password: hashedPassword })
+        .where(eq(users.id, existingUser.id));
+      console.log(`✅ Updated password for user: ${email} to test1234`);
     }
 
     // 3. Seed Company

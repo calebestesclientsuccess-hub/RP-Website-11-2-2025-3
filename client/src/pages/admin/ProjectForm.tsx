@@ -41,7 +41,7 @@ interface Layer2Section {
   heading: string;
   body: string;
   orderIndex: number;
-  mediaType: "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel";
+  mediaType: "none" | "image" | "video" | "image-carousel" | "video-carousel" | "mixed-carousel" | "grid-2" | "grid-3";
   mediaConfig?: {
     mediaId?: string;
     url?: string;
@@ -60,6 +60,7 @@ const formSchema = insertProjectSchema.extend({
   title: z.string().min(1, "Title is required"),
   modalMediaType: z.enum(["video", "carousel"]).default("video"),
   expansionLayout: z.enum(["vertical", "cinematic"]).default("vertical"),
+  heroMediaType: z.enum(["image", "video"]).default("image"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -107,6 +108,7 @@ export default function ProjectForm() {
       testimonialText: "" as any,
       testimonialAuthor: "" as any,
       expansionLayout: "vertical" as const,
+      heroMediaType: "image" as const,
     },
   });
 
@@ -127,6 +129,7 @@ export default function ProjectForm() {
         testimonialText: project.testimonialText || "",
         testimonialAuthor: project.testimonialAuthor || "",
         expansionLayout: (project.expansionLayout as "vertical" | "cinematic") || "vertical",
+        heroMediaType: (project.heroMediaType as "image" | "video") || "image",
       };
       form.reset(formData);
       setCategories(project.categories || []);
@@ -447,7 +450,19 @@ export default function ProjectForm() {
                                   <FormControl>
                                     <MediaPicker
                                       value={field.value ? [field.value] : []}
-                                      onChange={(urls) => field.onChange(urls[0] || "")}
+                                      onChange={(urls) => {
+                                        if (urls.length > 0) {
+                                          const url = urls[0];
+                                          field.onChange(url);
+                                          // Auto-detect video from URL patterns
+                                          const isVideo = url.match(/\.(mp4|webm|mov|avi)(\?|$)/i) || 
+                                                         url.includes('/video/') || 
+                                                         url.includes('resource_type=video');
+                                          form.setValue('heroMediaType', isVideo ? 'video' : 'image');
+                                        } else {
+                                          field.onChange("");
+                                        }
+                                      }}
                                       mode="single"
                                       mediaTypeFilter="all"
                                       placeholder="Select hero image or video"
