@@ -97,6 +97,8 @@ export function registerProjectLayer2SectionRoutes(app: Express) {
   app.post("/api/projects/:id/layer2-sections", async (req, res) => {
     try {
       const projectId = req.params.id;
+      console.log("[Layer 2 POST] Creating section for project:", projectId);
+      console.log("[Layer 2 POST] Request body:", JSON.stringify(req.body, null, 2));
 
       // Check if table exists
       const tableExists = await checkTableExists();
@@ -106,7 +108,9 @@ export function registerProjectLayer2SectionRoutes(app: Express) {
       }
 
       // Validate request body
+      console.log("[Layer 2 POST] Validating section data...");
       const validatedData = insertProjectLayer2SectionSchema.parse(req.body);
+      console.log("[Layer 2 POST] Validation successful!");
 
       // Check section count limit (max 5)
       const existingSections = await db.query.projectLayer2Sections.findMany({
@@ -149,6 +153,7 @@ export function registerProjectLayer2SectionRoutes(app: Express) {
       }
 
       // Insert section
+      console.log("[Layer 2 POST] Inserting section with mediaType:", validatedData.mediaType);
       const [newSection] = await db.insert(projectLayer2Sections).values({
         projectId,
         heading: validatedData.heading,
@@ -158,6 +163,7 @@ export function registerProjectLayer2SectionRoutes(app: Express) {
         mediaConfig,
       }).returning();
 
+      console.log("[Layer 2 POST] Section created successfully! ID:", newSection.id);
       res.status(201).json(newSection);
     } catch (error: any) {
       console.error("[Layer 2 Sections] Failed to create section:", error);

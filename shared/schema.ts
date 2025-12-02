@@ -1115,6 +1115,8 @@ export const projects = pgTable("projects", {
   }>().default(sql`'{}'::jsonb`),
   // Expansion layout mode for portfolio grid
   expansionLayout: text("expansion_layout").default("vertical"), // 'vertical' or 'cinematic'
+  // Section spacing mode for portfolio
+  spacingMode: text("spacing_mode").default("balanced"), // 'compact' | 'balanced' | 'airy'
   componentLibrary: text("component_library").default("shadcn"),
   assetPlan: jsonb("asset_plan").$type<Array<{
     assetId: string;

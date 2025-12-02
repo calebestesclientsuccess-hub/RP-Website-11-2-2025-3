@@ -2986,6 +2986,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         modalMediaUrls: project.modalMediaUrls,
         modalMediaType: project.modalMediaType,
         expansionLayout: project.expansionLayout || "vertical",
+        spacingMode: project.spacingMode || "balanced",
         testimonial: project.testimonialText ? {
           text: project.testimonialText,
           author: project.testimonialAuthor || '',
@@ -3038,18 +3039,23 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Create new project
   app.post("/api/projects", requireAuth, async (req, res) => {
     try {
+      console.log("[Create Project] Request body:", JSON.stringify(req.body, null, 2));
       const result = insertProjectSchema.safeParse(req.body);
       if (!result.success) {
+        console.error("[Create Project] Validation failed:", JSON.stringify(result.error.issues, null, 2));
         return res.status(400).json({
           error: "Validation failed",
           details: result.error.issues
         });
       }
 
+      console.log("[Create Project] Creating project for tenant:", req.tenantId);
       const project = await storage.createProject(req.tenantId || DEFAULT_TENANT_ID, result.data);
+      console.log("[Create Project] Success! Project ID:", project.id);
       return res.status(201).json(project);
     } catch (error) {
-      console.error("Error creating project:", error);
+      console.error("[Create Project] ERROR:", error);
+      console.error("[Create Project] Error stack:", error instanceof Error ? error.stack : "No stack");
       return res.status(500).json({ error: "Internal server error" });
     }
   });

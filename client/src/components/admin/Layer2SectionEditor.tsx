@@ -2,8 +2,8 @@ import { useState } from "react";
 import { GripVertical, Trash2, Plus, Image as ImageIcon, Video as VideoIcon, Images, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { RichTextEditor } from "./RichTextEditor";
 import {
   Select,
   SelectContent,
@@ -277,20 +277,14 @@ export function Layer2SectionEditor({ sections, onChange, projectId }: Layer2Sec
                 />
               </div>
 
-              {/* Body */}
+              {/* Body - Rich Text Editor */}
               <div>
                 <label className="text-sm font-medium mb-1 block">Body Text *</label>
-                <Textarea
-                  value={section.body}
-                  onChange={(e) => handleSectionChange(section.id, "body", e.target.value)}
+                <RichTextEditor
+                  content={section.body}
+                  onChange={(html) => handleSectionChange(section.id, "body", html)}
                   placeholder="Enter the section content..."
-                  className="min-h-[120px]"
-                  maxLength={2000}
-                  data-testid={`textarea-body-${index}`}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  {section.body.length}/2000 characters
-                </p>
               </div>
 
               {/* Media Type */}

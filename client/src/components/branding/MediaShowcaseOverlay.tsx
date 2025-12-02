@@ -1,7 +1,6 @@
 import { useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, ImageIcon, Film } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import type { AggregatedMediaItem } from "@/hooks/useProjectMedia";
 
 // Generate video poster URL from Cloudinary video URL
@@ -161,144 +160,92 @@ export function MediaShowcaseOverlay({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-8"
+            className="fixed inset-0 z-[60] flex items-center justify-center"
           >
-            {/* Main content area */}
-            <div className="relative w-full h-full max-w-[90vw] max-h-[90vh] flex flex-col">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4 text-white">
-                <div className="flex items-center gap-3">
-                  {currentMedia?.type === "video" ? (
-                    <Film className="w-5 h-5 text-white/70" />
-                  ) : (
-                    <ImageIcon className="w-5 h-5 text-white/70" />
-                  )}
-                  <div>
-                    {title && (
-                      <h2 className="text-lg font-semibold">{title}</h2>
-                    )}
-                    <p className="text-sm text-white/70">
-                      {currentIndex + 1} of {media.length}
-                      {currentMedia?.sectionHeading && (
-                        <span className="ml-2">• {currentMedia.sectionHeading}</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="text-white hover:bg-white/10"
-                >
-                  <X className="w-6 h-6" />
-                </Button>
-              </div>
-
-              {/* Media display with swipe support */}
-              <motion.div 
-                className="flex-1 relative flex items-center justify-center overflow-hidden rounded-lg touch-pan-y"
-                onPanEnd={handlePanEnd}
+            {/* Floating minimal header */}
+            <div className="absolute top-6 right-6 z-10 flex items-center gap-4">
+              <span className="text-sm text-white/70 font-medium">
+                {currentIndex + 1} / {media.length}
+              </span>
+              <button
+                onClick={onClose}
+                className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-colors flex items-center justify-center group"
+                aria-label="Close gallery"
               >
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentMedia?.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                    className="w-full h-full flex items-center justify-center"
-                  >
-                    {currentMedia?.type === "video" ? (
-                      <motion.video
-                        ref={videoRef}
-                        layoutId={`media-showcase-${currentMedia.url}`}
-                        src={currentMedia.url}
-                        poster={getPosterUrl(currentMedia.url)}
-                        className="max-w-full max-h-full object-contain rounded-lg"
-                        controls
-                        autoPlay
-                        playsInline
-                      />
-                    ) : (
-                      <motion.img
-                        layoutId={`media-showcase-${currentMedia?.url}`}
-                        src={currentMedia?.url}
-                        alt={currentMedia?.alt || currentMedia?.caption || "Media"}
-                        className="max-w-full max-h-full object-contain rounded-lg"
-                      />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-
-                {/* Navigation arrows - Bold 64px white buttons */}
-                {media.length > 1 && (
-                  <>
-                    <button
-                      onClick={goToPrevious}
-                      aria-label="Previous media"
-                      className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-14 h-14 md:w-16 md:h-16 rounded-full bg-white shadow-2xl shadow-black/30 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50"
-                    >
-                      <ChevronLeft className="w-8 h-8 md:w-10 md:h-10 text-black" />
-                    </button>
-                    <button
-                      onClick={goToNext}
-                      aria-label="Next media"
-                      className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-14 h-14 md:w-16 md:h-16 rounded-full bg-white shadow-2xl shadow-black/30 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50"
-                    >
-                      <ChevronRight className="w-8 h-8 md:w-10 md:h-10 text-black" />
-                    </button>
-                  </>
-                )}
-              </motion.div>
-
-              {/* Caption */}
-              {currentMedia?.caption && (
-                <motion.p
-                  key={`caption-${currentMedia.id}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 text-center text-white/80 text-sm"
-                >
-                  {currentMedia.caption}
-                </motion.p>
-              )}
-
-              {/* Thumbnail strip for multiple media */}
-              {media.length > 1 && (
-                <div className="mt-4 flex justify-center gap-2 overflow-x-auto py-2">
-                  {media.map((item, index) => (
-                    <button
-                      key={item.id}
-                      onClick={() => onIndexChange(index)}
-                      className={`flex-shrink-0 w-16 h-12 rounded-md overflow-hidden transition-all ${
-                        index === currentIndex
-                          ? "ring-2 ring-white ring-offset-2 ring-offset-black"
-                          : "opacity-50 hover:opacity-80"
-                      }`}
-                    >
-                      {item.type === "video" ? (
-                        <div className="w-full h-full bg-muted flex items-center justify-center">
-                          <Film className="w-4 h-4 text-muted-foreground" />
-                        </div>
-                      ) : (
-                        <img
-                          src={item.url}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Keyboard hints */}
-              <div className="mt-4 flex justify-center gap-6 text-xs text-white/50">
-                <span>← → Navigate</span>
-                <span>ESC Close</span>
-              </div>
+                <X className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </div>
+
+            {/* Full-screen media display with swipe support */}
+            <motion.div 
+              className="absolute inset-0 flex items-center justify-center touch-pan-y px-20"
+              onPanEnd={handlePanEnd}
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentMedia?.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {currentMedia?.type === "video" ? (
+                    <motion.video
+                      ref={videoRef}
+                      layoutId={`media-showcase-${currentMedia.url}`}
+                      src={currentMedia.url}
+                      poster={getPosterUrl(currentMedia.url)}
+                      className="max-w-full max-h-full object-contain"
+                      controls
+                      autoPlay
+                      playsInline
+                    />
+                  ) : (
+                    <motion.img
+                      layoutId={`media-showcase-${currentMedia?.url}`}
+                      src={currentMedia?.url}
+                      alt={currentMedia?.alt || currentMedia?.caption || "Media"}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  )}
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Premium navigation arrows */}
+              {media.length > 1 && (
+                <>
+                  <button
+                    onClick={goToPrevious}
+                    aria-label="Previous media"
+                    className="absolute left-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white shadow-2xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center group"
+                  >
+                    <ChevronLeft className="w-10 h-10 text-black group-hover:translate-x-[-2px] transition-transform" />
+                  </button>
+                  <button
+                    onClick={goToNext}
+                    aria-label="Next media"
+                    className="absolute right-8 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-white shadow-2xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center group"
+                  >
+                    <ChevronRight className="w-10 h-10 text-black group-hover:translate-x-[2px] transition-transform" />
+                  </button>
+                </>
+              )}
+            </motion.div>
+
+            {/* Floating caption at bottom */}
+            {currentMedia?.caption && (
+              <motion.div
+                key={`caption-${currentMedia.id}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute bottom-8 left-0 right-0 flex justify-center px-8"
+              >
+                <p className="text-center text-white/90 text-sm max-w-2xl bg-black/40 backdrop-blur-md px-6 py-3 rounded-full">
+                  {currentMedia.caption}
+                </p>
+              </motion.div>
+            )}
           </motion.div>
         </>
       )}

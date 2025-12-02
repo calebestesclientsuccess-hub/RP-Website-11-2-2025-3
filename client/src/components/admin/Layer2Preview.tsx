@@ -134,10 +134,11 @@ export function Layer2Preview({ sections, expansionLayout = "vertical" }: Layer2
     // 2-column or 3-column grids
     if ((section.mediaType === "grid-2" || section.mediaType === "grid-3") && config.items && config.items.length > 0) {
       const gridCols = section.mediaType === "grid-2" ? "grid-cols-2" : "grid-cols-3";
+      const aspectClass = section.mediaType === "grid-2" ? "aspect-[4/3]" : "aspect-square";
       return (
-        <div className={`grid ${gridCols} gap-2 mb-3`}>
+        <div className={`grid ${gridCols} gap-3 mb-4`}>
           {config.items.map((item, idx) => (
-            <div key={idx} className="aspect-video rounded-lg overflow-hidden bg-muted/50 border border-border">
+            <div key={idx} className={`${aspectClass} rounded-lg overflow-hidden bg-muted/50 border border-border`}>
               {item.type === "video" ? (
                 <div className="w-full h-full bg-muted flex items-center justify-center text-xs text-muted-foreground">
                   Video {idx + 1}

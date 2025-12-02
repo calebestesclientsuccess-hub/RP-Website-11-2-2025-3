@@ -60,6 +60,7 @@ const formSchema = insertProjectSchema.extend({
   title: z.string().min(1, "Title is required"),
   modalMediaType: z.enum(["video", "carousel"]).default("video"),
   expansionLayout: z.enum(["vertical", "cinematic"]).default("vertical"),
+  spacingMode: z.enum(["compact", "balanced", "airy"]).default("balanced"),
   heroMediaType: z.enum(["image", "video"]).default("image"),
 });
 
@@ -108,6 +109,7 @@ export default function ProjectForm() {
       testimonialText: "" as any,
       testimonialAuthor: "" as any,
       expansionLayout: "vertical" as const,
+      spacingMode: "balanced" as const,
       heroMediaType: "image" as const,
     },
   });
@@ -129,6 +131,7 @@ export default function ProjectForm() {
         testimonialText: project.testimonialText || "",
         testimonialAuthor: project.testimonialAuthor || "",
         expansionLayout: (project.expansionLayout as "vertical" | "cinematic") || "vertical",
+        spacingMode: (project.spacingMode as "compact" | "balanced" | "airy") || "balanced",
         heroMediaType: (project.heroMediaType as "image" | "video") || "image",
       };
       form.reset(formData);
@@ -564,6 +567,39 @@ export default function ProjectForm() {
                         </div>
                         <p className="text-xs text-muted-foreground mt-3">
                           Vertical expands inline below the card. Cinematic opens a slide-over panel (desktop only).
+                        </p>
+                      </div>
+
+                      {/* Section Spacing */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium">Section Spacing</p>
+                            <p className="text-xs text-muted-foreground">Breathing room between sections</p>
+                          </div>
+                          <div className="flex gap-2">
+                            {[
+                              { value: "compact" as const, label: "Compact" },
+                              { value: "balanced" as const, label: "Balanced" },
+                              { value: "airy" as const, label: "Airy" },
+                            ].map((option) => (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => form.setValue("spacingMode", option.value)}
+                                className={`px-3 py-1.5 rounded-md border-2 transition-all text-sm ${
+                                  form.watch("spacingMode") === option.value
+                                    ? "border-primary bg-primary/10"
+                                    : "border-border hover:border-muted-foreground"
+                                }`}
+                              >
+                                {option.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Compact: Tight spacing for media-heavy portfolios. Balanced: Good rhythm (default). Airy: Extra breathing room for text-heavy content.
                         </p>
                       </div>
 

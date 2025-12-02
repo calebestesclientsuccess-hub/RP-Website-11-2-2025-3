@@ -120,6 +120,9 @@ const portfolioSchema = z.object({
 
   // Expansion layout mode
   expansionLayout: z.enum(["vertical", "cinematic"]).default("vertical"),
+  
+  // Section spacing mode
+  spacingMode: z.enum(["compact", "balanced", "airy"]).default("balanced"),
 
   // Slug lock state (for draft persistence)
   slugLocked: z.boolean().default(false),
@@ -215,6 +218,7 @@ export default function CreatePortfolio() {
       testimonialAuthor: "",
       styleOverrides: DEFAULT_STYLES,
       expansionLayout: "vertical" as const,
+      spacingMode: "balanced" as const,
       slugLocked: false,
       ...loadDraft(),
     },
@@ -508,7 +512,7 @@ export default function CreatePortfolio() {
         title: data.title,
         slug: data.slug,
         clientName: data.clientName,
-        clientLogoUrl: data.clientLogoUrl || null,
+        brandLogoUrl: data.clientLogoUrl || null,
         thumbnailUrl: data.thumbnailUrl || null,
         categories: data.categories,
         // Use first 3 sections for legacy compatibility
@@ -535,6 +539,8 @@ export default function CreatePortfolio() {
         } : {},
         // Expansion layout mode
         expansionLayout: data.expansionLayout || "vertical",
+        // Section spacing mode
+        spacingMode: data.spacingMode || "balanced",
       };
 
       const projectRes = await apiRequest("POST", "/api/projects", projectPayload);
@@ -693,6 +699,7 @@ export default function CreatePortfolio() {
       testimonialAuthor: "",
       styleOverrides: DEFAULT_STYLES,
       expansionLayout: "vertical",
+      spacingMode: "balanced",
       slugLocked: false,
     });
     setOpenSection("headline");
@@ -1042,6 +1049,35 @@ export default function CreatePortfolio() {
                           </svg>
                           <span>Cinematic</span>
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Section Spacing */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium">Section Spacing</p>
+                        <p className="text-xs text-muted-foreground">Breathing room between sections</p>
+                      </div>
+                      <div className="flex gap-2">
+                        {[
+                          { value: "compact" as const, label: "Compact" },
+                          { value: "balanced" as const, label: "Balanced" },
+                          { value: "airy" as const, label: "Airy" },
+                        ].map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => form.setValue("spacingMode", option.value)}
+                            className={cn(
+                              "px-3 py-1.5 rounded-md border-2 transition-all text-sm",
+                              watchedValues.spacingMode === option.value
+                                ? "border-primary bg-primary/10"
+                                : "border-border hover:border-muted-foreground"
+                            )}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   </div>

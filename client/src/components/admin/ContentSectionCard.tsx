@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Check, Circle, GripVertical, Settings2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { MediaPicker, type MediaSelectionMode } from "./MediaPicker";
 import { LayoutDesigner, type MediaPosition, type MediaSize, type Spacing } from "./LayoutDesigner";
+import { RichTextEditor } from "./RichTextEditor";
 import {
   Select,
   SelectContent,
@@ -261,46 +261,21 @@ export function ContentSectionCard({
                 )}
               </div>
 
-              {/* Body */}
+              {/* Body - Rich Text Editor */}
               <div>
                 <Label htmlFor={`section-${sectionNumber}-body`}>
                   Paragraph Text
                 </Label>
-                <Textarea
-                  id={`section-${sectionNumber}-body`}
-                  placeholder="Enter section content..."
-                  value={value.body}
-                  onChange={(e) => handleFieldChange("body", e.target.value)}
-                  className={cn(
-                    "mt-1.5 min-h-[120px]",
-                    bodyError && "border-destructive focus-visible:ring-destructive"
-                  )}
-                />
-                <div className="flex items-center justify-between mt-1">
-                  {bodyError && (
-                    <p className="text-xs text-destructive">{bodyError}</p>
-                  )}
-                  {bodyCharLimit !== undefined && (
-                    <div className="flex items-center gap-2 ml-auto">
-                      <span
-                        className={cn(
-                          "text-xs font-medium",
-                          bodyCharCount <= bodyCharLimit * CHAR_THRESHOLDS.warning && "text-muted-foreground",
-                          bodyCharCount > bodyCharLimit * CHAR_THRESHOLDS.warning && bodyCharCount <= bodyCharLimit * CHAR_THRESHOLDS.danger && "text-amber-500",
-                          bodyCharCount > bodyCharLimit * CHAR_THRESHOLDS.danger && bodyCharCount <= bodyCharLimit * CHAR_THRESHOLDS.critical && "text-orange-500",
-                          bodyCharCount > bodyCharLimit * CHAR_THRESHOLDS.critical && "text-red-500"
-                        )}
-                      >
-                        {bodyCharCount}/{bodyCharLimit}
-                      </span>
-                      {bodyCharCount > bodyCharLimit * CHAR_THRESHOLDS.danger && bodyCharCount <= bodyCharLimit && (
-                        <span className="text-xs text-orange-500">
-                          ⚠️ Consider shortening
-                        </span>
-                      )}
-                    </div>
-                  )}
+                <div className="mt-1.5">
+                  <RichTextEditor
+                    content={value.body}
+                    onChange={(html) => handleFieldChange("body", html)}
+                    placeholder="Enter section content..."
+                  />
                 </div>
+                {bodyError && (
+                  <p className="text-xs text-destructive mt-1">{bodyError}</p>
+                )}
                 
                 {/* Balance warning */}
                 {balanceWarning && (

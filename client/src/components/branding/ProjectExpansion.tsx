@@ -52,14 +52,15 @@ const layoutClasses = {
 };
 
 const sizeClasses = {
-  standard: "max-w-xl aspect-[4/3]",
-  immersive: "max-w-full aspect-[16/9]",
+  standard: "w-full aspect-[4/3] rounded-xl overflow-hidden",
+  immersive: "w-full aspect-[21/9] rounded-xl overflow-hidden -mx-6 md:-mx-12",
 };
 
-const spacingClasses = {
-  tight: "gap-2",
-  normal: "gap-4",
-  loose: "gap-8",
+// Portfolio-wide spacing configuration (based on magazine-style editorial layout)
+const SPACING_CONFIG = {
+  compact: { sections: "space-y-12", gap: "gap-2" },   // 48px sections, 8px media-text
+  balanced: { sections: "space-y-16", gap: "gap-3" },  // 64px sections, 12px media-text (magazine default)
+  airy: { sections: "space-y-20", gap: "gap-6" },      // 80px sections, 24px media-text
 };
 
 interface ProjectExpansionProps {
@@ -83,6 +84,7 @@ interface ProjectExpansionProps {
       text: string;
       author: string;
     };
+    spacingMode?: "compact" | "balanced" | "airy";
   };
   onClose: () => void;
 }
@@ -99,6 +101,17 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
   
   // Feature flag for "Experience the Full Story" CTA button
   const { isEnabled: showFullStoryCTA, isLoading: ctaLoading } = useFeatureFlag('branding-full-story-cta');
+  
+  // Get spacing configuration based on portfolio setting
+  const spacingMode = project.spacingMode || "balanced";
+  const portfolioSpacing = SPACING_CONFIG[spacingMode];
+  
+  // Dynamic spacing classes based on portfolio mode (tight/normal/loose variants)
+  const spacingClasses = {
+    tight: portfolioSpacing.gap === "gap-2" ? "gap-1" : portfolioSpacing.gap === "gap-3" ? "gap-2" : "gap-4",
+    normal: portfolioSpacing.gap,
+    loose: portfolioSpacing.gap === "gap-2" ? "gap-4" : portfolioSpacing.gap === "gap-3" ? "gap-6" : "gap-8",
+  };
   
   const mediaAssets =
     project.mediaAssets && project.mediaAssets.length > 0
@@ -171,10 +184,17 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
 
     // Single image
     if (section.mediaType === "image" && config.url) {
+      const singleMedia = [{
+        id: `${section.id}-image`,
+        url: config.url,
+        type: "image" as const,
+        caption: section.heading,
+      }];
+      
       return (
         <div 
-          className="aspect-video rounded-xl overflow-hidden bg-muted/50 border border-border mb-4 cursor-pointer hover:opacity-95 transition-opacity"
-          onClick={() => openOverlay(findMediaIndex(config.url!))}
+          className="aspect-[4/3] rounded-xl overflow-hidden bg-muted/50 border border-border cursor-pointer hover:opacity-95 transition-opacity"
+          onClick={() => openScopedOverlay(singleMedia, 0)}
         >
           <motion.img
             layoutId={`media-showcase-${config.url}`}
@@ -189,10 +209,17 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
 
     // Single video
     if (section.mediaType === "video" && config.url) {
+      const singleMedia = [{
+        id: `${section.id}-video`,
+        url: config.url,
+        type: "video" as const,
+        caption: section.heading,
+      }];
+      
       return (
         <div 
-          className="aspect-video rounded-xl overflow-hidden bg-muted/50 border border-border mb-4 cursor-pointer"
-          onClick={() => openOverlay(findMediaIndex(config.url!))}
+          className="aspect-[4/3] rounded-xl overflow-hidden bg-muted/50 border border-border cursor-pointer"
+          onClick={() => openScopedOverlay(singleMedia, 0)}
         >
           <motion.video
             layoutId={`media-showcase-${config.url}`}
@@ -209,8 +236,16 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
       const currentIndex = sectionMediaIndices[section.id] || 0;
       const currentItem = config.items[currentIndex % config.items.length];
 
+      // Create scoped media array for this carousel
+      const carouselMedia = config.items.map((item, idx) => ({
+        id: `${section.id}-carousel-${idx}`,
+        url: item.url,
+        type: item.type,
+        caption: item.caption || section.heading,
+      }));
+
       return (
-        <div className="relative aspect-video rounded-xl overflow-hidden bg-muted/50 border border-border mb-4">
+        <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-muted/50 border border-border">
           {currentItem.type === "video" ? (
             <motion.video
               key={currentIndex}
@@ -218,7 +253,7 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
               src={currentItem.url}
               className="w-full h-full object-cover cursor-pointer"
               controls
-              onClick={() => openOverlay(findMediaIndex(currentItem.url))}
+              onClick={() => openScopedOverlay(carouselMedia, currentIndex)}
             />
           ) : (
             <motion.img
@@ -227,7 +262,7 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
               alt={currentItem.caption || `${section.heading} media ${currentIndex + 1}`}
               className="w-full h-full object-cover cursor-pointer hover:opacity-95 transition-opacity"
               loading="lazy"
-              onClick={() => openOverlay(findMediaIndex(currentItem.url))}
+              onClick={() => openScopedOverlay(carouselMedia, currentIndex)}
             />
           )}
 
@@ -293,6 +328,8 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
     // 2-column or 3-column grids
     if ((section.mediaType === "grid-2" || section.mediaType === "grid-3") && config.items && config.items.length > 0) {
       const gridCols = section.mediaType === "grid-2" ? "grid-cols-2" : "grid-cols-3";
+      // Taller aspect ratios: 4/3 for 2-col (substantial), square for 3-col (impactful)
+      const aspectClass = section.mediaType === "grid-2" ? "aspect-[4/3]" : "aspect-square";
       
       // Create scoped media array for this grid
       const gridMedia = config.items.map((item, idx) => ({
@@ -303,11 +340,11 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
       }));
       
       return (
-        <div className={`grid ${gridCols} gap-3 mb-4`}>
+        <div className={`grid ${gridCols} gap-4`}>
           {config.items.map((item, idx) => (
             <div
               key={idx}
-              className="aspect-video rounded-xl overflow-hidden bg-muted/50 border border-border cursor-pointer hover:opacity-95 transition-opacity"
+              className={`${aspectClass} rounded-xl overflow-hidden bg-muted/50 border border-border cursor-pointer hover:opacity-95 transition-opacity`}
               onClick={() => openScopedOverlay(gridMedia, idx)}
             >
               {item.type === "video" ? (
@@ -509,7 +546,7 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
               <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
             </div>
           ) : layer2Sections && layer2Sections.length > 0 ? (
-            <div className="space-y-8 mb-12">
+            <div className={`${portfolioSpacing.sections} mb-12`}>
               {layer2Sections.map((section) => {
                 const style = section.styleConfig || {};
                 const alignmentClass = style.alignment === "center" ? "text-center" : style.alignment === "right" ? "text-right" : "text-left";
@@ -538,7 +575,7 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
                   <div 
                     key={section.id} 
                     data-testid={`section-${section.orderIndex}`}
-                    className={`p-6 rounded-lg ${hasMedia ? `${layoutClass} ${spacingClass}` : ""} ${alignmentClass}`}
+                    className={`${hasMedia ? `${layoutClass} ${spacingClass}` : ""} ${alignmentClass}`}
                     style={{
                       backgroundColor: style.backgroundColor,
                       color: style.textColor,
@@ -548,29 +585,38 @@ export function ProjectExpansion({ project, onClose }: ProjectExpansionProps) {
                   >
                     {/* Media - positioned based on layout */}
                     {hasMedia && (mediaPosition === "above" || mediaPosition === "left") && (
-                      <div className={mediaSize === "immersive" ? sizeClasses.immersive : sizeClasses.standard}>
+                      <div className={
+                        // Grids/carousels size themselves naturally - only single media needs aspect wrapper
+                        section.mediaType === "image" || section.mediaType === "video"
+                          ? (mediaSize === "immersive" ? sizeClasses.immersive : sizeClasses.standard)
+                          : "w-full"
+                      }>
                         {renderSectionMedia(section)}
                       </div>
                     )}
                     
-                    {/* Text content */}
-                    <div className={isHorizontalLayout ? "flex flex-col justify-center" : ""}>
+                    {/* Text content - magazine style */}
+                    <div className={isHorizontalLayout ? "flex flex-col justify-center" : "max-w-4xl"}>
                       <h3 
-                        className={`${style.headingSize || "text-2xl"} font-semibold mb-4`}
+                        className={`${style.headingSize || "text-3xl"} font-bold mb-2 tracking-tight`}
                         style={{ color: style.headingColor || undefined }}
                       >
                         {section.heading}
                       </h3>
-                      <p 
-                        className={`${style.bodySize || "text-base"} leading-relaxed whitespace-pre-wrap`}
-                      >
-                        {section.body}
-                      </p>
+                      <div 
+                        className={`${style.bodySize || "text-sm"} leading-loose text-muted-foreground md:columns-2 md:gap-8 prose prose-sm prose-invert max-w-none prose-headings:text-foreground prose-headings:font-bold prose-h3:text-base prose-h3:mb-2 prose-h3:mt-4 prose-p:mb-3 prose-strong:text-foreground prose-a:text-primary`}
+                        dangerouslySetInnerHTML={{ __html: section.body }}
+                      />
                     </div>
                     
                     {/* Media - for below/right positions */}
                     {hasMedia && (mediaPosition === "below" || mediaPosition === "right") && (
-                      <div className={mediaSize === "immersive" ? sizeClasses.immersive : sizeClasses.standard}>
+                      <div className={
+                        // Grids/carousels size themselves naturally - only single media needs aspect wrapper
+                        section.mediaType === "image" || section.mediaType === "video"
+                          ? (mediaSize === "immersive" ? sizeClasses.immersive : sizeClasses.standard)
+                          : "w-full"
+                      }>
                         {renderSectionMedia(section)}
                       </div>
                     )}
