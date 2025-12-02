@@ -192,9 +192,8 @@ export function MediaShowcaseOverlay({
                 >
                   {currentMedia?.type === "video" ? (
                     currentMedia.url ? (
-                      <motion.video
+                      <video
                         ref={videoRef}
-                        layoutId={`media-showcase-${currentMedia.url}`}
                         src={currentMedia.url}
                         poster={getPosterUrl(currentMedia.url)}
                         className="absolute inset-0 w-full h-full object-cover"
@@ -207,8 +206,7 @@ export function MediaShowcaseOverlay({
                     )
                   ) : (
                     currentMedia?.url ? (
-                      <motion.img
-                        layoutId={`media-showcase-${currentMedia?.url}`}
+                      <img
                         src={currentMedia?.url}
                         alt={currentMedia?.alt || currentMedia?.caption || "Media"}
                         className="absolute inset-0 w-full h-full object-cover"
