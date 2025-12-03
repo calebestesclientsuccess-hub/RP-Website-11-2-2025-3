@@ -61,10 +61,10 @@ const powers: Power[] = [
   {
     id: "gtm-architect",
     title: "GTM Architect",
-    icon: <Target className="w-6 h-6" strokeWidth={2} style={{ stroke: "#3B82F6" }} />,
-    color: "text-blue-500",
-    glowColor: "rgba(59, 130, 246, 0.4)",
-    bgColor: "59, 130, 246",
+    icon: <Target className="w-6 h-6" strokeWidth={2} style={{ stroke: "#0EA5E9" }} />,
+    color: "text-sky-500",
+    glowColor: "rgba(14, 165, 233, 0.5)",
+    bgColor: "14, 165, 233",
     angle: 0,
     description: "Expert architects who design and refine your entire revenue playbook.",
     details: [
@@ -81,10 +81,10 @@ const powers: Power[] = [
   {
     id: "ai-architect",
     title: "AI Architect",
-    icon: <Brain className="w-6 h-6" strokeWidth={2} style={{ stroke: "hsl(125 57% 49%)" }} />,
-    color: "text-signal-green",
-    glowColor: "rgba(76, 175, 80, 0.4)",
-    bgColor: "76, 175, 80",
+    icon: <Brain className="w-6 h-6" strokeWidth={2} style={{ stroke: "#14B8A6" }} />,
+    color: "text-teal-500",
+    glowColor: "rgba(20, 184, 166, 0.5)",
+    bgColor: "20, 184, 166",
     angle: 60,
     description: "Intelligent systems that research, personalize, and optimize at scale.",
     details: [
@@ -101,10 +101,10 @@ const powers: Power[] = [
   {
     id: "coach",
     title: "Elite Coach",
-    icon: <Users className="w-6 h-6" strokeWidth={2} style={{ stroke: "#8B5CF6" }} />,
-    color: "text-purple-500",
-    glowColor: "rgba(139, 92, 246, 0.4)",
-    bgColor: "139, 92, 246",
+    icon: <Users className="w-6 h-6" strokeWidth={2} style={{ stroke: "#818CF8" }} />,
+    color: "text-indigo-400",
+    glowColor: "rgba(129, 140, 248, 0.5)",
+    bgColor: "129, 140, 248",
     angle: 120,
     description: "World-class coaching that elevates your BDRs to top 1% performance.",
     details: [
@@ -121,10 +121,10 @@ const powers: Power[] = [
   {
     id: "revops",
     title: "RevOps",
-    icon: <Settings className="w-6 h-6" strokeWidth={2} style={{ stroke: "#EF4444" }} />,
-    color: "text-red-500",
-    glowColor: "rgba(239, 68, 68, 0.4)",
-    bgColor: "239, 68, 68",
+    icon: <Settings className="w-6 h-6" strokeWidth={2} style={{ stroke: "#C084FC" }} />,
+    color: "text-purple-400",
+    glowColor: "rgba(192, 132, 252, 0.5)",
+    bgColor: "192, 132, 252",
     angle: 180,
     description: "Full revenue operations management ensuring seamless system performance.",
     details: [
@@ -141,10 +141,10 @@ const powers: Power[] = [
   {
     id: "tools",
     title: "Tech Stack",
-    icon: <Wrench className="w-6 h-6" strokeWidth={2} style={{ stroke: "#F97316" }} />,
-    color: "text-orange-500",
-    glowColor: "rgba(249, 115, 22, 0.4)",
-    bgColor: "249, 115, 22",
+    icon: <Wrench className="w-6 h-6" strokeWidth={2} style={{ stroke: "#EC4899" }} />,
+    color: "text-pink-500",
+    glowColor: "rgba(236, 72, 153, 0.5)",
+    bgColor: "236, 72, 153",
     angle: 240,
     description: "Best-in-class tools integrated and optimized for maximum efficiency.",
     details: [
@@ -161,10 +161,10 @@ const powers: Power[] = [
   {
     id: "community",
     title: "Community & Competition",
-    icon: <Trophy className="w-6 h-6" strokeWidth={2} style={{ stroke: "#C41E58" }} />,
-    color: "text-magenta-rose",
-    glowColor: "rgba(196, 30, 88, 0.4)",
-    bgColor: "196, 30, 88",
+    icon: <Trophy className="w-6 h-6" strokeWidth={2} style={{ stroke: "#F43F5E" }} />,
+    color: "text-rose-500",
+    glowColor: "rgba(244, 63, 94, 0.5)",
+    bgColor: "244, 63, 94",
     angle: 300,
     description: "A culture of collaboration and healthy competition that drives results.",
     details: [
@@ -541,7 +541,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     >
       <video
         ref={videoRef}
-        className="w-full h-full object-contain bg-black"
+        className="w-full h-full object-cover bg-black"
         muted
         playsInline
         preload="auto"

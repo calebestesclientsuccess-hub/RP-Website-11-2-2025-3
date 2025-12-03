@@ -8,7 +8,7 @@ import { InternalLinks } from "@/components/InternalLinks";
 import { getRelatedLinks } from "@/lib/content-graph";
 import { CostEquationCard } from "@/components/CostEquationCard";
 import { ComparisonTable } from "@/components/ComparisonTable";
-import { ArrowRight, Users, Brain, BookOpen } from "lucide-react";
+import { ArrowRight, Users, Brain, BookOpen, AlertCircle, Sparkles, TrendingUp, Search, Target, Award, Cpu, UserCheck } from "lucide-react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { useRef, lazy, Suspense } from "react";
@@ -87,6 +87,18 @@ export default function GTMEnginePage() {
         </script>
       </Helmet>
 
+      {/* Global background gradient container - Apple TV smooth transitions */}
+      <div className="fixed inset-0 pointer-events-none -z-10">
+        {/* Layer 1: Subtle blue-purple gradient from top */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-purple-500/3 to-transparent" style={{ height: '40vh' }} />
+        
+        {/* Layer 2: Middle purple-cyan blend */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/4 to-transparent" style={{ top: '30vh', height: '40vh' }} />
+        
+        {/* Layer 3: Bottom indigo-green gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/3 to-green-500/5" style={{ top: '60vh' }} />
+      </div>
+
       <Breadcrumbs items={[]} currentPage="The GTM Engine" />
 
       {/* Widget Zone 15 */}
@@ -156,6 +168,8 @@ export default function GTMEnginePage() {
 
       {/* Section 1: The Core Thesis */}
       <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-core-thesis">
+        {/* Subtle blue tint overlay */}
+        <div className="absolute inset-0 bg-blue-500/3 pointer-events-none" />
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold mb-8 text-center" data-testid="heading-core-thesis">
             You Are Building an Asset,<br />
@@ -262,6 +276,8 @@ export default function GTMEnginePage() {
 
       {/* Section 4: The Solution - Fullstack Sales Unit */}
       <section className="relative py-20 px-4 md:px-6 lg:px-8" data-testid="section-solution">
+        {/* Soft purple ambient glow */}
+        <div className="absolute inset-0 bg-purple-500/4 pointer-events-none" />
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-solution">
@@ -384,6 +400,8 @@ export default function GTMEnginePage() {
 
       {/* Section 5: The Process */}
       <section className="relative py-20 px-4 md:px-6 lg:px-8 bg-card/30" data-testid="section-process">
+        {/* Subtle cyan background tint */}
+        <div className="absolute inset-0 bg-cyan-500/3 pointer-events-none" />
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-process">
@@ -424,79 +442,211 @@ export default function GTMEnginePage() {
       <WidgetZone zone="zone-18" className="my-8" />
 
       {/* Section 6: The Proof (Case Study) */}
-      <section className="relative py-20 px-4 md:px-6 lg:px-8" data-testid="section-proof">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="heading-proof">
+      <section className="relative py-24 px-4 md:px-6 lg:px-8 overflow-hidden" data-testid="section-proof">
+        {/* Background Effects */}
+        <div className="absolute inset-0 pointer-events-none opacity-40">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Hero Header */}
+          <div className="text-center mb-16">
+            <div className="inline-block mb-6">
+              <span className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-sm font-semibold">
+                Case Study
+              </span>
+            </div>
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-8" data-testid="heading-proof">
               The Proof:<br />
-              <span className="gradient-text gradient-hero">A Real-World "Hero's Journey"</span>
+              <span className="gradient-text gradient-hero">A Real-World Hero's Journey</span>
             </h2>
-            <p className="text-2xl font-semibold mb-4">
-              From 0-3 Sales to 15/Day: How We Fixed a "Too Good to Be True" Offer
-            </p>
+            <div className="max-w-4xl mx-auto">
+              <p className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-red-500 via-red-400 to-orange-500 bg-clip-text text-transparent">
+                From 0-3 Sales to 15/Day
+              </p>
+              <p className="text-xl text-muted-foreground">
+                How We Fixed a "Too Good to Be True" Offer
+              </p>
+            </div>
           </div>
 
-          <Card className="p-8 md:p-12" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(91, 142, 245, 0.4)', borderWidth: '2px' }}>
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-bold mb-3">The Pain:</h3>
-                <p className="leading-relaxed">
-                  A B2B compliance client had a 10-SDR team making 300+ calls per day and failing, booking only 0-3 sales. They were burning cash and their high-cost "Lone Wolf" team was on the verge of collapse.
-                </p>
-              </div>
+          {/* Main Story Container */}
+          <div className="max-w-6xl mx-auto space-y-12">
+            {/* The Journey Flow */}
+            <div className="relative">
+              {/* Vertical Timeline Line */}
+              <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-red-600 via-amber-500 via-orange-500 to-emerald-500 transform -translate-x-1/2" />
 
-              <div>
-                <h3 className="text-xl font-bold mb-3">The Diagnosis:</h3>
-                <p className="leading-relaxed">
-                  Our GTM Architects listened to the calls. The #1 killer wasn't the reps; it was the architecture. Their core offer—"For $300 I'll save you $7500 in fines"—sounded "too good to be true". It was a massive price-value disconnect that triggered skepticism and caused prospects to disengage.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-xl font-bold mb-3">The Reframe (The "Fullstack" Solution):</h3>
-                <p className="leading-relaxed mb-6">
-                  We didn't just "train" the reps. We re-engineered the entire GTM asset. This was the "Platonic Ideal," where every Architect contributed:
-                </p>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Card className="p-6" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(91, 142, 245, 0.4)', borderWidth: '2px' }}>
-                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#5B8EF5' }}>The GTM Strategist (Caleb)</h4>
-                    <p className="text-sm leading-relaxed">
-                      Orchestrated the new motion. He fixed the value equation, flipping the script from a weak "value" offer to a powerful "problem-led" one using Loss Aversion. He also raised the price from $300 to $750 to make the value believable against the $7,500 federal fine.
-                    </p>
-                  </Card>
-
-                  <Card className="p-6" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(65, 105, 225, 0.5)', borderWidth: '2px' }}>
-                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#4169E1' }}>The Brand Strategist (Mariya)</h4>
-                    <p className="text-sm leading-relaxed">
-                      Solved the trust problem by producing an "authority" asset—an educational video starring an actress ("Ms. Samantha") positioned as the company's leading compliance expert. This created "Textbook Authority Bias".
-                    </p>
-                  </Card>
-
-                  <Card className="p-6" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(91, 142, 245, 0.4)', borderWidth: '2px' }}>
-                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#5B8EF5' }}>The AI Architect (Unnamed Co-Founder, Announcing Jan 2026)</h4>
-                    <p className="text-sm leading-relaxed">
-                      Wrote the new cold call scripts for the playbook. Reps were trained not to sell, but to reference "Ms. Samantha's video". This instantly transferred the video's authority to the SDR, "warming the call".
-                    </p>
-                  </Card>
-
-                  <Card className="p-6" style={{ backgroundColor: 'rgba(65, 105, 225, 0.08)', borderColor: 'rgba(65, 105, 225, 0.5)', borderWidth: '2px' }}>
-                    <h4 className="font-bold mb-2 text-lg" style={{ color: '#4169E1' }}>The Elite Coach (Unnamed Co-Founder, Announcing Jan 2026)</h4>
-                    <p className="text-sm leading-relaxed">
-                      We realized the client didn't need "hunters"; they needed "trust builders." We helped them staff the team with former CSMs and Account Managers, who excelled at building instant rapport for a fast, obvious sale.
-                    </p>
-                  </Card>
+              {/* Step 1: The Pain */}
+              <div className="relative mb-16">
+                <div className="md:flex md:items-center md:justify-between">
+                  <div className="md:w-5/12">
+                    <Card className="p-8 rounded-3xl bg-gradient-to-br from-red-600/12 to-red-700/6 border-red-600/35 backdrop-blur-xl shadow-inner hover:shadow-2xl hover:shadow-red-600/25 transition-all duration-500 ease-out hover:scale-[1.02]">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-14 h-14 rounded-full bg-red-600/25 border-2 border-red-600 flex items-center justify-center text-red-500 font-bold text-lg shadow-lg">
+                          1
+                        </div>
+                        <div>
+                          <h3 className="text-2xl font-bold mb-4 text-red-400">The Pain</h3>
+                          <p className="leading-relaxed text-lg">
+                            A B2B compliance client had a <span className="font-bold text-red-400">10-SDR team making 300+ calls per day</span> and failing, booking only <span className="font-bold">0-3 sales</span>. They were burning cash and their high-cost "Lone Wolf" team was on the verge of collapse.
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                  <div className="hidden md:block md:w-2/12 text-center">
+                    <div className="w-16 h-16 mx-auto rounded-full bg-red-600 border-4 border-background flex items-center justify-center relative z-10 shadow-xl shadow-red-600/35">
+                      <AlertCircle className="w-8 h-8 text-white" strokeWidth={2.5} />
+                    </div>
+                  </div>
+                  <div className="md:w-5/12" />
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-xl font-bold mb-3">The Result:</h3>
-                <p className="leading-relaxed font-semibold">
-                  Within 3 weeks of launching the new, integrated playbook, the 10-SDR team's daily sales jumped from 0-3 to 5-15 sales per day. We transformed a failing, high-cost "Lone Wolf" team into a predictable, engineered profit center.
-                </p>
+              {/* Step 2: The Diagnosis */}
+              <div className="relative mb-16">
+                <div className="md:flex md:items-center md:justify-between md:flex-row-reverse">
+                  <div className="md:w-5/12">
+                    <Card className="p-8 rounded-3xl bg-gradient-to-br from-amber-500/12 to-amber-600/6 border-amber-500/35 backdrop-blur-xl shadow-inner hover:shadow-2xl hover:shadow-amber-500/25 transition-all duration-500 ease-out hover:scale-[1.02]">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-14 h-14 rounded-full bg-amber-500/25 border-2 border-amber-500 flex items-center justify-center text-amber-500 font-bold text-lg shadow-lg">
+                          2
+                        </div>
+                        <div>
+                          <h3 className="text-2xl font-bold mb-4 text-amber-400">The Diagnosis</h3>
+                          <p className="leading-relaxed text-lg">
+                            Our GTM Architects listened to the calls. The #1 killer wasn't the reps; it was the <span className="font-bold text-amber-400">architecture</span>. Their core offer—<span className="italic">"For $300 I'll save you $7500 in fines"</span>—sounded "too good to be true". It was a massive price-value disconnect that triggered skepticism and caused prospects to disengage.
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                  <div className="hidden md:block md:w-2/12 text-center">
+                    <div className="w-16 h-16 mx-auto rounded-full bg-amber-500 border-4 border-background flex items-center justify-center relative z-10 shadow-xl shadow-amber-500/35">
+                      <Search className="w-8 h-8 text-white" strokeWidth={2.5} />
+                    </div>
+                  </div>
+                  <div className="md:w-5/12" />
+                </div>
+              </div>
+
+              {/* Step 3: The Reframe */}
+              <div className="relative mb-16">
+                <div className="md:flex md:items-start md:justify-between">
+                  <div className="md:w-full">
+                    <Card className="p-8 md:p-12 rounded-3xl bg-gradient-to-br from-orange-500/12 to-orange-600/8 border-orange-500/35 backdrop-blur-xl shadow-inner hover:shadow-2xl hover:shadow-orange-500/25 transition-all duration-500 ease-out hover:scale-[1.02]">
+                      <div className="text-center mb-10">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-500 border-4 border-background mb-6 shadow-xl shadow-orange-500/45">
+                          <Sparkles className="w-8 h-8 text-white" strokeWidth={2.5} />
+                        </div>
+                        <h3 className="text-3xl font-bold mb-4 gradient-text gradient-hero">The Reframe</h3>
+                        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                          The "Fullstack" Solution: We didn't just "train" the reps. We re-engineered the <span className="font-semibold text-foreground">entire GTM asset</span>.
+                        </p>
+                      </div>
+
+                      {/* Four Pillars Grid */}
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {/* Strategic Architecture */}
+                        <Card className="group p-8 rounded-3xl bg-gradient-to-br from-blue-600/20 via-blue-500/10 to-transparent border-blue-400/40 hover:border-blue-400/60 backdrop-blur-xl shadow-inner transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-xl hover:shadow-blue-500/30">
+                          <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                              <Target className="w-7 h-7 text-white" strokeWidth={2.5} />
+                            </div>
+                            <div>
+                              <h4 className="font-bold mb-3 text-xl bg-gradient-to-r from-blue-400 to-blue-300 bg-clip-text text-transparent">
+                                Strategic Architecture
+                              </h4>
+                              <p className="leading-relaxed text-base">
+                                Orchestrated the new motion, fixing the value equation by flipping from a weak "value" offer to a powerful <span className="font-semibold text-blue-400">"problem-led" approach using Loss Aversion</span>. Price was raised from $300 to $750 to make the value believable against the $7,500 federal fine.
+                              </p>
+                            </div>
+                          </div>
+                        </Card>
+
+                        {/* Brand & Authority */}
+                        <Card className="group p-8 rounded-3xl bg-gradient-to-br from-purple-600/20 via-purple-500/10 to-transparent border-purple-400/40 hover:border-purple-400/60 backdrop-blur-xl shadow-inner transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/30">
+                          <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
+                              <Award className="w-7 h-7 text-white" strokeWidth={2.5} />
+                            </div>
+                            <div>
+                              <h4 className="font-bold mb-3 text-xl bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
+                                Brand & Authority
+                              </h4>
+                              <p className="leading-relaxed text-base">
+                                Solved the trust problem by producing an <span className="font-semibold text-purple-400">"authority" asset</span>—an educational video starring an actress ("Ms. Samantha") positioned as the company's leading compliance expert. This created "Textbook Authority Bias".
+                              </p>
+                            </div>
+                          </div>
+                        </Card>
+
+                        {/* AI-Powered Messaging */}
+                        <Card className="group p-8 rounded-3xl bg-gradient-to-br from-cyan-600/20 via-cyan-500/10 to-transparent border-cyan-400/40 hover:border-cyan-400/60 backdrop-blur-xl shadow-inner transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-xl hover:shadow-cyan-500/30">
+                          <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-lg">
+                              <Cpu className="w-7 h-7 text-white" strokeWidth={2.5} />
+                            </div>
+                            <div>
+                              <h4 className="font-bold mb-3 text-xl bg-gradient-to-r from-cyan-400 to-cyan-300 bg-clip-text text-transparent">
+                                AI-Powered Messaging
+                              </h4>
+                              <p className="leading-relaxed text-base">
+                                Engineered new cold call scripts for the playbook. Reps were trained <span className="font-semibold text-cyan-400">not to sell, but to reference "Ms. Samantha's video"</span>. This instantly transferred the video's authority to the SDR, "warming the call".
+                              </p>
+                            </div>
+                          </div>
+                        </Card>
+
+                        {/* Talent Optimization */}
+                        <Card className="group p-8 rounded-3xl bg-gradient-to-br from-indigo-600/20 via-indigo-500/10 to-transparent border-indigo-400/40 hover:border-indigo-400/60 backdrop-blur-xl shadow-inner transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-xl hover:shadow-indigo-500/30">
+                          <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                              <UserCheck className="w-7 h-7 text-white" strokeWidth={2.5} />
+                            </div>
+                            <div>
+                              <h4 className="font-bold mb-3 text-xl bg-gradient-to-r from-indigo-400 to-indigo-300 bg-clip-text text-transparent">
+                                Talent Optimization
+                              </h4>
+                              <p className="leading-relaxed text-base">
+                                Realized the client didn't need "hunters"; they needed <span className="font-semibold text-indigo-400">"trust builders"</span>. Helped them staff the team with former CSMs and Account Managers, who excelled at building instant rapport for a fast, obvious sale.
+                              </p>
+                            </div>
+                          </div>
+                        </Card>
+                      </div>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 4: The Result */}
+              <div className="relative">
+                <div className="md:flex md:items-center md:justify-center">
+                  <div className="md:w-10/12">
+                    <Card className="p-10 md:p-14 rounded-3xl bg-gradient-to-br from-emerald-500/18 via-emerald-600/10 to-green-600/6 border-emerald-500/40 backdrop-blur-xl shadow-inner hover:shadow-2xl hover:shadow-emerald-500/30 transition-all duration-500 ease-out hover:scale-[1.02] text-center">
+                      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500 border-4 border-background mb-8 shadow-xl shadow-emerald-500/45">
+                        <TrendingUp className="w-12 h-12 text-white" strokeWidth={2.5} />
+                      </div>
+                      <h3 className="text-3xl md:text-4xl font-bold mb-6 text-emerald-400">The Result</h3>
+                      <div className="max-w-3xl mx-auto">
+                        <p className="text-xl md:text-2xl leading-relaxed font-semibold mb-6">
+                          Within <span className="text-emerald-400">3 weeks</span> of launching the new, integrated playbook, the 10-SDR team's daily sales jumped from <span className="text-red-400 line-through">0-3</span> to <span className="text-emerald-400 text-3xl font-bold">5-15 sales per day</span>.
+                        </p>
+                        <div className="inline-block px-6 py-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40">
+                          <p className="text-lg font-bold text-emerald-300">
+                            Transformed a failing "Lone Wolf" team into a predictable, engineered profit center.
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                </div>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       </section>
 

@@ -50,7 +50,7 @@ const layoutClasses = {
 
 const sizeClasses = {
   standard: "max-w-xl aspect-[4/3]",
-  immersive: "max-w-full aspect-[16/9]",
+  immersive: "max-w-full aspect-[21/9]",
 };
 
 const spacingClasses = {
@@ -58,9 +58,6 @@ const spacingClasses = {
   normal: "gap-4",
   loose: "gap-8",
 };
-
-// Re-export for backwards compatibility
-export type { AggregatedMediaItem } from "@/hooks/useProjectMedia";
 
 interface ProjectDetailContentProps {
   project: {
@@ -83,15 +80,10 @@ interface ProjectDetailContentProps {
       author: string;
     };
   };
-  /** Callback when user clicks media - receives index in aggregatedMedia */
   onOpenOverlay: (mediaIndex: number) => void;
-  /** The aggregated media array (for index mapping) */
   aggregatedMedia: AggregatedMediaItem[];
-  /** Whether to show header with categories and gallery button */
   showHeader?: boolean;
-  /** Whether to show the full story CTA */
   showFullStoryCTA?: boolean;
-  /** Callback for full story CTA */
   onFullStoryClick?: () => void;
 }
 
@@ -103,31 +95,24 @@ export function ProjectDetailContent({
   showFullStoryCTA = false,
   onFullStoryClick,
 }: ProjectDetailContentProps) {
-  // Internal state for section carousels
   const [sectionMediaIndices, setSectionMediaIndices] = useState<Record<string, number>>({});
+  const { isEnabled: ctaEnabled, isLoading: ctaLoading } = useFeatureFlag("branding-full-story-cta");
 
-  // Feature flag for "Experience the Full Story" CTA button
-  const { isEnabled: ctaEnabled, isLoading: ctaLoading } = useFeatureFlag('branding-full-story-cta');
-
-  // Fetch layer2 sections (React Query will dedupe if parent also fetches)
   const { data: layer2Sections, isLoading: isLoadingSections } = useQuery<Layer2Section[]>({
     queryKey: [`/api/projects/${project.id}/layer2-sections`],
     enabled: !!project.id,
   });
 
-  // Build media assets for feature section
   const mediaAssets =
     project.mediaAssets && project.mediaAssets.length > 0
       ? project.mediaAssets
       : buildProjectMediaAssets(project);
 
-  // Helper to find index in aggregated media
   const findMediaIndex = (url: string): number => {
     const index = aggregatedMedia.findIndex((m) => m.url === url);
     return index >= 0 ? index : 0;
   };
 
-  // Render section media based on type
   const renderSectionMedia = (section: Layer2Section) => {
     if (!section.mediaConfig || section.mediaType === "none") {
       return null;
@@ -135,7 +120,6 @@ export function ProjectDetailContent({
 
     const config = section.mediaConfig;
 
-    // Single image
     if (section.mediaType === "image" && config.url) {
       return (
         <div 
@@ -153,7 +137,6 @@ export function ProjectDetailContent({
       );
     }
 
-    // Single video
     if (section.mediaType === "video" && config.url) {
       return (
         <div 
@@ -170,7 +153,6 @@ export function ProjectDetailContent({
       );
     }
 
-    // Carousels (image/video/mixed)
     if (config.items && config.items.length > 0) {
       const currentIndex = sectionMediaIndices[section.id] || 0;
       const currentItem = config.items[currentIndex % config.items.length];
@@ -259,12 +241,46 @@ export function ProjectDetailContent({
       );
     }
 
+    if ((section.mediaType === "grid-2" || section.mediaType === "grid-3") && config.items && config.items.length > 0) {
+      const gridCols = section.mediaType === "grid-2" ? "grid-cols-2" : "grid-cols-3";
+      const aspectClass = section.mediaType === "grid-2" ? "aspect-[4/3]" : "aspect-square";
+      
+      return (
+        <div className={`grid ${gridCols} gap-4`}>
+          {config.items.map((item, idx) => (
+            <div
+              key={idx}
+              className={`${aspectClass} rounded-xl overflow-hidden bg-muted/50 border border-border cursor-pointer hover:opacity-95 transition-opacity`}
+              onClick={() => onOpenOverlay(findMediaIndex(item.url))}
+            >
+              {item.type === "video" ? (
+                <motion.video
+                  layoutId={`media-showcase-${item.url}`}
+                  src={item.url}
+                  className="w-full h-full object-cover"
+                  muted
+                  loop
+                />
+              ) : (
+                <motion.img
+                  layoutId={`media-showcase-${item.url}`}
+                  src={item.url}
+                  alt={item.caption || `${section.heading} grid item ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
     return null;
   };
 
   return (
     <div className="p-8 md:p-12">
-      {/* Header */}
       {showHeader && (
         <div className="flex items-start justify-between gap-4 mb-8 flex-wrap">
           <div>
@@ -294,7 +310,6 @@ export function ProjectDetailContent({
         </div>
       )}
 
-      {/* Layer 2 Sections */}
       {isLoadingSections ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
@@ -307,18 +322,13 @@ export function ProjectDetailContent({
             const hasMedia = section.mediaType !== "none" && 
               (section.mediaConfig?.url || (section.mediaConfig?.items && section.mediaConfig.items.length > 0));
             
-            // Get layout configuration
             const mediaPosition = style.mediaPosition || "above";
             const mediaSize = style.mediaSize || "standard";
             const spacing = style.spacing || "normal";
             const textWidth = style.textWidth || 50;
-            
-            // Determine layout class based on position
             const isHorizontalLayout = mediaPosition === "left" || mediaPosition === "right";
             const layoutClass = hasMedia ? layoutClasses[mediaPosition] : "";
             const spacingClass = spacingClasses[spacing];
-            
-            // Custom styles for grid layouts
             const gridStyle = isHorizontalLayout && hasMedia ? {
               gridTemplateColumns: mediaPosition === "left" 
                 ? `${100 - textWidth}% ${textWidth}%` 
@@ -337,14 +347,12 @@ export function ProjectDetailContent({
                   ...gridStyle,
                 }}
               >
-                {/* Media - positioned based on layout */}
                 {hasMedia && (mediaPosition === "above" || mediaPosition === "left") && (
                   <div className={mediaSize === "immersive" ? sizeClasses.immersive : sizeClasses.standard}>
                     {renderSectionMedia(section)}
                   </div>
                 )}
                 
-                {/* Text content */}
                 <div className={isHorizontalLayout ? "flex flex-col justify-center" : ""}>
                   <h3 
                     className={`${style.headingSize || "text-2xl"} font-semibold mb-4`}
@@ -359,7 +367,6 @@ export function ProjectDetailContent({
                   </p>
                 </div>
                 
-                {/* Media - for below/right positions */}
                 {hasMedia && (mediaPosition === "below" || mediaPosition === "right") && (
                   <div className={mediaSize === "immersive" ? sizeClasses.immersive : sizeClasses.standard}>
                     {renderSectionMedia(section)}
@@ -370,7 +377,6 @@ export function ProjectDetailContent({
           })}
         </div>
       ) : (
-        // Fallback to legacy Challenge/Solution/Outcome
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {project.challenge && (
             <div>
@@ -407,7 +413,6 @@ export function ProjectDetailContent({
         </div>
       )}
 
-      {/* Feature Media Section - Additional videos/photos */}
       {mediaAssets.length > 2 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {mediaAssets.slice(1, 3).map((asset, idx) => (
@@ -439,7 +444,6 @@ export function ProjectDetailContent({
         </div>
       )}
 
-      {/* Testimonial Section */}
       {project.testimonial && (
         <div className="p-8 bg-muted/50 rounded-xl border border-border mb-12">
           <p className="text-xl italic mb-4 text-foreground/90" data-testid="text-testimonial">
@@ -451,7 +455,6 @@ export function ProjectDetailContent({
         </div>
       )}
 
-      {/* View Full Story CTA - Feature Flagged */}
       {showFullStoryCTA && !ctaLoading && ctaEnabled && onFullStoryClick && (
         <div className="flex justify-center">
           <Button
@@ -471,3 +474,4 @@ export function ProjectDetailContent({
   );
 }
 
+ 

@@ -71,12 +71,17 @@ export function useProjectMedia(
         alt: "Hero video",
       });
     } else if (project.thumbnailImage) {
+      const isVideoHero =
+        /\.(mp4|webm|mov|avi)(\?|$)/i.test(project.thumbnailImage) ||
+        project.thumbnailImage.includes("/video/") ||
+        project.thumbnailImage.includes("resource_type=video");
+
       media.push({
         id: `hero-${idCounter++}`,
         url: project.thumbnailImage,
-        type: "image",
+        type: isVideoHero ? "video" : "image",
         source: "hero",
-        alt: "Hero image",
+        alt: isVideoHero ? "Hero video" : "Hero image",
       });
     }
 
@@ -89,9 +94,9 @@ export function useProjectMedia(
 
         // Single image/video
         if (config.url) {
-          const isVideo = section.mediaType === "video" || 
-            /\.(mp4|webm|mov|avi)(\?|$)/i.test(config.url);
-          
+          const isVideo =
+            section.mediaType === "video" || /\.(mp4|webm|mov|avi)(\?|$)/i.test(config.url);
+
           media.push({
             id: `layer2-${section.id}-${idCounter++}`,
             url: config.url,
@@ -124,7 +129,7 @@ export function useProjectMedia(
       project.modalMediaAssets.forEach((asset) => {
         // Skip if already added from hero
         if (media.some((m) => m.url === asset.url)) return;
-        
+
         media.push({
           id: `modal-${asset.id || idCounter++}`,
           url: asset.url,
@@ -141,7 +146,7 @@ export function useProjectMedia(
       project.modalMediaUrls.forEach((url) => {
         // Skip if already added
         if (media.some((m) => m.url === url)) return;
-        
+
         const isVideo = /\.(mp4|webm|mov|avi)(\?|$)/i.test(url);
         media.push({
           id: `modal-url-${idCounter++}`,
@@ -157,7 +162,7 @@ export function useProjectMedia(
       project.galleryImages.forEach((url) => {
         // Skip if already added
         if (media.some((m) => m.url === url)) return;
-        
+
         media.push({
           id: `gallery-${idCounter++}`,
           url,
@@ -172,7 +177,7 @@ export function useProjectMedia(
       project.mediaAssets.forEach((asset) => {
         // Skip if already added
         if (media.some((m) => m.url === asset.url)) return;
-        
+
         media.push({
           id: `asset-${asset.id || idCounter++}`,
           url: asset.url,
@@ -214,4 +219,5 @@ export function filterMediaByType(
 ): AggregatedMediaItem[] {
   return media.filter((m) => types.includes(m.type));
 }
+
 

@@ -144,26 +144,26 @@ export function MediaShowcaseOverlay({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop - z-[60] to appear above CinematicPanel */}
+          {/* Backdrop - z-[9999] to appear above EVERYTHING including navbar and popups */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl"
+            className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-xl"
             onClick={onClose}
           />
 
-          {/* Content Container - z-[60] to appear above CinematicPanel */}
+          {/* Content Container - z-[9999] to appear above CinematicPanel */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center"
+            className="fixed inset-0 z-[9999] flex items-center justify-center px-8"
           >
             {/* Floating minimal header */}
-            <div className="fixed top-6 right-6 z-[70] flex items-center gap-4">
+            <div className="fixed top-6 right-6 z-[10000] flex items-center gap-4">
               <span className="text-sm text-white/70 font-medium bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full">
                 {currentIndex + 1} / {media.length}
               </span>
@@ -178,17 +178,21 @@ export function MediaShowcaseOverlay({
 
             {/* Full-screen media display with swipe support - Apple TV style */}
             <motion.div 
-              className="absolute inset-0 z-[1] flex items-center justify-center touch-pan-y px-24 py-20"
+              className="absolute inset-0 z-[1] flex items-center justify-center touch-pan-y"
               onPanEnd={handlePanEnd}
             >
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentMedia?.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="relative w-full h-full max-w-7xl bg-black/50 overflow-hidden rounded-3xl shadow-2xl"
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ 
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30
+                  }}
+                  className="relative flex items-center justify-center max-w-[80vw] max-h-[80vh]"
                 >
                   {currentMedia?.type === "video" ? (
                     currentMedia.url ? (
@@ -196,23 +200,27 @@ export function MediaShowcaseOverlay({
                         ref={videoRef}
                         src={currentMedia.url}
                         poster={getPosterUrl(currentMedia.url)}
-                        className="w-full h-full object-contain"
+                        className="w-auto h-auto max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
                         controls
                         autoPlay
                         playsInline
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/60 text-center p-8">Video URL not available</div>
+                      <div className="w-[600px] h-[400px] bg-zinc-900 flex items-center justify-center text-white/60 text-center p-8 rounded-2xl">
+                        Video URL not available
+                      </div>
                     )
                   ) : (
                     currentMedia?.url ? (
                       <img
                         src={currentMedia?.url}
                         alt={currentMedia?.alt || currentMedia?.caption || "Media"}
-                        className="w-full h-full object-contain"
+                        className="w-auto h-auto max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/60 text-center p-8">Image URL not available</div>
+                      <div className="w-[600px] h-[400px] bg-zinc-900 flex items-center justify-center text-white/60 text-center p-8 rounded-2xl">
+                        Image URL not available
+                      </div>
                     )
                   )}
                 </motion.div>
@@ -222,20 +230,24 @@ export function MediaShowcaseOverlay({
             {/* Premium navigation arrows - separate layer for reliable positioning */}
             {media.length > 1 && (
               <>
-                <button
-                  onClick={goToPrevious}
-                  aria-label="Previous media"
-                  className="fixed left-8 top-1/2 -translate-y-1/2 z-[70] w-14 h-14 rounded-full bg-white/90 shadow-2xl hover:scale-110 hover:bg-white active:scale-95 transition-all flex items-center justify-center"
-                >
-                  <ChevronLeft className="w-8 h-8 text-black" />
-                </button>
-                <button
-                  onClick={goToNext}
-                  aria-label="Next media"
-                  className="fixed right-8 top-1/2 -translate-y-1/2 z-[70] w-14 h-14 rounded-full bg-white/90 shadow-2xl hover:scale-110 hover:bg-white active:scale-95 transition-all flex items-center justify-center"
-                >
-                  <ChevronRight className="w-8 h-8 text-black" />
-                </button>
+                <div className="fixed left-8 top-1/2 -translate-y-1/2 z-[10000]">
+                  <button
+                    onClick={goToPrevious}
+                    aria-label="Previous media"
+                    className="w-14 h-14 rounded-full bg-white/90 shadow-2xl hover:scale-110 hover:bg-white active:scale-95 transition-all flex items-center justify-center"
+                  >
+                    <ChevronLeft className="w-8 h-8 text-black" />
+                  </button>
+                </div>
+                <div className="fixed right-8 top-1/2 -translate-y-1/2 z-[10000]">
+                  <button
+                    onClick={goToNext}
+                    aria-label="Next media"
+                    className="w-14 h-14 rounded-full bg-white/90 shadow-2xl hover:scale-110 hover:bg-white active:scale-95 transition-all flex items-center justify-center"
+                  >
+                    <ChevronRight className="w-8 h-8 text-black" />
+                  </button>
+                </div>
               </>
             )}
 
@@ -245,7 +257,7 @@ export function MediaShowcaseOverlay({
                 key={`caption-${currentMedia.id}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="absolute bottom-8 left-0 right-0 flex justify-center px-8"
+                className="fixed bottom-8 left-0 right-0 flex justify-center px-8 z-[10000]"
               >
                 <p className="text-center text-white/90 text-sm max-w-2xl bg-black/40 backdrop-blur-md px-6 py-3 rounded-full">
                   {currentMedia.caption}
@@ -259,3 +271,4 @@ export function MediaShowcaseOverlay({
   );
 }
 
+ 

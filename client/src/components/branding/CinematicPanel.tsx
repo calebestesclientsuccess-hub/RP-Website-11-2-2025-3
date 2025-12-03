@@ -182,9 +182,9 @@ export function CinematicPanel({
         aria-modal="true"
         aria-label={`${project.clientName} - ${project.projectTitle}`}
       >
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col glass-panel">
           {/* Header */}
-          <header className="p-6 border-b border-border flex items-center justify-between shrink-0">
+          <header className="p-6 border-b border-border/50 flex items-center justify-between shrink-0">
             <div>
               <h2 className="text-2xl font-bold">{project.clientName}</h2>
               <p className="text-muted-foreground">{project.projectTitle}</p>
@@ -233,4 +233,5 @@ export function CinematicPanel({
     </>
   );
 }
+
 

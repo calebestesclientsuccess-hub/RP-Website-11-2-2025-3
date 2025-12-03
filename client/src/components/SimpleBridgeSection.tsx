@@ -1,8 +1,76 @@
-import { useEffect, useRef, useMemo } from 'react';
+import { useEffect, useRef, useMemo, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
+
+const EMBER_PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
+
+type EmberParticle = {
+  id: number;
+  left: number;
+  startY: number;
+  delay: number;
+  duration: number;
+  size: number;
+  drift: number;
+  spread: number;
+  hasSparks: boolean;
+  crackleOffset: number;
+};
+
+type EmberOptions = {
+  spreadMultiplier?: number;
+  durationScale?: number;
+  driftScale?: number;
+  sizeOffset?: number;
+};
+
+const generateEmbers = (
+  count: number,
+  options: EmberOptions = {}
+): EmberParticle[] => {
+  const {
+    spreadMultiplier = 1,
+    durationScale = 1,
+    driftScale = 1,
+    sizeOffset = 0,
+  } = options;
+
+  const systemLeft = 50;
+  const baseSpread = 7 * spreadMultiplier;
+
+  return Array.from({ length: count }, (_, i) => {
+    const p1 = EMBER_PRIMES[i % EMBER_PRIMES.length];
+    const p2 = EMBER_PRIMES[(i + 5) % EMBER_PRIMES.length];
+    const p3 = EMBER_PRIMES[(i + 11) % EMBER_PRIMES.length];
+
+    const left =
+      systemLeft +
+      (((i * p1 * 1.7) % 100) / 100) * baseSpread * 2 -
+      baseSpread;
+
+    const spawnHeight = 4 + ((i * p2 * 0.43) % 5);
+    const durationBase = 25 + ((i * p3) % 30);
+    const duration = Math.max(10, durationBase * durationScale);
+    const delay = -((i * p1 * p2 * 0.017) % duration);
+
+    return {
+      id: i,
+      left,
+      startY: spawnHeight,
+      delay,
+      duration,
+      size: Math.max(2, 3 + ((i * p1) % 6) - sizeOffset),
+      drift:
+        ((i % 2 === 0 ? 1 : -1) * (12 + ((i * p2) % 4) * 6)) * driftScale,
+      spread:
+        ((i % 2 === 0 ? 1 : -1) * (35 + ((i * p3) % 7) * 15)) * driftScale,
+      hasSparks: i % 3 === 0,
+      crackleOffset: ((i * p1) % 10) * 0.15,
+    };
+  });
+};
 
 /**
  * SimpleBridgeSection: THE REVELATION
@@ -34,201 +102,355 @@ export default function SimpleBridgeSection() {
   const emberContainerRef = useRef<HTMLDivElement>(null);
   const pageIlluminationRef = useRef<HTMLDivElement>(null);
 
-  // Embers
-  // EMBER LAWS:
-  // 1. All embers must fall - none can be static
-  // 2. The word "system" is the heat source - embers emanate ONLY from it
-  // 3. Use animation delay to distribute embers along fall path (not static positioning)
-  const embers = useMemo(() => 
-    Array.from({ length: 350 }, (_, i) => {
-      // "system." is centered on the bottom line at 50%
-      const systemLeft = 50;
-      const systemSpread = 7;
-      
-      // Use prime-based chaos to break up visible patterns
-      const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
-      const p1 = primes[i % primes.length];
-      const p2 = primes[(i + 5) % primes.length];
-      const p3 = primes[(i + 11) % primes.length];
-      
-      // Horizontal: chaotic spread around "system"
-      const left = systemLeft + (((i * p1 * 1.7) % 100) / 100 * systemSpread * 2) - systemSpread;
-      
-      // Vertical: ALL embers spawn near the text - animation handles distribution
-      const spawnHeight = 4 + ((i * p2 * 0.43) % 5);
-      
-      // Varied durations (25-55s range for slow, graceful fall)
-      const duration = 25 + ((i * p3) % 30);
-      
-      // KEY: Delay spans FULL duration - this distributes embers along entire fall path
-      // Each ember starts at a different point in its animation cycle
-      const delay = -((i * p1 * p2 * 0.017) % duration);
-      
-      return {
-        id: i,
-        left: left,
-        startY: spawnHeight,
-        delay: delay,
-        duration: duration,
-        size: 3 + ((i * p1) % 6),
-        drift: (i % 2 === 0 ? 1 : -1) * (12 + ((i * p2) % 4) * 6),
-        spread: (i % 2 === 0 ? 1 : -1) * (35 + ((i * p3) % 7) * 15),
-        hasSparks: i % 3 === 0,
-        crackleOffset: ((i * p1) % 10) * 0.15,
-      };
-    }), []
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+
+  const emberSets = useMemo(
+    () => ({
+      desktop: generateEmbers(350),
+      mobile: generateEmbers(80, {
+        spreadMultiplier: 0.6,
+        durationScale: 0.7,
+        driftScale: 0.6,
+        sizeOffset: 1,
+      }),
+    }),
+    []
   );
 
+  const embers = isMobileViewport ? emberSets.mobile : emberSets.desktop;
+
   useEffect(() => {
-    // Safety check - all required refs must exist
-    if (!sectionRef.current || !whiteContainerRef.current || !redContainerRef.current ||
-        !whiteTextRef.current || !line1Ref.current || !line2Ref.current || !line3Ref.current || 
-        !word1Ref.current || !word2Ref.current || !word3Ref.current || !word4Ref.current ||
-        !conicFloodRef.current ||
-        !heatDistortionRef.current || !emberContainerRef.current || !pageIlluminationRef.current) {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const query = window.matchMedia('(max-width: 767px)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsMobileViewport(event.matches);
+    };
+
+    setIsMobileViewport(query.matches);
+
+    if (typeof query.addEventListener === 'function') {
+      query.addEventListener('change', handleChange);
+      return () => query.removeEventListener('change', handleChange);
+    }
+
+    query.addListener(handleChange);
+    return () => query.removeListener(handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (
+      !sectionRef.current ||
+      !whiteContainerRef.current ||
+      !redContainerRef.current ||
+      !whiteTextRef.current ||
+      !line1Ref.current ||
+      !line2Ref.current ||
+      !line3Ref.current ||
+      !word1Ref.current ||
+      !word2Ref.current ||
+      !word3Ref.current ||
+      !word4Ref.current ||
+      !conicFloodRef.current ||
+      !heatDistortionRef.current ||
+      !emberContainerRef.current ||
+      !pageIlluminationRef.current
+    ) {
       console.warn('SimpleBridgeSection: Missing refs, animation disabled');
       return;
     }
 
-    const isMobile = window.innerWidth < 768;
-    const scrollDistance = isMobile ? 910 : 1190; // 40% slower scroll animation
-
-    // === SETUP: White text character spans ===
     const lines = [
-      { ref: line1Ref, text: "You need more" },
-      { ref: line2Ref, text: "than just" },
-      { ref: line3Ref, text: "another salesperson." }
+      { ref: line1Ref, text: 'You need more' },
+      { ref: line2Ref, text: 'than just' },
+      { ref: line3Ref, text: 'another salesperson.' },
     ];
 
-    lines.forEach(({ ref, text }) => {
-      const chars = text.split('').map((char) => {
-        const span = document.createElement('span');
-        span.textContent = char;
-        span.style.opacity = '0';
-        span.style.display = 'inline';
-        return span;
-      });
-      
-      if (ref.current) {
-        ref.current.innerHTML = '';
-        chars.forEach(span => ref.current?.appendChild(span));
-      }
-    });
+    const wordRefs = [
+      word1Ref.current,
+      word2Ref.current,
+      word3Ref.current,
+      word4Ref.current,
+    ];
+    const activeWordRefs = wordRefs.filter(
+      (word): word is HTMLSpanElement => Boolean(word)
+    );
 
-    // Line 1 starts visible
-    if (line1Ref.current) {
+    const setWhiteTextContent = (mode: 'characters' | 'static') => {
+      lines.forEach(({ ref, text }) => {
+        if (!ref.current) {
+          return;
+        }
+        ref.current.innerHTML = '';
+
+        if (mode === 'characters') {
+          (ref.current as HTMLElement).style.opacity = '';
+          text.split('').forEach((char) => {
+            const span = document.createElement('span');
+            span.textContent = char;
+            span.style.opacity = '0';
+            span.style.display = 'inline';
+            ref.current?.appendChild(span);
+          });
+        } else {
+          ref.current.textContent = text;
+          (ref.current as HTMLElement).style.opacity = '1';
+        }
+      });
+    };
+
+    const revealLine1Immediately = () => {
+      if (!line1Ref.current) {
+        return;
+      }
+
       Array.from(line1Ref.current.children).forEach((child: Element) => {
         (child as HTMLElement).style.opacity = '1';
       });
-    }
+    };
 
-    // Collect refs into arrays
-    const wordRefs = [word1Ref.current, word2Ref.current, word3Ref.current, word4Ref.current];
-
-    const ctx = gsap.context(() => {
-      // === INITIAL STATES ===
-      gsap.set(whiteContainerRef.current, { scale: 1, opacity: 1 });
-      gsap.set(redContainerRef.current, { opacity: 1 });
-      
-      // Red text starts hidden
+    const setWordInitialState = (values: Record<string, unknown>) => {
       wordRefs.forEach((word) => {
-        gsap.set(word, { opacity: 0, scale: 0.7, y: 100 });
+        if (word) {
+          gsap.set(word, values);
+        }
       });
-      
-      // Light layers start hidden
-      gsap.set(conicFloodRef.current, { opacity: 0, scale: 0.5, filter: 'blur(20px)' });
-      gsap.set(heatDistortionRef.current, { opacity: 0 });
-      gsap.set(emberContainerRef.current, { opacity: 0 });
-      gsap.set(pageIlluminationRef.current, { opacity: 0 });
+    };
 
-      // === MASTER TIMELINE (Scroll-Driven) ===
-      const masterTimeline = gsap.timeline();
+    const mm = gsap.matchMedia();
 
-      // --- PHASE 1: TYPING + ZOOM (0% → 30%) ---
-      const line2Chars = Array.from(line2Ref.current?.children || []);
-      const line3Chars = Array.from(line3Ref.current?.children || []);
-      const totalChars = line2Chars.length + line3Chars.length;
-      let charIndex = 0;
-
-      // Type out line 2
-      line2Chars.forEach((span) => {
-        const startTime = (charIndex / totalChars) * 30;
-        masterTimeline.to(span, { opacity: 1, duration: 0.1, ease: 'none' }, startTime);
-        charIndex++;
-      });
-
-      // Type out line 3
-      line3Chars.forEach((span) => {
-        const startTime = (charIndex / totalChars) * 30;
-        masterTimeline.to(span, { opacity: 1, duration: 0.1, ease: 'none' }, startTime);
-        charIndex++;
-      });
-
-      // Zoom while typing
-      masterTimeline.to(whiteContainerRef.current, {
-        scale: isMobile ? 1.5 : 1.8,
-        duration: 30,
-        ease: 'power1.out'
-      }, 0);
-
-      // --- PHASE 2: FLY PAST (30% → 50%) ---
-      masterTimeline.to(whiteContainerRef.current, {
-        scale: 6,
-        opacity: 0,
-        duration: 20,
-        ease: 'power2.in'
-      }, 30);
-
-      // --- PHASE 3: GRAVITATIONAL SETTLING (55% → 85%) ---
-      const wordTimings = [
-        { wordRef: word1Ref.current, start: 55, duration: 35 },
-        { wordRef: word2Ref.current, start: 62, duration: 35 },
-        { wordRef: word3Ref.current, start: 69, duration: 35 },
-        { wordRef: word4Ref.current, start: 76, duration: 40 },
-      ];
-
-      wordTimings.forEach(({ wordRef, start, duration }) => {
-        // Main glow layer
-        masterTimeline.to(wordRef, {
+    const reducedMotionSetup = () => {
+      const ctx = gsap.context(() => {
+        setWhiteTextContent('static');
+        gsap.set(whiteContainerRef.current, {
           opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: duration,
-          ease: 'back.out(1.7)'
-        }, start);
-      });
+          clearProps: 'transform',
+        });
+        setWordInitialState({ opacity: 1, y: 0, scale: 1 });
+        gsap.set(
+          [
+            conicFloodRef.current,
+            heatDistortionRef.current,
+            emberContainerRef.current,
+            pageIlluminationRef.current,
+          ],
+          { opacity: 0.25 }
+        );
+      }, sectionRef);
 
-      // --- PHASE 3.5: HOLD & FOCUS (85% → 89%) ---
-      // Let the words settle and hold the viewer's attention
-      masterTimeline.to({}, { duration: 4 }, 85);
+      return () => ctx.revert();
+    };
 
-      // --- PHASE 4: RED GLOW IGNITION (89% → 93%) ---
-      
-      // Heat distortion
-      masterTimeline.to(heatDistortionRef.current, {
-        opacity: 1,
-        duration: 6,
-        ease: 'power2.out'
-      }, 89);
+    const mobileTimeline = () => {
+      const ctx = gsap.context(() => {
+        setWhiteTextContent('static');
+        gsap.set(whiteContainerRef.current, {
+          opacity: 0,
+          scale: 0.92,
+          y: 30,
+        });
+        setWordInitialState({ opacity: 0, y: 30, scale: 0.92 });
+        gsap.set(
+          [
+            conicFloodRef.current,
+            heatDistortionRef.current,
+            emberContainerRef.current,
+            pageIlluminationRef.current,
+          ],
+          { opacity: 0 }
+        );
 
-      // Light cone bloom
-      masterTimeline.to(conicFloodRef.current, {
-        opacity: 0.6,
-        scale: 1,
-        filter: 'blur(40px)',
-        duration: 10,
-        ease: 'power3.out'
-      }, 89);
+        const timeline = gsap.timeline();
 
-      // Embers start falling
-      masterTimeline.to(emberContainerRef.current, {
-        opacity: 1,
-        duration: 10,
-        ease: 'power2.out'
-      }, 91);
+        timeline
+          .to(whiteContainerRef.current, {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 5,
+            ease: 'power2.out',
+          })
+          .to(
+            whiteContainerRef.current,
+            { opacity: 0, y: -60, duration: 4, ease: 'power2.inOut' },
+            5
+          )
+          .to(
+            activeWordRefs,
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 4,
+              stagger: 0.2,
+              ease: 'power2.out',
+            },
+            5
+          )
+          .to(
+            conicFloodRef.current,
+            {
+              opacity: 0.55,
+              scale: 0.85,
+              filter: 'blur(50px)',
+              duration: 4,
+              ease: 'power2.out',
+            },
+            6
+          )
+          .to(
+            heatDistortionRef.current,
+            { opacity: 0.4, duration: 3, ease: 'power2.out' },
+            6
+          )
+          .to(
+            emberContainerRef.current,
+            { opacity: 0.85, duration: 3, ease: 'power2.out' },
+            6.2
+          )
+          .to(
+            pageIlluminationRef.current,
+            { opacity: 0.35, duration: 3, ease: 'power2.out' },
+            6.2
+          );
 
-      // Text red glow intensifies
-      const redGlow = `
+        ScrollTrigger.create({
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: '+=240vh',
+          scrub: 0.6,
+          pin: false,
+          animation: timeline,
+        });
+      }, sectionRef);
+
+      return () => ctx.revert();
+    };
+
+    const desktopTimeline = () => {
+      const ctx = gsap.context(() => {
+        setWhiteTextContent('characters');
+        revealLine1Immediately();
+
+        gsap.set(whiteContainerRef.current, { scale: 1, opacity: 1 });
+        gsap.set(redContainerRef.current, { opacity: 1 });
+        setWordInitialState({ opacity: 0, scale: 0.7, y: 100 });
+        gsap.set(conicFloodRef.current, {
+          opacity: 0,
+          scale: 0.5,
+          filter: 'blur(20px)',
+        });
+        gsap.set(heatDistortionRef.current, { opacity: 0 });
+        gsap.set(emberContainerRef.current, { opacity: 0 });
+        gsap.set(pageIlluminationRef.current, { opacity: 0 });
+
+        const masterTimeline = gsap.timeline();
+        const line2Chars = Array.from(line2Ref.current?.children || []);
+        const line3Chars = Array.from(line3Ref.current?.children || []);
+        const totalChars = line2Chars.length + line3Chars.length;
+        let charIndex = 0;
+
+        line2Chars.forEach((span) => {
+          const startTime = (charIndex / totalChars) * 30;
+          masterTimeline.to(
+            span,
+            { opacity: 1, duration: 0.1, ease: 'none' },
+            startTime
+          );
+          charIndex++;
+        });
+
+        line3Chars.forEach((span) => {
+          const startTime = (charIndex / totalChars) * 30;
+          masterTimeline.to(
+            span,
+            { opacity: 1, duration: 0.1, ease: 'none' },
+            startTime
+          );
+          charIndex++;
+        });
+
+        const baseZoom = window.innerWidth < 1024 ? 1.6 : 1.8;
+
+        masterTimeline.to(
+          whiteContainerRef.current,
+          {
+            scale: baseZoom,
+            duration: 30,
+            ease: 'power1.out',
+          },
+          0
+        );
+
+        masterTimeline.to(
+          whiteContainerRef.current,
+          {
+            scale: 6,
+            opacity: 0,
+            duration: 20,
+            ease: 'power2.in',
+          },
+          30
+        );
+
+        const wordTimings = [
+          { wordRef: word1Ref.current, start: 55, duration: 35 },
+          { wordRef: word2Ref.current, start: 62, duration: 35 },
+          { wordRef: word3Ref.current, start: 69, duration: 35 },
+          { wordRef: word4Ref.current, start: 76, duration: 40 },
+        ];
+
+        wordTimings.forEach(({ wordRef, start, duration }) => {
+          masterTimeline.to(
+            wordRef,
+            {
+              opacity: 1,
+              scale: 1,
+              y: 0,
+              duration,
+              ease: 'back.out(1.7)',
+            },
+            start
+          );
+        });
+
+        masterTimeline.to({}, { duration: 4 }, 85);
+
+        masterTimeline.to(
+          heatDistortionRef.current,
+          {
+            opacity: 1,
+            duration: 6,
+            ease: 'power2.out',
+          },
+          89
+        );
+
+        masterTimeline.to(
+          conicFloodRef.current,
+          {
+            opacity: 0.6,
+            scale: 1,
+            filter: 'blur(40px)',
+            duration: 10,
+            ease: 'power3.out',
+          },
+          89
+        );
+
+        masterTimeline.to(
+          emberContainerRef.current,
+          {
+            opacity: 1,
+            duration: 10,
+            ease: 'power2.out',
+          },
+          91
+        );
+
+        const redGlow = `
         0 0 8px rgba(0, 0, 0, 0.9),
         0 0 2px #ff0000,
         0 0 10px #ff0000,
@@ -237,35 +459,53 @@ export default function SimpleBridgeSection() {
         0 0 100px #990000
       `;
 
-      masterTimeline.to(wordRefs, {
-        textShadow: redGlow,
-        webkitTextStrokeColor: '#ff0000',
-        duration: 10,
-        ease: 'power2.out'
-      }, 89);
+        masterTimeline.to(
+          activeWordRefs,
+          {
+            textShadow: redGlow,
+            webkitTextStrokeColor: '#ff0000',
+            duration: 10,
+            ease: 'power2.out',
+          },
+          89
+        );
 
-      // Page illumination
-      masterTimeline.to(pageIlluminationRef.current, {
-        opacity: 0.5,
-        duration: 10,
-        ease: 'power2.out'
-      }, 93);
+        masterTimeline.to(
+          pageIlluminationRef.current,
+          {
+            opacity: 0.5,
+            duration: 10,
+            ease: 'power2.out',
+          },
+          93
+        );
 
-      // === SCROLL TRIGGER ===
-      ScrollTrigger.create({
-        trigger: sectionRef.current,
-        start: 'top top',
-        end: `+=${scrollDistance}vh`,
-        pin: true,
-        pinSpacing: true,
-        scrub: 0.5,
-        animation: masterTimeline
-      });
+        ScrollTrigger.create({
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: '+=1190vh',
+          pin: true,
+          pinSpacing: true,
+          scrub: 0.5,
+          animation: masterTimeline,
+        });
+      }, sectionRef);
 
-    }, sectionRef);
+      return () => ctx.revert();
+    };
+
+    mm.add('(prefers-reduced-motion: reduce)', reducedMotionSetup);
+    mm.add(
+      '(max-width: 767px) and (prefers-reduced-motion: no-preference)',
+      mobileTimeline
+    );
+    mm.add(
+      '(min-width: 768px) and (prefers-reduced-motion: no-preference)',
+      desktopTimeline
+    );
 
     return () => {
-      ctx.revert();
+      mm.revert();
     };
   }, []);
 
@@ -354,7 +594,8 @@ export default function SimpleBridgeSection() {
             className="absolute pointer-events-none"
             style={{
               left: '50%', top: '0%', transform: 'translate(-50%, -100%)',
-              width: '150%', height: '120px',
+              width: isMobileViewport ? '110%' : '150%',
+              height: isMobileViewport ? '80px' : '120px',
               background: 'linear-gradient(to top, rgba(184, 13, 46, 0.05) 0%, transparent 100%)',
               filter: 'url(#heat-distortion)',
               zIndex: 1
@@ -368,7 +609,8 @@ export default function SimpleBridgeSection() {
             className="absolute pointer-events-none"
             style={{
               left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
-              width: '150%', height: '150px',
+              width: isMobileViewport ? '120%' : '150%',
+              height: isMobileViewport ? '120px' : '150px',
               background: 'radial-gradient(circle at center, rgba(255, 0, 0, 0.6) 0%, rgba(255, 50, 50, 0.4) 20%, rgba(255, 80, 60, 0.3) 40%, rgba(184, 13, 46, 0.1) 60%, rgba(184, 13, 46, 0) 80%)',
               filter: 'blur(60px)',
               zIndex: -1
@@ -382,9 +624,10 @@ export default function SimpleBridgeSection() {
             style={{
               left: '50%', top: '50%',
               transform: 'translate(-50%, 0)',
-              width: '150vw', height: '500vh',
+              width: isMobileViewport ? '110vw' : '150vw',
+              height: isMobileViewport ? '220vh' : '500vh',
               background: 'conic-gradient(from 120deg at 50% 0%, rgba(184, 13, 46, 0) 0deg, rgba(255, 50, 30, 0.04) 20deg, rgba(255, 80, 50, 0.12) 40deg, rgba(255, 100, 60, 0.18) 60deg, rgba(255, 80, 50, 0.12) 80deg, rgba(255, 50, 30, 0.04) 100deg, rgba(184, 13, 46, 0) 120deg)',
-              filter: 'blur(80px)',
+              filter: `blur(${isMobileViewport ? 60 : 80}px)`,
               mixBlendMode: 'screen', 
               zIndex: -4
             }}
@@ -396,9 +639,10 @@ export default function SimpleBridgeSection() {
             style={{
               left: '50%', top: '30%',
               transform: 'translate(-50%, -20%)',
-              width: '650%', height: '500vh',
+              width: isMobileViewport ? '320%' : '650%',
+              height: isMobileViewport ? '280vh' : '500vh',
               background: 'radial-gradient(ellipse 70% 80% at 50% 50%, rgba(120, 9, 30, 0.16) 0%, rgba(100, 8, 25, 0.1) 25%, rgba(80, 6, 20, 0.06) 50%, rgba(45, 4, 12, 0.015) 75%, transparent 100%)',
-              filter: 'blur(250px)',
+              filter: `blur(${isMobileViewport ? 180 : 250}px)`,
               zIndex: -6
             }}
           />
@@ -409,9 +653,10 @@ export default function SimpleBridgeSection() {
             style={{
               left: '50%', top: '0%',
               transform: 'translate(-50%, 0)',
-              width: '800%', height: '800vh',
+              width: isMobileViewport ? '400%' : '800%',
+              height: isMobileViewport ? '400vh' : '800vh',
               background: 'radial-gradient(ellipse 90% 90% at 50% 20%, rgba(90, 7, 23, 0.1) 0%, rgba(70, 5, 18, 0.06) 30%, rgba(40, 3, 10, 0.018) 60%, rgba(20, 2, 5, 0.005) 90%, transparent 100%)',
-              filter: 'blur(300px)',
+              filter: `blur(${isMobileViewport ? 200 : 300}px)`,
               zIndex: -7
             }}
           />
@@ -435,8 +680,8 @@ export default function SimpleBridgeSection() {
               left: '50%', 
               top: '50%', // Start at text level
               transform: 'translate(-50%, 0)',
-              width: '200%', 
-              height: '400vh',
+              width: isMobileViewport ? '120%' : '200%', 
+              height: isMobileViewport ? '220vh' : '400vh',
               zIndex: 5
             }}
           >

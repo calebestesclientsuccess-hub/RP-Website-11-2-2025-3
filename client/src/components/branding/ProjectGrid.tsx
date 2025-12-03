@@ -32,63 +32,53 @@ type Stage = "grid" | "peek" | "focus";
 export function ProjectGrid({ onProjectClick, selectedProjectId, onCloseExpansion }: ProjectGridProps) {
   const { data: projects, isLoading, isError, error } = useQuery<Project[]>({
     queryKey: ['/api/branding/projects'],
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: true,
   });
 
-  // Cinematic mode state
   const [stage, setStage] = useState<Stage>("grid");
   const [clickedCardRect, setClickedCardRect] = useState<DOMRect | null>(null);
   const [cinematicProjectId, setCinematicProjectId] = useState<string | null>(null);
-  
-  // Refs for scroll and focus restoration
+
   const gridScrollPos = useRef(0);
   const gridRef = useRef<HTMLDivElement>(null);
   const lastFocusedCard = useRef<HTMLElement | null>(null);
 
-  // Desktop detection for cinematic mode
   const isDesktop = useMediaQuery("(min-width: 1024px)");
 
-  // Get the project being displayed in cinematic mode
-  const cinematicProject = useMemo(() => 
-    projects?.find(p => p.id === cinematicProjectId),
-    [projects, cinematicProjectId]
+  const cinematicProject = useMemo(
+    () => projects?.find((p) => p.id === cinematicProjectId),
+    [projects, cinematicProjectId],
   );
 
-  // Determine if currently in cinematic mode
   const isCinematicActive = cinematicProjectId !== null && stage !== "grid";
 
-  const handleCardClick = useCallback((project: Project, cardElement: HTMLElement) => {
-    // Toggle close on re-click
-    if (selectedProjectId === project.id && (isCinematicActive || selectedProjectId === project.id)) {
-      handleClose();
-      return;
-    }
+  const handleCardClick = useCallback(
+    (project: Project, cardElement: HTMLElement) => {
+      if (selectedProjectId === project.id && (isCinematicActive || selectedProjectId === project.id)) {
+        handleClose();
+        return;
+      }
 
-    // Store for focus restoration
-    lastFocusedCard.current = cardElement;
+      lastFocusedCard.current = cardElement;
 
-    // CRITICAL FIX: Determine mode from CLICKED project, not selectedProject
-    const shouldUseCinematic = project.expansionLayout === "cinematic" && isDesktop;
+      const shouldUseCinematic = project.expansionLayout === "cinematic" && isDesktop;
 
-    if (shouldUseCinematic) {
-      // Measure card position (viewport-relative)
-      const rect = cardElement.getBoundingClientRect();
-      setClickedCardRect(rect);
+      if (shouldUseCinematic) {
+        const rect = cardElement.getBoundingClientRect();
+        setClickedCardRect(rect);
+        gridScrollPos.current = gridRef.current?.scrollTop || window.scrollY;
+        setCinematicProjectId(project.id);
+        setStage("peek");
+      } else {
+        setCinematicProjectId(null);
+        setStage("grid");
+      }
 
-      // Save scroll position
-      gridScrollPos.current = gridRef.current?.scrollTop || window.scrollY;
-
-      // Enter cinematic mode
-      setCinematicProjectId(project.id);
-      setStage("peek");
-    } else {
-      // Clear any cinematic state
-      setCinematicProjectId(null);
-      setStage("grid");
-    }
-
-    // Always notify parent
-    onProjectClick(project.id);
-  }, [selectedProjectId, isCinematicActive, isDesktop, onProjectClick]);
+      onProjectClick(project.id);
+    },
+    [selectedProjectId, isCinematicActive, isDesktop, onProjectClick],
+  );
 
   const handleClose = useCallback(() => {
     setStage("grid");
@@ -96,7 +86,6 @@ export function ProjectGrid({ onProjectClick, selectedProjectId, onCloseExpansio
     setCinematicProjectId(null);
     onCloseExpansion();
 
-    // Restore scroll and focus
     requestAnimationFrame(() => {
       if (gridRef.current) {
         gridRef.current.scrollTop = gridScrollPos.current;
@@ -107,12 +96,14 @@ export function ProjectGrid({ onProjectClick, selectedProjectId, onCloseExpansio
     });
   }, [onCloseExpansion]);
 
-  // Grid transform for cinematic mode
-  const gridTransform = useMemo(() => ({
-    grid: { x: 0, y: 0, scale: 1, filter: "blur(0px)", opacity: 1 },
-    peek: { x: 0, y: 0, scale: 1, filter: "blur(0px)", opacity: 1 },
-    focus: { x: "-25%", y: "-15%", scale: 0.95, filter: "blur(8px)", opacity: 0.4 },
-  }), []);
+  const gridTransform = useMemo(
+    () => ({
+      grid: { x: 0, y: 0, scale: 1, filter: "blur(0px)", opacity: 1 },
+      peek: { x: 0, y: 0, scale: 1, filter: "blur(0px)", opacity: 1 },
+      focus: { x: "-25%", y: "-15%", scale: 0.95, filter: "blur(8px)", opacity: 0.4 },
+    }),
+    [],
+  );
 
   if (isLoading) {
     return (
@@ -158,12 +149,11 @@ export function ProjectGrid({ onProjectClick, selectedProjectId, onCloseExpansio
   return (
     <section className="relative py-16 md:py-24 bg-background min-h-[600px] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-        {/* Grid Layer */}
-        <motion.div 
+        <motion.div
           ref={gridRef}
           className={cn(
             "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
-            isCinematicActive && stage === "focus" && "pointer-events-none"
+            isCinematicActive && stage === "focus" && "pointer-events-none",
           )}
           animate={isCinematicActive ? gridTransform[stage] : gridTransform.grid}
           transition={{ type: "spring", stiffness: 300, damping: 35 }}
@@ -172,15 +162,14 @@ export function ProjectGrid({ onProjectClick, selectedProjectId, onCloseExpansio
           {projects.map((project, index) => {
             const isSelected = selectedProjectId === project.id;
             const isVerticalExpanded = isSelected && !isCinematicActive && project.expansionLayout !== "cinematic";
-
             return (
               <Fragment key={project.id}>
-                <motion.div 
+                <motion.div
                   layout={!isCinematicActive}
                   layoutId={!isCinematicActive ? `project-${project.id}` : undefined}
                   className={cn(isVerticalExpanded && "col-span-full")}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ 
+                  animate={{
                     opacity: cinematicProjectId === project.id && stage !== "grid" ? 0 : 1,
                     y: 0,
                   }}
@@ -192,10 +181,7 @@ export function ProjectGrid({ onProjectClick, selectedProjectId, onCloseExpansio
                   }}
                 >
                   {isVerticalExpanded ? (
-                    <ProjectExpansion 
-                      project={project} 
-                      onClose={handleClose}
-                    />
+                    <ProjectExpansion project={project} onClose={handleClose} />
                   ) : (
                     <div
                       tabIndex={0}
@@ -223,7 +209,6 @@ export function ProjectGrid({ onProjectClick, selectedProjectId, onCloseExpansio
         </motion.div>
       </div>
 
-      {/* Cinematic Backdrop - dims the grid */}
       <AnimatePresence>
         {isCinematicActive && (
           <motion.div
@@ -239,7 +224,6 @@ export function ProjectGrid({ onProjectClick, selectedProjectId, onCloseExpansio
         )}
       </AnimatePresence>
 
-      {/* Cinematic Panel */}
       <AnimatePresence>
         {isCinematicActive && cinematicProject && (
           <CinematicPanel
