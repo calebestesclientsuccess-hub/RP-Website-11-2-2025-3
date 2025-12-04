@@ -299,16 +299,15 @@ export default function SimpleBridgeSection() {
           0.5
         );
 
-        // ScrollTrigger bound to VISIBLE area of viewport
-        // start: 'top 80%' -> animation begins when section top is near bottom of viewport
-        // end: 'top 30%' -> animation finishes when section top is near top of viewport
-        // This ensures the crossfade completes while the user can actually see the section
+        // ScrollTrigger with PINNING to halt the user
+        // This forces the "stop and read" experience
         ScrollTrigger.create({
           trigger: sectionRef.current,
-          start: 'top 80%',
-          end: 'top 30%',
-          scrub: 0.3,
-          pin: false,
+          start: 'top top',
+          end: '+=150%', // 1.5 screen heights of "halt" time
+          scrub: 0.5,
+          pin: true,     // <--- The magic "halt"
+          pinSpacing: true,
           animation: timeline,
         });
       }, sectionRef);
