@@ -222,7 +222,6 @@ export default function SimpleBridgeSection() {
     const mm = gsap.matchMedia();
 
     const reducedMotionSetup = () => {
-      console.log('SimpleBridgeSection: Reduced motion setup initializing');
       const ctx = gsap.context(() => {
         setWhiteTextContent('static');
         gsap.set(whiteContainerRef.current, {
@@ -244,15 +243,13 @@ export default function SimpleBridgeSection() {
       return () => ctx.revert();
     };
     const mobileTimeline = () => {
-      console.log('SimpleBridgeSection: Mobile timeline initializing');
       const ctx = gsap.context(() => {
         setWhiteTextContent('static');
-        gsap.set(whiteContainerRef.current, {
-          opacity: 0,
-          scale: 0.92,
-          y: 30,
-        });
-        setWordInitialState({ opacity: 0, y: 30, scale: 0.92 });
+        
+        // Defensive: Set initial state visible in case ScrollTrigger fails/loads late
+        gsap.set(whiteContainerRef.current, { opacity: 1, y: 0 });
+        gsap.set(redContainerRef.current, { opacity: 1 });
+        setWordInitialState({ opacity: 0, y: 20 });
         gsap.set(
           [
             conicFloodRef.current,
@@ -263,78 +260,63 @@ export default function SimpleBridgeSection() {
           { opacity: 0 }
         );
 
-        const timeline = gsap.timeline();
+        const timeline = gsap.timeline({ paused: true });
 
-        timeline
-          .to(whiteContainerRef.current, {
+        // Simple crossfade timeline (0.6s total duration)
+        // White text fades out
+        timeline.to(
+          whiteContainerRef.current,
+          {
+            opacity: 0,
+            y: -30,
+            duration: 0.5,
+            ease: 'power2.inOut',
+          },
+          0
+        );
+
+        // Red text fades in (overlapping)
+        timeline.to(
+          activeWordRefs,
+          {
             opacity: 1,
-            scale: 1,
             y: 0,
-            duration: 5,
+            duration: 0.6,
+            stagger: 0.08,
             ease: 'power2.out',
-          })
-          .to(
-            whiteContainerRef.current,
-            { opacity: 0, y: -60, duration: 4, ease: 'power2.inOut' },
-            5
-          )
-          .to(
-            activeWordRefs,
-            {
-              opacity: 1,
-              y: 0,
-              scale: 1,
-              duration: 4,
-              stagger: 0.2,
-              ease: 'power2.out',
-            },
-            5
-          )
-          .to(
-            conicFloodRef.current,
-            {
-              opacity: 0.55,
-              scale: 0.85,
-              filter: 'blur(50px)',
-              duration: 4,
-              ease: 'power2.out',
-            },
-            6
-          )
-          .to(
-            heatDistortionRef.current,
-            { opacity: 0.4, duration: 3, ease: 'power2.out' },
-            6
-          )
-          .to(
-            emberContainerRef.current,
-            { opacity: 0.85, duration: 3, ease: 'power2.out' },
-            6.2
-          )
-          .to(
-            pageIlluminationRef.current,
-            { opacity: 0.35, duration: 3, ease: 'power2.out' },
-            6.2
-          );
+          },
+          0.2
+        );
 
-        const st = ScrollTrigger.create({
+        // Atmospheric effects fade in
+        timeline.to(
+          [conicFloodRef.current, emberContainerRef.current],
+          {
+            opacity: 0.5,
+            duration: 0.4,
+            ease: 'power2.out',
+          },
+          0.5
+        );
+
+        // ScrollTrigger bound to VISIBLE area of viewport
+        // start: 'top 80%' -> animation begins when section top is near bottom of viewport
+        // end: 'top 30%' -> animation finishes when section top is near top of viewport
+        // This ensures the crossfade completes while the user can actually see the section
+        ScrollTrigger.create({
           trigger: sectionRef.current,
-          start: 'top top',
-          end: '+=240vh',
-          scrub: 0.6,
+          start: 'top 80%',
+          end: 'top 30%',
+          scrub: 0.3,
           pin: false,
           animation: timeline,
-          onEnter: () => console.log('SimpleBridgeSection: Mobile ScrollTrigger entered'),
-          onUpdate: (self) => console.log('SimpleBridgeSection: Mobile progress:', self.progress),
         });
-        console.log('SimpleBridgeSection: Mobile ScrollTrigger created', st);
       }, sectionRef);
 
       return () => ctx.revert();
     };
 
     const desktopTimeline = () => {
-      console.log('SimpleBridgeSection: Desktop timeline initializing');
       const ctx = gsap.context(() => {
         setWhiteTextContent('characters');
         revealLine1Immediately();
