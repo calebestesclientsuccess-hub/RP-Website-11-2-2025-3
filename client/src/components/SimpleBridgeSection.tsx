@@ -96,6 +96,10 @@ export default function SimpleBridgeSection() {
   const word3Ref = useRef<HTMLSpanElement>(null);
   const word4Ref = useRef<HTMLSpanElement>(null);
 
+  // Mobile-specific refs (simple containers, no word-by-word splitting)
+  const mobileWhiteTextRef = useRef<HTMLParagraphElement>(null);
+  const mobileRedTextRef = useRef<HTMLHeadingElement>(null);
+
   // Light system refs
   const conicFloodRef = useRef<HTMLDivElement>(null);
   const heatDistortionRef = useRef<HTMLDivElement>(null);
@@ -122,11 +126,36 @@ export default function SimpleBridgeSection() {
 
   const embers = isMobile ? emberSets.mobile : emberSets.desktop;
 
+  // Defensive visibility: Ensure mobile text is visible by default (before GSAP animations)
+  // This ensures content is readable even if JavaScript fails or loads slowly
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    if (isMobile && whiteContainerRef.current && redContainerRef.current) {
+      // Mobile: Start visible by default (GSAP will override this if it loads)
+      whiteContainerRef.current.style.opacity = '1';
+      redContainerRef.current.style.opacity = '1';
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
+    // Always need these core refs
     if (
       !sectionRef.current ||
       !whiteContainerRef.current ||
       !redContainerRef.current ||
+      !conicFloodRef.current ||
+      !heatDistortionRef.current ||
+      !emberContainerRef.current ||
+      !pageIlluminationRef.current
+    ) {
+      console.warn('SimpleBridgeSection: Missing core refs, animation disabled');
+      return;
+    }
+
+    // Desktop needs these specific refs for character animation
+    const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+    if (isDesktop && (
       !whiteTextRef.current ||
       !line1Ref.current ||
       !line2Ref.current ||
@@ -134,13 +163,16 @@ export default function SimpleBridgeSection() {
       !word1Ref.current ||
       !word2Ref.current ||
       !word3Ref.current ||
-      !word4Ref.current ||
-      !conicFloodRef.current ||
-      !heatDistortionRef.current ||
-      !emberContainerRef.current ||
-      !pageIlluminationRef.current
-    ) {
-      console.warn('SimpleBridgeSection: Missing refs, animation disabled');
+      !word4Ref.current
+    )) {
+      console.warn('SimpleBridgeSection: Missing desktop refs, animation disabled');
+      return;
+    }
+
+    // Mobile needs these simple text refs
+    const isMobileCheck = window.matchMedia('(max-width: 767px)').matches;
+    if (isMobileCheck && (!mobileWhiteTextRef.current || !mobileRedTextRef.current)) {
+      console.warn('SimpleBridgeSection: Missing mobile refs, animation disabled');
       return;
     }
 
@@ -203,12 +235,24 @@ export default function SimpleBridgeSection() {
 
     const reducedMotionSetup = () => {
       const ctx = gsap.context(() => {
-        setWhiteTextContent('static');
+        const isMobileDevice = window.matchMedia('(max-width: 767px)').matches;
+        
+        // Desktop: populate text spans
+        if (!isMobileDevice) {
+          setWhiteTextContent('static');
+          setWordInitialState({ opacity: 1, y: 0, scale: 1 });
+        }
+        
+        // Both: make containers visible
         gsap.set(whiteContainerRef.current, {
           opacity: 1,
           clearProps: 'transform',
         });
-        setWordInitialState({ opacity: 1, y: 0, scale: 1 });
+        gsap.set(redContainerRef.current, {
+          opacity: 1,
+        });
+        
+        // Both: show atmospheric effects at low opacity
         gsap.set(
           [
             conicFloodRef.current,
@@ -224,15 +268,13 @@ export default function SimpleBridgeSection() {
     };
     const mobileTimeline = () => {
       // Simplified timeline for mobile: simple reveal when scrolled into view
-      // Uses "batch" logic via creating triggers for each block, 
-      // but managed inside a context for cleanup.
+      // Mobile text is already in HTML, no need for text content manipulation
       const ctx = gsap.context(() => {
-        setWhiteTextContent('static');
-        
-        // Ensure initial states are set for the reveal animation
+        // Set initial states for container animation (text is already visible in HTML)
         gsap.set(whiteContainerRef.current, { opacity: 0, y: 30 });
-        gsap.set(redContainerRef.current, { opacity: 0, y: 30 }); // Red container starts hidden too
-        setWordInitialState({ opacity: 1, y: 0, scale: 1 }); // Words are fully visible inside container
+        gsap.set(redContainerRef.current, { opacity: 0, y: 30 });
+        
+        // Hide atmospheric effects initially
         gsap.set(
           [
             conicFloodRef.current,
@@ -240,7 +282,7 @@ export default function SimpleBridgeSection() {
             emberContainerRef.current,
             pageIlluminationRef.current,
           ],
-          { opacity: 0.3 }
+          { opacity: 0 }
         );
 
         // Animate White Text Block
@@ -547,14 +589,27 @@ export default function SimpleBridgeSection() {
         className={`flex items-center justify-center z-10 transition-opacity duration-300 ${isMobile ? 'relative min-h-[50vh] py-12' : 'absolute inset-0 pointer-events-none'}`}
       >
         <div className="max-w-2xl text-center px-6">
-          <p 
-            ref={whiteTextRef}
-            className="text-2xl md:text-2xl lg:text-3xl text-white font-semibold leading-relaxed"
-          >
-            <span ref={line1Ref}></span><br />
-            <span ref={line2Ref}></span><br />
-            <span ref={line3Ref}></span>
-          </p>
+          {isMobile ? (
+            // Mobile: Real text in HTML with mobile ref - always readable
+            <p 
+              ref={mobileWhiteTextRef}
+              className="text-xl text-white font-semibold leading-relaxed"
+            >
+              You need more<br />
+              than just<br />
+              another salesperson.
+            </p>
+          ) : (
+            // Desktop: Empty spans for character animation
+            <p 
+              ref={whiteTextRef}
+              className="text-xl md:text-2xl lg:text-3xl text-white font-semibold leading-relaxed"
+            >
+              <span ref={line1Ref}></span><br />
+              <span ref={line2Ref}></span><br />
+              <span ref={line3Ref}></span>
+            </p>
+          )}
         </div>
       </div>
 
@@ -699,37 +754,48 @@ export default function SimpleBridgeSection() {
 
           {/* === TEXT LAYERS === */}
           <div className="relative">
-            {/* Main Glow Layer (Transparent Body + Red Stroke + Red Shadow) */}
-            <h2 className="text-5xl md:text-7xl lg:text-9xl font-black leading-tight text-center max-w-4xl mx-auto relative z-20">
-              <span 
-                ref={word1Ref} 
-                className="inline-block"
-                style={{ ...standardGlow, marginRight: '0.25em' }}
+            {isMobile ? (
+              // Mobile: Simple readable text - always visible
+              <h2 
+                ref={mobileRedTextRef}
+                className="text-4xl font-black text-center px-4"
+                style={standardGlow}
               >
-                You
-              </span>
-              <span 
-                ref={word2Ref} 
-                className="inline-block"
-                style={{ ...standardGlow, marginRight: '0.25em' }}
-              >
-                need
-              </span>
-              <span 
-                ref={word3Ref} 
-                className="inline-block"
-                style={{ ...standardGlow, marginRight: '0.25em' }}
-              >
-                a
-              </span>
-              <span 
-                ref={word4Ref} 
-                className="inline-block"
-                style={{ ...standardGlow, textTransform: 'lowercase' }}
-              >
-                system.
-              </span>
-            </h2>
+                You need a system.
+              </h2>
+            ) : (
+              // Desktop: Word-by-word animation refs
+              <h2 className="text-5xl md:text-7xl lg:text-9xl font-black leading-tight text-center max-w-4xl mx-auto relative z-20">
+                <span 
+                  ref={word1Ref} 
+                  className="inline-block"
+                  style={{ ...standardGlow, marginRight: '0.25em' }}
+                >
+                  You
+                </span>
+                <span 
+                  ref={word2Ref} 
+                  className="inline-block"
+                  style={{ ...standardGlow, marginRight: '0.25em' }}
+                >
+                  need
+                </span>
+                <span 
+                  ref={word3Ref} 
+                  className="inline-block"
+                  style={{ ...standardGlow, marginRight: '0.25em' }}
+                >
+                  a
+                </span>
+                <span 
+                  ref={word4Ref} 
+                  className="inline-block"
+                  style={{ ...standardGlow, textTransform: 'lowercase' }}
+                >
+                  system.
+                </span>
+              </h2>
+            )}
           </div>
         </div>
       </div>
