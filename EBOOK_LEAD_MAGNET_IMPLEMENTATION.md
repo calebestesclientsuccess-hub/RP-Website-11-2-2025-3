@@ -76,7 +76,7 @@ I've successfully implemented a complete E-Book Lead Magnet system for your Reve
 - Mobile screens (`<768px`) skip pinning, shorten the scroll distance to ~240vh, and fade the white copy + red headline with eased staggers so touch interactions stay responsive.
 - Ember/atmospheric layers automatically scale down (80 particles, smaller gradients/blur radii), which cuts DOM + paint cost on phones without touching the desktop presentation.
 - Users with `prefers-reduced-motion` receive a static version of the story (full text visible, subtle glow only) without initializing ScrollTrigger.
-- iOS browsers that ignore compound `prefers-reduced-motion` queries now still receive the correct timeline because we dispatch via a single `gsap.matchMedia` map of width + motion conditions (fallback is always the reduced-motion branch).
+- iOS browsers that ignore compound `prefers-reduced-motion` queries now still receive the correct timeline because we register each media query separately (and double-check the motion preference inside each handler), so Safari/Brave always enter the right branch while still honoring accessibility.
 - Whenever you tweak the animation, test desktop + mobile + reduced-motion in DevTools to ensure the correct branch runs and `mm.revert()` tears down timelines during orientation changes.
 
 ---
