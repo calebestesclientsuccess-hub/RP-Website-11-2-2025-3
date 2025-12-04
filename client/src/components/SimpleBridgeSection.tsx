@@ -104,6 +104,26 @@ export default function SimpleBridgeSection() {
 
   const [isMobileViewport, setIsMobileViewport] = useState(false);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const checkMobile = () => {
+      // Robust check: screen width < 768 OR touch device
+      const isSmallScreen = window.innerWidth < 768;
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      // Default to mobile layout on touch devices even if screen reports wider (e.g. landscape phones, some tablets)
+      // but keep desktop layout for true tablets/laptops > 1024
+      setIsMobileViewport(isSmallScreen || (isTouch && window.innerWidth < 1024));
+    };
+
+    // Check immediately
+    checkMobile();
+
+    // Re-check on resize
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const emberSets = useMemo(
     () => ({
       desktop: generateEmbers(350),
@@ -116,29 +136,6 @@ export default function SimpleBridgeSection() {
     }),
     []
   );
-
-  const embers = isMobileViewport ? emberSets.mobile : emberSets.desktop;
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const query = window.matchMedia('(max-width: 767px)');
-    const handleChange = (event: MediaQueryListEvent) => {
-      setIsMobileViewport(event.matches);
-    };
-
-    setIsMobileViewport(query.matches);
-
-    if (typeof query.addEventListener === 'function') {
-      query.addEventListener('change', handleChange);
-      return () => query.removeEventListener('change', handleChange);
-    }
-
-    query.addListener(handleChange);
-    return () => query.removeListener(handleChange);
-  }, []);
 
   useEffect(() => {
     if (
@@ -243,13 +240,16 @@ export default function SimpleBridgeSection() {
       return () => ctx.revert();
     };
     const mobileTimeline = () => {
+      // Simplified timeline for mobile: simple reveal when scrolled into view
+      // Uses "batch" logic via creating triggers for each block, 
+      // but managed inside a context for cleanup.
       const ctx = gsap.context(() => {
         setWhiteTextContent('static');
         
-        // Defensive: Set initial state visible in case ScrollTrigger fails/loads late
-        gsap.set(whiteContainerRef.current, { opacity: 1, y: 0 });
-        gsap.set(redContainerRef.current, { opacity: 1 });
-        setWordInitialState({ opacity: 0, y: 20 });
+        // Ensure initial states are set for the reveal animation
+        gsap.set(whiteContainerRef.current, { opacity: 0, y: 30 });
+        gsap.set(redContainerRef.current, { opacity: 0, y: 30 }); // Red container starts hidden too
+        setWordInitialState({ opacity: 1, y: 0, scale: 1 }); // Words are fully visible inside container
         gsap.set(
           [
             conicFloodRef.current,
@@ -257,59 +257,52 @@ export default function SimpleBridgeSection() {
             emberContainerRef.current,
             pageIlluminationRef.current,
           ],
-          { opacity: 0 }
+          { opacity: 0.3 }
         );
 
-        const timeline = gsap.timeline({ paused: true });
-
-        // Simple crossfade timeline (0.6s total duration)
-        // White text fades out
-        timeline.to(
-          whiteContainerRef.current,
-          {
-            opacity: 0,
-            y: -30,
-            duration: 0.5,
-            ease: 'power2.inOut',
-          },
-          0
-        );
-
-        // Red text fades in (overlapping)
-        timeline.to(
-          activeWordRefs,
-          {
+        // Animate White Text Block
+        ScrollTrigger.create({
+          trigger: whiteContainerRef.current,
+          start: 'top 85%', // Trigger when top of element hits 85% of viewport height
+          once: true, // Play once, don't scrub/reverse
+          animation: gsap.to(whiteContainerRef.current, {
             opacity: 1,
             y: 0,
-            duration: 0.6,
-            stagger: 0.08,
-            ease: 'power2.out',
-          },
-          0.2
-        );
-
-        // Atmospheric effects fade in
-        timeline.to(
-          [conicFloodRef.current, emberContainerRef.current],
-          {
-            opacity: 0.5,
-            duration: 0.4,
-            ease: 'power2.out',
-          },
-          0.5
-        );
-
-        // ScrollTrigger with PINNING to halt the user
-        // This forces the "stop and read" experience
-        ScrollTrigger.create({
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: '+=150%', // 1.5 screen heights of "halt" time
-          scrub: 0.5,
-          pin: true,     // <--- The magic "halt"
-          pinSpacing: true,
-          animation: timeline,
+            duration: 1,
+            ease: 'power3.out',
+          }),
         });
+
+        // Animate Red Text Block + Effects
+        const redTimeline = gsap.timeline();
+        redTimeline
+          .to(redContainerRef.current, {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            ease: 'power3.out',
+          })
+          .to(
+            [
+              conicFloodRef.current,
+              emberContainerRef.current,
+              pageIlluminationRef.current,
+            ],
+            {
+              opacity: 0.8,
+              duration: 1.5,
+              ease: 'power2.out',
+            },
+            0 // Start effect fade at same time
+          );
+
+        ScrollTrigger.create({
+          trigger: redContainerRef.current,
+          start: 'top 85%',
+          once: true,
+          animation: redTimeline,
+        });
+
       }, sectionRef);
 
       return () => ctx.revert();
@@ -487,9 +480,12 @@ export default function SimpleBridgeSection() {
     if (prefersReducedMotion()) {
       reducedMotionSetup();
     } else {
-      // Set up mobile or desktop based on viewport
-      mm.add('(max-width: 767px)', () => mobileTimeline());
-      mm.add('(min-width: 768px)', () => desktopTimeline());
+      // Use the JS-calculated mobile state for robustness
+      if (isMobileViewport) {
+        mobileTimeline();
+      } else {
+        desktopTimeline();
+      }
     }
 
     // Refresh ScrollTrigger after setup to ensure proper calculation
@@ -523,7 +519,7 @@ export default function SimpleBridgeSection() {
   return (
     <section 
       ref={sectionRef}
-      className="relative min-h-screen flex items-center justify-center px-4 md:px-6 lg:px-8 bg-zinc-950"
+      className={`relative min-h-screen flex ${isMobileViewport ? 'flex-col' : 'items-center'} justify-center px-4 md:px-6 lg:px-8 bg-zinc-950`}
       style={{ overflow: 'visible', zIndex: 0 }}
     >
       {/* Grain Dithering */}
@@ -562,12 +558,12 @@ export default function SimpleBridgeSection() {
       {/* White Text: "You need more than just another salesperson." */}
       <div 
         ref={whiteContainerRef}
-        className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+        className={`flex items-center justify-center z-10 transition-opacity duration-300 ${isMobileViewport ? 'relative min-h-[50vh] py-12' : 'absolute inset-0 pointer-events-none'}`}
       >
-        <div className="max-w-2xl text-center">
+        <div className="max-w-2xl text-center px-6">
           <p 
             ref={whiteTextRef}
-            className="text-xl md:text-2xl lg:text-3xl text-white font-semibold leading-relaxed"
+            className="text-2xl md:text-2xl lg:text-3xl text-white font-semibold leading-relaxed"
           >
             <span ref={line1Ref}></span><br />
             <span ref={line2Ref}></span><br />
@@ -579,7 +575,7 @@ export default function SimpleBridgeSection() {
       {/* Red Text Container: "You need a system." */}
       <div 
         ref={redContainerRef}
-        className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20"
+        className={`flex flex-col items-center justify-center z-20 transition-opacity duration-300 ${isMobileViewport ? 'relative min-h-[50vh] py-12' : 'absolute inset-0 pointer-events-none'}`}
       >
         <div className="relative">
           
@@ -588,7 +584,7 @@ export default function SimpleBridgeSection() {
             ref={heatDistortionRef}
             className="absolute pointer-events-none"
             style={{
-              left: '50%', top: '0%', transform: 'translate(-50%, -100%)',
+              left: '50%', top: isMobileViewport ? '50%' : '0%', transform: isMobileViewport ? 'translate(-50%, -50%)' : 'translate(-50%, -100%)',
               width: isMobileViewport ? '110%' : '150%',
               height: isMobileViewport ? '80px' : '120px',
               background: 'linear-gradient(to top, rgba(184, 13, 46, 0.05) 0%, transparent 100%)',
@@ -608,7 +604,8 @@ export default function SimpleBridgeSection() {
               height: isMobileViewport ? '120px' : '150px',
               background: 'radial-gradient(circle at center, rgba(255, 0, 0, 0.6) 0%, rgba(255, 50, 50, 0.4) 20%, rgba(255, 80, 60, 0.3) 40%, rgba(184, 13, 46, 0.1) 60%, rgba(184, 13, 46, 0) 80%)',
               filter: 'blur(60px)',
-              zIndex: -1
+              zIndex: -1,
+              position: isMobileViewport ? 'fixed' : 'absolute'
             }}
           />
 
@@ -624,7 +621,8 @@ export default function SimpleBridgeSection() {
               background: 'conic-gradient(from 120deg at 50% 0%, rgba(184, 13, 46, 0) 0deg, rgba(255, 50, 30, 0.04) 20deg, rgba(255, 80, 50, 0.12) 40deg, rgba(255, 100, 60, 0.18) 60deg, rgba(255, 80, 50, 0.12) 80deg, rgba(255, 50, 30, 0.04) 100deg, rgba(184, 13, 46, 0) 120deg)',
               filter: `blur(${isMobileViewport ? 60 : 80}px)`,
               mixBlendMode: 'screen', 
-              zIndex: -4
+              zIndex: -4,
+              position: isMobileViewport ? 'fixed' : 'absolute'
             }}
           />
 
@@ -638,7 +636,8 @@ export default function SimpleBridgeSection() {
               height: isMobileViewport ? '280vh' : '500vh',
               background: 'radial-gradient(ellipse 70% 80% at 50% 50%, rgba(120, 9, 30, 0.16) 0%, rgba(100, 8, 25, 0.1) 25%, rgba(80, 6, 20, 0.06) 50%, rgba(45, 4, 12, 0.015) 75%, transparent 100%)',
               filter: `blur(${isMobileViewport ? 180 : 250}px)`,
-              zIndex: -6
+              zIndex: -6,
+              position: isMobileViewport ? 'fixed' : 'absolute'
             }}
           />
 
@@ -652,7 +651,8 @@ export default function SimpleBridgeSection() {
               height: isMobileViewport ? '400vh' : '800vh',
               background: 'radial-gradient(ellipse 90% 90% at 50% 20%, rgba(90, 7, 23, 0.1) 0%, rgba(70, 5, 18, 0.06) 30%, rgba(40, 3, 10, 0.018) 60%, rgba(20, 2, 5, 0.005) 90%, transparent 100%)',
               filter: `blur(${isMobileViewport ? 200 : 300}px)`,
-              zIndex: -7
+              zIndex: -7,
+              position: isMobileViewport ? 'fixed' : 'absolute'
             }}
           />
 
@@ -663,7 +663,8 @@ export default function SimpleBridgeSection() {
               left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
               width: '100vw', height: '500vh',
               background: 'rgba(20, 2, 5, 0.02)',
-              zIndex: -8
+              zIndex: -8,
+              position: isMobileViewport ? 'fixed' : 'absolute'
             }}
           />
 
@@ -677,7 +678,8 @@ export default function SimpleBridgeSection() {
               transform: 'translate(-50%, 0)',
               width: isMobileViewport ? '120%' : '200%', 
               height: isMobileViewport ? '220vh' : '400vh',
-              zIndex: 5
+              zIndex: 5,
+              position: isMobileViewport ? 'fixed' : 'absolute'
             }}
           >
             {embers.map((ember) => (
