@@ -494,14 +494,29 @@ export default function SimpleBridgeSection() {
       return () => ctx.revert();
     };
 
-    mm.add('(prefers-reduced-motion: reduce)', reducedMotionSetup);
     mm.add(
-      '(max-width: 767px) and (prefers-reduced-motion: no-preference)',
-      mobileTimeline
-    );
-    mm.add(
-      '(min-width: 768px) and (prefers-reduced-motion: no-preference)',
-      desktopTimeline
+      {
+        reduceMotion: '(prefers-reduced-motion: reduce)',
+        mobile: '(max-width: 767px)',
+        desktop: '(min-width: 768px)',
+      },
+      (context) => {
+        const { reduceMotion, mobile, desktop } = context.conditions || {};
+
+        if (reduceMotion) {
+          return reducedMotionSetup();
+        }
+
+        if (mobile) {
+          return mobileTimeline();
+        }
+
+        if (desktop) {
+          return desktopTimeline();
+        }
+
+        return reducedMotionSetup();
+      }
     );
 
     return () => {
