@@ -137,6 +137,8 @@ export default function SimpleBridgeSection() {
     []
   );
 
+  const embers = isMobileViewport ? emberSets.mobile : emberSets.desktop;
+
   useEffect(() => {
     if (
       !sectionRef.current ||
