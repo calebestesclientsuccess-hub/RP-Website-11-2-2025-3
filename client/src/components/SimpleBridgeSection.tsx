@@ -102,27 +102,10 @@ export default function SimpleBridgeSection() {
   const emberContainerRef = useRef<HTMLDivElement>(null);
   const pageIlluminationRef = useRef<HTMLDivElement>(null);
 
-  const [isMobileViewport, setIsMobileViewport] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const checkMobile = () => {
-      // Robust check: screen width < 768 OR touch device
-      const isSmallScreen = window.innerWidth < 768;
-      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      // Default to mobile layout on touch devices even if screen reports wider (e.g. landscape phones, some tablets)
-      // but keep desktop layout for true tablets/laptops > 1024
-      setIsMobileViewport(isSmallScreen || (isTouch && window.innerWidth < 1024));
-    };
-
-    // Check immediately
-    checkMobile();
-
-    // Re-check on resize
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  // Synchronous mobile detection for JSX rendering only (width-based, no touch detection)
+  const isMobile = typeof window !== 'undefined' 
+    ? window.matchMedia('(max-width: 767px)').matches 
+    : false;
 
   const emberSets = useMemo(
     () => ({
@@ -137,7 +120,7 @@ export default function SimpleBridgeSection() {
     []
   );
 
-  const embers = isMobileViewport ? emberSets.mobile : emberSets.desktop;
+  const embers = isMobile ? emberSets.mobile : emberSets.desktop;
 
   useEffect(() => {
     if (
@@ -217,8 +200,6 @@ export default function SimpleBridgeSection() {
         }
       });
     };
-
-    const mm = gsap.matchMedia();
 
     const reducedMotionSetup = () => {
       const ctx = gsap.context(() => {
@@ -475,20 +456,23 @@ export default function SimpleBridgeSection() {
       return () => ctx.revert();
     };
 
-    const prefersReducedMotion = () =>
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Use GSAP matchMedia for responsive animation branches
+    const mm = gsap.matchMedia();
 
-    // Check for reduced motion first
-    if (prefersReducedMotion()) {
-      reducedMotionSetup();
-    } else {
-      // Use the JS-calculated mobile state for robustness
-      if (isMobileViewport) {
-        mobileTimeline();
-      } else {
-        desktopTimeline();
-      }
-    }
+    // Reduced motion takes precedence
+    mm.add('(prefers-reduced-motion: reduce)', () => {
+      return reducedMotionSetup();
+    });
+
+    // Mobile timeline for narrow viewports
+    mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', () => {
+      return mobileTimeline();
+    });
+
+    // Desktop timeline for wide viewports
+    mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
+      return desktopTimeline();
+    });
 
     // Refresh ScrollTrigger after setup to ensure proper calculation
     // This is especially important for Safari iOS
@@ -521,7 +505,7 @@ export default function SimpleBridgeSection() {
   return (
     <section 
       ref={sectionRef}
-      className={`relative min-h-screen flex ${isMobileViewport ? 'flex-col' : 'items-center'} justify-center px-4 md:px-6 lg:px-8 bg-zinc-950`}
+      className={`relative min-h-screen flex ${isMobile ? 'flex-col' : 'items-center'} justify-center px-4 md:px-6 lg:px-8 bg-zinc-950`}
       style={{ overflow: 'visible', zIndex: 0 }}
     >
       {/* Grain Dithering */}
@@ -560,7 +544,7 @@ export default function SimpleBridgeSection() {
       {/* White Text: "You need more than just another salesperson." */}
       <div 
         ref={whiteContainerRef}
-        className={`flex items-center justify-center z-10 transition-opacity duration-300 ${isMobileViewport ? 'relative min-h-[50vh] py-12' : 'absolute inset-0 pointer-events-none'}`}
+        className={`flex items-center justify-center z-10 transition-opacity duration-300 ${isMobile ? 'relative min-h-[50vh] py-12' : 'absolute inset-0 pointer-events-none'}`}
       >
         <div className="max-w-2xl text-center px-6">
           <p 
@@ -577,7 +561,7 @@ export default function SimpleBridgeSection() {
       {/* Red Text Container: "You need a system." */}
       <div 
         ref={redContainerRef}
-        className={`flex flex-col items-center justify-center z-20 transition-opacity duration-300 ${isMobileViewport ? 'relative min-h-[50vh] py-12' : 'absolute inset-0 pointer-events-none'}`}
+        className={`flex flex-col items-center justify-center z-20 transition-opacity duration-300 ${isMobile ? 'relative min-h-[50vh] py-12' : 'absolute inset-0 pointer-events-none'}`}
       >
         <div className="relative">
           
@@ -586,9 +570,9 @@ export default function SimpleBridgeSection() {
             ref={heatDistortionRef}
             className="absolute pointer-events-none"
             style={{
-              left: '50%', top: isMobileViewport ? '50%' : '0%', transform: isMobileViewport ? 'translate(-50%, -50%)' : 'translate(-50%, -100%)',
-              width: isMobileViewport ? '110%' : '150%',
-              height: isMobileViewport ? '80px' : '120px',
+              left: '50%', top: isMobile ? '50%' : '0%', transform: isMobile ? 'translate(-50%, -50%)' : 'translate(-50%, -100%)',
+              width: isMobile ? '110%' : '150%',
+              height: isMobile ? '80px' : '120px',
               background: 'linear-gradient(to top, rgba(184, 13, 46, 0.05) 0%, transparent 100%)',
               filter: 'url(#heat-distortion)',
               zIndex: 1
@@ -602,12 +586,12 @@ export default function SimpleBridgeSection() {
             className="absolute pointer-events-none"
             style={{
               left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
-              width: isMobileViewport ? '120%' : '150%',
-              height: isMobileViewport ? '120px' : '150px',
+              width: isMobile ? '120%' : '150%',
+              height: isMobile ? '120px' : '150px',
               background: 'radial-gradient(circle at center, rgba(255, 0, 0, 0.6) 0%, rgba(255, 50, 50, 0.4) 20%, rgba(255, 80, 60, 0.3) 40%, rgba(184, 13, 46, 0.1) 60%, rgba(184, 13, 46, 0) 80%)',
               filter: 'blur(60px)',
               zIndex: -1,
-              position: isMobileViewport ? 'fixed' : 'absolute'
+              position: isMobile ? 'fixed' : 'absolute'
             }}
           />
 
@@ -618,13 +602,13 @@ export default function SimpleBridgeSection() {
             style={{
               left: '50%', top: '50%',
               transform: 'translate(-50%, 0)',
-              width: isMobileViewport ? '110vw' : '150vw',
-              height: isMobileViewport ? '220vh' : '500vh',
+              width: isMobile ? '110vw' : '150vw',
+              height: isMobile ? '220vh' : '500vh',
               background: 'conic-gradient(from 120deg at 50% 0%, rgba(184, 13, 46, 0) 0deg, rgba(255, 50, 30, 0.04) 20deg, rgba(255, 80, 50, 0.12) 40deg, rgba(255, 100, 60, 0.18) 60deg, rgba(255, 80, 50, 0.12) 80deg, rgba(255, 50, 30, 0.04) 100deg, rgba(184, 13, 46, 0) 120deg)',
-              filter: `blur(${isMobileViewport ? 60 : 80}px)`,
+              filter: `blur(${isMobile ? 60 : 80}px)`,
               mixBlendMode: 'screen', 
               zIndex: -4,
-              position: isMobileViewport ? 'fixed' : 'absolute'
+              position: isMobile ? 'fixed' : 'absolute'
             }}
           />
 
@@ -634,12 +618,12 @@ export default function SimpleBridgeSection() {
             style={{
               left: '50%', top: '30%',
               transform: 'translate(-50%, -20%)',
-              width: isMobileViewport ? '320%' : '650%',
-              height: isMobileViewport ? '280vh' : '500vh',
+              width: isMobile ? '320%' : '650%',
+              height: isMobile ? '280vh' : '500vh',
               background: 'radial-gradient(ellipse 70% 80% at 50% 50%, rgba(120, 9, 30, 0.16) 0%, rgba(100, 8, 25, 0.1) 25%, rgba(80, 6, 20, 0.06) 50%, rgba(45, 4, 12, 0.015) 75%, transparent 100%)',
-              filter: `blur(${isMobileViewport ? 180 : 250}px)`,
+              filter: `blur(${isMobile ? 180 : 250}px)`,
               zIndex: -6,
-              position: isMobileViewport ? 'fixed' : 'absolute'
+              position: isMobile ? 'fixed' : 'absolute'
             }}
           />
 
@@ -649,12 +633,12 @@ export default function SimpleBridgeSection() {
             style={{
               left: '50%', top: '0%',
               transform: 'translate(-50%, 0)',
-              width: isMobileViewport ? '400%' : '800%',
-              height: isMobileViewport ? '400vh' : '800vh',
+              width: isMobile ? '400%' : '800%',
+              height: isMobile ? '400vh' : '800vh',
               background: 'radial-gradient(ellipse 90% 90% at 50% 20%, rgba(90, 7, 23, 0.1) 0%, rgba(70, 5, 18, 0.06) 30%, rgba(40, 3, 10, 0.018) 60%, rgba(20, 2, 5, 0.005) 90%, transparent 100%)',
-              filter: `blur(${isMobileViewport ? 200 : 300}px)`,
+              filter: `blur(${isMobile ? 200 : 300}px)`,
               zIndex: -7,
-              position: isMobileViewport ? 'fixed' : 'absolute'
+              position: isMobile ? 'fixed' : 'absolute'
             }}
           />
 
@@ -666,7 +650,7 @@ export default function SimpleBridgeSection() {
               width: '100vw', height: '500vh',
               background: 'rgba(20, 2, 5, 0.02)',
               zIndex: -8,
-              position: isMobileViewport ? 'fixed' : 'absolute'
+              position: isMobile ? 'fixed' : 'absolute'
             }}
           />
 
@@ -678,10 +662,10 @@ export default function SimpleBridgeSection() {
               left: '50%', 
               top: '50%', // Start at text level
               transform: 'translate(-50%, 0)',
-              width: isMobileViewport ? '120%' : '200%', 
-              height: isMobileViewport ? '220vh' : '400vh',
+              width: isMobile ? '120%' : '200%', 
+              height: isMobile ? '220vh' : '400vh',
               zIndex: 5,
-              position: isMobileViewport ? 'fixed' : 'absolute'
+              position: isMobile ? 'fixed' : 'absolute'
             }}
           >
             {embers.map((ember) => (
