@@ -222,6 +222,7 @@ export default function SimpleBridgeSection() {
     const mm = gsap.matchMedia();
 
     const reducedMotionSetup = () => {
+      console.log('SimpleBridgeSection: Reduced motion setup initializing');
       const ctx = gsap.context(() => {
         setWhiteTextContent('static');
         gsap.set(whiteContainerRef.current, {
@@ -242,8 +243,8 @@ export default function SimpleBridgeSection() {
 
       return () => ctx.revert();
     };
-
     const mobileTimeline = () => {
+      console.log('SimpleBridgeSection: Mobile timeline initializing');
       const ctx = gsap.context(() => {
         setWhiteTextContent('static');
         gsap.set(whiteContainerRef.current, {
@@ -316,20 +317,24 @@ export default function SimpleBridgeSection() {
             6.2
           );
 
-        ScrollTrigger.create({
+        const st = ScrollTrigger.create({
           trigger: sectionRef.current,
           start: 'top top',
           end: '+=240vh',
           scrub: 0.6,
           pin: false,
           animation: timeline,
+          onEnter: () => console.log('SimpleBridgeSection: Mobile ScrollTrigger entered'),
+          onUpdate: (self) => console.log('SimpleBridgeSection: Mobile progress:', self.progress),
         });
+        console.log('SimpleBridgeSection: Mobile ScrollTrigger created', st);
       }, sectionRef);
 
       return () => ctx.revert();
     };
 
     const desktopTimeline = () => {
+      console.log('SimpleBridgeSection: Desktop timeline initializing');
       const ctx = gsap.context(() => {
         setWhiteTextContent('characters');
         revealLine1Immediately();
@@ -497,24 +502,24 @@ export default function SimpleBridgeSection() {
     const prefersReducedMotion = () =>
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    mm.add('(prefers-reduced-motion: reduce)', () => reducedMotionSetup());
+    // Check for reduced motion first
+    if (prefersReducedMotion()) {
+      reducedMotionSetup();
+    } else {
+      // Set up mobile or desktop based on viewport
+      mm.add('(max-width: 767px)', () => mobileTimeline());
+      mm.add('(min-width: 768px)', () => desktopTimeline());
+    }
 
-    mm.add('(max-width: 767px)', () => {
-      if (prefersReducedMotion()) {
-        return reducedMotionSetup();
-      }
-      return mobileTimeline();
-    });
-
-    mm.add('(min-width: 768px)', () => {
-      if (prefersReducedMotion()) {
-        return reducedMotionSetup();
-      }
-      return desktopTimeline();
+    // Refresh ScrollTrigger after setup to ensure proper calculation
+    // This is especially important for Safari iOS
+    requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
     });
 
     return () => {
       mm.revert();
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     };
   }, []);
 
