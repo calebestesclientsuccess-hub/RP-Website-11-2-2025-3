@@ -3,6 +3,32 @@ import { useEffect, type ReactNode } from "react";
 import type { Campaign } from "@shared/schema";
 import { filterCampaigns } from "./filterCampaigns";
 
+// Safe JSON parsing with content-type guard; returns [] on failures
+async function parseCampaigns(response: Response): Promise<Campaign[]> {
+  const contentType = response.headers.get("content-type") || "";
+  const isJson = contentType.includes("application/json");
+  const text = await response.text();
+
+  if (!isJson) {
+    console.warn("[Campaigns] Expected JSON but received", contentType || "unknown", {
+      status: response.status,
+      preview: text.slice(0, 200),
+    });
+    return [];
+  }
+
+  try {
+    return JSON.parse(text) as Campaign[];
+  } catch (error) {
+    console.warn("[Campaigns] Failed to parse campaigns JSON", {
+      status: response.status,
+      error,
+      preview: text.slice(0, 200),
+    });
+    return [];
+  }
+}
+
 /**
  * Default tenant ID - will be replaced with actual tenant resolution in multi-tenant implementation
  * For now, this matches the server-side DEFAULT_TENANT_ID
@@ -60,31 +86,6 @@ export function useCampaigns({
   displayAs,
   enabled = true,
 }: UseCampaignsOptions = {}) {
-  const parseCampaigns = async (response: Response) => {
-    const contentType = response.headers.get("content-type") || "";
-    const isJson = contentType.includes("application/json");
-    const text = await response.text();
-
-    if (!isJson) {
-      console.warn("[Campaigns] Expected JSON but received", contentType || "unknown content type", {
-        status: response.status,
-        preview: text.slice(0, 200),
-      });
-      return [];
-    }
-
-    try {
-      return JSON.parse(text) as Campaign[];
-    } catch (error) {
-      console.warn("[Campaigns] Failed to parse campaigns JSON", {
-        status: response.status,
-        error,
-        preview: text.slice(0, 200),
-      });
-      return [];
-    }
-  };
-
   const tenantId = getTenantId();
   const queryKey = getCampaignsCacheKey(tenantId);
 
