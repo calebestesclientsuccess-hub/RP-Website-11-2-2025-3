@@ -60,6 +60,31 @@ export function useCampaigns({
   displayAs,
   enabled = true,
 }: UseCampaignsOptions = {}) {
+  const parseCampaigns = async (response: Response) => {
+    const contentType = response.headers.get("content-type") || "";
+    const isJson = contentType.includes("application/json");
+    const text = await response.text();
+
+    if (!isJson) {
+      console.warn("[Campaigns] Expected JSON but received", contentType || "unknown content type", {
+        status: response.status,
+        preview: text.slice(0, 200),
+      });
+      return [];
+    }
+
+    try {
+      return JSON.parse(text) as Campaign[];
+    } catch (error) {
+      console.warn("[Campaigns] Failed to parse campaigns JSON", {
+        status: response.status,
+        error,
+        preview: text.slice(0, 200),
+      });
+      return [];
+    }
+  };
+
   const tenantId = getTenantId();
   const queryKey = getCampaignsCacheKey(tenantId);
 
@@ -71,9 +96,13 @@ export function useCampaigns({
         credentials: "include",
       });
       if (!response.ok) {
-        throw new Error("Failed to fetch campaigns");
+        console.warn("[Campaigns] Failed to fetch campaigns", {
+          status: response.status,
+          statusText: response.statusText,
+        });
+        return [];
       }
-      return response.json();
+      return parseCampaigns(response);
     },
     enabled,
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
@@ -119,9 +148,13 @@ export function CampaignBootstrap({ children }: { children: ReactNode }) {
           credentials: "include",
         });
         if (!response.ok) {
-          throw new Error("Failed to prefetch campaigns");
+          console.warn("[Campaigns] Prefetch failed", {
+            status: response.status,
+            statusText: response.statusText,
+          });
+          return [];
         }
-        return response.json();
+        return parseCampaigns(response);
       },
       staleTime: 5 * 60 * 1000, // 5 minutes
     });

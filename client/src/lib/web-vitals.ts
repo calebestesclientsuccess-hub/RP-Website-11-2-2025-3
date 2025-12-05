@@ -35,13 +35,6 @@ function sendToAnalytics(metric: Metric) {
     }).catch(console.error);
   }
 
-  // Also log to console in development
-  if (import.meta.env.DEV) {
-    console.log(`[Web Vitals] ${metric.name}:`, {
-      value: metric.value,
-      rating: metric.rating
-    });
-  }
 }
 
 /**
@@ -50,25 +43,10 @@ function sendToAnalytics(metric: Metric) {
 export function initWebVitals() {
   if (typeof window === 'undefined') return;
 
-  const isDev = import.meta.env.DEV;
-
-  onCLS((metric) => {
-    if (isDev) console.log('[Web Vitals] CLS:', metric);
-  });
-
-  onFCP((metric) => {
-    if (isDev) console.log('[Web Vitals] FCP:', metric);
-  });
-
-  onLCP((metric) => {
-    if (isDev) console.log('[Web Vitals] LCP:', metric);
-  });
-
-  onTTFB((metric) => {
-    if (isDev) console.log('[Web Vitals] TTFB:', metric);
-  });
-
-  onINP((metric) => {
-    if (isDev) console.log('[Web Vitals] INP:', metric);
-  });
+  // Capture vitals silently; analytics endpoint handles aggregation
+  onCLS(sendToAnalytics);
+  onFCP(sendToAnalytics);
+  onLCP(sendToAnalytics);
+  onTTFB(sendToAnalytics);
+  onINP(sendToAnalytics);
 }

@@ -239,15 +239,16 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
     return <WidgetSkeleton displaySize={displaySize} minHeight={minHeight} className={className} />;
   }
 
-  // Handle error state - log and return null (fail silently)
+  // Handle error state - log and render a minimal skeleton to avoid layout gaps
   if (error) {
     console.error(`[WidgetZone] Error fetching campaign for zone ${zone}:`, error);
-    return null;
+    return <WidgetSkeleton displaySize={displaySize} minHeight={minHeight} className={className} />;
   }
 
   // Handle empty state - no campaigns found
   if (!campaign) {
-    return null;
+    console.warn(`[WidgetZone] No campaigns found for zone ${zone} on page ${currentPage}`);
+    return <WidgetSkeleton displaySize={displaySize} minHeight={minHeight} className={className} />;
   }
 
   const widgetConfigSource = activeVariant?.widgetConfig ?? campaign.widgetConfig;
