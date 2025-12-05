@@ -42,6 +42,21 @@ export default function Home() {
   const scrollAwayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scrollAwayStartRef = useRef<number | null>(null);
   const [allCardsExpanded, setAllCardsExpanded] = useState(false);
+  const [belowFoldReady, setBelowFoldReady] = useState(false);
+
+  useEffect(() => {
+    const rafId = requestAnimationFrame(() => {
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        const idleId = (window as any).requestIdleCallback(() => setBelowFoldReady(true), { timeout: 250 });
+        return () => (window as any).cancelIdleCallback?.(idleId);
+      }
+
+      const timeoutId = window.setTimeout(() => setBelowFoldReady(true), 180);
+      return () => clearTimeout(timeoutId);
+    });
+
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   const toggleAllCards = () => {
     setAllCardsExpanded(prev => !prev);
@@ -216,7 +231,15 @@ export default function Home() {
       <FeatureGate flagKey="section-recent-projects">
         <section className="py-16 px-4 md:px-6 lg:px-8 bg-muted/30">
           <div className="max-w-7xl mx-auto">
-            <RecentProjects maxProjects={9} />
+            {belowFoldReady ? (
+              <RecentProjects maxProjects={9} />
+            ) : (
+              <div className="grid md:grid-cols-3 gap-6">
+                {[1, 2, 3].map((key) => (
+                  <Skeleton key={key} className="h-48 w-full" />
+                ))}
+              </div>
+            )}
           </div>
         </section>
       </FeatureGate>
@@ -227,7 +250,11 @@ export default function Home() {
         <SimpleBridgeSection />
 
         {/* Middle Widget Zone 1 */}
-        <WidgetZone zone="zone-2" className="my-8" />
+        {belowFoldReady ? (
+          <WidgetZone zone="zone-2" className="my-8" />
+        ) : (
+          <div className="my-8 h-12" />
+        )}
 
         {/* Unified Product Showcase - The Fullstack Sales Unit */}
         {/* Transparent background - illuminated by the System sun above */}

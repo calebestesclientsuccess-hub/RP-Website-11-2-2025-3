@@ -201,6 +201,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   const [animationComplete, setAnimationComplete] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false); // State to track video loading
+  const [motionReady, setMotionReady] = useState(false);
 
   const autoAdvanceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const autoAdvanceIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -217,6 +218,20 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     gap: isMobile ? 8 : 12,
     finalY: isMobile ? 200 : 260
   }), [isMobile]);
+
+  // Allow a first paint before kicking off GSAP-heavy work
+  useEffect(() => {
+    const rafId = requestAnimationFrame(() => {
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        const idleId = (window as any).requestIdleCallback(() => setMotionReady(true), { timeout: 200 });
+        return () => (window as any).cancelIdleCallback?.(idleId);
+      }
+      const timeoutId = window.setTimeout(() => setMotionReady(true), 120);
+      return () => clearTimeout(timeoutId);
+    });
+
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   // Start rotation animation when section comes into view
   const startInitialRotation = useCallback(() => {
@@ -259,7 +274,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
   // Start rotation when scrolled into view - single initialization
   useEffect(() => {
     // Only trigger animation when scrolled into view
-    if (!hasScrolledIntoView) return;
+    if (!motionReady || !hasScrolledIntoView) return;
 
     if (prefersReducedMotion()) {
       setAnimationComplete(true);
@@ -292,7 +307,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         orbitAnimationRef.current = null;
       }
     };
-  }, [hasScrolledIntoView]);
+  }, [hasScrolledIntoView, motionReady]);
 
   // Utility to clear all auto-advance timers
   const clearAutoAdvance = useCallback(() => {
@@ -335,7 +350,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
 
   // Effect for ScrollTrigger animation on icons - stable initialization
   useEffect(() => {
-    if (prefersReducedMotion()) {
+    if (!motionReady || prefersReducedMotion()) {
       return;
     }
 
@@ -392,7 +407,7 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
     return () => {
       delayedInit.kill();
     };
-  }, [animationComplete]); // Only re-run if animation completion state changes
+  }, [animationComplete, motionReady]); // Only re-run if animation completion state changes
 
 
   // Video playback management
@@ -544,7 +559,8 @@ export function SimplifiedOrbitalPowers({ videoSrc, videoRef }: SimplifiedOrbita
         className="w-full h-full object-cover bg-black"
         muted
         playsInline
-        preload="auto"
+        preload="metadata"
+        poster="/og-image.png"
         controls={false}
         data-testid="orbital-video"
       >

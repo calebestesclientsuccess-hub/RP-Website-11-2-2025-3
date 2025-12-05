@@ -126,6 +126,24 @@ export default function SimpleBridgeSection() {
 
   const embers = isMobile ? emberSets.mobile : emberSets.desktop;
 
+  const [animationsReady, setAnimationsReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const rafId = requestAnimationFrame(() => {
+      if ('requestIdleCallback' in window) {
+        const idleId = (window as any).requestIdleCallback(() => setAnimationsReady(true), { timeout: 200 });
+        return () => (window as any).cancelIdleCallback?.(idleId);
+      }
+
+      const timeoutId = window.setTimeout(() => setAnimationsReady(true), 120);
+      return () => clearTimeout(timeoutId);
+    });
+
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
   // Defensive visibility: Ensure mobile text is visible by default (before GSAP animations)
   // This ensures content is readable even if JavaScript fails or loads slowly
   useEffect(() => {
@@ -139,9 +157,13 @@ export default function SimpleBridgeSection() {
       redContainerRef.current.style.opacity = '1';
       redContainerRef.current.style.transform = 'translateY(0)';
     }
-  }, [isMobile]);
+  }, [isMobile, animationsReady]);
 
   useEffect(() => {
+    if (!animationsReady) {
+      return;
+    }
+
     // Always need these core refs
     if (
       !sectionRef.current ||
