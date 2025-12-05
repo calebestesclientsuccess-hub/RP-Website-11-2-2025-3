@@ -88,6 +88,7 @@ import leadsRouter from './routes/leads';
 import ebookLeadMagnetsRouter from './routes/ebook-lead-magnets';
 import aiGenerationRouter from './routes/ai-generation';
 import crmRouter from './routes/crm';
+import campaignsRouter from './routes/campaigns';
 import adminSeedsRouter from './routes/admin-seeds';
 import { requireAuth } from './middleware/auth';
 import { securityHeaders } from "./middleware/security-headers";
@@ -5560,6 +5561,7 @@ RESPONSE FORMAT:
         app.use(internalLinkingRouter);
         app.use(relatedContentRouter);
         app.use(analyticsRouter);
+        app.use('/api', campaignsRouter);
         app.use('/api', leadsRouter);
         app.use('/api', ebookLeadMagnetsRouter);
         app.use('/api', aiGenerationRouter);
