@@ -114,9 +114,9 @@ export default function SimpleBridgeSection() {
   const emberSets = useMemo(
     () => ({
       desktop: generateEmbers(350),
-      mobile: generateEmbers(80, {
+      mobile: generateEmbers(25, { // Reduced from 80 to 25 for better mobile performance
         spreadMultiplier: 0.6,
-        durationScale: 0.7,
+        durationScale: 0.8, // Slightly faster for less cumulative load
         driftScale: 0.6,
         sizeOffset: 1,
       }),
@@ -132,9 +132,12 @@ export default function SimpleBridgeSection() {
     if (typeof window === 'undefined') return;
     
     if (isMobile && whiteContainerRef.current && redContainerRef.current) {
-      // Mobile: Start visible by default (GSAP will override this if it loads)
+      // Mobile: Ensure content is ALWAYS readable (even if animations fail)
       whiteContainerRef.current.style.opacity = '1';
+      whiteContainerRef.current.style.transform = 'translateY(0)';
+      
       redContainerRef.current.style.opacity = '1';
+      redContainerRef.current.style.transform = 'translateY(0)';
     }
   }, [isMobile]);
 
@@ -268,11 +271,12 @@ export default function SimpleBridgeSection() {
     };
     const mobileTimeline = () => {
       // Simplified timeline for mobile: simple reveal when scrolled into view
-      // Mobile text is already in HTML, no need for text content manipulation
+      // Mobile text is already in HTML and visible from defensive effect
       const ctx = gsap.context(() => {
-        // Set initial states for container animation (text is already visible in HTML)
-        gsap.set(whiteContainerRef.current, { opacity: 0, y: 30 });
-        gsap.set(redContainerRef.current, { opacity: 0, y: 30 });
+        // DO NOT set opacity to 0 - content is already visible from defensive effect
+        // Only animate Y position for subtle entrance
+        gsap.set(whiteContainerRef.current, { y: 20 });
+        gsap.set(redContainerRef.current, { y: 20 });
         
         // Hide atmospheric effects initially
         gsap.set(
@@ -285,27 +289,25 @@ export default function SimpleBridgeSection() {
           { opacity: 0 }
         );
 
-        // Animate White Text Block
+        // Animate White Text - earlier trigger
         ScrollTrigger.create({
           trigger: whiteContainerRef.current,
-          start: 'top 85%', // Trigger when top of element hits 85% of viewport height
-          once: true, // Play once, don't scrub/reverse
+          start: 'top bottom', // Trigger as soon as element enters viewport
+          once: true,
           animation: gsap.to(whiteContainerRef.current, {
-            opacity: 1,
             y: 0,
-            duration: 1,
-            ease: 'power3.out',
+            duration: 0.6,
+            ease: 'power2.out',
           }),
         });
 
-        // Animate Red Text Block + Effects
+        // Animate Red Text + Effects
         const redTimeline = gsap.timeline();
         redTimeline
           .to(redContainerRef.current, {
-            opacity: 1,
             y: 0,
-            duration: 1,
-            ease: 'power3.out',
+            duration: 0.6,
+            ease: 'power2.out',
           })
           .to(
             [
@@ -315,7 +317,7 @@ export default function SimpleBridgeSection() {
             ],
             {
               opacity: 0.8,
-              duration: 1.5,
+              duration: 1,
               ease: 'power2.out',
             },
             0 // Start effect fade at same time
@@ -323,7 +325,7 @@ export default function SimpleBridgeSection() {
 
         ScrollTrigger.create({
           trigger: redContainerRef.current,
-          start: 'top 85%',
+          start: 'top bottom',
           once: true,
           animation: redTimeline,
         });
@@ -587,6 +589,7 @@ export default function SimpleBridgeSection() {
       <div 
         ref={whiteContainerRef}
         className={`flex items-center justify-center z-10 transition-opacity duration-300 ${isMobile ? 'relative min-h-[50vh] py-12' : 'absolute inset-0 pointer-events-none'}`}
+        style={isMobile ? { opacity: 1, transform: 'translateY(0)' } : undefined}
       >
         <div className="max-w-2xl text-center px-6">
           {isMobile ? (
@@ -617,6 +620,7 @@ export default function SimpleBridgeSection() {
       <div 
         ref={redContainerRef}
         className={`flex flex-col items-center justify-center z-20 transition-opacity duration-300 ${isMobile ? 'relative min-h-[50vh] py-12' : 'absolute inset-0 pointer-events-none'}`}
+        style={isMobile ? { opacity: 1, transform: 'translateY(0)' } : undefined}
       >
         <div className="relative">
           
