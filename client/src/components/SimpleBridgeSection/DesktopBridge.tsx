@@ -39,8 +39,11 @@ export default function DesktopBridge() {
   const emberContainerRef = useRef<HTMLDivElement>(null);
   const pageIlluminationRef = useRef<HTMLDivElement>(null);
 
-  // Desktop uses 350 embers (mobile would use 25)
-  const embers = useMemo(() => generateEmbers(350), []);
+  // Safari detection - reduce embers for better performance
+  const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  
+  // Desktop uses 350 embers on Chrome, 250 on Safari for smooth performance
+  const embers = useMemo(() => generateEmbers(isSafari ? 250 : 350), [isSafari]);
 
   const [animationsReady, setAnimationsReady] = useState(false);
 
@@ -286,10 +289,10 @@ export default function DesktopBridge() {
       ScrollTrigger.create({
         trigger: sectionRef.current,
         start: 'top top',
-        end: '+=1190vh',
+        end: '+=600vh', // Reduced from 1190vh for better pacing and Safari performance
         pin: true,
         pinSpacing: true,
-        scrub: 0.5,
+        scrub: isSafari ? 1 : 0.5, // Slower scrub on Safari for smoother rendering
         animation: masterTimeline,
       });
     }, sectionRef);
@@ -487,6 +490,8 @@ export default function DesktopBridge() {
                   height: `${ember.size}px`,
                   background: `radial-gradient(circle, rgba(255, 150, 50, 1) 0%, rgba(184, 13, 46, 0.8) 50%, transparent 100%)`,
                   filter: 'blur(1px)',
+                  willChange: 'transform',
+                  transform: 'translate3d(0,0,0)',
                   '--drift': `${ember.drift}px`,
                   '--spread': `${ember.spread}px`,
                   '--crackle-offset': `${ember.crackleOffset}s`,
@@ -545,6 +550,8 @@ export default function DesktopBridge() {
       <style>{`
         .ember-particle {
           animation: ember-fall ease-out infinite;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
         }
         
         .ember-spark {
