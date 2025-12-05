@@ -21,7 +21,7 @@ export const projects = [
     ],
     
     testimonial: {
-      text: "Mariya didn't just design a pretty logo—she gave us a complete brand strategy that our entire company rallied behind. The clarity and confidence this gave our sales team was worth 10x the investment.",
+      text: "The team didn't just design a pretty logo—they gave us a complete brand strategy that our entire company rallied behind. The clarity and confidence this gave our sales team was worth 10x the investment.",
       author: "Sarah Chen, CEO at TechFlow AI"
     }
   },
@@ -97,7 +97,7 @@ export const projects = [
     ],
     
     testimonial: {
-      text: "Mariya helped us make the leap from SMB to enterprise. The brand positioning gave us the confidence to play in a bigger arena—and win.",
+      text: "The team helped us make the leap from SMB to enterprise. The brand positioning gave us the confidence to play in a bigger arena—and win.",
       author: "Jennifer Liu, Co-Founder at Vertex Security"
     }
   },
@@ -148,7 +148,7 @@ export const projects = [
     ],
     
     testimonial: {
-      text: "We were pitching a better product, but Mariya helped us pitch a better story. That's what got us funded. Every founder should work with her before fundraising.",
+      text: "We were pitching a better product, but the team helped us pitch a better story. That's what got us funded. Every founder should work with them before fundraising.",
       author: "Alex Kumar, Co-Founder at Elevate Analytics"
     }
   }

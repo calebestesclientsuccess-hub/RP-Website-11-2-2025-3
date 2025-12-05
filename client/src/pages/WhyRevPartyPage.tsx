@@ -33,22 +33,22 @@ export default function WhyRevPartyPage() {
 
   const architects = [
     {
-      name: "Caleb Estes",
+      name: "Visionary Architect",
       role: "Visionary Architect",
       description: "The designer of the 'Impact Selling OS' and your GTM strategy.",
     },
     {
-      name: "Muneeb Awan",
+      name: "Talent Architect",
       role: "Talent Architect",
       description: "The builder of our 'Elite Talent' pods.",
     },
     {
-      name: "Danyal Darvesh",
+      name: "AI Architect",
       role: "AI Architect",
       description: "The engineer of the 'Signal Factory'.",
     },
     {
-      name: "Mariya Tamkeen",
+      name: "Brand Guardian",
       role: "Brand Guardian",
       description: "The protector of your brand and the 'Impact Selling OS'.",
     },

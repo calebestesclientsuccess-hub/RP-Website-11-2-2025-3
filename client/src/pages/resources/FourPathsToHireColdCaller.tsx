@@ -81,7 +81,7 @@ export default function FourPathsToHireColdCaller() {
             <div className="text-center">
               <Play className="w-16 h-16 mb-4 mx-auto text-primary" data-testid="icon-video-placeholder" />
               <div className="font-semibold text-lg">VIDEO PLACEHOLDER</div>
-              <div className="text-sm text-muted-foreground mt-2">Caleb Estes on the "Lone Wolf Trap"</div>
+              <div className="text-sm text-muted-foreground mt-2">Our Visionary Architect on the "Lone Wolf Trap"</div>
               <div className="text-xs text-muted-foreground mt-1">2-3 minutes</div>
             </div>
           </div>
@@ -454,7 +454,7 @@ export default function FourPathsToHireColdCaller() {
 
         <blockquote>
           "I was the 'de-facto Head of Sales' and it was killing my company. The 'Founder's Tax' is real. We tried hiring an in-house rep and failed. The GTM Pod wasn't a service; it was a full GTM transplant. We had a real, predictable pipeline in 30 days, and for the first time, I wasn't the one managing it."
-          <footer>— Jane D., CEO of SaaSCo</footer>
+          <footer>— CEO, Series B SaaS Company</footer>
         </blockquote>
 
         <h2>The Ultimate FAQ for Hiring Cold Callers</h2>
@@ -574,22 +574,22 @@ export default function FourPathsToHireColdCaller() {
           <div className="flex flex-col md:flex-row gap-6 items-start">
             <div className="w-32 h-32 rounded-full bg-muted/50 flex items-center justify-center flex-shrink-0 border-2 border-primary/20 overflow-hidden">
               <img 
-                src="https://via.placeholder.com/150/333333/999999?text=Caleb+E." 
-                alt="Caleb Estes headshot placeholder"
+                src="https://via.placeholder.com/150/333333/999999?text=RP" 
+                alt="Revenue Party author headshot placeholder"
                 data-testid="author-headshot"
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="flex-1">
-              <h4 className="text-xl font-bold mb-2">Caleb Estes</h4>
+              <h4 className="text-xl font-bold mb-2">Our Visionary Architect</h4>
               <p className="text-sm text-muted-foreground mb-4">
                 Chief Architect of the "GTM Architecture" (Path 4) Strategy
               </p>
               <p className="text-sm leading-relaxed mb-3">
-                Caleb Estes is the chief architect of the "GTM Architecture" (Path 4) strategy. His "full-stack" B2B SaaS background—spanning from QA and Support Leadership to Training, Implementation, Sales Engineering, Sales Management, and Head of Client Success—gave him a rare, end-to-end view of why "Lone Wolf" sales models fail.
+                Our Visionary Architect is the chief architect of the "GTM Architecture" (Path 4) strategy. With a "full-stack" B2B SaaS background—spanning from QA and Support Leadership to Training, Implementation, Sales Engineering, Sales Management, and Head of Client Success—this role provides a rare, end-to-end view of why "Lone Wolf" sales models fail.
               </p>
               <p className="text-sm leading-relaxed">
-                He developed this model after becoming a consultant, first to staffing agencies (optimizing tech stacks and training) and then as a Growth Strategist for MSPs, MSSPs, and security-related SaaS companies. He continues to consult for Venture Capital and Private Equity firms on their SaaS and recruitment technology investments. He built the "GTM Architecture" after seeing dozens of companies make the "$198,000 Mistake"—hiring a great rep but giving them a broken system to execute.
+                This model was developed after extensive consulting work, first with staffing agencies (optimizing tech stacks and training) and then as a Growth Strategist for MSPs, MSSPs, and security-related SaaS companies. The team continues to consult for Venture Capital and Private Equity firms on their SaaS and recruitment technology investments. The "GTM Architecture" was built after seeing dozens of companies make the "$198,000 Mistake"—hiring a great rep but giving them a broken system to execute.
               </p>
             </div>
           </div>

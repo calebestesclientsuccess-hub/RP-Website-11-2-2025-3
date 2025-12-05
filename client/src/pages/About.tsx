@@ -73,28 +73,28 @@ export default function About() {
 
   const architects = [
     {
-      name: "Caleb Estes",
+      name: "Visionary Architect",
       title: "Visionary Architect",
       icon: <Target className="w-8 h-8 text-primary" />,
       description: "Designer of Impact Selling OS and GTM strategy",
       specialty: "Strategic Framework & Methodology",
     },
     {
-      name: "Muneeb Awan",
+      name: "Talent Architect",
       title: "Talent Architect",
       icon: <Users className="w-8 h-8 text-primary" />,
       description: "Builder of Elite Talent pod, antidote to human toll of burnout",
       specialty: "Pod Structure & Performance Culture",
     },
     {
-      name: "Danyal Darvesh",
+      name: "AI Architect",
       title: "AI Architect",
       icon: <Brain className="w-8 h-8 text-primary" />,
       description: "Engineer of Signal Factory, solver of Tech Stack Tax",
       specialty: "AI Systems & Technology Integration",
     },
     {
-      name: "Mariya Tamkeen",
+      name: "Brand Guardian",
       title: "Brand Guardian",
       icon: <Shield className="w-8 h-8 text-primary" />,
       description: "Protector of Brand Physics, guardian against TAM Poisoning",

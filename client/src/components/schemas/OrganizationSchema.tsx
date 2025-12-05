@@ -11,11 +11,6 @@ export function OrganizationSchema() {
     "logo": "https://revenueparty.com/apple-touch-icon.png",
     "description": "Revenue Party deploys complete GTM systems with elite BDR pods, AI-powered Signal Factory, and proprietary Impact Selling OS to deliver 20+ guaranteed qualified appointments monthly.",
     "foundingDate": "2022",
-    "founder": {
-      "@type": "Person",
-      "name": "Caleb Estes",
-      "jobTitle": "Chief Architect"
-    },
     "address": {
       "@type": "PostalAddress",
       "addressCountry": "US"

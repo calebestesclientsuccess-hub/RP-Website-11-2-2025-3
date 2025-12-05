@@ -248,7 +248,7 @@ export function WidgetZone({ zone, className }: WidgetZoneProps) {
   // Handle empty state - no campaigns found
   if (!campaign) {
     console.warn(`[WidgetZone] No campaigns found for zone ${zone} on page ${currentPage}`);
-    return <WidgetSkeleton displaySize={displaySize} minHeight={minHeight} className={className} />;
+    return null;
   }
 
   const widgetConfigSource = activeVariant?.widgetConfig ?? campaign.widgetConfig;
